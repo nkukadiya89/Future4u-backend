@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Renewal Reminder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .logo {
+            max-width: 150px;
+            height: auto;
+        }
+        .content {
+            padding: 30px 0;
+        }
+        .reminder-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .urgent {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+            border-top: 1px solid #f0f0f0;
+            font-size: 12px;
+            color: #666;
+        }
+        .subscription-details {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="cid:logo" alt="OutdoorX Logo" class="logo">
+        <h1>Subscription Renewal Reminder</h1>
+    </div>
+
+    <div class="content">
+        <p>Dear {{ company_name }},</p>
+
+        {% if days_remaining == 1 %}
+            <div class="reminder-box urgent">
+                <strong>URGENT: Your subscription expires tomorrow!</strong>
+            </div>
+        {% elif days_remaining <= 3 %}
+            <div class="reminder-box urgent">
+                <strong>URGENT: Your subscription expires in {{ days_remaining }} days!</strong>
+            </div>
+        {% else %}
+            <div class="reminder-box">
+                <strong>Reminder: Your subscription expires in {{ days_remaining }} days</strong>
+            </div>
+        {% endif %}
+
+        <p>This is a friendly reminder that your subscription with OutdoorX is approaching its expiration date. To ensure uninterrupted service, please renew your subscription before the expiration date.</p>
+
+        <div class="subscription-details">
+            <h3>Subscription Details:</h3>
+            <p><strong>Package:</strong> {{ package_name }}</p>
+            <p><strong>Expiration Date:</strong> {{ expiry_date }}</p>
+            <p><strong>Days Remaining:</strong> {{ days_remaining }} days</p>
+            {% if renewal_amount %}
+            <p><strong>Renewal Amount:</strong> ₹{{ renewal_amount }}</p>
+            {% endif %}
+        </div>
+
+        <p>Renewing your subscription is quick and easy:</p>
+        <ol>
+            <li>Log in to your OutdoorX account</li>
+            <li>Navigate to the subscription section</li>
+            <li>Select your subscription and click "Renew"</li>
+            <li>Complete the payment process</li>
+        </ol>
+
+        <div style="text-align: center;">
+            <a href="{{ login_url }}" class="btn">Renew Your Subscription Now</a>
+        </div>
+
+        <p>If you have any questions or need assistance with the renewal process, please don't hesitate to contact our support team.</p>
+
+        <p>Thank you for choosing OutdoorX for your business needs!</p>
+
+        <p>Best regards,<br>
+        The OutdoorX Team</p>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2024 OutdoorX. All rights reserved.</p>
+        <p>This is an automated message. Please do not reply to this email.</p>
+    </div>
+</body>
+</html>

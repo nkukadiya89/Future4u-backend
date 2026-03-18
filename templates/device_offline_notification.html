@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>Device Offline Notification</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font: 16px/1.5 Helvetica, Arial, Verdana, sans-serif;
+        background-color: #f5f5f5;
+      }
+      ul, ul li, p, div, ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      #pharma {
+        margin: 1em auto;
+        width: 660px;
+        padding: 10px 20px;
+        clear: both;
+        position: relative;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      #pharma-header {
+        margin-top: 0.3cm;
+        padding-bottom: 16px;
+        overflow: hidden;
+        text-align: center;
+      }
+      #pharma-header .logo {
+        max-width: 200px;
+        height: auto;
+      }
+      #title {
+        margin: 0 0 16px;
+        background: #d9534f;
+        text-align: center;
+        padding: 5px;
+        color: #fff;
+        font-weight: bold;
+      }
+      #section {
+        margin: 0;
+        padding: 16px;
+        border-bottom: 1px solid #f1f1f1;
+        background: #f5f5f5;
+      }
+      #content {
+        margin: 0;
+        padding: 16px;
+      }
+      #content h5 {
+        font-weight: bold;
+        margin: 0 0 10px;
+      }
+      .highlight {
+        color: #d9534f;
+        font-weight: bold;
+      }
+      .btn {
+        background-color: #d9534f;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 3px;
+        display: inline-block;
+        margin: 10px 0;
+      }
+      .device-details {
+        margin: 15px 0;
+        padding: 15px;
+        background: #f9f9f9;
+        border-left: 4px solid #d9534f;
+      }
+      .site-details {
+        margin: 15px 0;
+        padding: 15px;
+        background: #f0f7ff;
+        border-left: 4px solid #5bc0de;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="pharma">
+      <div id="pharma-header">
+        <img src="cid:image1" alt="OutdoorX" class="logo screen" />
+      </div>
+      <h2 id="title">⚠️ Device Offline Notification</h2>
+      <table width="100%">
+        <tr>
+          <td id="section">
+            <h5>Dear {{ recipient_name }},</h5>
+          </td>
+        </tr>
+      </table>
+      <table width="100%">
+        <tr>
+          <td id="content">
+            <p>The following device is currently offline:</p>
+
+            <div class="device-details">
+              <p><strong>Device Name/ID:</strong> {{ device_name|default:"N/A" }}</p>
+              <p><strong>MAC Address:</strong> {{ mac_address|default:"N/A" }}</p>
+              <p><strong>IMEI Number:</strong> {{ imei_number|default:"N/A" }}</p>
+              <p><strong>Status:</strong> <span class="highlight">{{ device_status|default:"Offline" }}</span></p>
+              <p><strong>Last Seen:</strong> {{ last_seen|default:"N/A" }}</p>
+            </div>
+
+            {% if site_details %}
+            <div class="site-details">
+              <h4>Site Information</h4>
+              <p><strong>Site Reference ID:</strong> {{ site_details.site_reference_id|default:"N/A" }}</p>
+              <p><strong>Site Address:</strong> {{ site_details.site_address|default:"N/A" }}</p>
+            </div>
+            {% endif %}
+
+            <p>Please check the device connection and take necessary actions to bring it back online.</p>
+
+            <!-- <p>
+              <a href="{{ admin_url }}" class="btn">View Device Details</a>
+            </p> -->
+
+            <p>
+              <strong>
+                Best regards,<br />
+                Team OutdoorX
+              </strong>
+            </p>
+          </td>
+        </tr>
+      </table>
+      <div id="footer" style="text-align: center; color: #afafaf; font-size: 12px; padding: 16px; border-top: 1px solid #f1f1f1;">
+        <p>This is an automated notification. Please do not reply to this email.</p>
+      </div>
+    </div>
+  </body>
+</html>

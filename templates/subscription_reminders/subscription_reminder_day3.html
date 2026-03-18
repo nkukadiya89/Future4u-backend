@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urgent Subscription Renewal - 3 Days</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #dc2626; color: white; padding: 20px; text-align: center; }
+        .content { padding: 30px 20px; background: #f9fafb; }
+        .button { display: inline-block; padding: 12px 24px; background: #dc2626; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+        .button-primary { background: #007bff; }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+        .urgent { background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚠️ URGENT: Subscription Expiring in 3 Days</h1>
+            <h2>{{ company_name }}</h2>
+        </div>
+
+        <div class="content">
+            <p>Dear {{ person_name }},</p>
+
+            <div class="urgent">
+                <h3>⚠️ Action Required Immediately!</h3>
+                <p>Your OutdoorX subscription will expire in <strong>just 3 days</strong>. Service interruption is imminent!</p>
+            </div>
+
+            {% if subscription_package %}
+            <div class="warning">
+                <h3>Subscription Details:</h3>
+                <p><strong>Package:</strong> {{ subscription_package }}</p>
+                <p><strong>End Date:</strong> {{ end_date }}</p>
+                <p><strong>Amount:</strong> ₹{{ subscription_amount }}</p>
+            </div>
+            {% endif %}
+
+            <h3>What happens if you don't renew?</h3>
+            <ul>
+                <li>❌ <strong>Service Disruption:</strong> Your devices will stop functioning</li>
+                <li>❌ <strong>No Monitoring:</strong> Real-time tracking will be disabled</li>
+                <li>❌ <strong>Data Loss:</strong> Historical data may be lost</li>
+                <li>❌ <strong>No Support:</strong> Customer support will be unavailable</li>
+            </ul>
+
+            <h3>Renew Now to Avoid Disruption:</h3>
+            <ul>
+                <li>✅ Seamless continuation of service</li>
+                <li>✅ No interruption in device monitoring</li>
+                <li>✅ Continued access to all features</li>
+                <li>✅ Priority customer support</li>
+            </ul>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{ login_url }}" class="button">RENEW NOW</a>
+                <a href="{{ pricing_url }}" class="button button-primary">View Plans</a>
+            </div>
+
+            <p><strong>Time is running out!</strong> Don't wait until the last minute and risk service interruption.</p>
+
+            <p>Need help? Contact our support team immediately - we're here to assist you 24/7.</p>
+
+            <p>Best regards,<br>
+            The OutdoorX Team</p>
+        </div>
+
+        <div class="footer">
+            <p>⚠️ Final reminder will be sent 1 day before expiration. Act now to avoid service interruption.</p>
+            <p>© 2024 OutdoorX. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

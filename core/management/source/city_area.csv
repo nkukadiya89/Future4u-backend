@@ -1,0 +1,2146 @@
+id,city_area,city_name,state_name,country_name,zipcode,created_by
+1,Abasana,Ahmedabad,Gujarat,India,382120,1
+2,Adroda,Ahmedabad,Gujarat,India,382220,1
+3,Adval,Ahmedabad,Gujarat,India,382460,1
+4,Ahmedabad G.P.O.,Ahmedabad,Gujarat,India,380001,1
+5,Akru,Ahmedabad,Gujarat,India,382250,1
+6,Alampur,Ahmedabad,Gujarat,India,382245,1
+7,Alau,Ahmedabad,Gujarat,India,382255,1
+8,Ambali,Ahmedabad,Gujarat,India,382463,1
+9,Ambalia,Ahmedabad,Gujarat,India,383345,1
+10,Ambaliara,Ahmedabad,Gujarat,India,382225,1
+11,Ambareli,Ahmedabad,Gujarat,India,382225,1
+12,Ambawadi,Ahmedabad,Gujarat,India,380006,1
+13,Ambawadi Vistar,Ahmedabad,Gujarat,India,380015,1
+14,Ambli,Ahmedabad,Gujarat,India,380058,1
+15,Amraiwadi,Ahmedabad,Gujarat,India,380026,1
+16,Anand Nagar,Ahmedabad,Gujarat,India,380007,1
+17,Andej,Ahmedabad,Gujarat,India,382210,1
+18,Aniali Bhimji,Ahmedabad,Gujarat,India,382460,1
+19,Aniali K,Ahmedabad,Gujarat,India,382245,1
+20,Ankhol,Ahmedabad,Gujarat,India,382330,1
+21,Arnej,Ahmedabad,Gujarat,India,382230,1
+22,Asalgam,Ahmedabad,Gujarat,India,382150,1
+23,Asarwa,Ahmedabad,Gujarat,India,380016,1
+24,Asarwa Chakla,Ahmedabad,Gujarat,India,380016,1
+25,Asarwa Ext South,Ahmedabad,Gujarat,India,380024,1
+26,Ashoknagar,Ahmedabad,Gujarat,India,382140,1
+27,Ashram Road,Ahmedabad,Gujarat,India,380009,1
+28,Aslali,Ahmedabad,Gujarat,India,382427,1
+29,Ayojan Nagar,Ahmedabad,Gujarat,India,380015,1
+30,Azad Society,Ahmedabad,Gujarat,India,380015,1
+31,Badarkha,Ahmedabad,Gujarat,India,382455,1
+32,Bagad,Ahmedabad,Gujarat,India,382255,1
+33,Bagodara,Ahmedabad,Gujarat,India,382230,1
+34,Bajarda,Ahmedabad,Gujarat,India,382460,1
+35,Bakrana,Ahmedabad,Gujarat,India,382170,1
+36,Bakrol,Ahmedabad,Gujarat,India,382430,1
+37,Baldana,Ahmedabad,Gujarat,India,382240,1
+38,Balsasan,Ahmedabad,Gujarat,India,382145,1
+39,Bamroli,Ahmedabad,Gujarat,India,382145,1
+40,Bamsara,Ahmedabad,Gujarat,India,382240,1
+41,Bapunagar,Ahmedabad,Gujarat,India,380024,1
+42,Bareja,Ahmedabad,Gujarat,India,382425,1
+43,Barwala Ghelasha,Ahmedabad,Gujarat,India,382450,1
+44,Bavaliary,Ahmedabad,Gujarat,India,382455,1
+45,Bavla,Ahmedabad,Gujarat,India,382220,1
+46,Bavla Market Yard,Ahmedabad,Gujarat,India,382220,1
+47,Behrampura,Ahmedabad,Gujarat,India,380022,1
+48,Bhadaj,Ahmedabad,Gujarat,India,380060,1
+49,Bhadana,Ahmedabad,Gujarat,India,382140,1
+50,Bhadiad,Ahmedabad,Gujarat,India,382435,1
+51,Bhairavnath Road,Ahmedabad,Gujarat,India,380028,1
+52,Bhangadh,Ahmedabad,Gujarat,India,382455,1
+53,Bhankoda,Ahmedabad,Gujarat,India,382140,1
+54,Bhat,Ahmedabad,Gujarat,India,382428,1
+55,Bhavda,Ahmedabad,Gujarat,India,382433,1
+56,Bhayla,Ahmedabad,Gujarat,India,382220,1
+57,Bhodad,Ahmedabad,Gujarat,India,382445,1
+58,Bhojwa,Ahmedabad,Gujarat,India,382150,1
+59,Bholad,Ahmedabad,Gujarat,India,382230,1
+60,Bhoyani,Ahmedabad,Gujarat,India,382145,1
+61,Bhurkhi,Ahmedabad,Gujarat,India,382230,1
+62,Bhuvaldi,Ahmedabad,Gujarat,India,382430,1
+63,Bilasia,Ahmedabad,Gujarat,India,382330,1
+64,Bodakdev,Ahmedabad,Gujarat,India,380054,1
+65,Bodia,Ahmedabad,Gujarat,India,382245,1
+66,Bol,Ahmedabad,Gujarat,India,382170,1
+67,Bopal,Ahmedabad,Gujarat,India,380058,1
+68,Bordibazar Viramgam,Ahmedabad,Gujarat,India,382150,1
+69,Buranpur,Ahmedabad,Gujarat,India,382465,1
+70,Calico Mills,Ahmedabad,Gujarat,India,380022,1
+71,Cantonment,Ahmedabad,Gujarat,India,380004,1
+72,Chaloda,Ahmedabad,Gujarat,India,382260,1
+73,Chandarva,Ahmedabad,Gujarat,India,382255,1
+74,Chandial,Ahmedabad,Gujarat,India,382433,1
+75,Chandisar,Ahmedabad,Gujarat,India,382130,1
+76,Chandkheda,Ahmedabad,Gujarat,India,382424,1
+77,Chandlodia,Ahmedabad,Gujarat,India,382481,1
+78,Chandranagar,Ahmedabad,Gujarat,India,382150,1
+79,Changodar,Ahmedabad,Gujarat,India,382213,1
+80,Charanki,Ahmedabad,Gujarat,India,382450,1
+81,Charel,Ahmedabad,Gujarat,India,382110,1
+82,Chaulaj,Ahmedabad,Gujarat,India,382433,1
+83,Chekhla,Ahmedabad,Gujarat,India,382210,1
+84,Chhabasar,Ahmedabad,Gujarat,India,382220,1
+85,Chhaniar,Ahmedabad,Gujarat,India,382140,1
+86,Chharodi,Ahmedabad,Gujarat,India,382170,1
+87,Chhasiana,Ahmedabad,Gujarat,India,382460,1
+88,Chiada,Ahmedabad,Gujarat,India,382220,1
+89,Chokdi,Ahmedabad,Gujarat,India,382250,1
+90,Chuval Dangarva,Ahmedabad,Gujarat,India,382145,1
+91,Civil Hospital,Ahmedabad,Gujarat,India,380016,1
+92,CTM,Ahmedabad,Gujarat,India,380026,1
+93,Ctm Char Rasta,Ahmedabad,Gujarat,India,380026,1
+94,D Cabin,Ahmedabad,Gujarat,India,380019,1
+95,Dabhoda,Ahmedabad,Gujarat,India,382355,1
+96,Dabhsar,Ahmedabad,Gujarat,India,382120,1
+97,Dadhana,Ahmedabad,Gujarat,India,382120,1
+98,Daduka,Ahmedabad,Gujarat,India,382110,1
+99,Dadusar,Ahmedabad,Gujarat,India,382225,1
+100,Dahegam,Ahmedabad,Gujarat,India,382305,1
+101,Dalod,Ahmedabad,Gujarat,India,382130,1
+102,Daran,Ahmedabad,Gujarat,India,382220,1
+103,Dariapur,Ahmedabad,Gujarat,India,380001,1
+104,Darpan Society,Ahmedabad,Gujarat,India,380009,1
+105,Daskroi,Ahmedabad,Gujarat,India,382430,1
+106,Daslana,Ahmedabad,Gujarat,India,382150,1
+107,Daxini Society,Ahmedabad,Gujarat,India,380008,1
+108,Dehgamda,Ahmedabad,Gujarat,India,382220,1
+109,Dekawada,Ahmedabad,Gujarat,India,382120,1
+110,Delhi Gate,Ahmedabad,Gujarat,India,380004,1
+111,Deo Dholera,Ahmedabad,Gujarat,India,382240,1
+112,Detroj,Ahmedabad,Gujarat,India,382120,1
+113,Devaliya,Ahmedabad,Gujarat,India,382245,1
+114,Devpura,Ahmedabad,Gujarat,India,382140,1
+115,Devtimoti,Ahmedabad,Gujarat,India,382213,1
+116,Dhakdi,Ahmedabad,Gujarat,India,382150,1
+117,Dhamatvan,Ahmedabad,Gujarat,India,382435,1
+118,Dhanala,Ahmedabad,Gujarat,India,382465,1
+119,Dhandhuka,Ahmedabad,Gujarat,India,382460,1
+120,Dhanwada,Ahmedabad,Gujarat,India,382220,1
+121,Dharpipla,Ahmedabad,Gujarat,India,382245,1
+122,Dhedasana,Ahmedabad,Gujarat,India,382130,1
+123,Dhingada,Ahmedabad,Gujarat,India,382230,1
+124,Dholera,Ahmedabad,Gujarat,India,382455,1
+125,Dholi,Ahmedabad,Gujarat,India,382240,1
+126,Dholka,Ahmedabad,Gujarat,India,382225,1
+127,Digvijaynagar,Ahmedabad,Gujarat,India,382470,1
+128,District Court,Ahmedabad,Gujarat,India,380001,1
+129,Dodar,Ahmedabad,Gujarat,India,382170,1
+130,Dudheshwar,Ahmedabad,Gujarat,India,380004,1
+131,Dudheshwar Tavdipura,Ahmedabad,Gujarat,India,380004,1
+132,Dumana,Ahmedabad,Gujarat,India,382150,1
+133,Durgi,Ahmedabad,Gujarat,India,382230,1
+134,Ellisbridge,Ahmedabad,Gujarat,India,380006,1
+135,Endla,Ahmedabad,Gujarat,India,382130,1
+136,Fangadi,Ahmedabad,Gujarat,India,382110,1
+137,Fatehwadi,Ahmedabad,Gujarat,India,380055,1
+138,Fatepur,Ahmedabad,Gujarat,India,382465,1
+139,Fatewadi,Ahmedabad,Gujarat,India,382210,1
+140,Fedra,Ahmedabad,Gujarat,India,382465,1
+141,Frizpur,Ahmedabad,Gujarat,India,382240,1
+142,Galsana,Ahmedabad,Gujarat,India,382245,1
+143,Gamanpura,Ahmedabad,Gujarat,India,382120,1
+144,Gamdi,Ahmedabad,Gujarat,India,382435,1
+145,Gamph,Ahmedabad,Gujarat,India,382465,1
+146,Gandhi Ashram,Ahmedabad,Gujarat,India,380027,1
+147,Gandhi Road,Ahmedabad,Gujarat,India,380001,1
+148,Gandhinagar Highway,Ahmedabad,Gujarat,India,382421,1
+149,Gangad,Ahmedabad,Gujarat,India,382240,1
+150,Ganol,Ahmedabad,Gujarat,India,382265,1
+151,Garodia,Ahmedabad,Gujarat,India,382115,1
+152,Gatrad,Ahmedabad,Gujarat,India,382449,1
+153,Geratpur,Ahmedabad,Gujarat,India,382435,1
+154,Ghatisana,Ahmedabad,Gujarat,India,382140,1
+155,Ghatlodia,Ahmedabad,Gujarat,India,380061,1
+156,Gheekanta Road,Ahmedabad,Gujarat,India,380001,1
+157,Ghoda,Ahmedabad,Gujarat,India,382150,1
+158,Ghodasar,Ahmedabad,Gujarat,India,380050,1
+159,Ghuma,Ahmedabad,Gujarat,India,380058,1
+160,Girdharnagar,Ahmedabad,Gujarat,India,380004,1
+161,Girmatha,Ahmedabad,Gujarat,India,382425,1
+162,Gita Mandir,Ahmedabad,Gujarat,India,380022,1
+163,Gita Mandir Road,Ahmedabad,Gujarat,India,380022,1
+164,Godhavata,Ahmedabad,Gujarat,India,382255,1
+165,Godhavi,Ahmedabad,Gujarat,India,382115,1
+166,Gogla,Ahmedabad,Gujarat,India,382463,1
+167,Gomtipur,Ahmedabad,Gujarat,India,380021,1
+168,Goraiya,Ahmedabad,Gujarat,India,382150,1
+169,Goraj,Ahmedabad,Gujarat,India,382110,1
+170,Gorasu,Ahmedabad,Gujarat,India,382463,1
+171,Gota,Ahmedabad,Gujarat,India,382481,1
+172,Gujarat University,Ahmedabad,Gujarat,India,380009,1
+173,Gunda,Ahmedabad,Gujarat,India,382255,1
+174,Gundi Sarvodaya Ashram,Ahmedabad,Gujarat,India,382230,1
+175,Gunjala,Ahmedabad,Gujarat,India,382120,1
+176,Gunjar,Ahmedabad,Gujarat,India,382460,1
+177,Gurukul,Ahmedabad,Gujarat,India,380052,1
+178,Gyaspur,Ahmedabad,Gujarat,India,382405,1
+179,Hansalpur,Ahmedabad,Gujarat,India,382150,1
+180,Hansol,Ahmedabad,Gujarat,India,382475,1
+181,Harniav,Ahmedabad,Gujarat,India,382435,1
+182,Hathijan,Ahmedabad,Gujarat,India,382445,1
+183,Hebatpur,Ahmedabad,Gujarat,India,382430,1
+184,Hirapur,Ahmedabad,Gujarat,India,382435,1
+185,Hirapura,Ahmedabad,Gujarat,India,382150,1
+186,I E Bapunagar,Ahmedabad,Gujarat,India,380024,1
+187,I I M,Ahmedabad,Gujarat,India,380015,1
+188,Iawa Vasna,Ahmedabad,Gujarat,India,382170,1
+189,Ingoli,Ahmedabad,Gujarat,India,382265,1
+190,Isanpur,Ahmedabad,Gujarat,India,382443,1
+191,Isanpur Mota,Ahmedabad,Gujarat,India,382443,1
+192,Jagatpur,Ahmedabad,Gujarat,India,382470,1
+193,Jakhada,Ahmedabad,Gujarat,India,382230,1
+194,Jakwada,Ahmedabad,Gujarat,India,382150,1
+195,Jalalpur Vajifa,Ahmedabad,Gujarat,India,382225,1
+196,Jalampur,Ahmedabad,Gujarat,India,382150,1
+197,Jalila,Ahmedabad,Gujarat,India,382255,1
+198,Jalisana,Ahmedabad,Gujarat,India,382120,1
+199,Jaliya,Ahmedabad,Gujarat,India,382460,1
+200,Jamalpur,Ahmedabad,Gujarat,India,380001,1
+201,Jamp,Ahmedabad,Gujarat,India,382110,1
+202,Jantanagar,Ahmedabad,Gujarat,India,382449,1
+203,Jawahar Chowk,Ahmedabad,Gujarat,India,380008,1
+204,Jawaraj,Ahmedabad,Gujarat,India,382230,1
+205,Jeska,Ahmedabad,Gujarat,India,382250,1
+206,Jetalpur,Ahmedabad,Gujarat,India,382426,1
+207,Jholapur,Ahmedabad,Gujarat,India,382170,1
+208,Jivraj Park,Ahmedabad,Gujarat,India,380051,1
+209,Jodhpur,Ahmedabad,Gujarat,India,380015,1
+210,Jodhpur Char Rasta,Ahmedabad,Gujarat,India,380015,1
+211,Joshipura,Ahmedabad,Gujarat,India,382150,1
+212,Juhapura,Ahmedabad,Gujarat,India,380055,1
+213,Junapadhar,Ahmedabad,Gujarat,India,382150,1
+214,Juval,Ahmedabad,Gujarat,India,382220,1
+215,Juval Rupavati,Ahmedabad,Gujarat,India,382220,1
+216,Kabir Chowk,Ahmedabad,Gujarat,India,380005,1
+217,Kadipur,Ahmedabad,Gujarat,India,382463,1
+218,Kadvasan,Ahmedabad,Gujarat,India,382130,1
+219,Kalana,Ahmedabad,Gujarat,India,382170,1
+220,Kali,Ahmedabad,Gujarat,India,382470,1
+221,Kalupur,Ahmedabad,Gujarat,India,380001,1
+222,Kalupur Chakla,Ahmedabad,Gujarat,India,380001,1
+223,Kalyangadh,Ahmedabad,Gujarat,India,382240,1
+224,Kamiala,Ahmedabad,Gujarat,India,382465,1
+225,Kamijala,Ahmedabad,Gujarat,India,382150,1
+226,Kanbha,Ahmedabad,Gujarat,India,382430,1
+227,Kaneti,Ahmedabad,Gujarat,India,382110,1
+228,Kaniyel,Ahmedabad,Gujarat,India,382433,1
+229,Kankaria,Ahmedabad,Gujarat,India,380022,1
+230,Kankravadi,Ahmedabad,Gujarat,India,382150,1
+231,Kanz,Ahmedabad,Gujarat,India,382140,1
+232,Karakthal,Ahmedabad,Gujarat,India,382150,1
+233,Kasindra,Ahmedabad,Gujarat,India,382210,1
+234,Kasindra,Ahmedabad,Gujarat,India,382465,1
+235,Kathwada,Ahmedabad,Gujarat,India,382430,1
+236,Kathwada Maize Product,Ahmedabad,Gujarat,India,382430,1
+237,Katosan Road,Ahmedabad,Gujarat,India,382145,1
+238,Kauka,Ahmedabad,Gujarat,India,382265,1
+239,Kavitha,Ahmedabad,Gujarat,India,382260,1
+240,Kelia Vasna,Ahmedabad,Gujarat,India,382225,1
+241,Kerala,Ahmedabad,Gujarat,India,382220,1
+242,Keria,Ahmedabad,Gujarat,India,382245,1
+243,Kesardi,Ahmedabad,Gujarat,India,382240,1
+244,Khadia,Ahmedabad,Gujarat,India,380001,1
+245,Khadol,Ahmedabad,Gujarat,India,382460,1
+246,Khambhada,Ahmedabad,Gujarat,India,382450,1
+247,Khamidana,Ahmedabad,Gujarat,India,382450,1
+248,Khandachora Dhandhuka,Ahmedabad,Gujarat,India,382460,1
+249,Khanpur,Ahmedabad,Gujarat,India,380001,1
+250,Kharad,Ahmedabad,Gujarat,India,382460,1
+251,Kharakuva Dholka,Ahmedabad,Gujarat,India,382225,1
+252,Khas,Ahmedabad,Gujarat,India,382255,1
+253,Khasta,Ahmedabad,Gujarat,India,382460,1
+254,Khoda,Ahmedabad,Gujarat,India,382170,1
+255,Khodiyar,Ahmedabad,Gujarat,India,382421,1
+256,Khodiyarnagar,Ahmedabad,Gujarat,India,382350,1
+257,Khokarnesh,Ahmedabad,Gujarat,India,382245,1
+258,Khokhara Mehmadabad,Ahmedabad,Gujarat,India,380008,1
+259,Khorajnanoda,Ahmedabad,Gujarat,India,382170,1
+260,Khudad,Ahmedabad,Gujarat,India,382150,1
+261,Khun,Ahmedabad,Gujarat,India,382455,1
+262,Kocharia,Ahmedabad,Gujarat,India,382220,1
+263,Kointia,Ahmedabad,Gujarat,India,382140,1
+264,Kokta,Ahmedabad,Gujarat,India,382150,1
+265,Kolat,Ahmedabad,Gujarat,India,382210,1
+266,Kotda,Ahmedabad,Gujarat,India,382445,1
+267,Koth,Ahmedabad,Gujarat,India,382240,1
+268,Kothadia,Ahmedabad,Gujarat,India,382460,1
+269,Krishnanagar,Ahmedabad,Gujarat,India,382345,1
+270,Kubadthal,Ahmedabad,Gujarat,India,382430,1
+271,Kubernagar,Ahmedabad,Gujarat,India,382340,1
+272,Kubernagar B A,Ahmedabad,Gujarat,India,382340,1
+273,Kuha,Ahmedabad,Gujarat,India,382433,1
+274,Kujad,Ahmedabad,Gujarat,India,382430,1
+275,Kukvav,Ahmedabad,Gujarat,India,382120,1
+276,Kumarkhan,Ahmedabad,Gujarat,India,382150,1
+277,Kundal,Ahmedabad,Gujarat,India,382450,1
+278,Kundal,Ahmedabad,Gujarat,India,382110,1
+279,Kundli,Ahmedabad,Gujarat,India,382245,1
+280,Kunpur,Ahmedabad,Gujarat,India,382130,1
+281,Kunvar,Ahmedabad,Gujarat,India,382110,1
+282,L G Hospital,Ahmedabad,Gujarat,India,380008,1
+283,Lal Darwaja,Ahmedabad,Gujarat,India,380001,1
+284,Lambha,Ahmedabad,Gujarat,India,382405,1
+285,Lapkaman,Ahmedabad,Gujarat,India,382210,1
+286,Limbadia,Ahmedabad,Gujarat,India,382330,1
+287,Loliya,Ahmedabad,Gujarat,India,382465,1
+288,Lothal,Ahmedabad,Gujarat,India,382230,1
+289,Lothal Bhurkhi RS,Ahmedabad,Gujarat,India,382230,1
+290,M D Marg,Ahmedabad,Gujarat,India,380022,1
+291,Madhupura Market,Ahmedabad,Gujarat,India,380004,1
+292,Madrisana,Ahmedabad,Gujarat,India,382145,1
+293,Mahijada,Ahmedabad,Gujarat,India,382425,1
+294,Makarba,Ahmedabad,Gujarat,India,380051,1
+295,Makhiav,Ahmedabad,Gujarat,India,382110,1
+296,Mandal,Ahmedabad,Gujarat,India,382130,1
+297,Mandvi,Ahmedabad,Gujarat,India,382430,1
+298,Manek Chowk,Ahmedabad,Gujarat,India,380001,1
+299,Manekbag,Ahmedabad,Gujarat,India,380015,1
+300,Maninagar,Ahmedabad,Gujarat,India,380008,1
+301,Manipur,Ahmedabad,Gujarat,India,382150,1
+302,Mankol,Ahmedabad,Gujarat,India,382110,1
+303,Marusana,Ahmedabad,Gujarat,India,382120,1
+304,Matoda,Ahmedabad,Gujarat,India,382213,1
+305,Medra,Ahmedabad,Gujarat,India,382330,1
+306,Meghani Nagar,Ahmedabad,Gujarat,India,380016,1
+307,Meghaningar,Ahmedabad,Gujarat,India,380016,1
+308,Melaj,Ahmedabad,Gujarat,India,382150,1
+309,Memnagar,Ahmedabad,Gujarat,India,380052,1
+310,Mingalpur,Ahmedabad,Gujarat,India,382455,1
+311,Miroli,Ahmedabad,Gujarat,India,382425,1
+312,Mirzapur,Ahmedabad,Gujarat,India,380001,1
+313,Mithapur,Ahmedabad,Gujarat,India,382230,1
+314,Modasar,Ahmedabad,Gujarat,India,382220,1
+315,Moraiya,Ahmedabad,Gujarat,India,382213,1
+316,Mota Tradia,Ahmedabad,Gujarat,India,382460,1
+317,Motera,Ahmedabad,Gujarat,India,380005,1
+318,Moti Boru,Ahmedabad,Gujarat,India,382230,1
+319,Moti Kishol,Ahmedabad,Gujarat,India,382110,1
+320,Moti Rantai,Ahmedabad,Gujarat,India,382145,1
+321,Moti Vavdi,Ahmedabad,Gujarat,India,382255,1
+322,Muktipur,Ahmedabad,Gujarat,India,382425,1
+323,Municipal Corporation,Ahmedabad,Gujarat,India,380001,1
+324,N C Market,Ahmedabad,Gujarat,India,380002,1
+325,N C Mills,Ahmedabad,Gujarat,India,382345,1
+326,Nadishala,Ahmedabad,Gujarat,India,382120,1
+327,Nana Chiloda,Ahmedabad,Gujarat,India,382330,1
+328,Nana Ubhada,Ahmedabad,Gujarat,India,382130,1
+329,Nandej,Ahmedabad,Gujarat,India,382435,1
+330,Nani Boru,Ahmedabad,Gujarat,India,382230,1
+331,Nani Devti,Ahmedabad,Gujarat,India,382220,1
+332,Nani Vavdi,Ahmedabad,Gujarat,India,382245,1
+333,Nanodara,Ahmedabad,Gujarat,India,382220,1
+334,Naranpura,Ahmedabad,Gujarat,India,380013,1
+335,Naranpura Vistar,Ahmedabad,Gujarat,India,380013,1
+336,Narayannagar,Ahmedabad,Gujarat,India,380007,1
+337,Naroda,Ahmedabad,Gujarat,India,382330,1
+338,Naroda GIDC,Ahmedabad,Gujarat,India,382330,1
+339,Naroda I E,Ahmedabad,Gujarat,India,382330,1
+340,Naroda Road,Ahmedabad,Gujarat,India,382345,1
+341,Naroda S A,Ahmedabad,Gujarat,India,382330,1
+342,Narol,Ahmedabad,Gujarat,India,382405,1
+343,Nava Naroda,Ahmedabad,Gujarat,India,382330,1
+344,Nava Vadaj,Ahmedabad,Gujarat,India,380013,1
+345,Navagam,Ahmedabad,Gujarat,India,382130,1
+346,Navapura,Ahmedabad,Gujarat,India,382210,1
+347,Navda,Ahmedabad,Gujarat,India,382450,1
+348,Navi Ranip,Ahmedabad,Gujarat,India,382480,1
+349,Navjivan,Ahmedabad,Gujarat,India,380014,1
+350,Navrangpura,Ahmedabad,Gujarat,India,380009,1
+351,Nayakpur,Ahmedabad,Gujarat,India,382130,1
+352,Nedharad,Ahmedabad,Gujarat,India,382115,1
+353,Nesda,Ahmedabad,Gujarat,India,382225,1
+354,Nikol,Ahmedabad,Gujarat,India,382350,1
+355,Nirnaynagar,Ahmedabad,Gujarat,India,382481,1
+356,Noblenagar,Ahmedabad,Gujarat,India,382340,1
+357,O N G C,Ahmedabad,Gujarat,India,380005,1
+358,Ode,Ahmedabad,Gujarat,India,382427,1
+359,Odhav,Ahmedabad,Gujarat,India,382415,1
+360,Odhav GIDC,Ahmedabad,Gujarat,India,382415,1
+361,Odhav Industrial Estate,Ahmedabad,Gujarat,India,382415,1
+362,Ogan,Ahmedabad,Gujarat,India,382150,1
+363,Ognaj,Ahmedabad,Gujarat,India,380060,1
+364,Otaria,Ahmedabad,Gujarat,India,382463,1
+365,Otaria Sarvodaya Ashram,Ahmedabad,Gujarat,India,382463,1
+366,Padana,Ahmedabad,Gujarat,India,382460,1
+367,Paldi,Ahmedabad,Gujarat,India,380007,1
+368,Paldi Kankaj,Ahmedabad,Gujarat,India,382425,1
+369,Panar,Ahmedabad,Gujarat,India,382140,1
+370,Panchham,Ahmedabad,Gujarat,India,382465,1
+371,Panchhi,Ahmedabad,Gujarat,India,382455,1
+372,Pandharpura,Ahmedabad,Gujarat,India,382140,1
+373,Parabadi,Ahmedabad,Gujarat,India,382250,1
+374,Pardhol,Ahmedabad,Gujarat,India,382330,1
+375,Pasunj,Ahmedabad,Gujarat,India,382430,1
+376,Pimpan,Ahmedabad,Gujarat,India,382110,1
+377,Piplaj,Ahmedabad,Gujarat,India,382315,1
+378,Pipli,Ahmedabad,Gujarat,India,382465,1
+379,Pirana,Ahmedabad,Gujarat,India,382405,1
+380,Pisawada,Ahmedabad,Gujarat,India,382265,1
+381,Polarpur,Ahmedabad,Gujarat,India,382250,1
+382,Polytechnic,Ahmedabad,Gujarat,India,380015,1
+383,Prahlad Nagar,Ahmedabad,Gujarat,India,380015,1
+384,Public Office,Ahmedabad,Gujarat,India,380016,1
+385,Rahemalpur,Ahmedabad,Gujarat,India,382150,1
+386,Raikhad,Ahmedabad,Gujarat,India,380001,1
+387,Railway Colony,Ahmedabad,Gujarat,India,380019,1
+388,Railwaypura,Ahmedabad,Gujarat,India,380002,1
+389,Raipur,Ahmedabad,Gujarat,India,380001,1
+390,Rajoda,Ahmedabad,Gujarat,India,382220,1
+391,Rajpur Gomtipur,Ahmedabad,Gujarat,India,380021,1
+392,Rajpura,Ahmedabad,Gujarat,India,382245,1
+393,Rakhial,Ahmedabad,Gujarat,India,380023,1
+394,Rakhial Udyog Vistar,Ahmedabad,Gujarat,India,380023,1
+395,Rakhiana,Ahmedabad,Gujarat,India,382130,1
+396,Ramol,Ahmedabad,Gujarat,India,382449,1
+397,Rampur,Ahmedabad,Gujarat,India,382225,1
+398,Rampura,Ahmedabad,Gujarat,India,382450,1
+399,Rampura,Ahmedabad,Gujarat,India,382140,1
+400,Ranesar,Ahmedabad,Gujarat,India,382220,1
+401,Rangpur,Ahmedabad,Gujarat,India,382150,1
+402,Ranip,Ahmedabad,Gujarat,India,382480,1
+403,Ranoda,Ahmedabad,Gujarat,India,382225,1
+404,Ranodra,Ahmedabad,Gujarat,India,382433,1
+405,Ranpur,Ahmedabad,Gujarat,India,382245,1
+406,Rasam,Ahmedabad,Gujarat,India,382220,1
+407,Rayka,Ahmedabad,Gujarat,India,382460,1
+408,Raysan,Ahmedabad,Gujarat,India,382421,1
+409,Refda,Ahmedabad,Gujarat,India,382255,1
+410,Rethal,Ahmedabad,Gujarat,India,382110,1
+411,Revdibazar,Ahmedabad,Gujarat,India,380002,1
+412,Ribadi,Ahmedabad,Gujarat,India,382130,1
+413,Rohika,Ahmedabad,Gujarat,India,382230,1
+414,Rojid,Ahmedabad,Gujarat,India,382450,1
+415,Rojka,Ahmedabad,Gujarat,India,382460,1
+416,Ropda,Ahmedabad,Gujarat,India,382230,1
+417,Rudatal,Ahmedabad,Gujarat,India,382120,1
+418,Rupal,Ahmedabad,Gujarat,India,382220,1
+419,Rupgadh,Ahmedabad,Gujarat,India,382240,1
+420,S A C,Ahmedabad,Gujarat,India,380015,1
+421,S A Mills,Ahmedabad,Gujarat,India,380008,1
+422,Sabarmati,Ahmedabad,Gujarat,India,380005,1
+423,Sachana,Ahmedabad,Gujarat,India,382150,1
+424,Sadatpura,Ahmedabad,Gujarat,India,382120,1
+425,Sahij,Ahmedabad,Gujarat,India,382225,1
+426,Saijpur,Ahmedabad,Gujarat,India,382405,1
+427,Saijpur Bogha,Ahmedabad,Gujarat,India,382345,1
+428,Saiwada,Ahmedabad,Gujarat,India,382225,1
+429,Salajada,Ahmedabad,Gujarat,India,382220,1
+430,Salangpur Hanuman,Ahmedabad,Gujarat,India,382450,1
+431,Salasar,Ahmedabad,Gujarat,India,382460,1
+432,Sanand,Ahmedabad,Gujarat,India,382110,1
+433,Sanathal,Ahmedabad,Gujarat,India,382210,1
+434,Sandhida,Ahmedabad,Gujarat,India,382455,1
+435,Sangasar,Ahmedabad,Gujarat,India,382463,1
+436,Sangpura,Ahmedabad,Gujarat,India,382120,1
+437,Sankod,Ahmedabad,Gujarat,India,382220,1
+438,Sarandi,Ahmedabad,Gujarat,India,382225,1
+439,Saraspur,Ahmedabad,Gujarat,India,380018,1
+440,Sardarnagar,Ahmedabad,Gujarat,India,382475,1
+441,Sargwala,Ahmedabad,Gujarat,India,382230,1
+442,Sari,Ahmedabad,Gujarat,India,382220,1
+443,Sarkhej,Ahmedabad,Gujarat,India,382210,1
+444,Sarkhej GIDC,Ahmedabad,Gujarat,India,382210,1
+445,Sarkhej Road,Ahmedabad,Gujarat,India,380007,1
+446,Saroda,Ahmedabad,Gujarat,India,382260,1
+447,Sarsavadi,Ahmedabad,Gujarat,India,382150,1
+448,Satellite,Ahmedabad,Gujarat,India,380015,1
+449,Sathal,Ahmedabad,Gujarat,India,382225,1
+450,Science City,Ahmedabad,Gujarat,India,380060,1
+451,Shah Alam Roza,Ahmedabad,Gujarat,India,380028,1
+452,Shahibag,Ahmedabad,Gujarat,India,380004,1
+453,Shahibaug,Ahmedabad,Gujarat,India,380004,1
+454,Shahpur,Ahmedabad,Gujarat,India,382150,1
+455,Shahpur,Ahmedabad,Gujarat,India,382250,1
+456,Shahpur Ahmedabad,Ahmedabad,Gujarat,India,380004,1
+457,Shahwadi,Ahmedabad,Gujarat,India,382405,1
+458,Shardanagar,Ahmedabad,Gujarat,India,380007,1
+459,Shastrinagar Ahmedabad,Ahmedabad,Gujarat,India,380013,1
+460,Shela,Ahmedabad,Gujarat,India,380058,1
+461,Sher,Ahmedabad,Gujarat,India,382130,1
+462,Sherpura,Ahmedabad,Gujarat,India,382225,1
+463,Shilaj,Ahmedabad,Gujarat,India,380059,1
+464,Shivpura,Ahmedabad,Gujarat,India,382140,1
+465,Shivranjani,Ahmedabad,Gujarat,India,382455,1
+466,Shiyal,Ahmedabad,Gujarat,India,382230,1
+467,Siawada,Ahmedabad,Gujarat,India,382170,1
+468,Sihor,Ahmedabad,Gujarat,India,382140,1
+469,Simej,Ahmedabad,Gujarat,India,382265,1
+470,Sinaj,Ahmedabad,Gujarat,India,382120,1
+471,Sindharej,Ahmedabad,Gujarat,India,382225,1
+472,Sitapur,Ahmedabad,Gujarat,India,382130,1
+473,Sobhasan,Ahmedabad,Gujarat,India,382145,1
+474,Sodhi,Ahmedabad,Gujarat,India,382463,1
+475,Sola,Ahmedabad,Gujarat,India,380061,1
+476,Sola H B C,Ahmedabad,Gujarat,India,380063,1
+477,Solgam,Ahmedabad,Gujarat,India,382130,1
+478,South Bopal,Ahmedabad,Gujarat,India,380058,1
+479,Stadium Marg,Ahmedabad,Gujarat,India,380013,1
+480,Sub Foreign,Ahmedabad,Gujarat,India,380004,1
+481,Sukhrampura,Ahmedabad,Gujarat,India,380023,1
+482,Sunderiana,Ahmedabad,Gujarat,India,382255,1
+483,Sunvala,Ahmedabad,Gujarat,India,382145,1
+484,T B Nagar,Ahmedabad,Gujarat,India,382350,1
+485,Tagadi,Ahmedabad,Gujarat,India,382250,1
+486,Telav,Ahmedabad,Gujarat,India,382210,1
+487,Telavi,Ahmedabad,Gujarat,India,382145,1
+488,Thakkarbapa Nagar,Ahmedabad,Gujarat,India,380027,1
+489,Thaltej,Ahmedabad,Gujarat,India,380059,1
+490,Thaltej Ext,Ahmedabad,Gujarat,India,380059,1
+491,Thaltej Road,Ahmedabad,Gujarat,India,380054,1
+492,Thori Mubarak,Ahmedabad,Gujarat,India,382150,1
+493,Thori Thumbha,Ahmedabad,Gujarat,India,382150,1
+494,Thuleta,Ahmedabad,Gujarat,India,382150,1
+495,Timba,Ahmedabad,Gujarat,India,382425,1
+496,Tragad,Ahmedabad,Gujarat,India,382470,1
+497,Transad,Ahmedabad,Gujarat,India,382225,1
+498,Trent,Ahmedabad,Gujarat,India,382150,1
+499,Ughroj,Ahmedabad,Gujarat,India,382120,1
+500,Ukardi,Ahmedabad,Gujarat,India,382140,1
+501,Ukhlod,Ahmedabad,Gujarat,India,382150,1
+502,Umrela,Ahmedabad,Gujarat,India,382245,1
+503,Unchadi,Ahmedabad,Gujarat,India,382250,1
+504,Undrel,Ahmedabad,Gujarat,India,382433,1
+505,Upardal,Ahmedabad,Gujarat,India,382110,1
+506,Utelia,Ahmedabad,Gujarat,India,382230,1
+507,Vadaj,Ahmedabad,Gujarat,India,380013,1
+508,Vadgas,Ahmedabad,Gujarat,India,382150,1
+509,Vadhela,Ahmedabad,Gujarat,India,382450,1
+510,Vadod,Ahmedabad,Gujarat,India,382433,1
+511,Vagad,Ahmedabad,Gujarat,India,382245,1
+512,Valdhera,Ahmedabad,Gujarat,India,382225,1
+513,Valhia,Ahmedabad,Gujarat,India,382450,1
+514,Valinda,Ahmedabad,Gujarat,India,382463,1
+515,Vanch,Ahmedabad,Gujarat,India,382449,1
+516,Vani,Ahmedabad,Gujarat,India,382150,1
+517,Vanpardi,Ahmedabad,Gujarat,India,382130,1
+518,Vansva,Ahmedabad,Gujarat,India,382150,1
+519,Vanthal,Ahmedabad,Gujarat,India,382150,1
+520,Varmor,Ahmedabad,Gujarat,India,382130,1
+521,Varna,Ahmedabad,Gujarat,India,382265,1
+522,Vasai,Ahmedabad,Gujarat,India,382425,1
+523,Vasisthnagar,Ahmedabad,Gujarat,India,380008,1
+524,Vasna,Ahmedabad,Gujarat,India,382460,1
+525,Vasna Chacharvadi,Ahmedabad,Gujarat,India,382213,1
+526,Vasna Iawa,Ahmedabad,Gujarat,India,382170,1
+527,Vastral,Ahmedabad,Gujarat,India,382418,1
+528,Vastrapur,Ahmedabad,Gujarat,India,380015,1
+529,Vataman,Ahmedabad,Gujarat,India,382265,1
+530,Vatva,Ahmedabad,Gujarat,India,382440,1
+531,Vatva GIDC,Ahmedabad,Gujarat,India,382445,1
+532,Vatva Industrial Estate,Ahmedabad,Gujarat,India,382445,1
+533,Vautha,Ahmedabad,Gujarat,India,382225,1
+534,Vehlal,Ahmedabad,Gujarat,India,382330,1
+535,Vejalka,Ahmedabad,Gujarat,India,382230,1
+536,Vejalpur,Ahmedabad,Gujarat,India,380051,1
+537,Vekaria,Ahmedabad,Gujarat,India,382110,1
+538,Vinchhan,Ahmedabad,Gujarat,India,382120,1
+539,Vinchhiya,Ahmedabad,Gujarat,India,382110,1
+540,Vinzol,Ahmedabad,Gujarat,India,382445,1
+541,Vinzuvada,Ahmedabad,Gujarat,India,382130,1
+542,Viramgam,Ahmedabad,Gujarat,India,382150,1
+543,Virdi,Ahmedabad,Gujarat,India,382265,1
+544,Virochannagar,Ahmedabad,Gujarat,India,382170,1
+545,Vishalpur,Ahmedabad,Gujarat,India,382210,1
+546,Vithlpura,Ahmedabad,Gujarat,India,382120,1
+547,VivekanandNagar,Ahmedabad,Gujarat,India,382445,1
+548,Waghodia,Ahmedabad,Gujarat,India,382355,1
+549,Zanu,Ahmedabad,Gujarat,India,382430,1
+550,Zanzarka,Ahmedabad,Gujarat,India,382460,1
+551,Zanzarva,Ahmedabad,Gujarat,India,382120,1
+552,Zezra,Ahmedabad,Gujarat,India,382150,1
+553,Zinzar,Ahmedabad,Gujarat,India,382250,1
+554,Zundal,Ahmedabad,Gujarat,India,382213,1
+555,Charania,Rajkot,Gujarat,India,365480,1
+556,Ajmer,Rajkot,Gujarat,India,360055,1
+557,Akala,Rajkot,Gujarat,India,360360,1
+558,Amarnagar Rajkot,Rajkot,Gujarat,India,364485,1
+559,Ambardi,Rajkot,Gujarat,India,360311,1
+560,Amrapar,Rajkot,Gujarat,India,360490,1
+561,Amrapar,Rajkot,Gujarat,India,360055,1
+562,Anida Bhalodi,Rajkot,Gujarat,India,360311,1
+563,Anida Vachhra,Rajkot,Gujarat,India,360070,1
+564,Ardoi,Rajkot,Gujarat,India,360030,1
+565,Arni,Rajkot,Gujarat,India,360450,1
+566,Atkot,Rajkot,Gujarat,India,360040,1
+567,Bakhalvad,Rajkot,Gujarat,India,360050,1
+568,Bandhiya,Rajkot,Gujarat,India,360330,1
+569,Bandra,Rajkot,Gujarat,India,360330,1
+570,Baradiya,Rajkot,Gujarat,India,360452,1
+571,Bava Pipaliya,Rajkot,Gujarat,India,360360,1
+572,Bhadajalia,Rajkot,Gujarat,India,360421,1
+573,Bhadala,Rajkot,Gujarat,India,360050,1
+574,Bhader,Rajkot,Gujarat,India,360410,1
+575,Bhadra,Rajkot,Gujarat,India,360405,1
+576,Bhadva,Rajkot,Gujarat,India,360030,1
+577,Bhankh,Rajkot,Gujarat,India,360490,1
+578,Bhayavadar,Rajkot,Gujarat,India,360450,1
+579,Bhimora,Rajkot,Gujarat,India,360490,1
+580,Bhola,Rajkot,Gujarat,India,360410,1
+581,Bhukhi,Rajkot,Gujarat,India,360410,1
+582,Bhunava,Rajkot,Gujarat,India,360311,1
+583,Bildi,Rajkot,Gujarat,India,364490,1
+584,Biliyala,Rajkot,Gujarat,India,360311,1
+585,Boria,Rajkot,Gujarat,India,360405,1
+586,Champabeda,Rajkot,Gujarat,India,360070,1
+587,Champrajpur,Rajkot,Gujarat,India,360370,1
+588,Chandli,Rajkot,Gujarat,India,360035,1
+589,Charakhadi,Rajkot,Gujarat,India,360311,1
+590,Charel,Rajkot,Gujarat,India,360452,1
+591,Chavandi,Rajkot,Gujarat,India,360452,1
+592,Chhadvavadar,Rajkot,Gujarat,India,360410,1
+593,Chhasiya,Rajkot,Gujarat,India,360055,1
+594,Chhatrasa,Rajkot,Gujarat,India,360410,1
+595,Chibhda,Rajkot,Gujarat,India,360035,1
+596,Chichod,Rajkot,Gujarat,India,360430,1
+597,Chikhaliya,Rajkot,Gujarat,India,360410,1
+598,Chitravad,Rajkot,Gujarat,India,360452,1
+599,Chordi,Rajkot,Gujarat,India,360311,1
+600,Dadar,Rajkot,Gujarat,India,360452,1
+601,Dadva Mota,Rajkot,Gujarat,India,360311,1
+602,Dadvi,Rajkot,Gujarat,India,360405,1
+603,Daiya,Rajkot,Gujarat,India,360311,1
+604,Dalia,Rajkot,Gujarat,India,360070,1
+605,Dedarva,Rajkot,Gujarat,India,360360,1
+606,Derdi,Rajkot,Gujarat,India,360370,1
+607,Derdi Kumbaji,Rajkot,Gujarat,India,364465,1
+608,Devchadi,Rajkot,Gujarat,India,360330,1
+609,Devdhari,Rajkot,Gujarat,India,360055,1
+610,Devki Galol,Rajkot,Gujarat,India,360370,1
+611,Devla,Rajkot,Gujarat,India,364485,1
+612,Dhank,Rajkot,Gujarat,India,360460,1
+613,Dholidhar,Rajkot,Gujarat,India,360405,1
+614,Dhoraji D.G. ND T.S.O,Rajkot,Gujarat,India,360410,1
+615,Dhoraji G.P. ND.T.S.O,Rajkot,Gujarat,India,360410,1
+616,Dhoraji,Rajkot,Gujarat,India,360410,1
+617,Dhoraji S.R. ND.T.S.O,Rajkot,Gujarat,India,360410,1
+618,Dhudasiya,Rajkot,Gujarat,India,364470,1
+619,Dodiyala,Rajkot,Gujarat,India,364490,1
+620,Dudhivadar,Rajkot,Gujarat,India,360410,1
+621,Dumiyani,Rajkot,Gujarat,India,360440,1
+622,Fareni,Rajkot,Gujarat,India,360370,1
+623,Gadhadia,Rajkot,Gujarat,India,360050,1
+624,Garnara,Rajkot,Gujarat,India,360311,1
+625,Ghela Somnath,Rajkot,Gujarat,India,360050,1
+626,Ghoghavadar,Rajkot,Gujarat,India,360311,1
+627,Gokhlana,Rajkot,Gujarat,India,360050,1
+628,Gomta,Rajkot,Gujarat,India,360320,1
+629,Gondal Bhagvatpara,Rajkot,Gujarat,India,360311,1
+630,Gondal Bhojrajpara,Rajkot,Gujarat,India,360311,1
+631,Gondal Bhuvneshwari Pith,Rajkot,Gujarat,India,360311,1
+632,Gondal College Chowk,Rajkot,Gujarat,India,360311,1
+633,Gondal,Rajkot,Gujarat,India,360311,1
+634,Gondal Market Yard,Rajkot,Gujarat,India,360311,1
+635,Gundala Jas,Rajkot,Gujarat,India,360055,1
+636,Gundasara,Rajkot,Gujarat,India,360311,1
+637,Gundasari,Rajkot,Gujarat,India,360452,1
+638,Hadamtala Kolithad,Rajkot,Gujarat,India,360311,1
+639,Hadamtala Shemla,Rajkot,Gujarat,India,360311,1
+640,Hariyasan,Rajkot,Gujarat,India,360480,1
+641,Hathasani,Rajkot,Gujarat,India,360055,1
+642,Ishavariya,Rajkot,Gujarat,India,360040,1
+643,Ishra,Rajkot,Gujarat,India,360490,1
+644,Jambudi,Rajkot,Gujarat,India,360370,1
+645,Jamkandorna,Rajkot,Gujarat,India,360405,1
+646,Jamnavad,Rajkot,Gujarat,India,360410,1
+647,Jamvadi,Rajkot,Gujarat,India,360311,1
+648,Jangvad,Rajkot,Gujarat,India,360040,1
+649,Jasapar,Rajkot,Gujarat,India,360040,1
+650,Jasdan,Rajkot,Gujarat,India,360050,1
+651,Jetalsar Gam,Rajkot,Gujarat,India,360360,1
+652,Jetalsar Jn.,Rajkot,Gujarat,India,360360,1
+653,Jetpur F.W. ND T.S.O,Rajkot,Gujarat,India,360370,1
+654,Jetpur K.B. ND T.S.O,Rajkot,Gujarat,India,360370,1
+655,Jetpur,Rajkot,Gujarat,India,360370,1
+656,Jivapar,Rajkot,Gujarat,India,360040,1
+657,Juna Pipaliya,Rajkot,Gujarat,India,364490,1
+658,Juni Sankli,Rajkot,Gujarat,India,360360,1
+659,Kaduka,Rajkot,Gujarat,India,360050,1
+660,Kagvad,Rajkot,Gujarat,India,360380,1
+661,Kalana,Rajkot,Gujarat,India,360410,1
+662,Kalariya,Rajkot,Gujarat,India,360490,1
+663,Kalasar,Rajkot,Gujarat,India,360050,1
+664,Kamar Kotda,Rajkot,Gujarat,India,360330,1
+665,Kanpar,Rajkot,Gujarat,India,360040,1
+666,Kerali,Rajkot,Gujarat,India,360370,1
+667,Khadvanthali,Rajkot,Gujarat,India,360311,1
+668,Khajurda,Rajkot,Gujarat,India,360440,1
+669,Khakhijaliya,Rajkot,Gujarat,India,360490,1
+670,Khambha,Rajkot,Gujarat,India,360311,1
+671,Khandadhar,Rajkot,Gujarat,India,360311,1
+672,Khandhevadia,Rajkot,Gujarat,India,360055,1
+673,Kharachiya,Rajkot,Gujarat,India,360370,1
+674,Kharachiya,Rajkot,Gujarat,India,360470,1
+675,Khareda,Rajkot,Gujarat,India,360030,1
+676,Khatli,Rajkot,Gujarat,India,360452,1
+677,Khirasara,Rajkot,Gujarat,India,364485,1
+678,Khirsara Ghed,Rajkot,Gujarat,India,360450,1
+679,Kolithad,Rajkot,Gujarat,India,360311,1
+680,Kolki Rajkot,Rajkot,Gujarat,India,360470,1
+681,Kotda Sangani,Rajkot,Gujarat,India,360030,1
+682,Kotha Pipalia,Rajkot,Gujarat,India,360035,1
+683,Lakhavad Moti,Rajkot,Gujarat,India,360055,1
+684,Lath,Rajkot,Gujarat,India,360490,1
+685,Lilapur,Rajkot,Gujarat,India,360050,1
+686,Lodhika,Rajkot,Gujarat,India,360035,1
+687,Lunivav,Rajkot,Gujarat,India,360311,1
+688,Mandan Kundla,Rajkot,Gujarat,India,360330,1
+689,Mandlikpur,Rajkot,Gujarat,India,360370,1
+690,Manekwada,Rajkot,Gujarat,India,360030,1
+691,Meghpar,Rajkot,Gujarat,India,364490,1
+692,Mekha Timbi,Rajkot,Gujarat,India,360470,1
+693,Mengni,Rajkot,Gujarat,India,360070,1
+694,Mervadar,Rajkot,Gujarat,India,360490,1
+695,Meta Khambhaliya,Rajkot,Gujarat,India,364465,1
+696,Mevasa,Rajkot,Gujarat,India,360370,1
+697,Modhuka,Rajkot,Gujarat,India,360055,1
+698,Mojira,Rajkot,Gujarat,India,360490,1
+699,Mota Gundala,Rajkot,Gujarat,India,360370,1
+700,Mota Mandva,Rajkot,Gujarat,India,360311,1
+701,Moti Khilori,Rajkot,Gujarat,India,364465,1
+702,Moti Marad,Rajkot,Gujarat,India,360421,1
+703,Moti Parabadi,Rajkot,Gujarat,India,360360,1
+704,Moti Vavdi,Rajkot,Gujarat,India,360440,1
+705,Moviya,Rajkot,Gujarat,India,360330,1
+706,Nagalkhada,Rajkot,Gujarat,India,360410,1
+707,Nagvadar,Rajkot,Gujarat,India,360490,1
+708,Nana Mandva,Rajkot,Gujarat,India,360311,1
+709,Nani Parabadi,Rajkot,Gujarat,India,360360,1
+710,Nani Vavdi,Rajkot,Gujarat,India,360440,1
+711,Nava Matravad,Rajkot,Gujarat,India,360450,1
+712,Navagadh,Rajkot,Gujarat,India,360375,1
+713,Navagam,Rajkot,Gujarat,India,360320,1
+714,Nilakha,Rajkot,Gujarat,India,360490,1
+715,Nonghanchora,Rajkot,Gujarat,India,360070,1
+716,Padavla,Rajkot,Gujarat,India,360480,1
+717,Panch Pipla,Rajkot,Gujarat,India,360370,1
+718,Panchavda,Rajkot,Gujarat,India,360040,1
+719,Paneli,Rajkot,Gujarat,India,360480,1
+720,Patanvav,Rajkot,Gujarat,India,360430,1
+721,Patidad,Rajkot,Gujarat,India,360311,1
+722,Pedhla,Rajkot,Gujarat,India,360370,1
+723,Pipaliya,Rajkot,Gujarat,India,360410,1
+724,PipaliyaSadak,Rajkot,Gujarat,India,360311,1
+725,Pipalva,Rajkot,Gujarat,India,360360,1
+726,Pipardi,Rajkot,Gujarat,India,360405,1
+727,Pipardi,Rajkot,Gujarat,India,360055,1
+728,Pithadia,Rajkot,Gujarat,India,360370,1
+729,Pransla,Rajkot,Gujarat,India,360490,1
+730,Premgadh,Rajkot,Gujarat,India,360370,1
+731,Rabarika,Rajkot,Gujarat,India,360370,1
+732,Rabarika,Rajkot,Gujarat,India,360470,1
+733,Raidi,Rajkot,Gujarat,India,360410,1
+734,Rajapara,Rajkot,Gujarat,India,360030,1
+735,Ramod,Rajkot,Gujarat,India,360311,1
+736,Ravna,Rajkot,Gujarat,India,364490,1
+737,Reshamdi Galol,Rajkot,Gujarat,India,360370,1
+738,Rib,Rajkot,Gujarat,India,360311,1
+739,Ribda,Rajkot,Gujarat,India,360311,1
+740,Roghel,Rajkot,Gujarat,India,360410,1
+741,Rupavati,Rajkot,Gujarat,India,360360,1
+742,Sajadiyali,Rajkot,Gujarat,India,360405,1
+743,Sajadiyali,Rajkot,Gujarat,India,360450,1
+744,Samadhiyala,Rajkot,Gujarat,India,360370,1
+745,Samadhiyala,Rajkot,Gujarat,India,360490,1
+746,Sanali,Rajkot,Gujarat,India,360055,1
+747,Sanathali,Rajkot,Gujarat,India,364490,1
+748,Sandhvaya,Rajkot,Gujarat,India,360311,1
+749,Sanganva,Rajkot,Gujarat,India,360035,1
+750,Sardharpur,Rajkot,Gujarat,India,360375,1
+751,Satapar,Rajkot,Gujarat,India,360330,1
+752,Satodad,Rajkot,Gujarat,India,360405,1
+753,Semla,Rajkot,Gujarat,India,360311,1
+754,Shishak,Rajkot,Gujarat,India,360330,1
+755,Shivrajgadh,Rajkot,Gujarat,India,360311,1
+756,Shivrajpur,Rajkot,Gujarat,India,360050,1
+757,Shrinathgadh,Rajkot,Gujarat,India,360330,1
+758,Sodvadar,Rajkot,Gujarat,India,360440,1
+759,Sultanpur Rajkot,Rajkot,Gujarat,India,364470,1
+760,Supedi,Rajkot,Gujarat,India,360440,1
+761,Talagana,Rajkot,Gujarat,India,360490,1
+762,Tanasva,Rajkot,Gujarat,India,360490,1
+763,Thana Galol,Rajkot,Gujarat,India,360370,1
+764,Timbdi Arab,Rajkot,Gujarat,India,360360,1
+765,Timbdi Jam,Rajkot,Gujarat,India,360450,1
+766,Torania,Rajkot,Gujarat,India,360360,1
+767,Trakuda,Rajkot,Gujarat,India,360311,1
+768,Umrali,Rajkot,Gujarat,India,360311,1
+769,Upleta Lati Plot,Rajkot,Gujarat,India,360490,1
+770,Upleta ND T.S.O,Rajkot,Gujarat,India,360490,1
+771,Vachhra,Rajkot,Gujarat,India,360311,1
+772,Vadala,Rajkot,Gujarat,India,360490,1
+773,Vadali,Rajkot,Gujarat,India,360450,1
+774,Vadasada,Rajkot,Gujarat,India,364485,1
+775,Vadod,Rajkot,Gujarat,India,360050,1
+776,Vadodar,Rajkot,Gujarat,India,360410,1
+777,Vangadhra,Rajkot,Gujarat,India,360055,1
+778,Varjang Jalia,Rajkot,Gujarat,India,360490,1
+779,Vasavad,Rajkot,Gujarat,India,364490,1
+780,Vavdi,Rajkot,Gujarat,India,360405,1
+781,Vavdi Station,Rajkot,Gujarat,India,364485,1
+782,Vekri,Rajkot,Gujarat,India,360311,1
+783,Vinchhiya,Rajkot,Gujarat,India,360055,1
+784,Vinzivad,Rajkot,Gujarat,India,364470,1
+785,Virpur,Rajkot,Gujarat,India,360380,1
+786,Vora Kotda,Rajkot,Gujarat,India,360311,1
+787,Zanzmer,Rajkot,Gujarat,India,360440,1
+788,Zundala,Rajkot,Gujarat,India,364490,1
+789,Adbalka,Rajkot,Gujarat,India,360110,1
+790,Amarpara Wankaner,Rajkot,Gujarat,India,363621,1
+791,Anandpar Navagam,Rajkot,Gujarat,India,360003,1
+792,AnandparMorbi,Rajkot,Gujarat,India,360003,1
+793,Arnitimba,Rajkot,Gujarat,India,363621,1
+794,Bagathala,Rajkot,Gujarat,India,363641,1
+795,Baldhoi,Rajkot,Gujarat,India,360060,1
+796,Bangavadi,Rajkot,Gujarat,India,363650,1
+797,Barvala,Rajkot,Gujarat,India,363641,1
+798,Bedi Tankara,Rajkot,Gujarat,India,363650,1
+799,BediRajkot,Rajkot,Gujarat,India,360003,1
+800,Bedla,Rajkot,Gujarat,India,360025,1
+801,Bhadiyad,Rajkot,Gujarat,India,363642,1
+802,Bhalgam,Rajkot,Gujarat,India,363621,1
+803,Bhandaria,Rajkot,Gujarat,India,360025,1
+804,Bhavpar,Rajkot,Gujarat,India,363660,1
+805,Bherda,Rajkot,Gujarat,India,363621,1
+806,Bhimguda,Rajkot,Gujarat,India,363621,1
+807,Bhupgadh,Rajkot,Gujarat,India,360025,1
+808,Biliya,Rajkot,Gujarat,India,363641,1
+809,Bodki,Rajkot,Gujarat,India,363660,1
+810,Bogharavadar,Rajkot,Gujarat,India,360025,1
+811,Chachapar,Rajkot,Gujarat,India,363641,1
+812,Chandrapur,Rajkot,Gujarat,India,363621,1
+813,Dahisara,Rajkot,Gujarat,India,360025,1
+814,Dahisara Rajkot,Rajkot,Gujarat,India,363660,1
+815,Daldi,Rajkot,Gujarat,India,363621,1
+816,Derala,Rajkot,Gujarat,India,363660,1
+817,Devgam,Rajkot,Gujarat,India,360021,1
+818,Dholara,Rajkot,Gujarat,India,360022,1
+819,Dhulia Domda,Rajkot,Gujarat,India,360021,1
+820,Dhuva,Rajkot,Gujarat,India,363621,1
+821,Dungarka,Rajkot,Gujarat,India,360110,1
+822,Gadhaka,Rajkot,Gujarat,India,360020,1
+823,Gadhdiya,Rajkot,Gujarat,India,360025,1
+824,Gala,Rajkot,Gujarat,India,363630,1
+825,Gariya,Rajkot,Gujarat,India,363621,1
+826,Gauridad,Rajkot,Gujarat,India,360003,1
+827,Ghiyavad,Rajkot,Gujarat,India,363621,1
+828,Ghunda S,Rajkot,Gujarat,India,363641,1
+829,Ghunda Khanpar,Rajkot,Gujarat,India,363641,1
+830,Ghuntu,Rajkot,Gujarat,India,363641,1
+831,Gungan,Rajkot,Gujarat,India,363642,1
+832,Hadmatia,Rajkot,Gujarat,India,360025,1
+833,Hadmatiya,Rajkot,Gujarat,India,363641,1
+834,Hadmatiya,Rajkot,Gujarat,India,360110,1
+835,Halenda,Rajkot,Gujarat,India,360025,1
+836,Harbatiyali,Rajkot,Gujarat,India,363650,1
+837,Haripar,Rajkot,Gujarat,India,363630,1
+838,Haripar,Rajkot,Gujarat,India,360025,1
+839,Hirapar,Rajkot,Gujarat,India,363650,1
+840,Ishwariya,Rajkot,Gujarat,India,360110,1
+841,Jabalpur,Rajkot,Gujarat,India,363650,1
+842,Jajasar,Rajkot,Gujarat,India,363670,1
+843,Jalida,Rajkot,Gujarat,India,363621,1
+844,JaliyaDhrol,Rajkot,Gujarat,India,360003,1
+845,Jambudiya,Rajkot,Gujarat,India,363642,1
+846,Jetpar M,Rajkot,Gujarat,India,363630,1
+847,Jivapar,Rajkot,Gujarat,India,363650,1
+848,Jivaparc,Rajkot,Gujarat,India,363630,1
+849,Jodjpar Nadi,Rajkot,Gujarat,India,363642,1
+850,Juna Ghantila,Rajkot,Gujarat,India,363630,1
+851,Juna Nagdavas,Rajkot,Gujarat,India,363670,1
+852,Juna Rajpipala,Rajkot,Gujarat,India,360025,1
+853,Kagadadi,Rajkot,Gujarat,India,360003,1
+854,Kamalapur,Rajkot,Gujarat,India,360025,1
+855,Kanesara,Rajkot,Gujarat,India,360060,1
+856,Kankot,Rajkot,Gujarat,India,360005,1
+857,Kankot,Rajkot,Gujarat,India,363621,1
+858,Kasturbadham,Rajkot,Gujarat,India,360020,1
+859,Kerala,Rajkot,Gujarat,India,363621,1
+860,Khajurdi,Rajkot,Gujarat,India,360110,1
+861,Khakhdabela,Rajkot,Gujarat,India,360110,1
+862,Khakhrala,Rajkot,Gujarat,India,363641,1
+863,Khakhrechi,Rajkot,Gujarat,India,363630,1
+864,Khambhala,Rajkot,Gujarat,India,360110,1
+865,Khamta,Rajkot,Gujarat,India,360110,1
+866,Khandheri,Rajkot,Gujarat,India,360110,1
+867,Khanpar,Rajkot,Gujarat,India,363641,1
+868,KharchiyaJam,Rajkot,Gujarat,India,360060,1
+869,Kharechiya,Rajkot,Gujarat,India,360025,1
+870,Kherda,Rajkot,Gujarat,India,363641,1
+871,Kherdi,Rajkot,Gujarat,India,360002,1
+872,Kherva,Rajkot,Gujarat,India,363621,1
+873,Khevaliya,Rajkot,Gujarat,India,363641,1
+874,Khijadia,Rajkot,Gujarat,India,363621,1
+875,Khirai,Rajkot,Gujarat,India,363670,1
+876,Khirsara,Rajkot,Gujarat,India,360021,1
+877,Khodapipar,Rajkot,Gujarat,India,360110,1
+878,Khokhaddad,Rajkot,Gujarat,India,360022,1
+879,Khorana,Rajkot,Gujarat,India,360003,1
+880,Kotda Nayani,Rajkot,Gujarat,India,360003,1
+881,Kotharia,Rajkot,Gujarat,India,363621,1
+882,KOTHARIA Rajkot,Rajkot,Gujarat,India,360022,1
+883,KothariaTankara,Rajkot,Gujarat,India,363650,1
+884,KothariaTB Hosp,Rajkot,Gujarat,India,360022,1
+885,Kothi,Rajkot,Gujarat,India,360060,1
+886,Kothi,Rajkot,Gujarat,India,363621,1
+887,Kuchiyadad,Rajkot,Gujarat,India,360023,1
+888,Kumbhariya,Rajkot,Gujarat,India,363630,1
+889,Kundani,Rajkot,Gujarat,India,360060,1
+890,Kuntasi,Rajkot,Gujarat,India,363660,1
+891,KUVADAVA,Rajkot,Gujarat,India,360023,1
+892,Lajai,Rajkot,Gujarat,India,363641,1
+893,LakhavadNani,Rajkot,Gujarat,India,360060,1
+894,Lalpar,Rajkot,Gujarat,India,363642,1
+895,Lavanpur,Rajkot,Gujarat,India,363660,1
+896,Lilapar,Rajkot,Gujarat,India,363641,1
+897,Lunsar,Rajkot,Gujarat,India,363621,1
+898,Lunsariya,Rajkot,Gujarat,India,363621,1
+899,Madhapar,Rajkot,Gujarat,India,360006,1
+900,Magharvada,Rajkot,Gujarat,India,360023,1
+901,Mahendranagar,Rajkot,Gujarat,India,363642,1
+902,Mahika,Rajkot,Gujarat,India,360002,1
+903,Mahika,Rajkot,Gujarat,India,363621,1
+904,Makansar,Rajkot,Gujarat,India,363642,1
+905,Maliya Miyana,Rajkot,Gujarat,India,363670,1
+906,Maliyasan,Rajkot,Gujarat,India,360003,1
+907,Manekwada,Rajkot,Gujarat,India,363641,1
+908,Matel,Rajkot,Gujarat,India,363621,1
+909,Mavdi,Rajkot,Gujarat,India,360004,1
+910,Meghpar Zala,Rajkot,Gujarat,India,363650,1
+911,Mesariya,Rajkot,Gujarat,India,363621,1
+912,Mesavada,Rajkot,Gujarat,India,360023,1
+913,Mitana,Rajkot,Gujarat,India,363650,1
+914,Morbi GIDC,Rajkot,Gujarat,India,363641,1
+915,Morbi MDG,Rajkot,Gujarat,India,363641,1
+916,Morbi Nani Bazar,Rajkot,Gujarat,India,363641,1
+917,Morbi Ppw,Rajkot,Gujarat,India,363642,1
+918,Morbi Shakti Plot,Rajkot,Gujarat,India,363641,1
+919,Mota Bhela,Rajkot,Gujarat,India,363660,1
+920,Mota Khijadia,Rajkot,Gujarat,India,363650,1
+921,Mota Mava,Rajkot,Gujarat,India,360005,1
+922,Mota Vada,Rajkot,Gujarat,India,360021,1
+923,Motakhijadia,Rajkot,Gujarat,India,360110,1
+924,Motibarar,Rajkot,Gujarat,India,363670,1
+925,Motichanol,Rajkot,Gujarat,India,360110,1
+926,Nagar Pipaliya,Rajkot,Gujarat,India,360021,1
+927,Nana Khijadia,Rajkot,Gujarat,India,360110,1
+928,Nani Barar,Rajkot,Gujarat,India,363670,1
+929,Nani Vavdi,Rajkot,Gujarat,India,363641,1
+930,Nasitpar,Rajkot,Gujarat,India,363641,1
+931,Navagam,Rajkot,Gujarat,India,363670,1
+932,Neknam,Rajkot,Gujarat,India,363650,1
+933,Nesda K,Rajkot,Gujarat,India,363641,1
+934,Nichimandal,Rajkot,Gujarat,India,363641,1
+935,Otala,Rajkot,Gujarat,India,363650,1
+936,Padasan,Rajkot,Gujarat,India,360020,1
+937,Paddhara,Rajkot,Gujarat,India,363621,1
+938,Paddhari,Rajkot,Gujarat,India,360110,1
+939,Pal,Rajkot,Gujarat,India,360004,1
+940,Panchasar,Rajkot,Gujarat,India,363641,1
+941,Panchasia,Rajkot,Gujarat,India,363621,1
+942,Panchdwarka,Rajkot,Gujarat,India,363621,1
+943,Paneli,Rajkot,Gujarat,India,363642,1
+944,Para Pipaliya,Rajkot,Gujarat,India,360006,1
+945,Pardi,Rajkot,Gujarat,India,360024,1
+946,Pipaliya,Rajkot,Gujarat,India,363660,1
+947,Pipaliya Raj,Rajkot,Gujarat,India,363621,1
+948,PipaliyaA,Rajkot,Gujarat,India,360003,1
+949,Pipli,Rajkot,Gujarat,India,363642,1
+950,Rafala,Rajkot,Gujarat,India,360023,1
+951,Rafaleshwar,Rajkot,Gujarat,India,363642,1
+952,Raiya,Rajkot,Gujarat,India,360005,1
+953,Rajavadala,Rajkot,Gujarat,India,363621,1
+954,Rajkot Raiya Road,Rajkot,Gujarat,India,360007,1
+955,Rajkot Aji Ind Estate,Rajkot,Gujarat,India,360003,1
+956,Rajkot Bedipara,Rajkot,Gujarat,India,360003,1
+957,Rajkot Bhaktinagar,Rajkot,Gujarat,India,360002,1
+958,Rajkot Bhomeshwar Plot,Rajkot,Gujarat,India,360006,1
+959,Rajkot City,Rajkot,Gujarat,India,360001,1
+960,Rajkot Collectorate,Rajkot,Gujarat,India,360001,1
+961,Rajkot D H College,Rajkot,Gujarat,India,360001,1
+962,Rajkot,Rajkot,Gujarat,India,360001,1
+963,Rajkot Jairaj Plot,Rajkot,Gujarat,India,360001,1
+964,Rajkot Jn. Plot,Rajkot,Gujarat,India,360001,1
+965,Rajkot Kalavad Road,Rajkot,Gujarat,India,360001,1
+966,Rajkot Malviyanagar,Rajkot,Gujarat,India,360004,1
+967,Rajkot Manahar Plot,Rajkot,Gujarat,India,360002,1
+968,Rajkot Mandvi Chowk,Rajkot,Gujarat,India,360001,1
+969,Rajkot Marketing Yard,Rajkot,Gujarat,India,360003,1
+970,Rajkot Metoda Gidc,Rajkot,Gujarat,India,360021,1
+971,Rajkot Millpara,Rajkot,Gujarat,India,360002,1
+972,Rajkot Mochi Bazar,Rajkot,Gujarat,India,360001,1
+973,Rajkot Municipal Corporation,Rajkot,Gujarat,India,360001,1
+974,Rajkot New Jagnath Plot,Rajkot,Gujarat,India,360001,1
+975,Rajkot Parsi Agiyari Chowk,Rajkot,Gujarat,India,360001,1
+976,Rajkot Popatpara,Rajkot,Gujarat,India,360001,1
+977,Rajkot Postal Colony,Rajkot,Gujarat,India,360004,1
+978,Rajkot Race Course Road,Rajkot,Gujarat,India,360001,1
+979,Rajkot Sau Uni Area,Rajkot,Gujarat,India,360005,1
+980,Rajkot Sorathiawadi,Rajkot,Gujarat,India,360002,1
+981,Rajkot Udyognagar,Rajkot,Gujarat,India,360002,1
+982,Rajkot Vivekanandnagar,Rajkot,Gujarat,India,360002,1
+983,Rajpar,Rajkot,Gujarat,India,363641,1
+984,Rampar Mota,Rajkot,Gujarat,India,360110,1
+985,Rampar Pati,Rajkot,Gujarat,India,360110,1
+986,Ranekpar,Rajkot,Gujarat,India,363621,1
+987,Rangpar Bela,Rajkot,Gujarat,India,363641,1
+988,Rangpar,Rajkot,Gujarat,India,363641,1
+989,Ratidevdi,Rajkot,Gujarat,India,363621,1
+990,RavaparNadi,Rajkot,Gujarat,India,363642,1
+991,Ravki,Rajkot,Gujarat,India,360004,1
+992,Rohishala,Rajkot,Gujarat,India,363650,1
+993,Rupavati,Rajkot,Gujarat,India,360110,1
+994,Sadulkanava,Rajkot,Gujarat,India,363642,1
+995,Sajanpar,Rajkot,Gujarat,India,363641,1
+996,Sal Pipalia,Rajkot,Gujarat,India,360110,1
+997,Samadhiyala,Rajkot,Gujarat,India,363621,1
+998,Samadhiyala,Rajkot,Gujarat,India,360020,1
+999,Sanosara,Rajkot,Gujarat,India,360003,1
+1000,Sapar,Rajkot,Gujarat,India,363630,1
+1001,Sarapdad,Rajkot,Gujarat,India,360110,1
+1002,Saravad,Rajkot,Gujarat,India,363660,1
+1003,Sardhar,Rajkot,Gujarat,India,360025,1
+1004,Sardharka,Rajkot,Gujarat,India,363621,1
+1005,Savadi,Rajkot,Gujarat,India,363650,1
+1006,Shakat Sanala,Rajkot,Gujarat,India,363641,1
+1007,Shapar Halar,Rajkot,Gujarat,India,360024,1
+1008,Shri Sardanagar,Rajkot,Gujarat,India,363641,1
+1009,Sindhavadar,Rajkot,Gujarat,India,363621,1
+1010,Sokhda,Rajkot,Gujarat,India,363670,1
+1011,SRPF Gr XIII Ghanteshwar,Rajkot,Gujarat,India,360006,1
+1012,Sultanpur,Rajkot,Gujarat,India,363630,1
+1013,Suvag,Rajkot,Gujarat,India,360110,1
+1014,Tankara,Rajkot,Gujarat,India,363650,1
+1015,Tarakiya,Rajkot,Gujarat,India,363621,1
+1016,Targhadi,Rajkot,Gujarat,India,363660,1
+1017,Targhadia,Rajkot,Gujarat,India,360023,1
+1018,Targhari,Rajkot,Gujarat,India,360110,1
+1019,Thorala,Rajkot,Gujarat,India,363641,1
+1020,Thoriyali,Rajkot,Gujarat,India,360110,1
+1021,Tithva,Rajkot,Gujarat,India,363621,1
+1022,Ukarda,Rajkot,Gujarat,India,360110,1
+1023,Umrali,Rajkot,Gujarat,India,360025,1
+1024,Unchi Mandal,Rajkot,Gujarat,India,363641,1
+1025,Vachhakapar,Rajkot,Gujarat,India,363650,1
+1026,Vadali,Rajkot,Gujarat,India,360020,1
+1027,Vadharva,Rajkot,Gujarat,India,363670,1
+1028,Vaghasiya,Rajkot,Gujarat,India,363621,1
+1029,Vaghpar,Rajkot,Gujarat,India,363630,1
+1030,Valasan,Rajkot,Gujarat,India,363621,1
+1031,Vankada,Rajkot,Gujarat,India,363641,1
+1032,Vardusar,Rajkot,Gujarat,India,363621,1
+1033,Varsamedi,Rajkot,Gujarat,India,363660,1
+1034,Vavania,Rajkot,Gujarat,India,363660,1
+1035,Vavdi,Rajkot,Gujarat,India,360004,1
+1036,Vejalpar,Rajkot,Gujarat,India,363630,1
+1037,Venasar,Rajkot,Gujarat,India,363630,1
+1038,Veraval Shapar,Rajkot,Gujarat,India,360024,1
+1039,Virnagar,Rajkot,Gujarat,India,360060,1
+1040,Virpar M,Rajkot,Gujarat,India,363641,1
+1041,Virparda,Rajkot,Gujarat,India,363660,1
+1042,Virvadrka,Rajkot,Gujarat,India,363670,1
+1043,Virvav,Rajkot,Gujarat,India,363650,1
+1044,Visaman,Rajkot,Gujarat,India,360110,1
+1045,Wankaner,Rajkot,Gujarat,India,363621,1
+1046,Zilariya,Rajkot,Gujarat,India,360110,1
+1047,Zinkiyali,Rajkot,Gujarat,India,363641,1
+1048,Ziyana,Rajkot,Gujarat,India,360023,1
+1049,Abrama,Surat,Gujarat,India,394150,1
+1050,Afva Isroli,Surat,Gujarat,India,394620,1
+1051,Agasvan,Surat,Gujarat,India,394651,1
+1052,Akoti,Surat,Gujarat,India,394355,1
+1053,Algat,Surat,Gujarat,India,394246,1
+1054,Allu,Surat,Gujarat,India,394620,1
+1055,Amalgundi,Surat,Gujarat,India,394365,1
+1056,Amalsadi,Surat,Gujarat,India,394350,1
+1057,Amalsadi,Surat,Gujarat,India,394163,1
+1058,Amba,Surat,Gujarat,India,394163,1
+1059,Ambach,Surat,Gujarat,India,394641,1
+1060,Ambheti,Surat,Gujarat,India,394352,1
+1061,Ambia,Surat,Gujarat,India,394633,1
+1062,Amchak,Surat,Gujarat,India,394250,1
+1063,Amoda,Surat,Gujarat,India,394380,1
+1064,Anaval,Surat,Gujarat,India,396510,1
+1065,Andhatri,Surat,Gujarat,India,394630,1
+1066,Antapur,Surat,Gujarat,India,394635,1
+1067,Antroli,Surat,Gujarat,India,394150,1
+1068,Antroli,Surat,Gujarat,India,394325,1
+1069,Antroli,Surat,Gujarat,India,394170,1
+1070,Areth,Surat,Gujarat,India,394170,1
+1071,Asta,Surat,Gujarat,India,394320,1
+1072,Babarghat,Surat,Gujarat,India,394375,1
+1073,Bagumara,Surat,Gujarat,India,394305,1
+1074,Bahedaraipura,Surat,Gujarat,India,394630,1
+1075,Bajipura,Surat,Gujarat,India,394690,1
+1076,Balda,Surat,Gujarat,India,394340,1
+1077,Baleshwar,Surat,Gujarat,India,394317,1
+1078,Balpur,Surat,Gujarat,India,394655,1
+1079,Bamni,Surat,Gujarat,India,394335,1
+1080,Barasado,Surat,Gujarat,India,394310,1
+1081,Bardipada,Surat,Gujarat,India,394635,1
+1082,Bardipada,Surat,Gujarat,India,394715,1
+1083,Bardoli,Surat,Gujarat,India,394601,1
+1084,Bartad,Surat,Gujarat,India,394240,1
+1085,Bedchit,Surat,Gujarat,India,394630,1
+1086,Bedkuva,Surat,Gujarat,India,394340,1
+1087,Bedkuvadoor,Surat,Gujarat,India,394360,1
+1088,Bedkuvanajik,Surat,Gujarat,India,394650,1
+1089,Bhadbhunja,Surat,Gujarat,India,394375,1
+1090,Bhagvanpura,Surat,Gujarat,India,394246,1
+1091,Bhalkhet,Surat,Gujarat,India,394715,1
+1092,Bhamaiya,Surat,Gujarat,India,394335,1
+1093,Bhatwada,Surat,Gujarat,India,394680,1
+1094,Bhimpor,Surat,Gujarat,India,394640,1
+1095,Bhitkhurd,Surat,Gujarat,India,394375,1
+1096,Bhljamboli,Surat,Gujarat,India,394370,1
+1097,Bhojpur Najik,Surat,Gujarat,India,394690,1
+1098,Bhoria,Surat,Gujarat,India,394248,1
+1099,Bhutwada,Surat,Gujarat,India,394690,1
+1100,Bilkhadi,Surat,Gujarat,India,394250,1
+1101,Bodhan Surat,Surat,Gujarat,India,394140,1
+1102,Borkhadi,Surat,Gujarat,India,394690,1
+1103,Borsavar,Surat,Gujarat,India,394670,1
+1104,Bortha,Surat,Gujarat,India,394370,1
+1105,Butwada,Surat,Gujarat,India,394248,1
+1106,Centrap Pulp Mill,Surat,Gujarat,India,394660,1
+1107,Chalthan,Surat,Gujarat,India,394305,1
+1108,Champavadi,Surat,Gujarat,India,394650,1
+1109,Chhapti,Surat,Gujarat,India,394375,1
+1110,Chhindia,Surat,Gujarat,India,394655,1
+1111,Chhitpur,Surat,Gujarat,India,394375,1
+1112,Chhitra,Surat,Gujarat,India,394350,1
+1113,Chikalda,Surat,Gujarat,India,394650,1
+1114,Chikhali Dungar,Surat,Gujarat,India,394320,1
+1115,Chikhali Khadka,Surat,Gujarat,India,394650,1
+1116,Chikhalvav,Surat,Gujarat,India,394650,1
+1117,Chikhlinani,Surat,Gujarat,India,394650,1
+1118,Chinchinagaontha,Surat,Gujarat,India,394715,1
+1119,Chirmati,Surat,Gujarat,India,394380,1
+1120,Chokhiamli,Surat,Gujarat,India,394380,1
+1121,Chorvad,Surat,Gujarat,India,394650,1
+1122,Chunavadi,Surat,Gujarat,India,394635,1
+1123,Dadaria,Surat,Gujarat,India,394630,1
+1124,Dadhwada,Surat,Gujarat,India,394160,1
+1125,Dastan,Surat,Gujarat,India,394310,1
+1126,Dedvasan,Surat,Gujarat,India,394250,1
+1127,Degama,Surat,Gujarat,India,394690,1
+1128,Delad,Surat,Gujarat,India,394330,1
+1129,Delvada,Surat,Gujarat,India,394620,1
+1130,Dhajamba,Surat,Gujarat,India,394670,1
+1131,Dhamdod Lumbha,Surat,Gujarat,India,394355,1
+1132,Dhamkhadi,Surat,Gujarat,India,394248,1
+1133,Dhamodi,Surat,Gujarat,India,394650,1
+1134,Dhamodla,Surat,Gujarat,India,394340,1
+1135,Dhanturi,Surat,Gujarat,India,394633,1
+1136,Dhat,Surat,Gujarat,India,394655,1
+1137,Dhatva,Surat,Gujarat,India,394180,1
+1138,Dholikui,Surat,Gujarat,India,394250,1
+1139,Dhoranpardi,Surat,Gujarat,India,394150,1
+1140,Digas,Surat,Gujarat,India,394330,1
+1141,Dolara,Surat,Gujarat,India,394655,1
+1142,Doswada,Surat,Gujarat,India,394365,1
+1143,Dungra,Surat,Gujarat,India,394180,1
+1144,Dungri,Surat,Gujarat,India,394240,1
+1145,Ena,Surat,Gujarat,India,394310,1
+1146,Fali,Surat,Gujarat,India,394163,1
+1147,Fort Songadh,Surat,Gujarat,India,394670,1
+1148,Fulwadi,Surat,Gujarat,India,394160,1
+1149,Galkuva,Surat,Gujarat,India,394650,1
+1150,Gamtalv Bujrang,Surat,Gujarat,India,394163,1
+1151,Gandhi Vidyapith,Surat,Gujarat,India,394641,1
+1152,Gangadhara RS,Surat,Gujarat,India,394310,1
+1153,Gangadia,Surat,Gujarat,India,396510,1
+1154,Gangtha,Surat,Gujarat,India,394380,1
+1155,Gavachhi,Surat,Gujarat,India,394140,1
+1156,Gavan,Surat,Gujarat,India,394375,1
+1157,Ghadoi,Surat,Gujarat,India,394245,1
+1158,Ghala,Surat,Gujarat,India,394155,1
+1159,Ghani,Surat,Gujarat,India,394630,1
+1160,Ghantoli,Surat,Gujarat,India,394160,1
+1161,Ghasiamedha,Surat,Gujarat,India,394360,1
+1162,Ghata,Surat,Gujarat,India,394651,1
+1163,Gherivan,Surat,Gujarat,India,394630,1
+1164,Ghoda,Surat,Gujarat,India,394670,1
+1165,Godawadi,Surat,Gujarat,India,394163,1
+1166,Goddha,Surat,Gujarat,India,394630,1
+1167,Goddha,Surat,Gujarat,India,394160,1
+1168,Godsamba,Surat,Gujarat,India,394163,1
+1169,Goji,Surat,Gujarat,India,394350,1
+1170,Gopalpura,Surat,Gujarat,India,394365,1
+1171,Gujarpur,Surat,Gujarat,India,394370,1
+1172,Gunesvel,Surat,Gujarat,India,394240,1
+1173,Gunkhadi,Surat,Gujarat,India,394365,1
+1174,Haladva,Surat,Gujarat,India,394248,1
+1175,Haldharu,Surat,Gujarat,India,394310,1
+1176,Haripur,Surat,Gujarat,India,394375,1
+1177,Haripura,Surat,Gujarat,India,394335,1
+1178,Hathoda,Surat,Gujarat,India,394380,1
+1179,Hatuka,Surat,Gujarat,India,394640,1
+1180,Hindla,Surat,Gujarat,India,394365,1
+1181,Hiravadi,Surat,Gujarat,India,394365,1
+1182,Italva,Surat,Gujarat,India,394315,1
+1183,Itwai,Surat,Gujarat,India,394380,1
+1184,Jakhala,Surat,Gujarat,India,394160,1
+1185,Jamania,Surat,Gujarat,India,394246,1
+1186,Jamankuva,Surat,Gujarat,India,394160,1
+1187,Jamkhadi,Surat,Gujarat,India,394365,1
+1188,Jesingpur,Surat,Gujarat,India,394633,1
+1189,Jokha,Surat,Gujarat,India,394326,1
+1190,Jolwa,Surat,Gujarat,India,394305,1
+1191,Kadhaiya,Surat,Gujarat,India,394246,1
+1192,Kadod,Surat,Gujarat,India,394335,1
+1193,Kadodara,Surat,Gujarat,India,394327,1
+1194,Kaher,Surat,Gujarat,India,394690,1
+1195,Kakadva,Surat,Gujarat,India,394635,1
+1196,Kakarapargam,Surat,Gujarat,India,394160,1
+1197,Kakrapar,Surat,Gujarat,India,394360,1
+1198,Kalakva,Surat,Gujarat,India,394630,1
+1199,Kalamkui,Surat,Gujarat,India,394635,1
+1200,Kalamkui,Surat,Gujarat,India,394340,1
+1201,Kalibel,Surat,Gujarat,India,394715,1
+1202,Kamlapore,Surat,Gujarat,India,394335,1
+1203,Kamrej Char Rasta,Surat,Gujarat,India,394185,1
+1204,Kamrej,Surat,Gujarat,India,394180,1
+1205,Kanav,Surat,Gujarat,India,394315,1
+1206,Kani,Surat,Gujarat,India,394350,1
+1207,Kanjan,Surat,Gujarat,India,394655,1
+1208,Kanjod,Surat,Gujarat,India,394640,1
+1209,Kankaria,Surat,Gujarat,India,394248,1
+1210,Kantifalia,Surat,Gujarat,India,394340,1
+1211,Karachka,Surat,Gujarat,India,394340,1
+1212,Karan,Surat,Gujarat,India,394305,1
+1213,Karanjkhed,Surat,Gujarat,India,394635,1
+1214,Karanjvel,Surat,Gujarat,India,394655,1
+1215,Karchelia,Surat,Gujarat,India,394240,1
+1216,Karjan,Surat,Gujarat,India,394155,1
+1217,Karod,Surat,Gujarat,India,394375,1
+1218,Karvali,Surat,Gujarat,India,394163,1
+1219,Kasal,Surat,Gujarat,India,394163,1
+1220,Kasvav,Surat,Gujarat,India,394633,1
+1221,Katasvan,Surat,Gujarat,India,394650,1
+1222,Kathodara,Surat,Gujarat,India,394326,1
+1223,Kathor,Surat,Gujarat,India,394150,1
+1224,Kelkui,Surat,Gujarat,India,394630,1
+1225,Khabda,Surat,Gujarat,India,394375,1
+1226,Khanjar,Surat,Gujarat,India,394365,1
+1227,Khanjroli,Surat,Gujarat,India,394335,1
+1228,Khanpur,Surat,Gujarat,India,394641,1
+1229,Khanpur,Surat,Gujarat,India,394320,1
+1230,Kharoli,Surat,Gujarat,India,394163,1
+1231,Kharvan,Surat,Gujarat,India,394245,1
+1232,Kharvasa,Surat,Gujarat,India,394355,1
+1233,Khatal,Surat,Gujarat,India,394715,1
+1234,Khodamba,Surat,Gujarat,India,394163,1
+1235,Khodtalav,Surat,Gujarat,India,394651,1
+1236,Khojpardi,Surat,Gujarat,India,394355,1
+1237,Kholeshwar,Surat,Gujarat,India,394180,1
+1238,Kholvad,Surat,Gujarat,India,394190,1
+1239,Khorda,Surat,Gujarat,India,394370,1
+1240,Khurdi,Surat,Gujarat,India,394655,1
+1241,Khushalpura,Surat,Gujarat,India,394650,1
+1242,Khutadia,Surat,Gujarat,India,394655,1
+1243,Kikakui,Surat,Gujarat,India,394650,1
+1244,Kikwad,Surat,Gujarat,India,394620,1
+1245,Kim Dungara,Surat,Gujarat,India,394160,1
+1246,Kodada,Surat,Gujarat,India,394250,1
+1247,Kolibharthana,Surat,Gujarat,India,394180,1
+1248,Kos,Surat,Gujarat,India,396510,1
+1249,Kosadi,Surat,Gujarat,India,394335,1
+1250,Kosimda,Surat,Gujarat,India,394715,1
+1251,Kosmadi,Surat,Gujarat,India,394326,1
+1252,Kulda,Surat,Gujarat,India,394375,1
+1253,Kumkotar,Surat,Gujarat,India,396510,1
+1254,Kumkuva,Surat,Gujarat,India,394670,1
+1255,Ladvi,Surat,Gujarat,India,394325,1
+1256,Lakhali,Surat,Gujarat,India,394655,1
+1257,Lakhanpur,Surat,Gujarat,India,394352,1
+1258,Lakhgam,Surat,Gujarat,India,394160,1
+1259,Lasanpor,Surat,Gujarat,India,396510,1
+1260,Laxmikheda,Surat,Gujarat,India,394370,1
+1261,Limberda,Surat,Gujarat,India,394651,1
+1262,Limbi,Surat,Gujarat,India,394680,1
+1263,Lotarva,Surat,Gujarat,India,394690,1
+1264,Madhi,Surat,Gujarat,India,394340,1
+1265,Magalia,Surat,Gujarat,India,394633,1
+1266,Magarbara,Surat,Gujarat,India,394375,1
+1267,Magarkui,Surat,Gujarat,India,394655,1
+1268,Mahuva Surat,Surat,Gujarat,India,394250,1
+1269,Mahuvaria,Surat,Gujarat,India,394248,1
+1270,Malangdev,Surat,Gujarat,India,394716,1
+1271,Malekpor,Surat,Gujarat,India,394315,1
+1272,Mandvi SR,Surat,Gujarat,India,394160,1
+1273,Manekpor,Surat,Gujarat,India,394340,1
+1274,Mankna,Surat,Gujarat,India,394325,1
+1275,Masad,Surat,Gujarat,India,394335,1
+1276,Mataval,Surat,Gujarat,India,394380,1
+1277,Mirkot,Surat,Gujarat,India,394670,1
+1278,Mirpur,Surat,Gujarat,India,394655,1
+1279,Miyapur,Surat,Gujarat,India,394250,1
+1280,Moghvan,Surat,Gujarat,India,394650,1
+1281,Mohni,Surat,Gujarat,India,394305,1
+1282,Moramba,Surat,Gujarat,India,394380,1
+1283,Mordevi,Surat,Gujarat,India,394250,1
+1284,Moritha,Surat,Gujarat,India,394160,1
+1285,Morthana,Surat,Gujarat,India,394325,1
+1286,Mota,Surat,Gujarat,India,394345,1
+1287,Mota Tarpada,Surat,Gujarat,India,394365,1
+1288,Moti Khervan,Surat,Gujarat,India,394670,1
+1289,Moticheir,Surat,Gujarat,India,394651,1
+1290,Motifalod,Surat,Gujarat,India,394355,1
+1291,Mubarakpur,Surat,Gujarat,India,394370,1
+1292,Munjlav,Surat,Gujarat,India,394140,1
+1293,Nagod,Surat,Gujarat,India,394320,1
+1294,Naldhara,Surat,Gujarat,India,394240,1
+1295,Nandpore,Surat,Gujarat,India,394163,1
+1296,Nansad,Surat,Gujarat,India,394180,1
+1297,Narayanpur,Surat,Gujarat,India,394375,1
+1298,Naren,Surat,Gujarat,India,394163,1
+1299,Naugama,Surat,Gujarat,India,394350,1
+1300,Navafalia,Surat,Gujarat,India,394640,1
+1301,Navagam,Surat,Gujarat,India,394185,1
+1302,Navipardi,Surat,Gujarat,India,394150,1
+1303,Netrang,Surat,Gujarat,India,394180,1
+1304,Nijhar,Surat,Gujarat,India,394370,1
+1305,Nimbhora,Surat,Gujarat,India,394380,1
+1306,Ninat,Surat,Gujarat,India,394350,1
+1307,Niol,Surat,Gujarat,India,394325,1
+1308,Nishana,Surat,Gujarat,India,394650,1
+1309,Nizar,Surat,Gujarat,India,394350,1
+1310,Nogama,Surat,Gujarat,India,394170,1
+1311,Orgam,Surat,Gujarat,India,394340,1
+1312,Orna,Surat,Gujarat,India,394330,1
+1313,Padamdungri,Surat,Gujarat,India,394635,1
+1314,Palawadi,Surat,Gujarat,India,394633,1
+1315,Palsana Surat,Surat,Gujarat,India,394315,1
+1316,Palsod,Surat,Gujarat,India,394355,1
+1317,Panchol,Surat,Gujarat,India,394635,1
+1318,Panchpipla,Surat,Gujarat,India,394360,1
+1319,Paniyari,Surat,Gujarat,India,394650,1
+1320,Parab,Surat,Gujarat,India,394325,1
+1321,Patal,Surat,Gujarat,India,394163,1
+1322,Pathakvadi,Surat,Gujarat,India,394635,1
+1323,Pathran,Surat,Gujarat,India,394620,1
+1324,Pati,Surat,Gujarat,India,394635,1
+1325,Pelad,Surat,Gujarat,India,394630,1
+1326,Phulwadi,Surat,Gujarat,India,394380,1
+1327,Pipaldahad,Surat,Gujarat,India,394716,1
+1328,Pipalkuva,Surat,Gujarat,India,394670,1
+1329,Piplod,Surat,Gujarat,India,394370,1
+1330,Pisavar,Surat,Gujarat,India,394380,1
+1331,Pithadara,Surat,Gujarat,India,394635,1
+1332,Puna,Surat,Gujarat,India,394163,1
+1333,Puna,Surat,Gujarat,India,394248,1
+1334,Puni,Surat,Gujarat,India,394352,1
+1335,Raigadh,Surat,Gujarat,India,394370,1
+1336,Ranat,Surat,Gujarat,India,394350,1
+1337,Raniamba,Surat,Gujarat,India,394655,1
+1338,Ranveri,Surat,Gujarat,India,394640,1
+1339,Ratania,Surat,Gujarat,India,394360,1
+1340,Rayam,Surat,Gujarat,India,394355,1
+1341,Regama,Surat,Gujarat,India,394160,1
+1342,Roswad,Surat,Gujarat,India,394170,1
+1343,Rumkitalav,Surat,Gujarat,India,394370,1
+1344,Rupan,Surat,Gujarat,India,394160,1
+1345,Rupvada,Surat,Gujarat,India,394690,1
+1346,Sadadvel,Surat,Gujarat,India,394365,1
+1347,Sadgavan,Surat,Gujarat,India,394380,1
+1348,Salaiya,Surat,Gujarat,India,394160,1
+1349,Samba,Surat,Gujarat,India,394248,1
+1350,Samrod,Surat,Gujarat,India,394315,1
+1351,Samthan,Surat,Gujarat,India,394335,1
+1352,Sankarda,Surat,Gujarat,India,394375,1
+1353,Sankli,Surat,Gujarat,India,394655,1
+1354,Sarbhon,Surat,Gujarat,India,394350,1
+1355,Sardarbaug Bardoli,Surat,Gujarat,India,394601,1
+1356,Sarkui,Surat,Gujarat,India,394160,1
+1357,Sarovar,Surat,Gujarat,India,394715,1
+1358,Sarvala,Surat,Gujarat,India,394370,1
+1359,Sathvav,Surat,Gujarat,India,394160,1
+1360,Sayla,Surat,Gujarat,India,394370,1
+1361,Segupada,Surat,Gujarat,India,394365,1
+1362,Segva,Surat,Gujarat,India,394320,1
+1363,Sejvad,Surat,Gujarat,India,394620,1
+1364,Selud,Surat,Gujarat,India,394375,1
+1365,Sevni,Surat,Gujarat,India,394320,1
+1366,Shampura,Surat,Gujarat,India,394330,1
+1367,Shekhpur,Surat,Gujarat,India,394250,1
+1368,Siker,Surat,Gujarat,India,394620,1
+1369,Singod,Surat,Gujarat,India,394335,1
+1370,Singpur,Surat,Gujarat,India,394670,1
+1371,Sisor,Surat,Gujarat,India,394651,1
+1372,Soyani,Surat,Gujarat,India,394310,1
+1373,Sugar Factory Bamania,Surat,Gujarat,India,394246,1
+1374,Sugar Factory Bardoli,Surat,Gujarat,India,394601,1
+1375,Sunderpur,Surat,Gujarat,India,394375,1
+1376,Surali,Surat,Gujarat,India,394340,1
+1377,Syadla,Surat,Gujarat,India,394340,1
+1378,Tadkeshwar,Surat,Gujarat,India,394170,1
+1379,Taparwada,Surat,Gujarat,India,394365,1
+1380,Taraj,Surat,Gujarat,India,394315,1
+1381,Tarbhon,Surat,Gujarat,India,394350,1
+1382,Tarsada,Surat,Gujarat,India,394160,1
+1383,Tarsadi,Surat,Gujarat,India,394350,1
+1384,Tatithaiya,Surat,Gujarat,India,394305,1
+1385,Thuti,Surat,Gujarat,India,394670,1
+1386,Timba,Surat,Gujarat,India,394330,1
+1387,Timbarva,Surat,Gujarat,India,394305,1
+1388,Timbarva Sankri,Surat,Gujarat,India,394355,1
+1389,Tokarva,Surat,Gujarat,India,394375,1
+1390,Tuked,Surat,Gujarat,India,394163,1
+1391,Tundi,Surat,Gujarat,India,394310,1
+1392,Ukahlda,Surat,Gujarat,India,394670,1
+1393,Umarakh,Surat,Gujarat,India,394345,1
+1394,Umarkui,Surat,Gujarat,India,394630,1
+1395,Umarkutch,Surat,Gujarat,India,394630,1
+1396,Umarvavdoor,Surat,Gujarat,India,394635,1
+1397,Umbhel,Surat,Gujarat,India,394325,1
+1398,Umra,Surat,Gujarat,India,394248,1
+1399,Unchamala,Surat,Gujarat,India,394651,1
+1400,Unteva,Surat,Gujarat,India,394163,1
+1401,Uva,Surat,Gujarat,India,394340,1
+1402,Vadadla Tanti,Surat,Gujarat,India,394317,1
+1403,Vadhvania,Surat,Gujarat,India,394335,1
+1404,Vadia,Surat,Gujarat,India,394246,1
+1405,Vadibehsrot,Surat,Gujarat,India,394670,1
+1406,Vadoli,Surat,Gujarat,India,394350,1
+1407,Vaghecha,Surat,Gujarat,India,394355,1
+1408,Vaheval,Surat,Gujarat,India,394248,1
+1409,Valod,Surat,Gujarat,India,394640,1
+1410,Valvada,Surat,Gujarat,India,394248,1
+1411,Vanisa Pisadi,Surat,Gujarat,India,394310,1
+1412,Vanka,Surat,Gujarat,India,394370,1
+1413,Vankaner SR,Surat,Gujarat,India,394620,1
+1414,Vankla,Surat,Gujarat,India,394630,1
+1415,Vanskui,Surat,Gujarat,India,394340,1
+1416,Vanskui,Surat,Gujarat,India,394651,1
+1417,Vanskui,Surat,Gujarat,India,394240,1
+1418,Vanzarda,Surat,Gujarat,India,394651,1
+1419,Varad,Surat,Gujarat,India,394355,1
+1420,Vareli,Surat,Gujarat,India,394140,1
+1421,Vareth,Surat,Gujarat,India,394160,1
+1422,Vatsalyadham,Surat,Gujarat,India,394340,1
+1423,Vav Kathodara,Surat,Gujarat,India,394326,1
+1424,Vegi,Surat,Gujarat,India,394170,1
+1425,Velanja,Surat,Gujarat,India,394150,1
+1426,Velanpur,Surat,Gujarat,India,394245,1
+1427,Veldha,Surat,Gujarat,India,394370,1
+1428,Vihan,Surat,Gujarat,India,394320,1
+1429,Virpur,Surat,Gujarat,India,394155,1
+1430,Virpur,Surat,Gujarat,India,394650,1
+1431,Vyara RS,Surat,Gujarat,India,394650,1
+1432,Vyara,Surat,Gujarat,India,394650,1
+1433,Vyaval,Surat,Gujarat,India,394370,1
+1434,Wcc Ukai,Surat,Gujarat,India,394680,1
+1435,Zab,Surat,Gujarat,India,394163,1
+1436,Zankhari,Surat,Gujarat,India,394655,1
+1437,Zervavra,Surat,Gujarat,India,394245,1
+1438,Ankhi,Surat,Gujarat,India,392150,1
+1439,Babda,Surat,Gujarat,India,393130,1
+1440,Borda,Surat,Gujarat,India,393050,1
+1441,Kuilivel,Surat,Gujarat,India,393050,1
+1442,Sabaria,Surat,Gujarat,India,393125,1
+1443,A. K. Road,Surat,Gujarat,India,395008,1
+1444,Abhva,Surat,Gujarat,India,395007,1
+1445,Adajan Dn,Surat,Gujarat,India,395009,1
+1446,Adityanagar,Surat,Gujarat,India,394516,1
+1447,Aganovad,Surat,Gujarat,India,395003,1
+1448,Althan,Surat,Gujarat,India,395017,1
+1449,Ambawadi,Surat,Gujarat,India,394430,1
+1450,Ambheta,Surat,Gujarat,India,395005,1
+1451,Amkhuta,Surat,Gujarat,India,394430,1
+1452,Amroli,Surat,Gujarat,India,394107,1
+1453,Anand Mahal Road,Surat,Gujarat,India,395009,1
+1454,Anita,Surat,Gujarat,India,394110,1
+1455,Ankodod,Surat,Gujarat,India,394410,1
+1456,Ariana,Surat,Gujarat,India,395005,1
+1457,Asaram,Surat,Gujarat,India,394405,1
+1458,Asnad,Surat,Gujarat,India,394540,1
+1459,Athwa,Surat,Gujarat,India,395007,1
+1460,Athwalines,Surat,Gujarat,India,395001,1
+1461,Atodara,Surat,Gujarat,India,394130,1
+1462,Balethi,Surat,Gujarat,India,394440,1
+1463,Bamroli,Surat,Gujarat,India,394210,1
+1464,Barbodhan,Surat,Gujarat,India,395005,1
+1465,Bhadol,Surat,Gujarat,India,394540,1
+1466,Bhagal,Surat,Gujarat,India,395003,1
+1467,Bhagwa,Surat,Gujarat,India,394530,1
+1468,Bhandut,Surat,Gujarat,India,395005,1
+1469,Bharan,Surat,Gujarat,India,394125,1
+1470,Bharthana,Surat,Gujarat,India,395007,1
+1471,Bharundi,Surat,Gujarat,India,394130,1
+1472,Bhatgam,Surat,Gujarat,India,394540,1
+1473,Bhatha,Surat,Gujarat,India,394510,1
+1474,Bhatlai,Surat,Gujarat,India,394517,1
+1475,Bhatpore,Surat,Gujarat,India,394510,1
+1476,Bhavanivad,Surat,Gujarat,India,395003,1
+1477,Bhedvad,Surat,Gujarat,India,394210,1
+1478,Bhesan,Surat,Gujarat,India,395005,1
+1479,Bhestan,Surat,Gujarat,India,395023,1
+1480,Bhilvada,Surat,Gujarat,India,394421,1
+1481,Bhimpore,Surat,Gujarat,India,394550,1
+1482,Bilvan,Surat,Gujarat,India,394445,1
+1483,Bombay Market,Surat,Gujarat,India,395010,1
+1484,Bonandh,Surat,Gujarat,India,394230,1
+1485,Boria,Surat,Gujarat,India,394430,1
+1486,Boridra,Surat,Gujarat,India,394125,1
+1487,Borsad,Surat,Gujarat,India,394110,1
+1488,Budia,Surat,Gujarat,India,394210,1
+1489,Bundha,Surat,Gujarat,India,394440,1
+1490,Chavda,Surat,Gujarat,India,394445,1
+1491,Chhapra Bhatha,Surat,Gujarat,India,394107,1
+1492,Chimipatal,Surat,Gujarat,India,394445,1
+1493,Chitalda,Surat,Gujarat,India,394440,1
+1494,Chokhvada,Surat,Gujarat,India,394445,1
+1495,Choramba,Surat,Gujarat,India,394440,1
+1496,Dabholi,Surat,Gujarat,India,395004,1
+1497,Damka,Surat,Gujarat,India,394517,1
+1498,Dandi,Surat,Gujarat,India,394540,1
+1499,Deladva,Surat,Gujarat,India,394210,1
+1500,Delasa,Surat,Gujarat,India,394530,1
+1501,Devadh,Surat,Gujarat,India,394210,1
+1502,Devadh,Surat,Gujarat,India,394440,1
+1503,Dhamdod,Surat,Gujarat,India,394125,1
+1504,Dholikui,Surat,Gujarat,India,394430,1
+1505,Dhrampur,Surat,Gujarat,India,394110,1
+1506,Dihen,Surat,Gujarat,India,395005,1
+1507,Dindoli,Surat,Gujarat,India,394210,1
+1508,Dinod,Surat,Gujarat,India,394125,1
+1509,Dumas,Surat,Gujarat,India,394550,1
+1510,Dumasgam,Surat,Gujarat,India,394550,1
+1511,Dungri,Surat,Gujarat,India,394110,1
+1512,Eklera,Surat,Gujarat,India,394230,1
+1513,Erthan,Surat,Gujarat,India,394540,1
+1514,Fulpada,Surat,Gujarat,India,395008,1
+1515,G.I.P.C.L.,Surat,Gujarat,India,394110,1
+1516,Gabheni,Surat,Gujarat,India,394230,1
+1517,Gavier,Surat,Gujarat,India,395007,1
+1518,Ghanavad,Surat,Gujarat,India,394445,1
+1519,Gijram,Surat,Gujarat,India,394410,1
+1520,Godadara,Surat,Gujarat,India,395012,1
+1521,Godbar,Surat,Gujarat,India,394440,1
+1522,Gopipura,Surat,Gujarat,India,395001,1
+1523,Gotalawadi,Surat,Gujarat,India,395004,1
+1524,Gothan,Surat,Gujarat,India,394130,1
+1525,Govt. Medical College,Surat,Gujarat,India,395001,1
+1526,Hajira,Surat,Gujarat,India,394270,1
+1527,Harsani,Surat,Gujarat,India,394421,1
+1528,Hathoda,Surat,Gujarat,India,394405,1
+1529,Hathuran,Surat,Gujarat,India,394125,1
+1530,Ichhapore,Surat,Gujarat,India,394510,1
+1531,Inderpura,Surat,Gujarat,India,395002,1
+1532,Isanpur,Surat,Gujarat,India,394430,1
+1533,Ishanpore,Surat,Gujarat,India,394540,1
+1534,Jhampa,Surat,Gujarat,India,395003,1
+1535,Kachholi,Surat,Gujarat,India,394235,1
+1536,Kadrama,Surat,Gujarat,India,394540,1
+1537,Kafleta,Surat,Gujarat,India,394235,1
+1538,Kamroli,Surat,Gujarat,India,394540,1
+1539,Kanakpur,Surat,Gujarat,India,394230,1
+1540,Kansad,Surat,Gujarat,India,394230,1
+1541,Kantva,Surat,Gujarat,India,394405,1
+1542,Karanj,Surat,Gujarat,India,394530,1
+1543,Karanj,Surat,Gujarat,India,394110,1
+1544,Karmala,Surat,Gujarat,India,394130,1
+1545,Katargam GIDC,Surat,Gujarat,India,395004,1
+1546,Katargam,Surat,Gujarat,India,395004,1
+1547,Kawas,Surat,Gujarat,India,394510,1
+1548,Keori,Surat,Gujarat,India,394445,1
+1549,Khajod,Surat,Gujarat,India,395007,1
+1550,Kharvasa,Surat,Gujarat,India,394210,1
+1551,Khatodara,Surat,Gujarat,India,395002,1
+1552,Khota Rampura,Surat,Gujarat,India,394445,1
+1553,Kim Char Rasta,Surat,Gujarat,India,394111,1
+1554,Kim,Surat,Gujarat,India,394110,1
+1555,Koba,Surat,Gujarat,India,394540,1
+1556,Kosad,Surat,Gujarat,India,394107,1
+1557,Kosadi,Surat,Gujarat,India,394405,1
+1558,Kosam,Surat,Gujarat,India,394520,1
+1559,Kosamba Bazar,Surat,Gujarat,India,394120,1
+1560,Kosamba,Surat,Gujarat,India,394120,1
+1561,Kosmada,Surat,Gujarat,India,395006,1
+1562,Kothwa,Surat,Gujarat,India,394110,1
+1563,Kribhconagar,Surat,Gujarat,India,394515,1
+1564,Kudiana,Surat,Gujarat,India,394540,1
+1565,Kumbharia,Surat,Gujarat,India,395010,1
+1566,Kunvarda,Surat,Gujarat,India,394120,1
+1567,Lajpore,Surat,Gujarat,India,394235,1
+1568,Laskana,Surat,Gujarat,India,395006,1
+1569,Lavachha,Surat,Gujarat,India,394540,1
+1570,Lavet,Surat,Gujarat,India,394430,1
+1571,Limbada,Surat,Gujarat,India,394405,1
+1572,Limbayat,Surat,Gujarat,India,395012,1
+1573,Limodra,Surat,Gujarat,India,394110,1
+1574,Lingad,Surat,Gujarat,India,394230,1
+1575,Luharvad,Surat,Gujarat,India,394440,1
+1576,Luvara,Surat,Gujarat,India,394405,1
+1577,Madan Boria,Surat,Gujarat,India,394440,1
+1578,Madhar,Surat,Gujarat,India,394130,1
+1579,Magdalla,Surat,Gujarat,India,395007,1
+1580,Mahidharpura,Surat,Gujarat,India,395003,1
+1581,Mahuvej,Surat,Gujarat,India,394125,1
+1582,Maldha,Surat,Gujarat,India,394440,1
+1583,Mandroi,Surat,Gujarat,India,394540,1
+1584,Masma,Surat,Gujarat,India,394540,1
+1585,Mohamedpur,Surat,Gujarat,India,394540,1
+1586,Mor,Surat,Gujarat,India,394530,1
+1587,Mora Surat,Surat,Gujarat,India,394517,1
+1588,Morthana,Surat,Gujarat,India,394130,1
+1589,Mosali,Surat,Gujarat,India,394421,1
+1590,Mota Borsara,Surat,Gujarat,India,394110,1
+1591,Mota Miya Mangrol,Surat,Gujarat,India,394410,1
+1592,Mota Varachha,Surat,Gujarat,India,394101,1
+1593,Motived,Surat,Gujarat,India,395004,1
+1594,Muglisara,Surat,Gujarat,India,395003,1
+1595,Mulad,Surat,Gujarat,India,394110,1
+1596,Nandav,Surat,Gujarat,India,394125,1
+1597,Nandniketan,Surat,Gujarat,India,394270,1
+1598,Nandola,Surat,Gujarat,India,394430,1
+1599,Nani Naroli,Surat,Gujarat,India,394110,1
+1600,Nanpura,Surat,Gujarat,India,395001,1
+1601,Narthan,Surat,Gujarat,India,395005,1
+1602,Nasarpur,Surat,Gujarat,India,394440,1
+1603,Navyug College,Surat,Gujarat,India,395009,1
+1604,Nawabwadi,Surat,Gujarat,India,395003,1
+1605,Nogama,Surat,Gujarat,India,394405,1
+1606,Olpad,Surat,Gujarat,India,394540,1
+1607,Ongc Nagar,Surat,Gujarat,India,394518,1
+1608,Orma,Surat,Gujarat,India,394540,1
+1609,Pal Bhatha,Surat,Gujarat,India,394510,1
+1610,Palanpur Nd,Surat,Gujarat,India,395009,1
+1611,Pandesara,Surat,Gujarat,India,394221,1
+1612,Panjroli,Surat,Gujarat,India,394120,1
+1613,Pardi Bhadol,Surat,Gujarat,India,394540,1
+1614,Paria,Surat,Gujarat,India,394130,1
+1615,Parvat,Surat,Gujarat,India,395012,1
+1616,Parvat Patia,Surat,Gujarat,India,395010,1
+1617,Pasodara,Surat,Gujarat,India,395006,1
+1618,Pinjrat,Surat,Gujarat,India,395005,1
+1619,Piplod Surat,Surat,Gujarat,India,395007,1
+1620,Pipodara,Surat,Gujarat,India,394110,1
+1621,Popda,Surat,Gujarat,India,394235,1
+1622,Puna Kumbharia,Surat,Gujarat,India,395011,1
+1623,Ramnagar Surat,Surat,Gujarat,India,395009,1
+1624,Rander,Surat,Gujarat,India,395005,1
+1625,Rustampura Surat,Surat,Gujarat,India,395002,1
+1626,Sachin G.I.D.C.,Surat,Gujarat,India,394230,1
+1627,Sachin R.S.,Surat,Gujarat,India,394230,1
+1628,Sachin,Surat,Gujarat,India,394230,1
+1629,Sagrampura Putli,Surat,Gujarat,India,395002,1
+1630,Sandhier,Surat,Gujarat,India,394130,1
+1631,Sania Hemad,Surat,Gujarat,India,395006,1
+1632,Sania Kande,Surat,Gujarat,India,394210,1
+1633,Saras,Surat,Gujarat,India,394540,1
+1634,Sarda,Surat,Gujarat,India,394445,1
+1635,Saroli,Surat,Gujarat,India,394520,1
+1636,Saroli,Surat,Gujarat,India,395010,1
+1637,Sarthana,Surat,Gujarat,India,395013,1
+1638,Sarvan Fokdi,Surat,Gujarat,India,394445,1
+1639,Sava,Surat,Gujarat,India,394120,1
+1640,Sayan,Surat,Gujarat,India,394130,1
+1641,Segva,Surat,Gujarat,India,394130,1
+1642,Segva Chhama,Surat,Gujarat,India,395005,1
+1643,Selut,Surat,Gujarat,India,395005,1
+1644,Shah,Surat,Gujarat,India,394421,1
+1645,Sherdi,Surat,Gujarat,India,394520,1
+1646,Simodra,Surat,Gujarat,India,394405,1
+1647,Singanpore,Surat,Gujarat,India,395004,1
+1648,Sithan,Surat,Gujarat,India,394130,1
+1649,Siyalaj,Surat,Gujarat,India,394110,1
+1650,Sondla Khara,Surat,Gujarat,India,394540,1
+1651,Sonsak,Surat,Gujarat,India,394540,1
+1652,Surat City,Surat,Gujarat,India,395003,1
+1653,Surat,Surat,Gujarat,India,395003,1
+1654,Surat RS,Surat,Gujarat,India,395003,1
+1655,Surat Textile Market,Surat,Gujarat,India,395002,1
+1656,Suvali,Surat,Gujarat,India,394517,1
+1657,Svr College,Surat,Gujarat,India,395007,1
+1658,Syadla,Surat,Gujarat,India,394130,1
+1659,Takarma,Surat,Gujarat,India,394540,1
+1660,Talangpur,Surat,Gujarat,India,394230,1
+1661,Tarapur,Surat,Gujarat,India,394440,1
+1662,Udharia,Surat,Gujarat,India,394440,1
+1663,Udhna,Surat,Gujarat,India,394210,1
+1664,Udhnagam,Surat,Gujarat,India,394210,1
+1665,Umarda,Surat,Gujarat,India,394445,1
+1666,Umargot,Surat,Gujarat,India,394445,1
+1667,Umarpada,Surat,Gujarat,India,394445,1
+1668,Umarzar,Surat,Gujarat,India,394440,1
+1669,Umber,Surat,Gujarat,India,394230,1
+1670,Umra,Surat,Gujarat,India,394130,1
+1671,Umra,Surat,Gujarat,India,395007,1
+1672,Un,Surat,Gujarat,India,394210,1
+1673,Utran,Surat,Gujarat,India,394105,1
+1674,Utran Power House,Surat,Gujarat,India,394105,1
+1675,Vad,Surat,Gujarat,India,394440,1
+1676,Vadi,Surat,Gujarat,India,394440,1
+1677,Vadod,Surat,Gujarat,India,394540,1
+1678,Vadoli,Surat,Gujarat,India,394110,1
+1679,Vadpada,Surat,Gujarat,India,394445,1
+1680,Vahar,Surat,Gujarat,India,394440,1
+1681,Valak,Surat,Gujarat,India,395006,1
+1682,Vankal,Surat,Gujarat,India,394430,1
+1683,Vanz,Surat,Gujarat,India,394230,1
+1684,Varachha Road,Surat,Gujarat,India,395006,1
+1685,Varachhali,Surat,Gujarat,India,395006,1
+1686,Varethi,Surat,Gujarat,India,394110,1
+1687,Variav,Surat,Gujarat,India,394520,1
+1688,Variavi Bhagal,Surat,Gujarat,India,395003,1
+1689,Vasava,Surat,Gujarat,India,394517,1
+1690,Vasravi,Surat,Gujarat,India,394421,1
+1691,Vasta Devdi Road,Surat,Gujarat,India,395004,1
+1692,Veer Narmad South Gujarat University,Surat,Gujarat,India,395007,1
+1693,Vektana,Surat,Gujarat,India,394230,1
+1694,Velachha,Surat,Gujarat,India,394405,1
+1695,Verakui,Surat,Gujarat,India,394430,1
+1696,Vesu,Surat,Gujarat,India,395007,1
+1697,Vihara,Surat,Gujarat,India,394540,1
+1698,Zankhvav,Surat,Gujarat,India,394440,1
+1699,Achhod,Vadodara,Gujarat,India,392110,1
+1700,Angareshwar,Vadodara,Gujarat,India,392030,1
+1701,Ankleshwar IE,Vadodara,Gujarat,India,393002,1
+1702,Arethi,Vadodara,Gujarat,India,393130,1
+1703,Bhalod Vadodara,Vadodara,Gujarat,India,393105,1
+1704,Bhersam,Vadodara,Gujarat,India,392012,1
+1705,Chikda,Vadodara,Gujarat,India,393041,1
+1706,Dabha,Vadodara,Gujarat,India,392150,1
+1707,Haldarva,Vadodara,Gujarat,India,392220,1
+1708,Jambusar Bazar,Vadodara,Gujarat,India,392150,1
+1709,Koliad,Vadodara,Gujarat,India,392220,1
+1710,Koral,Vadodara,Gujarat,India,393105,1
+1711,Kothia,Vadodara,Gujarat,India,392140,1
+1712,Lilod,Vadodara,Gujarat,India,393105,1
+1713,Manad,Vadodara,Gujarat,India,392130,1
+1714,Manubar,Vadodara,Gujarat,India,392160,1
+1715,Matroj,Vadodara,Gujarat,India,392220,1
+1716,Mesrad,Vadodara,Gujarat,India,392220,1
+1717,Oz,Vadodara,Gujarat,India,393105,1
+1718,Pachhiapura,Vadodara,Gujarat,India,392220,1
+1719,Pursa,Vadodara,Gujarat,India,392110,1
+1720,Rarod,Vadodara,Gujarat,India,393105,1
+1721,Ropa,Vadodara,Gujarat,India,393105,1
+1722,Samoj,Vadodara,Gujarat,India,392180,1
+1723,Samor,Vadodara,Gujarat,India,393010,1
+1724,Sansrod,Vadodara,Gujarat,India,392220,1
+1725,Saring,Vadodara,Gujarat,India,392220,1
+1726,Sayar,Vadodara,Gujarat,India,393105,1
+1727,Segva,Vadodara,Gujarat,India,392210,1
+1728,Sherpura,Vadodara,Gujarat,India,392015,1
+1729,Vachchhesar,Vadodara,Gujarat,India,388710,1
+1730,Achisara,Vadodara,Gujarat,India,391250,1
+1731,Agar,Vadodara,Gujarat,India,391121,1
+1732,Ajwa Road,Vadodara,Gujarat,India,390019,1
+1733,Akakheda,Vadodara,Gujarat,India,391145,1
+1734,Akona,Vadodara,Gujarat,India,391150,1
+1735,Alhadpura,Vadodara,Gujarat,India,391135,1
+1736,Amaliyara,Vadodara,Gujarat,India,390022,1
+1737,Ambadungar,Vadodara,Gujarat,India,391175,1
+1738,Ambala,Vadodara,Gujarat,India,391165,1
+1739,Ambali,Vadodara,Gujarat,India,391115,1
+1740,Ambapura,Vadodara,Gujarat,India,391145,1
+1741,Amodar,Vadodara,Gujarat,India,390019,1
+1742,Amroli,Vadodara,Gujarat,India,391150,1
+1743,Anandi,Vadodara,Gujarat,India,391110,1
+1744,Anguthan,Vadodara,Gujarat,India,391107,1
+1745,Aniyadri,Vadodara,Gujarat,India,391160,1
+1746,Ankhol,Vadodara,Gujarat,India,390019,1
+1747,Asar,Vadodara,Gujarat,India,391168,1
+1748,Athadungri,Vadodara,Gujarat,India,391170,1
+1749,Athavali,Vadodara,Gujarat,India,391140,1
+1750,Avakhal,Vadodara,Gujarat,India,391250,1
+1751,Bahadarpur Vadodara,Vadodara,Gujarat,India,391125,1
+1752,Bakrol,Vadodara,Gujarat,India,390019,1
+1753,Bamroli,Vadodara,Gujarat,India,391125,1
+1754,Bangapura,Vadodara,Gujarat,India,391145,1
+1755,Bar,Vadodara,Gujarat,India,391160,1
+1756,Baranpura,Vadodara,Gujarat,India,390001,1
+1757,Baravad,Vadodara,Gujarat,India,391160,1
+1758,Barkal,Vadodara,Gujarat,India,391105,1
+1759,Baroli,Vadodara,Gujarat,India,391150,1
+1760,Bavaria,Vadodara,Gujarat,India,391250,1
+1761,Bedia,Vadodara,Gujarat,India,391168,1
+1762,Bhaka,Vadodara,Gujarat,India,391152,1
+1763,Bhanpur,Vadodara,Gujarat,India,391160,1
+1764,Bharvada,Vadodara,Gujarat,India,391150,1
+1765,Bhatpur,Vadodara,Gujarat,India,391130,1
+1766,Bhensavali,Vadodara,Gujarat,India,391160,1
+1767,Bhikhapur,Vadodara,Gujarat,India,391160,1
+1768,Bhilapur,Vadodara,Gujarat,India,391107,1
+1769,Bhilodia,Vadodara,Gujarat,India,391110,1
+1770,Bhilpur,Vadodara,Gujarat,India,391160,1
+1771,Bhindol,Vadodara,Gujarat,India,391135,1
+1772,Bhorda,Vadodara,Gujarat,India,391165,1
+1773,Bhumaswada,Vadodara,Gujarat,India,391168,1
+1774,Bithli,Vadodara,Gujarat,India,391105,1
+1775,Bodeli,Vadodara,Gujarat,India,391135,1
+1776,Borbar,Vadodara,Gujarat,India,391107,1
+1777,Bordha,Vadodara,Gujarat,India,391135,1
+1778,Bortalav,Vadodara,Gujarat,India,391145,1
+1779,Chalamali,Vadodara,Gujarat,India,391140,1
+1780,Chametha,Vadodara,Gujarat,India,391150,1
+1781,Chandod,Vadodara,Gujarat,India,391105,1
+1782,Chanvada,Vadodara,Gujarat,India,391110,1
+1783,Chhanbhoi,Vadodara,Gujarat,India,391250,1
+1784,Chhatrali,Vadodara,Gujarat,India,391135,1
+1785,Chhota udepur,Vadodara,Gujarat,India,391165,1
+1786,Chhuchhapura,Vadodara,Gujarat,India,391125,1
+1787,Chikhodara,Vadodara,Gujarat,India,390009,1
+1788,Chisadiya,Vadodara,Gujarat,India,391165,1
+1789,Chorngala,Vadodara,Gujarat,India,391130,1
+1790,Chudel,Vadodara,Gujarat,India,391160,1
+1791,Dabhoi,Vadodara,Gujarat,India,391110,1
+1792,Dabhoi R.S.,Vadodara,Gujarat,India,391110,1
+1793,Dabhoi Vadodari Bhagol,Vadodara,Gujarat,India,391110,1
+1794,Dani,Vadodara,Gujarat,India,391152,1
+1795,Danteshwar,Vadodara,Gujarat,India,390004,1
+1796,Dena,Vadodara,Gujarat,India,390022,1
+1797,Deroli,Vadodara,Gujarat,India,391250,1
+1798,Deroli,Vadodara,Gujarat,India,391130,1
+1799,Devalia,Vadodara,Gujarat,India,391160,1
+1800,Dhamasiya,Vadodara,Gujarat,India,391150,1
+1801,Dhandhoda,Vadodara,Gujarat,India,391165,1
+1802,Dhaniavi,Vadodara,Gujarat,India,390014,1
+1803,Dharmpuri,Vadodara,Gujarat,India,391110,1
+1804,Dharsimel,Vadodara,Gujarat,India,391150,1
+1805,Dholar,Vadodara,Gujarat,India,391107,1
+1806,Dholi Simal,Vadodara,Gujarat,India,391165,1
+1807,Diver,Vadodara,Gujarat,India,391250,1
+1808,Dolaria,Vadodara,Gujarat,India,391165,1
+1809,Dormar,Vadodara,Gujarat,India,391125,1
+1810,Dugdha,Vadodara,Gujarat,India,391150,1
+1811,Dumali,Vadodara,Gujarat,India,391160,1
+1812,Dungargam,Vadodara,Gujarat,India,391168,1
+1813,Dungarvant,Vadodara,Gujarat,India,391160,1
+1814,Ekalbara,Vadodara,Gujarat,India,391165,1
+1815,Fanta,Vadodara,Gujarat,India,391125,1
+1816,Fartikui,Vadodara,Gujarat,India,391107,1
+1817,Fatepura Vadodara,Vadodara,Gujarat,India,390006,1
+1818,Ferkuva,Vadodara,Gujarat,India,391135,1
+1819,Gadhboriad,Vadodara,Gujarat,India,391152,1
+1820,Garda,Vadodara,Gujarat,India,391145,1
+1821,Ghantoli,Vadodara,Gujarat,India,391150,1
+1822,Ghelawant,Vadodara,Gujarat,India,391165,1
+1823,Gola Gamdi,Vadodara,Gujarat,India,391125,1
+1824,Goyawant,Vadodara,Gujarat,India,391150,1
+1825,Gundicha,Vadodara,Gujarat,India,391145,1
+1826,Handod,Vadodara,Gujarat,India,391145,1
+1827,Harakhapur,Vadodara,Gujarat,India,391160,1
+1828,Hareshwar,Vadodara,Gujarat,India,391125,1
+1829,Haripura,Vadodara,Gujarat,India,391150,1
+1830,Harni,Vadodara,Gujarat,India,390022,1
+1831,Harni Colony,Vadodara,Gujarat,India,390022,1
+1832,Indral,Vadodara,Gujarat,India,391130,1
+1833,Jabugam,Vadodara,Gujarat,India,391155,1
+1834,Jakshi,Vadodara,Gujarat,India,391150,1
+1835,Jaloda,Vadodara,Gujarat,India,391160,1
+1836,Jamba,Vadodara,Gujarat,India,391160,1
+1837,Jambua,Vadodara,Gujarat,India,390014,1
+1838,Jamli,Vadodara,Gujarat,India,391152,1
+1839,Jemalgadh,Vadodara,Gujarat,India,391150,1
+1840,Jojwa R.S.,Vadodara,Gujarat,India,391125,1
+1841,Kadachhala,Vadodara,Gujarat,India,391140,1
+1842,Kadadhara,Vadodara,Gujarat,India,391107,1
+1843,Kadipani,Vadodara,Gujarat,India,391175,1
+1844,Kadvad,Vadodara,Gujarat,India,391160,1
+1845,Kalarani,Vadodara,Gujarat,India,391135,1
+1846,Kaledia,Vadodara,Gujarat,India,391150,1
+1847,Kalidoli,Vadodara,Gujarat,India,391140,1
+1848,Kaliyapura,Vadodara,Gujarat,India,391150,1
+1849,Kanalva,Vadodara,Gujarat,India,391168,1
+1850,Kanda,Vadodara,Gujarat,India,391160,1
+1851,Kanjetha,Vadodara,Gujarat,India,391115,1
+1852,Kanteshwar,Vadodara,Gujarat,India,391125,1
+1853,Kapurai,Vadodara,Gujarat,India,390004,1
+1854,Karali,Vadodara,Gujarat,India,391135,1
+1855,Karalipura,Vadodara,Gujarat,India,391110,1
+1856,Karanjwant,Vadodara,Gujarat,India,391168,1
+1857,Karelibaug,Vadodara,Gujarat,India,390018,1
+1858,Karnali,Vadodara,Gujarat,India,391105,1
+1859,Karnet,Vadodara,Gujarat,India,391110,1
+1860,Kavitha,Vadodara,Gujarat,India,391125,1
+1861,Kawant,Vadodara,Gujarat,India,391170,1
+1862,Kelanpur,Vadodara,Gujarat,India,390004,1
+1863,Khadkhad,Vadodara,Gujarat,India,391165,1
+1864,Khanderao Market,Vadodara,Gujarat,India,390001,1
+1865,Khapariya,Vadodara,Gujarat,India,391150,1
+1866,Kharmada,Vadodara,Gujarat,India,391152,1
+1867,Khatiawant,Vadodara,Gujarat,India,391168,1
+1868,Khunvad,Vadodara,Gujarat,India,391130,1
+1869,Kikavada,Vadodara,Gujarat,India,391160,1
+1870,Kohivav,Vadodara,Gujarat,India,391160,1
+1871,Kolamba,Vadodara,Gujarat,India,391152,1
+1872,Kosindra,Vadodara,Gujarat,India,391140,1
+1873,Kukad,Vadodara,Gujarat,India,391110,1
+1874,Kukarda,Vadodara,Gujarat,India,391150,1
+1875,Kukas,Vadodara,Gujarat,India,391250,1
+1876,Kumetha,Vadodara,Gujarat,India,390019,1
+1877,Kundal,Vadodara,Gujarat,India,391165,1
+1878,Kundhela,Vadodara,Gujarat,India,391107,1
+1879,Lachharas,Vadodara,Gujarat,India,391130,1
+1880,Ladod,Vadodara,Gujarat,India,391135,1
+1881,Lavakui,Vadodara,Gujarat,India,391150,1
+1882,Lotia,Vadodara,Gujarat,India,391125,1
+1883,M.I. Estate,Vadodara,Gujarat,India,390010,1
+1884,Madanzampa,Vadodara,Gujarat,India,390001,1
+1885,Makarpura,Vadodara,Gujarat,India,390014,1
+1886,Makni,Vadodara,Gujarat,India,391145,1
+1887,Malpur,Vadodara,Gujarat,India,391145,1
+1888,Malpur,Vadodara,Gujarat,India,391250,1
+1889,Malsar,Vadodara,Gujarat,India,391115,1
+1890,Manavant,Vadodara,Gujarat,India,391168,1
+1891,Mandlava,Vadodara,Gujarat,India,391165,1
+1892,Mandva,Vadodara,Gujarat,India,391115,1
+1893,Mandva,Vadodara,Gujarat,India,391105,1
+1894,Mandvi Vadodara,Vadodara,Gujarat,India,390001,1
+1895,Maneja,Vadodara,Gujarat,India,390013,1
+1896,Manjalpur,Vadodara,Gujarat,India,390011,1
+1897,Manjrol,Vadodara,Gujarat,India,391110,1
+1898,Manjrol,Vadodara,Gujarat,India,391250,1
+1899,Manka,Vadodara,Gujarat,India,391170,1
+1900,Mankodi,Vadodara,Gujarat,India,391170,1
+1901,Meghakui,Vadodara,Gujarat,India,391107,1
+1902,Mindhol,Vadodara,Gujarat,India,391250,1
+1903,Mithibor,Vadodara,Gujarat,India,391165,1
+1904,Modasar,Vadodara,Gujarat,India,391135,1
+1905,Moghela,Vadodara,Gujarat,India,391152,1
+1906,Moletha,Vadodara,Gujarat,India,391105,1
+1907,Antop Hill,Mumbai,Maharashtra,India,400037,1
+1908,B P T Colony,Mumbai,Maharashtra,India,400037,1
+1909,B.P.Lane,Mumbai,Maharashtra,India,400003,1
+1910,BEST STaff Quarters,Mumbai,Maharashtra,India,400012,1
+1911,C G S Colony,Mumbai,Maharashtra,India,400037,1
+1912,Chamarbaug,Mumbai,Maharashtra,India,400012,1
+1913,Chinchbunder,Mumbai,Maharashtra,India,400009,1
+1914,Cotton Exchange,Mumbai,Maharashtra,India,400033,1
+1915,Dadar Colony,Mumbai,Maharashtra,India,400014,1
+1916,Dadar,Mumbai,Maharashtra,India,400014,1
+1917,Dockyard Road,Mumbai,Maharashtra,India,400010,1
+1918,Haffkin Institute,Mumbai,Maharashtra,India,400012,1
+1919,Kalachowki,Mumbai,Maharashtra,India,400033,1
+1920,Kidwai Nagar Mumbai,Mumbai,Maharashtra,India,400031,1
+1921,L B S N E collage,Mumbai,Maharashtra,India,400033,1
+1922,Lal Baug,Mumbai,Maharashtra,India,400012,1
+1923,Mandvi Mumbai,Mumbai,Maharashtra,India,400003,1
+1924,Masjid,Mumbai,Maharashtra,India,400003,1
+1925,Mazgaon Dock,Mumbai,Maharashtra,India,400010,1
+1926,Mazgaon Road,Mumbai,Maharashtra,India,400010,1
+1927,Mazgaon,Mumbai,Maharashtra,India,400010,1
+1928,Naigaon Mumbai,Mumbai,Maharashtra,India,400014,1
+1929,Noor Baug,Mumbai,Maharashtra,India,400009,1
+1930,Null Bazar,Mumbai,Maharashtra,India,400003,1
+1931,Parel Naka,Mumbai,Maharashtra,India,400012,1
+1932,Parel Rly Work Shop,Mumbai,Maharashtra,India,400012,1
+1933,Parel,Mumbai,Maharashtra,India,400012,1
+1934,Princess Dock,Mumbai,Maharashtra,India,400009,1
+1935,Reay Road,Mumbai,Maharashtra,India,400033,1
+1936,Sewri,Mumbai,Maharashtra,India,400015,1
+1937,Tank Road,Mumbai,Maharashtra,India,400033,1
+1938,V J B Udyan,Mumbai,Maharashtra,India,400027,1
+1939,V K Bhavan,Mumbai,Maharashtra,India,400010,1
+1940,Wadala Rs,Mumbai,Maharashtra,India,400031,1
+1941,Wadala,Mumbai,Maharashtra,India,400031,1
+1942,Wadala Truck Terminal,Mumbai,Maharashtra,India,400037,1
+1943,A I Staff Colony,Mumbai,Maharashtra,India,400029,1
+1944,Airport Mumbai,Mumbai,Maharashtra,India,400099,1
+1945,Andheri East,Mumbai,Maharashtra,India,400069,1
+1946,Andheri,Mumbai,Maharashtra,India,400053,1
+1947,Andheri Railway Station,Mumbai,Maharashtra,India,400058,1
+1948,Audit Bhavan,Mumbai,Maharashtra,India,400051,1
+1949,Azad Nagar Mumbai,Mumbai,Maharashtra,India,400053,1
+1950,B.N. Bhavan,Mumbai,Maharashtra,India,400051,1
+1951,Bandra West,Mumbai,Maharashtra,India,400050,1
+1952,BandraEast,Mumbai,Maharashtra,India,400051,1
+1953,Chakala Midc,Mumbai,Maharashtra,India,400093,1
+1954,Danda,Mumbai,Maharashtra,India,400052,1
+1955,Government Colony,Mumbai,Maharashtra,India,400051,1
+1956,H.M.P. School,Mumbai,Maharashtra,India,400058,1
+1957,Hanuman Road,Mumbai,Maharashtra,India,400057,1
+1958,International Airport,Mumbai,Maharashtra,India,400099,1
+1959,IRLA,Mumbai,Maharashtra,India,400056,1
+1960,J.B. Nagar,Mumbai,Maharashtra,India,400059,1
+1961,Juhu,Mumbai,Maharashtra,India,400049,1
+1962,Khar Colony,Mumbai,Maharashtra,India,400052,1
+1963,Khar Delivery,Mumbai,Maharashtra,India,400052,1
+1964,Kherwadi,Mumbai,Maharashtra,India,400051,1
+1965,Madh,Mumbai,Maharashtra,India,400061,1
+1966,Marol Bazar,Mumbai,Maharashtra,India,400059,1
+1967,Marol Naka,Mumbai,Maharashtra,India,400059,1
+1968,Nagardas Road,Mumbai,Maharashtra,India,400069,1
+1969,Sahar P & T Colony,Mumbai,Maharashtra,India,400099,1
+1970,Sahargaon,Mumbai,Maharashtra,India,400099,1
+1971,Santacruz Central,Mumbai,Maharashtra,India,400054,1
+1972,Santacruz P&t Colony,Mumbai,Maharashtra,India,400029,1
+1973,SantacruzEast,Mumbai,Maharashtra,India,400055,1
+1974,SantacruzWest,Mumbai,Maharashtra,India,400054,1
+1975,Seepz,Mumbai,Maharashtra,India,400096,1
+1976,V.P. Road,Mumbai,Maharashtra,India,400052,1
+1977,Vakola,Mumbai,Maharashtra,India,400055,1
+1978,Vesava,Mumbai,Maharashtra,India,400061,1
+1979,Vidyanagari,Mumbai,Maharashtra,India,400098,1
+1980,Vileeparle East,Mumbai,Maharashtra,India,400057,1
+1981,Vileparle Railway Station,Mumbai,Maharashtra,India,400057,1
+1982,VileparleWest,Mumbai,Maharashtra,India,400056,1
+1983,Anushakti Nagar,Mumbai,Maharashtra,India,400094,1
+1984,BARC,Mumbai,Maharashtra,India,400085,1
+1985,Barve Nagar,Mumbai,Maharashtra,India,400084,1
+1986,Best Staff Colony,Mumbai,Maharashtra,India,400075,1
+1987,Bhandup Complex,Mumbai,Maharashtra,India,400082,1
+1988,Bhandup East,Mumbai,Maharashtra,India,400042,1
+1989,Bhandup Ind. Estate,Mumbai,Maharashtra,India,400078,1
+1990,Bhandup West,Mumbai,Maharashtra,India,400078,1
+1991,Chembur Extension,Mumbai,Maharashtra,India,400074,1
+1992,Chembur,Mumbai,Maharashtra,India,400071,1
+1993,Chembur Rs,Mumbai,Maharashtra,India,400089,1
+1994,Chunabhatti,Mumbai,Maharashtra,India,400022,1
+1995,D.M. Colony,Mumbai,Maharashtra,India,400043,1
+1996,FCI,Mumbai,Maharashtra,India,400074,1
+1997,Ghatkopar West,Mumbai,Maharashtra,India,400086,1
+1998,Govandi,Mumbai,Maharashtra,India,400088,1
+1999,J.M. Road,Mumbai,Maharashtra,India,400078,1
+2000,Kannamwar Nagar,Mumbai,Maharashtra,India,400083,1
+2001,Kurla North,Mumbai,Maharashtra,India,400070,1
+2002,Kurla,Mumbai,Maharashtra,India,400070,1
+2003,Mahul Road,Mumbai,Maharashtra,India,400074,1
+2004,Matunga,Mumbai,Maharashtra,India,400019,1
+2005,Mhada Colony,Mumbai,Maharashtra,India,400081,1
+2006,Mulund Colony,Mumbai,Maharashtra,India,400082,1
+2007,Mulund Dd Road,Mumbai,Maharashtra,India,400080,1
+2008,Mulund East,Mumbai,Maharashtra,India,400081,1
+2009,Mulund West,Mumbai,Maharashtra,India,400080,1
+2010,Nahur,Mumbai,Maharashtra,India,400080,1
+2011,Nehru Nagar Mumbai,Mumbai,Maharashtra,India,400024,1
+2012,Nehru Road Mumbai,Mumbai,Maharashtra,India,400080,1
+2013,Netajinagar,Mumbai,Maharashtra,India,400070,1
+2014,NITIE,Mumbai,Maharashtra,India,400087,1
+2015,P.H. Colony,Mumbai,Maharashtra,India,400078,1
+2016,Pant Nagar,Mumbai,Maharashtra,India,400075,1
+2017,Powai Iit,Mumbai,Maharashtra,India,400076,1
+2018,Psm Colony,Mumbai,Maharashtra,India,400079,1
+2019,R.A.Nagar,Mumbai,Maharashtra,India,400075,1
+2020,Rajawadi,Mumbai,Maharashtra,India,400077,1
+2021,Raoli Camp,Mumbai,Maharashtra,India,400022,1
+2022,Rifle Range,Mumbai,Maharashtra,India,400086,1
+2023,S.B. Road,Mumbai,Maharashtra,India,400080,1
+2024,Sahakar Bhavan,Mumbai,Maharashtra,India,400086,1
+2025,Sakinaka,Mumbai,Maharashtra,India,400072,1
+2026,Shivaji Nagar Mumbai,Mumbai,Maharashtra,India,400043,1
+2027,Sindhi Society,Mumbai,Maharashtra,India,400071,1
+2028,Sion,Mumbai,Maharashtra,India,400022,1
+2029,T.F.Donar,Mumbai,Maharashtra,India,400088,1
+2030,Tagore Nagar,Mumbai,Maharashtra,India,400083,1
+2031,Tilak Nagar Mumbai,Mumbai,Maharashtra,India,400089,1
+2032,Transit Camp,Mumbai,Maharashtra,India,400022,1
+2033,Trombay,Mumbai,Maharashtra,India,400088,1
+2034,Usha Nagar,Mumbai,Maharashtra,India,400078,1
+2035,Vihar Road,Mumbai,Maharashtra,India,400072,1
+2036,Vikhroli,Mumbai,Maharashtra,India,400079,1
+2037,Aareymilk Colony,Mumbai,Maharashtra,India,400065,1
+2038,Bangur Nagar,Mumbai,Maharashtra,India,400104,1
+2039,Borivali East,Mumbai,Maharashtra,India,400066,1
+2040,Borivali,Mumbai,Maharashtra,India,400091,1
+2041,Borivali West,Mumbai,Maharashtra,India,400092,1
+2042,Charkop,Mumbai,Maharashtra,India,400067,1
+2043,Dahisar RS,Mumbai,Maharashtra,India,400068,1
+2044,Dahisar,Mumbai,Maharashtra,India,400068,1
+2045,Daulat Nagar Mumbai,Mumbai,Maharashtra,India,400066,1
+2046,Goregaon East,Mumbai,Maharashtra,India,400063,1
+2047,Goregaon RS,Mumbai,Maharashtra,India,400104,1
+2048,Goregaon Mumbai,Mumbai,Maharashtra,India,400104,1
+2049,Ins Hamla,Mumbai,Maharashtra,India,400095,1
+2050,Jogeshwari East,Mumbai,Maharashtra,India,400060,1
+2051,Jogeshwari West,Mumbai,Maharashtra,India,400102,1
+2052,Kandivali East,Mumbai,Maharashtra,India,400101,1
+2053,Kandivali RS,Mumbai,Maharashtra,India,400067,1
+2054,Kandivali West,Mumbai,Maharashtra,India,400067,1
+2055,Ketkipada,Mumbai,Maharashtra,India,400068,1
+2056,Kharodi,Mumbai,Maharashtra,India,400095,1
+2057,Liberty Garden,Mumbai,Maharashtra,India,400064,1
+2058,Magthane,Mumbai,Maharashtra,India,400066,1
+2059,Malad East,Mumbai,Maharashtra,India,400097,1
+2060,Malad,Mumbai,Maharashtra,India,400064,1
+2061,Malad West Dely,Mumbai,Maharashtra,India,400064,1
+2062,Mandapeshwar,Mumbai,Maharashtra,India,400103,1
+2063,Motilal Nagar,Mumbai,Maharashtra,India,400104,1
+2064,Nagari Niwara,Mumbai,Maharashtra,India,400065,1
+2065,Orlem,Mumbai,Maharashtra,India,400064,1
+2066,Oshiwara,Mumbai,Maharashtra,India,400102,1
+2067,Rajendra Nagar Mumbai,Mumbai,Maharashtra,India,400066,1
+2068,Rani Sati Marg,Mumbai,Maharashtra,India,400097,1
+2069,S R P F Camp,Mumbai,Maharashtra,India,400065,1
+2070,S. K.Nagar,Mumbai,Maharashtra,India,400066,1
+2071,Sharma Estate,Mumbai,Maharashtra,India,400063,1
+2072,Ambewadi Mumbai,Mumbai,Maharashtra,India,400004,1
+2073,Asvini,Mumbai,Maharashtra,India,400005,1
+2074,Bazargate,Mumbai,Maharashtra,India,400001,1
+2075,Central Building,Mumbai,Maharashtra,India,400020,1
+2076,Charni Road,Mumbai,Maharashtra,India,400004,1
+2077,Chaupati,Mumbai,Maharashtra,India,400004,1
+2078,Churchgate,Mumbai,Maharashtra,India,400020,1
+2079,Colaba Bazar,Mumbai,Maharashtra,India,400005,1
+2080,Colaba,Mumbai,Maharashtra,India,400005,1
+2081,Girgaon,Mumbai,Maharashtra,India,400004,1
+2082,High Court Building Mumbai,Mumbai,Maharashtra,India,400032,1
+2083,Holiday Camp,Mumbai,Maharashtra,India,400005,1
+2084,Kalbadevi,Mumbai,Maharashtra,India,400002,1
+2085,M.P.T.,Mumbai,Maharashtra,India,400001,1
+2086,Madhavbaug,Mumbai,Maharashtra,India,400004,1
+2087,Mantralaya Mumbai,Mumbai,Maharashtra,India,400032,1
+2088,Marine Lines,Mumbai,Maharashtra,India,400020,1
+2089,Nariman Point,Mumbai,Maharashtra,India,400021,1
+2090,New Yogakshema,Mumbai,Maharashtra,India,400021,1
+2091,Opera House,Mumbai,Maharashtra,India,400004,1
+2092,Ramwadi,Mumbai,Maharashtra,India,400002,1
+2093,S. C. Court,Mumbai,Maharashtra,India,400002,1
+2094,Secretariate,Mumbai,Maharashtra,India,400032,1
+2095,Stock Exchange,Mumbai,Maharashtra,India,400001,1
+2096,Tajmahal,Mumbai,Maharashtra,India,400001,1
+2097,Thakurdwar,Mumbai,Maharashtra,India,400002,1
+2098,Town Hall Mumbai,Mumbai,Maharashtra,India,400001,1
+2099,V.W.T.C.,Mumbai,Maharashtra,India,400005,1
+2100,Agripada,Mumbai,Maharashtra,India,400011,1
+2101,Bharat Nagar Mumbai,Mumbai,Maharashtra,India,400007,1
+2102,Bhawani Shankar Rd,Mumbai,Maharashtra,India,400028,1
+2103,Bhawani Shankar,Mumbai,Maharashtra,India,400028,1
+2104,BPC Jacob Circle,Mumbai,Maharashtra,India,400011,1
+2105,Century Mill,Mumbai,Maharashtra,India,400030,1
+2106,Chinchpokli,Mumbai,Maharashtra,India,400011,1
+2107,Cumballa Hill,Mumbai,Maharashtra,India,400026,1
+2108,Cumballa Sea Face,Mumbai,Maharashtra,India,400026,1
+2109,Delisle Road,Mumbai,Maharashtra,India,400013,1
+2110,Dharavi Road,Mumbai,Maharashtra,India,400017,1
+2111,Dharavi,Mumbai,Maharashtra,India,400017,1
+2112,Dr Deshmukh Marg,Mumbai,Maharashtra,India,400026,1
+2113,Falkland Road,Mumbai,Maharashtra,India,400008,1
+2114,Gokhale Road Mumbai,Mumbai,Maharashtra,India,400028,1
+2115,Gowalia Tank,Mumbai,Maharashtra,India,400026,1
+2116,Grant Road,Mumbai,Maharashtra,India,400007,1
+2117,Haines Road,Mumbai,Maharashtra,India,400011,1
+2118,Haji Ali,Mumbai,Maharashtra,India,400034,1
+2119,J.J.Hospital,Mumbai,Maharashtra,India,400008,1
+2120,Jacob Circle,Mumbai,Maharashtra,India,400011,1
+2121,Kamathipura,Mumbai,Maharashtra,India,400008,1
+2122,Kapad Bazar,Mumbai,Maharashtra,India,400016,1
+2123,M A Marg,Mumbai,Maharashtra,India,400008,1
+2124,Mahim Bazar,Mumbai,Maharashtra,India,400016,1
+2125,Mahim East,Mumbai,Maharashtra,India,400016,1
+2126,Mahim,Mumbai,Maharashtra,India,400016,1
+2127,Malabar Hill,Mumbai,Maharashtra,India,400006,1
+2128,Mori Road,Mumbai,Maharashtra,India,400016,1
+2129,Mumbai Central,Mumbai,Maharashtra,India,400008,1
+2130,N.S.Patkar Marg,Mumbai,Maharashtra,India,400007,1
+2131,New Prabhadevi Road,Mumbai,Maharashtra,India,400025,1
+2132,Prabhadevi,Mumbai,Maharashtra,India,400025,1
+2133,Rajbhavan Mumbai,Mumbai,Maharashtra,India,400035,1
+2134,Ranade Road,Mumbai,Maharashtra,India,400028,1
+2135,S V Marg,Mumbai,Maharashtra,India,400007,1
+2136,S V S Marg,Mumbai,Maharashtra,India,400028,1
+2137,Shivaji Park Mumbai,Mumbai,Maharashtra,India,400028,1
+2138,Tardeo,Mumbai,Maharashtra,India,400007,1
+2139,Tulsiwadi,Mumbai,Maharashtra,India,400034,1
+2140,Worli Colony,Mumbai,Maharashtra,India,400030,1
+2141,Worli Naka,Mumbai,Maharashtra,India,400018,1
+2142,Worli Police Camp,Mumbai,Maharashtra,India,400030,1
+2143,Worli,Mumbai,Maharashtra,India,400018,1
+2144,Worli Sea Face,Mumbai,Maharashtra,India,400030,1
+2145,Mumbai G.P.O.,Mumbai,Maharashtra,India,400001,1

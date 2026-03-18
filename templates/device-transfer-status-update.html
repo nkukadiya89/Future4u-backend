@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>Device Transfer Status Update</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font: 16px/1.5 Helvetica, Arial, Verdana, sans-serif;
+        background-color: #f5f5f5;
+      }
+      ul,
+      ul li,
+      p,
+      div,
+      ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      #pharma {
+        margin: 1em auto;
+        width: 660px;
+        padding: 10px 20px;
+        clear: both;
+        position: relative;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      #pharma-header {
+        margin-top: 0.3cm;
+        padding-bottom: 16px;
+        overflow: hidden;
+        text-align: center;
+      }
+      #pharma-header .logo {
+        max-width: 200px;
+        height: auto;
+      }
+      #title {
+        margin: 0 0 16px;
+        background: #022f46;
+        text-align: center;
+        padding: 5px;
+        color: #fff;
+        font-weight: bold;
+      }
+      #section {
+        margin: 0;
+        padding: 16px;
+        border-bottom: 1px solid #f1f1f1;
+        background: #f5f5f5;
+      }
+      #content {
+        margin: 0;
+        padding: 16px;
+      }
+      #content h5 {
+        font-weight: bold;
+        margin: 0 0 10px;
+      }
+      #table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      #table th,
+      #table td {
+        text-align: left;
+        border-bottom: 1px solid #eee;
+        padding: 8px 4px;
+      }
+      #footer {
+        margin: 0;
+        padding: 16px;
+        color: #afafaf;
+        border-top: 1px solid #f1f1f1;
+      }
+      .highlight {
+        color: #022f46;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="pharma">
+      <div id="pharma-header">
+        <img src="cid:image1" alt="OutdoorX" class="logo screen" />
+      </div>
+      <h2 id="title">Device Transfer Status Update</h2>
+      <table width="100%">
+        <tr>
+          <td id="section">
+            <strong><h5>Dear {{ name }},</h5></strong>
+          </td>
+        </tr>
+      </table>
+      <table width="100%">
+        <tr>
+          <td id="content">
+            <p>This is to inform you that the status of a device transfer has been updated.</p>
+            <br />
+            <p><strong>Device Transfer Details:</strong></p>
+            <ul>
+              <li><strong>Device Name/ID:</strong> {{ device_name|default:"N/A" }}</li>
+              <li><strong>New Status:</strong> <span class="highlight">{{ new_status|default:"Updated" }}</span></li>
+            </ul>
+            <br />
+            <p>Please log in to the OutdoorX portal to view more details about this device transfer.</p>
+            <br />
+            <p>
+              <a href="{% if login_url %}{{ login_url }}{% else %}#{% endif %}" style="background-color: #022f46; color: white; padding: 10px 20px; text-decoration: none; border-radius: 3px; display: inline-block;">
+                View Device Transfer
+              </a>
+            </p>
+            <br />
+            <p>
+              <strong>
+                Best regards,<br />
+                Team OutdoorX
+              </strong>
+            </p>
+          </td>
+        </tr>
+      </table>
+      <div id="footer" style="text-align: center;">This is an automated message, please do not reply.</div>
+    </div>
+  </body>
+</html>

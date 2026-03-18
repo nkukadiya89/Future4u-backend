@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <!-- {% load static %} -->
+  <head>
+    <title>OutdoorX New Password Create</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+      /* Base CSS styles DO NOT CHANGE OR REMOVE */
+      body {
+        margin: 0;
+        padding: 0;
+        font: 62.5%/1.5 Helvetica, Arial, Verdana, sans-serif;
+        background-color: #f5f5f5;
+      }
+      ul,
+      ul li,
+      p,
+      div,
+      ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      #pharma {
+        margin: 0 12pt;
+        width: 660px;
+        padding: 10px 20px;
+        margin: 1em auto;
+        clear: both;
+        position: relative;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      }
+      #pharma h3 {
+        font-size: 20px;
+        margin-bottom: 16px;
+        background: #f5f5f5;
+        text-align: center;
+        padding: 5px;
+        border: 1px solid #e6e6e6;
+      }
+      #pharma h5 {
+        font-size: 18px;
+        margin-top: 0;
+        margin-bottom: 16px;
+      }
+      #pharma {
+        font-family: Helvetica, Arial, Verdana, sans-serif !important;
+      }
+      #pharma h2 {
+        font-size: 22px;
+        margin: 0;
+        margin-bottom: 16px;
+        background: #022f46;
+        text-align: center;
+        padding: 5px;
+        color: #fff;
+      }
+      #pharma-header .logo {
+        max-width: 200px;
+        height: auto;
+      }
+      #pharma-header {
+        margin-top: 0.3cm;
+        padding-bottom: 16px;
+        overflow: hidden;
+        text-align: center;
+      }
+      #instruction h5 {
+        font-weight: bold;
+        display: block;
+        margin: 0;
+      }
+      #instruction {
+        font-size: 16px;
+        margin: 0;
+        padding: 16px;
+        border-bottom: 1px solid #f1f1f1;
+        background: #f5f5f5;
+      }
+      #thanks {
+        font-size: 16px;
+        margin: 0;
+        padding: 16px;
+      }
+      #thanks h5 {
+        font-weight: bold;
+        display: block;
+        margin: 0;
+      }
+      #resettext {
+        font-size: 16px;
+        margin: 0;
+        padding: 16px;
+      }
+      #resettext p {
+        margin-bottom: 10px;
+      }
+      #btnrow {
+        padding: 16px;
+        text-align: center;
+      }
+      #btnrow .btn {
+        background: #022f46;
+        border-radius: 5px;
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: normal;
+        text-decoration: none;
+        padding: 10px 16px;
+        display: inline-block;
+      }
+      #helptext {
+        font-size: 16px;
+        margin: 0;
+        padding: 16px;
+        color: #afafaf;
+        border-top: 1px solid #f1f1f1;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="pharma">
+      <div id="pharma-header">
+        <img src="cid:image1" alt="Mainlogo_large" class="logo screen" />
+      </div>
+      <table width="100%">
+        <tr>
+          <td id="instruction">
+            <strong>
+              <p>Dear {{ name }},</p>
+            </strong>
+            Here are your password create instruction.
+          </td>
+        </tr>
+      </table>
+      <table width="100%">
+        <tr>
+          <td id="resettext">
+            <p>
+              We received a request to create the password for your OutdoorX account.
+              To complete the password create process, please follow the instructions below:
+            </p>
+            <p>
+              Click on the following link to create your new password:
+              <a href="{{path}}{{ token }}">Create New Password</a>
+            </p>
+            <p>Once on the create page, follow the on-screen instructions to create a new password for your account.</p>
+            <p>
+              If you did not initiate this password reset request or have any concerns about your account's security,
+              please contact our support team at <a href="mailto:outdoorxadmin@yopmail.com">outdoorxadmin@yopmail.com</a>.
+            </p>
+            <br>
+            <p>Thank you for choosing OutdoorX.</p>
+            <p>
+              <strong>
+                Best regards,<br>
+                Team OutdoorX
+              </strong>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

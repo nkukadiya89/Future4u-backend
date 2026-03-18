@@ -1,0 +1,737 @@
+import csv
+from os import path
+
+from decouple import config
+from django.conf import settings
+from django.contrib.auth.models import Permission
+from django.core.management.base import BaseCommand
+from django.utils.timezone import now
+
+from business_category.models import BusinessCategory
+from city.models import City
+from city_areas.models import CityArea
+from country.models import Country
+from state.models import State
+from subscription.models import Subscription, SubscriptionFeature
+from user.models import CustomGroup, RoleFamily, User
+
+
+class Command(BaseCommand):
+    help = "Load country data into country database"
+
+    def add_arguments(self, parser) -> None:
+        parser.add_argument("--country", type=bool, help="Country data to be uploaded")
+        parser.add_argument("--zone_name", type=bool, help="ZoneName data to be uploaded")
+
+        parser.add_argument("--groups", type=bool, help="Create Groups")
+        parser.add_argument("--user", type=bool, help="Create Super User")
+
+    def handle(self, *args, **kwargs):
+        self.stdout.write("Initialise..")
+        if (
+            kwargs["country"] is None
+            and kwargs["zone_name"] is None
+            and kwargs["groups"] is None
+            and kwargs["user"] is None
+        ):
+            self.create_super_user()
+            self.create_custom_groups()
+            self.create_role_family()
+            self.load_business_category()
+            self.load_country()
+            self.load_state()
+            self.load_city()
+            self.load_city_area()
+            self.load_subscription()
+
+    # Super User Create
+    def create_super_user(self):
+        self.stdout.write("Creating Super User.......")
+        user = User.objects.create(
+            is_superuser=True,
+            is_staff=True,
+            is_active=True,
+            username="OutdoorxAdmin",
+            first_name="OutdoorX",
+            last_name="Admin",
+            about_me="Admin ",
+            email=config("INIT_EMAIL"),
+            profile_image="null",
+            whatsapp_verified=False,
+            designation="Super Admin",
+            phone=9639639630,
+            message="null",
+            role=1,
+            status="active",
+            aadhar_card=339782180844,
+            pancard="AAAAA0000A",
+            emergency_contact=5764768365,
+            current_address="3581 Pleasure Plaza",
+            permanent_address="540 Springview Court",
+            email_verified=True,
+            phone_verified=True,
+            company=None,
+        )
+        new_password = config("INIT_ADMIN_PASSWORD")
+        user.set_password(new_password)
+
+        user.save()
+        self.stdout.write("Super User Created!.......")
+        return user
+
+    # Role Family Create
+    role_family_data = [
+        {
+            "family_name": "OutdoorX Family",
+            "created_by": 1,
+            "updated_by": 1,
+        },
+        {
+            "family_name": "Partner Company Family",
+            "created_by": 1,
+            "updated_by": 1,
+        },
+        {
+            "family_name": "Ads Agency Family",
+            "created_by": 1,
+            "updated_by": 1,
+        },
+        {
+            "family_name": "EndClient Family",
+            "created_by": 1,
+            "updated_by": 1,
+        },
+    ]
+
+    def create_role_family(self):
+        self.stdout.write("Creating Role Family...........")
+        created_by_user = User.objects.get(pk=1)
+        role_family = []
+
+        for data in self.role_family_data:
+            roles_family, created = RoleFamily.objects.update_or_create(
+                family_name=data["family_name"],
+                defaults={
+                    "created_by": created_by_user,
+                    "updated_by": created_by_user,
+                },
+            )
+            role_family.append(roles_family)
+        return role_family
+
+    def create_custom_groups(self):
+        self.stdout.write("Creating Groups.......")
+        user = User.objects.get(id=1)
+
+        super_admin_group = CustomGroup.objects.create(name="Super Admin", group_name="Super Admin", created_by=user)
+        company_admin_group = CustomGroup.objects.create(name="Company Admin", group_name="Company Admin")
+        partner_admin_group = CustomGroup.objects.create(
+            name="Partner Company Admin", group_name="Partner Company Admin"
+        )
+        end_client_admin_group = CustomGroup.objects.create(name="EndClient Admin", group_name="EndClient Admin")
+
+        self.stdout.write("Custom Groups Created!.......")
+
+        super_admin_permissions = [
+            "activity_log|Can view activity log",
+            "business_category|Can add business category",
+            "business_category|Can change business category",
+            "business_category|Can delete business category",
+            "business_category|Can view business category",
+            "city|Can add city",
+            "city|Can change city",
+            "city|Can delete city",
+            "city|Can view city",
+            "city_areas|Can add city area",
+            "city_areas|Can change city area",
+            "city_areas|Can delete city area",
+            "city_areas|Can view city area",
+            "company|Can add company",
+            "company|Can change company",
+            "company|Can delete company",
+            "company|Can view company",
+            "country|Can add country",
+            "country|Can change country",
+            "country|Can delete country",
+            "country|Can view country",
+            "employee|Can add employee",
+            "employee|Can change employee",
+            "employee|Can delete employee",
+            "employee|Can view employee",
+            "faq|Can add faq",
+            "faq|Can change faq",
+            "faq|Can delete faq",
+            "faq|Can view faq",
+            # "meter_config|Can add meter config",
+            # "meter_config|Can change meter config",
+            # "meter_config|Can delete meter config",
+            # "meter_config|Can view meter config",
+            # "device_config|Can add device configuration",
+            # "device_config|Can change device configuration",
+            # "device_config|Can delete device configuration",
+            # "device_config|Can view device configuration",
+            # "notification_templates|Can add notification templates",
+            # "notification_templates|Can change notification templates",
+            # "notification_templates|Can delete notification templates",
+            # "notification_templates|Can view notification templates",
+            "partner_company|Can add partner company",
+            "partner_company|Can add partner company document",
+            "partner_company|Can change partner company",
+            "partner_company|Can change partner company document",
+            "partner_company|Can delete partner company",
+            "partner_company|Can delete partner company document",
+            "partner_company|Can view partner company",
+            "partner_company|Can view partner company document",
+            # "request_demo|Can change request demo",
+            # "request_demo|Can delete request demo",
+            # "request_demo|Can view request demo",
+            # "sim_master|Can add sim",
+            # "sim_master|Can change sim",
+            # "sim_master|Can delete sim",
+            # "sim_master|Can view sim",
+            # "sim_recharge_log|Can add sim recharge log",
+            # "sim_recharge_log|Can change sim recharge log",
+            # "sim_recharge_log|Can delete sim recharge log",
+            # "sim_recharge_log|Can view sim recharge log",
+            "state|Can add state",
+            "state|Can change state",
+            "state|Can delete state",
+            "state|Can view state",
+            # "site_location|Can change site location",
+            "subscription|Can add subscription",
+            "subscription|Can change subscription",
+            "subscription|Can delete subscription",
+            "subscription|Can view subscription",
+            "subscription|Can add stripe charge",
+            "subscription|Can add subscription feature",
+            "subscription|Can add subscription invoice",
+            "subscription|Can change stripe charge",
+            "subscription|Can change subscription feature",
+            "subscription|Can change subscription invoice",
+            "subscription|Can delete stripe charge",
+            "subscription|Can delete subscription feature",
+            "subscription|Can delete subscription invoice",
+            "subscription|Can view subscription feature",
+            "subscription|Can view subscription invoice",
+            # "ticket_category|Can add ticket category",
+            # "ticket_category|Can change ticket category",
+            # "ticket_category|Can delete ticket category",
+            # "ticket_category|Can view ticket category",
+            # "support_ticket|Can add ticket",
+            # "support_ticket|Can change ticket",
+            # "support_ticket|Can delete ticket",
+            # "support_ticket|Can view ticket",
+            # "support_ticket|Can add ticket comment",
+            # "support_ticket|Can change ticket comment",
+            # "support_ticket|Can delete ticket comment",
+            # "support_ticket|Can view ticket comment",
+            "user|Can add custom group",
+            "user|Can change auth group permissions model",
+            "user|Can change custom group",
+            "user|Can change user",
+            "user|Can delete auth group permissions model",
+            "user|Can delete custom group",
+            "user|Can view auth group permissions model",
+            "user|Can view custom group",
+            "user|Can view user",
+            "user_profile|Can change business setting",
+            "user_profile|Can view business setting",
+        ]
+
+        company_admin_permissions = [
+            "activity_log|Can view activity log",
+            # "campaign|Can add campaign",
+            # "campaign|Can change campaign",
+            # "campaign|Can delete campaign",
+            # "campaign|Can view campaign",
+            "company|Can change company",
+            "company|Can view company",
+            # "site_location|Can add site location",
+            # "site_location|Can change site location",
+            # "site_location|Can delete site location",
+            # "site_location|Can view site location",
+            "employee|Can add employee",
+            "employee|Can change employee",
+            "employee|Can delete employee",
+            "employee|Can view employee",
+            "subscription|Can view subscription",
+            "subscription|Can view payment subscription",
+            "subscription|Can view payment subscription item",
+            "subscription|Can view subscription invoice",
+            "subscription|Can view subscription feature",
+            # "device_transfer|Can add device transfer",
+            # "device_transfer|Can change device transfer",
+            # "device_transfer|Can delete device transfer",
+            # "device_transfer|Can view device transfer",
+            # "sim_recharge_log|Can add sim recharge log",
+            # "sim_recharge_log|Can change sim recharge log",
+            # "sim_recharge_log|Can delete sim recharge log",
+            # "sim_recharge_log|Can view sim recharge log",
+            # "device_config|Can add device configuration",
+            # "device_config|Can change device configuration",
+            # "device_config|Can delete device configuration",
+            # "device_config|Can view device configuration",
+            # "device_config|Can assign device configuration",
+            # "support_ticket|Can add ticket",
+            # "support_ticket|Can change ticket",
+            # "support_ticket|Can delete ticket",
+            # "support_ticket|Can view ticket",
+            # "support_ticket|Can add ticket comment",
+            # "support_ticket|Can change ticket comment",
+            # "support_ticket|Can delete ticket comment",
+            # "support_ticket|Can view ticket comment",
+            "user_profile|Can change business setting",
+            "user_profile|Can view business setting",
+            "user|Can add custom group",
+            "user|Can change auth group permissions model",
+            "user|Can change custom group",
+            "user|Can change user",
+            "user|Can delete auth group permissions model",
+            "user|Can delete custom group",
+            "user|Can view auth group permissions model",
+            "user|Can view custom group",
+        ]
+
+        partner_admin_permissions = [
+            "activity_log|Can view activity log",
+            "employee|Can add employee",
+            "employee|Can change employee",
+            "employee|Can delete employee",
+            "employee|Can view employee",
+            # "meter_config|Can add meter config",
+            # "meter_config|Can change meter config",
+            # "meter_config|Can delete meter config",
+            # "meter_config|Can view meter config",
+            # "device_config|Can change device configuration",
+            # "device_config|Can view device configuration",
+            # "device_config|Can edit site device configuration",
+            # "device_config|Can view assigned site list",
+            "partner_company|Can change partner company",
+            "partner_company|Can change partner company document",
+            "partner_company|Can delete partner company document",
+            "partner_company|Can view partner company",
+            "partner_company|Can view partner company document",
+            # "support_ticket|Can add ticket",
+            # "support_ticket|Can change ticket",
+            # "support_ticket|Can delete ticket",
+            # "support_ticket|Can view ticket",
+            # "support_ticket|Can add ticket comment",
+            # "support_ticket|Can change ticket comment",
+            # "support_ticket|Can delete ticket comment",
+            # "support_ticket|Can view ticket comment",
+            "user|Can add custom group",
+            "user|Can change auth group permissions model",
+            "user|Can change custom group",
+            "user|Can change user",
+            "user|Can delete auth group permissions model",
+            "user|Can delete custom group",
+            "user|Can view auth group permissions model",
+            "user|Can view custom group",
+            "user|Can view user",
+            "user_profile|Can change business setting",
+            "user_profile|Can view business setting",
+        ]
+
+        end_client_admin_permissions = [
+            "activity_log|Can view activity log",
+            "end_client|Can change end client",
+            "end_client|Can view end client",
+            "employee|Can add employee",
+            "employee|Can change employee",
+            "employee|Can delete employee",
+            "employee|Can view employee",
+            # "support_ticket|Can add ticket",
+            # "support_ticket|Can change ticket",
+            # "support_ticket|Can delete ticket",
+            # "support_ticket|Can view ticket",
+            # "support_ticket|Can add ticket comment",
+            # "support_ticket|Can change ticket comment",
+            # "support_ticket|Can delete ticket comment",
+            # "support_ticket|Can view ticket comment",
+            "user_profile|Can change business setting",
+            "user_profile|Can view business setting",
+            "user|Can add custom group",
+            "user|Can change auth group permissions model",
+            "user|Can change custom group",
+            "user|Can change user",
+            "user|Can delete auth group permissions model",
+            "user|Can delete custom group",
+            "user|Can view auth group permissions model",
+            "user|Can view custom group",
+        ]
+
+        assign_group_super_admin = CustomGroup.objects.get(name="Super Admin")
+        assign_group_super_admin.user_set.add(user)
+
+        self.assign_permissions(super_admin_group, super_admin_permissions)
+        self.assign_permissions(company_admin_group, company_admin_permissions)
+        self.assign_permissions(partner_admin_group, partner_admin_permissions)
+        self.assign_permissions(end_client_admin_group, end_client_admin_permissions)
+
+    def assign_permissions(self, group, permissions):
+        for permission_name in permissions:
+            try:
+                app_label, codename = permission_name.split("|")
+                permission_obj = Permission.objects.get(
+                    content_type__app_label=app_label,
+                    name=codename,
+                )
+                group.permissions.add(permission_obj)
+                self.stdout.write(f"Assigned {app_label and codename} permission to {group.name} group")
+            except Permission.DoesNotExist:
+                self.stdout.write(
+                    (f"Permission {permission_name} does not exist. " f"Skipping assignment to {group.name} group")
+                )
+            except Permission.MultipleObjectsReturned:
+                self.stdout.write(
+                    (
+                        f"Multiple permissions with the name {permission_name} exist. "
+                        f"Skipping assignment to {group.name} group"
+                    )
+                )
+
+    def load_business_category(self):
+        self.stdout.write("Loading Business Category...")
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "business_categorys.csv")
+        with open(file_path, "r", encoding="utf-8") as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=",")
+            BusinessCategory.objects.bulk_create(
+                [BusinessCategory(business_category=row["business_category"]) for row in reader],
+                ignore_conflicts=True,
+            )
+        self.stdout.write("Business Category data uploaded.")
+
+    # Country Upload CSV
+    def load_country(self):
+        self.stdout.write("Loading Country...")
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "countrie.csv")
+        with open(file_path, "r", encoding="utf-8") as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=",")
+            Country.objects.bulk_create(
+                [
+                    Country(
+                        name=row["name"],
+                        code=row["code"],
+                        unicode=row["unicode"],
+                        country_flag=row["flag"],
+                        phone_code=row["phone_code"],
+                        created_by=User.objects.get(id=row["created_by"]),
+                    )
+                    for row in reader
+                ],
+                ignore_conflicts=True,
+            )
+        self.stdout.write("Country data uploaded.")
+
+    # State Upload CSV
+    def load_state(self):
+        self.stdout.write("Loading State...")
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "state.csv")
+        with open(file_path, "r", encoding="utf-8") as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=",")
+            states_to_create = []
+            for row in reader:
+                try:
+                    # Get country by name and use its ID
+                    country = Country.objects.get(name=row["country_name"])
+                    states_to_create.append(
+                        State(
+                            name=row["name"],
+                            country_id=country.id,
+                            created_by=User.objects.get(id=row["created_by"]),
+                        )
+                    )
+                except Country.DoesNotExist:
+                    self.stdout.write(self.style.ERROR(f"Country not found: {row['country_name']}"))
+                    continue
+                except Exception as e:
+                    self.stdout.write(self.style.ERROR(f"Error processing state {row['name']}: {str(e)}"))
+                    continue
+
+            if states_to_create:
+                State.objects.bulk_create(states_to_create, ignore_conflicts=True)
+        self.stdout.write("State data uploaded successfully.")
+
+    # City Upload CSV
+    def load_city(self):
+        self.stdout.write("Loading City....")
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "city.csv")
+
+        states = {}
+        for state in State.objects.select_related("country").all():
+            key = f"{state.name.lower()}_{state.country.name.lower()}"
+            states[key] = state
+
+        cities_to_create = []
+
+        with open(file_path, "r", encoding="utf-8") as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=",")
+
+            for row in reader:
+                try:
+                    state_name = row["state_name"].strip().lower()
+                    country_name = row["country_name"].strip().lower()
+                    state_key = f"{state_name}_{country_name}"
+
+                    state = states.get(state_key)
+
+                    if not state:
+                        continue
+
+                    cities_to_create.append(
+                        City(
+                            name=row["name"].strip(),
+                            state=state,
+                            country=state.country,
+                            created_by=User.objects.get(id=row["created_by"]),
+                        )
+                    )
+
+                except Exception as e:
+                    self.stdout.write(
+                        self.style.ERROR(f"Error processing city '{row.get('name', 'Unknown')}': {str(e)}")
+                    )
+                    continue
+
+        if cities_to_create:
+            City.objects.bulk_create(cities_to_create, ignore_conflicts=True)
+
+        self.stdout.write("City data uploaded successfully.")
+
+    # City Area Upload CSV
+    def load_city_area(self):
+        self.stdout.write("Loading City Area....")
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "city_area.csv")
+
+        cities = {}
+        for city in City.objects.select_related("state", "state__country").all():
+            key = f"{city.name.lower()}_{city.state.name.lower()}_{city.state.country.name.lower()}"
+            cities[key] = city
+
+        city_areas_to_create = []
+
+        with open(file_path, "r", encoding="utf-8") as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=",")
+
+            for row in reader:
+                try:
+                    city_name = row["city_name"].strip().lower()
+                    state_name = row["state_name"].strip().lower()
+                    country_name = row["country_name"].strip().lower()
+                    city_key = f"{city_name}_{state_name}_{country_name}"
+
+                    city = cities.get(city_key)
+
+                    if not city:
+                        continue
+
+                    city_areas_to_create.append(
+                        CityArea(
+                            country_id=city.state.country.id,
+                            state_id=city.state.id,
+                            city_id=city.id,
+                            city_area_name=row["city_area"].strip(),
+                            zipcode=row["zipcode"].strip(),
+                            created_by=User.objects.get(id=row["created_by"]),
+                        )
+                    )
+
+                except Exception as e:
+                    self.stdout.write(
+                        self.style.ERROR(f"Error processing city area '{row.get('city_area', 'Unknown')}': {str(e)}")
+                    )
+                    continue
+
+        if city_areas_to_create:
+            CityArea.objects.bulk_create(city_areas_to_create, ignore_conflicts=True)
+
+        self.stdout.write("City Area data uploaded successfully.")
+
+    # Subscription Create
+    subscription_data = [
+        {
+            "package_name": "Essential",
+            "subscription_type": "subscription",
+            "device_price": 24000.0,
+            "device_discount": 0.0,
+            "device_sell_price": 24000.0,
+            "subscription_price": 2800.0,
+            "subscription_discount": 0.0,
+            "subscription_sell_price": 2800.0,
+            "plan_price": 26800.0,
+            "device_transfer_price": 0.0,
+            "device_transfer_discount": 0.0,
+            "device_transfer_sell_price": 0.0,
+            "duration_days": 365,
+            "description": (
+                "Easily control your connected lights anytime, anywhere. "
+                "Instantly switch lights on or off with a single tap for quick manual control."
+            ),
+            "status": "active",
+            "core_features": [
+                {"feature_name": "light_on_off", "feature_status": True},
+                {"feature_name": "set_schedule", "feature_status": True},
+                {"feature_name": "meter_consumption_report", "feature_status": False},
+                {"feature_name": "energy_saving_report", "feature_status": False},
+                {"feature_name": "switch_notification", "feature_status": False},
+                {"feature_name": "advanced_time_schedule", "feature_status": False},
+                {"feature_name": "vacant_sites_light_off", "feature_status": False},
+                {"feature_name": "campaign_tracking_system", "feature_status": False},
+                {"feature_name": "voice_light_control", "feature_status": False},
+                {"feature_name": "camera_live_room", "feature_status": False},
+                {"feature_name": "photo_video_with_gps", "feature_status": False},
+            ],
+            "subscription_feature": [
+                {"feature_name": "Smart Light Control (on/off)", "feature_status": True},
+                {"feature_name": "Automated Scheduling", "feature_status": True},
+                {"feature_name": "Energy Consumption Reports", "feature_status": True},
+                {"feature_name": "Power & Usage Report", "feature_status": True},
+                {"feature_name": "Real-Time Issue Alerts", "feature_status": True},
+            ],
+        },
+        {
+            "package_name": "Advanced",
+            "subscription_type": "subscription",
+            "device_price": 24000.0,
+            "device_discount": 0.0,
+            "device_sell_price": 24000.0,
+            "subscription_price": 6000.0,
+            "subscription_discount": 0.0,
+            "subscription_sell_price": 6000.0,
+            "plan_price": 30000.0,
+            "device_transfer_price": 0.0,
+            "device_transfer_discount": 0.0,
+            "device_transfer_sell_price": 0.0,
+            "duration_days": 365,
+            "description": (
+                "Easily control your connected lights anytime, anywhere. "
+                "Instantly switch lights on or off with a single tap for quick manual control."
+            ),
+            "status": "active",
+            "core_features": [
+                {"feature_name": "light_on_off", "feature_status": True},
+                {"feature_name": "set_schedule", "feature_status": True},
+                {"feature_name": "meter_consumption_report", "feature_status": True},
+                {"feature_name": "energy_saving_report", "feature_status": False},
+                {"feature_name": "switch_notification", "feature_status": False},
+                {"feature_name": "advanced_time_schedule", "feature_status": False},
+                {"feature_name": "vacant_sites_light_off", "feature_status": False},
+                {"feature_name": "campaign_tracking_system", "feature_status": False},
+                {"feature_name": "voice_light_control", "feature_status": False},
+                {"feature_name": "camera_live_room", "feature_status": False},
+                {"feature_name": "photo_video_with_gps", "feature_status": False},
+            ],
+            "subscription_feature": [
+                {"feature_name": "Smart Light Control (on/off)", "feature_status": True},
+                {"feature_name": "Automated Scheduling", "feature_status": True},
+                {"feature_name": "Energy Consumption Reports", "feature_status": True},
+                {"feature_name": "Power & Usage Report", "feature_status": True},
+                {"feature_name": "Real-Time Issue Alerts", "feature_status": True},
+                {"feature_name": "Advanced Campaign Scheduling", "feature_status": True},
+                {"feature_name": "Auto Light-Off for Vacant Sites", "feature_status": True},
+            ],
+        },
+        {
+            "package_name": "Vision Pro",
+            "subscription_type": "subscription",
+            "device_price": 24000.0,
+            "device_discount": 0.0,
+            "device_sell_price": 24000.0,
+            "subscription_price": 8000.0,
+            "subscription_discount": 0.0,
+            "subscription_sell_price": 8000.0,
+            "plan_price": 32000.0,
+            "device_transfer_price": 0.0,
+            "device_transfer_discount": 0.0,
+            "device_transfer_sell_price": 0.0,
+            "duration_days": 365,
+            "description": (
+                "Easily control your connected lights anytime, anywhere. "
+                "Instantly switch lights on or off with a single tap for quick manual control."
+            ),
+            "status": "active",
+            "core_features": [
+                {"feature_name": "light_on_off", "feature_status": True},
+                {"feature_name": "set_schedule", "feature_status": True},
+                {"feature_name": "meter_consumption_report", "feature_status": True},
+                {"feature_name": "energy_saving_report", "feature_status": False},
+                {"feature_name": "switch_notification", "feature_status": False},
+                {"feature_name": "advanced_time_schedule", "feature_status": False},
+                {"feature_name": "vacant_sites_light_off", "feature_status": False},
+                {"feature_name": "campaign_tracking_system", "feature_status": False},
+                {"feature_name": "voice_light_control", "feature_status": False},
+                {"feature_name": "camera_live_room", "feature_status": False},
+                {"feature_name": "photo_video_with_gps", "feature_status": False},
+            ],
+            "subscription_feature": [
+                {"feature_name": "Smart Light Control (on/off)", "feature_status": True},
+                {"feature_name": "Automated Scheduling", "feature_status": True},
+                {"feature_name": "Energy Consumption Reports", "feature_status": True},
+                {"feature_name": "Power & Usage Report", "feature_status": True},
+                {"feature_name": "Real-Time Issue Alerts", "feature_status": True},
+                {"feature_name": "Advanced Campaign Scheduling", "feature_status": True},
+                {"feature_name": "Auto Light-Off for Vacant Sites", "feature_status": True},
+                {"feature_name": "Client Campaign Tracking", "feature_status": True},
+                {"feature_name": "Voice-Activated Light Control", "feature_status": True},
+                {"feature_name": "Live Camera Monitoring", "feature_status": True},
+                {"feature_name": "Smart Photo & Video Capture", "feature_status": True},
+            ],
+        },
+    ]
+
+    def load_subscription(self, *args, **kwargs):
+        self.stdout.write("Creating Subscription Plans...")
+
+        created_by_user = User.objects.first()
+
+        for data in self.subscription_data:
+            subscription, created = Subscription.objects.get_or_create(
+                package_name=data["package_name"],
+                defaults={
+                    "subscription_type": data["subscription_type"],
+                    "device_price": data["device_price"],
+                    "device_discount": data["device_discount"],
+                    "device_sell_price": data["device_sell_price"],
+                    "subscription_price": data["subscription_price"],
+                    "subscription_discount": data["subscription_discount"],
+                    "subscription_sell_price": data["subscription_sell_price"],
+                    "plan_price": data["plan_price"],
+                    "device_transfer_price": data["device_transfer_price"],
+                    "device_transfer_discount": data["device_transfer_discount"],
+                    "device_transfer_sell_price": data["device_transfer_sell_price"],
+                    "duration_days": data["duration_days"],
+                    "description": data["description"],
+                    "status": data["status"],
+                    "created_by": created_by_user,
+                    "created_at": now(),
+                },
+            )
+
+            if created:
+                self.stdout.write(f"Created subscription: {subscription.package_name}")
+
+                for feature in data["core_features"]:
+                    SubscriptionFeature.objects.create(
+                        subscription=subscription,
+                        feature_name=feature["feature_name"],
+                        feature_status=feature["feature_status"],
+                        is_core=True,
+                        created_by=created_by_user,
+                        created_at=now(),
+                    )
+                    self.stdout.write(f"  - Added core feature: {feature['feature_name']}")
+
+                for feature in data["subscription_feature"]:
+                    SubscriptionFeature.objects.create(
+                        subscription=subscription,
+                        feature_name=feature["feature_name"],
+                        feature_status=feature["feature_status"],
+                        is_core=False,
+                        created_by=created_by_user,
+                        created_at=now(),
+                    )
+                    self.stdout.write(f"  - Added subscription feature: {feature['feature_name']}")
+
+        self.stdout.write("Subscription data uploaded.")
+
+    

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Ticket Notification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #555;
+        }
+        .ticket-info {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border-left: 4px solid #667eea;
+        }
+        .ticket-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .info-row {
+            margin: 10px 0;
+            display: flex;
+            align-items: flex-start;
+        }
+        .info-label {
+            font-weight: bold;
+            min-width: 120px;
+            color: #555;
+        }
+        .info-value {
+            flex: 1;
+            color: #333;
+        }
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status.open {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .status.in_progress {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        .status.resolved {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        .status.closed {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+        .btn-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 14px 28px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        .custom-content {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f0f7ff;
+            border-radius: 8px;
+            border: 1px solid #d1e9ff;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 14px;
+        }
+        .logo {
+            max-width: 150px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="cid:image1" alt="OutdoorX Logo" class="logo">
+            <h1>Support Ticket Notification</h1>
+            <p>New Support Ticket Created</p>
+        </div>
+        
+        <div class="content">
+            <p class="greeting">Hello {% if name %}{{ name }}{% else %}User{% endif %},</p>
+            
+            {% if custom_content %}
+                <div class="custom-content">
+                    {{ custom_content|safe }}
+                </div>
+            {% else %}
+                <p>A new support ticket has been created and requires your attention.</p>
+            {% endif %}
+            
+            <div class="ticket-info">
+                <div class="ticket-number">Ticket #{{ ticket_number|default:"N/A" }}</div>
+                
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value">
+                        <span class="status {{ status|default:'open' }}">{{ status|default:"open"|title }}</span>
+                    </span>
+                </div>
+                
+                {% if description %}
+                <div class="info-row">
+                    <span class="info-label">Description:</span>
+                    <span class="info-value">{{ description|linebreaks }}</span>
+                </div>
+                {% endif %}
+                
+                {% if company_name %}
+                <div class="info-row">
+                    <span class="info-label">Company:</span>
+                    <span class="info-value">{{ company_name }}</span>
+                </div>
+                {% endif %}
+                
+                {% if partner_company_name %}
+                <div class="info-row">
+                    <span class="info-label">Partner Company:</span>
+                    <span class="info-value">{{ partner_company_name }}</span>
+                </div>
+                {% endif %}
+                
+                {% if end_client_name %}
+                <div class="info-row">
+                    <span class="info-label">End Client:</span>
+                    <span class="info-value">{{ end_client_name }}</span>
+                </div>
+                {% endif %}
+                
+                {% if created_by_name %}
+                <div class="info-row">
+                    <span class="info-label">Created By:</span>
+                    <span class="info-value">{{ created_by_name }}</span>
+                </div>
+                {% endif %}
+                
+                {% if created_at %}
+                <div class="info-row">
+                    <span class="info-label">Created At:</span>
+                    <span class="info-value">{{ created_at }}</span>
+                </div>
+                {% endif %}
+                
+                {% if ticket_topic_name %}
+                <div class="info-row">
+                    <span class="info-label">Category:</span>
+                    <span class="info-value">{{ ticket_topic_name }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="btn-container">
+                <a href="{{ admin_url|default:'#' }}" class="btn">View Ticket Details</a>
+            </div>
+            
+            <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+            
+            <p>Best regards,<br>OutdoorX Support Team</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2024 OutdoorX. All rights reserved.</p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

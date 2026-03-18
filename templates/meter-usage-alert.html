@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>Meter Usage Alert - OutdoorX</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font: 16px/1.5 Helvetica, Arial, Verdana, sans-serif;
+        background-color: #f5f5f5;
+      }
+      ul,
+      ul li,
+      p,
+      div,
+      ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      #pharma {
+        margin: 1em auto;
+        width: 660px;
+        padding: 10px 20px;
+        clear: both;
+        position: relative;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      #pharma-header {
+        margin-top: 0.3cm;
+        padding-bottom: 16px;
+        overflow: hidden;
+        text-align: center;
+      }
+      #pharma-header .logo {
+        max-width: 200px;
+        height: auto;
+      }
+      #title {
+        margin: 0 0 16px;
+        background: #dc3545;
+        text-align: center;
+        padding: 5px;
+        color: #fff;
+        font-weight: bold;
+      }
+      #section {
+        margin: 0;
+        padding: 16px;
+        border-bottom: 1px solid #f1f1f1;
+        background: #f5f5f5;
+      }
+      #content {
+        margin: 0;
+        padding: 16px;
+      }
+      #content h5 {
+        font-weight: bold;
+        margin: 0 0 10px;
+      }
+      #table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      #table th,
+      #table td {
+        text-align: left;
+        border-bottom: 1px solid #eee;
+        padding: 8px 4px;
+      }
+      #footer {
+        margin: 0;
+        padding: 16px;
+        color: #afafaf;
+        border-top: 1px solid #f1f1f1;
+      }
+      .alert {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        padding: 20px;
+        border-radius: 5px;
+        margin: 20px 0;
+        text-align: center;
+      }
+      .usage-stats {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        padding: 20px;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .progress-bar {
+        background: #e9ecef;
+        border-radius: 10px;
+        height: 20px;
+        margin: 10px 0;
+        overflow: hidden;
+      }
+      .progress-fill {
+        background: #ffc107;
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.3s ease;
+      }
+      .usage-value {
+        font-weight: bold;
+        color: #ffc107;
+        font-size: 24px;
+      }
+      .btn {
+        display: inline-block;
+        padding: 15px 30px;
+        background: #022f46;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 10px 0;
+        font-weight: bold;
+      }
+      .btn-warning {
+        background: #ffc107;
+        color: #000;
+      }
+      .device-info {
+        background: #e2e3e5;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="pharma">
+      <div id="pharma-header">
+        <img src="cid:image1" alt="OutdoorX" class="logo screen" />
+      </div>
+      <h2 id="title">📉 Low Usage Alert</h2>
+      <table width="100%">
+        <tr>
+          <td id="section">
+            <strong><h4>Dear {{ recipient_name }},</h4></strong>
+          </td>
+        </tr>
+      </table>
+      <table width="100%">
+        <tr>
+          <td id="content">
+            <div class="alert">
+              <h3>📉 Low Usage Alert!</h3>
+              <p><strong>Device {{ device_code }}</strong> has only used <span class="usage-value">{{ usage_percentage|floatformat:1 }}%</span> of daily average</p>
+              <p>This is below the 70% expected usage threshold</p>
+            </div>
+
+            <div class="device-info">
+              <h3>🔧 Device Information</h3>
+              <table width="100%" style="margin: 15px 0;">
+                <tr>
+                  <td width="50%"><strong>Device Code:</strong></td>
+                  <td width="50%">{{ device_code }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Company:</strong></td>
+                  <td>{{ company_name }}</td>
+                </tr>
+                {% if partner_company_name %}
+                <tr>
+                  <td><strong>Partner Company:</strong></td>
+                  <td>{{ partner_company_name }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                  <td><strong>Device ID:</strong></td>
+                  <td>#{{ device_id }}</td>
+                </tr>
+              </table>
+            </div>
+
+            <div class="usage-stats">
+              <h3>📊 Usage Statistics (Last 30 Days)</h3>
+              <table width="100%" style="margin: 15px 0;">
+                <tr>
+                  <td width="50%"><strong>Recent Usage (24h):</strong></td>
+                  <td width="50%"><span class="usage-value">{{ recent_usage|floatformat:2 }}</span> kWh</td>
+                </tr>
+                <tr>
+                  <td><strong>Daily Average:</strong></td>
+                  <td><strong>{{ daily_average|floatformat:2 }}</strong> kWh</td>
+                </tr>
+                <tr>
+                  <td><strong>70% Threshold:</strong></td>
+                  <td>{{ expected_70_percent_usage|floatformat:2 }} kWh</td>
+                </tr>
+              </table>
+
+              <div style="margin: 20px 0;">
+                <strong>Usage Progress:</strong>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: {{ usage_percentage|floatformat:0 }}%;"></div>
+                </div>
+                <small>{{ usage_percentage|floatformat:1 }}% of daily average used</small>
+              </div>
+            </div>
+
+            <h3>🔍 What This Means:</h3>
+            <ul>
+              <li>📉 <strong>Low Usage Warning:</strong> Device meter reading is below 70% of the daily average usage</li>
+              <li>📈 <strong>Current Trend:</strong> Based on the last 30 days of meter data</li>
+              <li>💡 <strong>Recommendation:</strong> Check if device is operating properly or consider subscription downgrade</li>
+              <li>🔄 <strong>Continuous Monitoring:</strong> System will continue to track usage patterns</li>
+            </ul>
+
+            <h3>🚀 Recommended Actions:</h3>
+            <ul>
+              <li>📊 <strong>Review Device Data:</strong> Check detailed meter readings via device dashboard</li>
+              <li>🔧 <strong>Device Configuration:</strong> Verify device settings and operating parameters</li>
+              <li>💼 <strong>Contact Support:</strong> Discuss subscription optimization options</li>
+              <li>📅 <strong>Plan Ahead:</strong> Consider if current subscription meets your needs</li>
+            </ul>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <h3>Need Assistance?</h3>
+              <a href="{{ admin_url }}" class="btn">View Dashboard</a>
+              <a href="mailto:support@e-switch.com" class="btn btn-warning">Contact Support</a>
+            </div>
+
+            <h3>📞 Support Information:</h3>
+            <div style="background: #e2e3e5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <p><strong>OutdoorX Technical Support</strong></p>
+              <p><strong>Email:</strong> support@e-switch.com</p>
+              <p><strong>Phone:</strong> +91-XXX-XXX-XXXX</p>
+              <p><strong>Available:</strong> Monday - Saturday, 9:00 AM - 6:00 PM</p>
+            </div>
+
+            <p><strong>Next Steps:</strong> We recommend reviewing the device's meter data and usage patterns to ensure optimal performance.</p>
+
+            <p>This alert is based on actual meter readings from the device's electrical parameters.</p>
+
+            <p>Best regards,<br>
+            The OutdoorX Monitoring Team</p>
+          </td>
+        </tr>
+      </table>
+      <div id="footer">
+        <p>📉 Low usage alert: Device {{ device_code }} at {{ usage_percentage|floatformat:1 }}% of daily average</p>
+        <p>© 2024 OutdoorX. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>

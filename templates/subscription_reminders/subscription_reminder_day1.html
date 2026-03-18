@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Final Notice: Subscription Expires Tomorrow</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #721c24; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: white; padding: 30px; border: 1px solid #e9ecef; border-radius: 0 0 8px 8px; }
+        .btn { display: inline-block; padding: 15px 30px; background: #721c24; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; font-weight: bold; }
+        .btn-primary { background: #007bff; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        .critical { background: #f8d7da; border: 2px solid #721c24; padding: 20px; border-radius: 5px; margin: 20px 0; text-align: center; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .countdown { font-size: 24px; font-weight: bold; color: #721c24; text-align: center; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚨 FINAL NOTICE: SERVICE EXPIRATION TOMORROW</h1>
+            <h2>{{ company_name }}</h2>
+        </div>
+
+        <div class="content">
+            <p>Dear {{ person_name }},</p>
+
+            <div class="critical">
+                <h3>🚨 CRITICAL: SERVICE WILL END TOMORROW!</h3>
+                <div class="countdown">⏰ LESS THAN 24 HOURS REMAINING ⏰</div>
+                <p>Your OutdoorX subscription expires <strong>tomorrow</strong>. Immediate action required!</p>
+            </div>
+
+            {% if subscription_package %}
+            <div class="warning">
+                <h3>Subscription Details:</h3>
+                <p><strong>Package:</strong> {{ subscription_package }}</p>
+                <p><strong>End Date:</strong> {{ end_date }}</p>
+                <p><strong>Amount:</strong> ₹{{ subscription_amount }}</p>
+            </div>
+            {% endif %}
+
+            <h3>🚨 What happens TOMORROW if you don't renew?</h3>
+            <ul>
+                <li>❌ <strong>IMMEDIATE SERVICE SHUTDOWN:</strong> All devices stop working</li>
+                <li>❌ <strong>COMPLETE DATA LOSS:</strong> Real-time monitoring ends</li>
+                <li>❌ <strong>NO DEVICE CONTROL:</strong> Remote access disabled</li>
+                <li>❌ <strong>ZERO SUPPORT:</strong> No technical assistance available</li>
+                <li>❌ <strong>BUSINESS IMPACT:</strong> Operations will be severely affected</li>
+            </ul>
+
+            <h3>🔥 This is your LAST CHANCE to:</h3>
+            <ul>
+                <li>✅ <strong>SAVE YOUR SERVICE:</strong> Prevent immediate shutdown</li>
+                <li>✅ <strong>PROTECT YOUR DATA:</strong> Keep all historical records</li>
+                <li>✅ <strong>MAINTAIN OPERATIONS:</strong> No business interruption</li>
+                <li>✅ <strong>GET SUPPORT:</strong> Continue 24/7 assistance</li>
+            </ul>
+
+            <div style="text-align: center; margin: 40px 0;">
+                <h3>🚨 ACT NOW - TIME IS RUNNING OUT! 🚨</h3>
+                <a href="{{ login_url }}" class="btn">RENEW IMMEDIATELY</a>
+                <a href="{{ pricing_url }}" class="btn btn-primary">Emergency Plans</a>
+            </div>
+
+            <div style="background: #e2e3e5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <h3>📞 Need Immediate Help?</h3>
+                <p><strong>Call our Emergency Support:</strong> Available 24/7</p>
+                <p><strong>Email:</strong> support@e-switch.com</p>
+                <p>We understand this is urgent and will prioritize your renewal!</p>
+            </div>
+
+            <p><strong>This is your final reminder.</strong> After tomorrow, service will be terminated until renewal is completed.</p>
+
+            <p>Don't let your business operations stop. Renew NOW!</p>
+
+            <p>Best regards,<br>
+            The OutdoorX Emergency Response Team</p>
+        </div>
+
+        <div class="footer">
+            <p>🚨 FINAL NOTICE: Service expires tomorrow. No further reminders will be sent.</p>
+            <p>© 2024 OutdoorX. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

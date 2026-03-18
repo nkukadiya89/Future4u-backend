@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Renewal Reminder - 5 Days</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+        .content { padding: 30px 20px; background: #f9fafb; }
+        .button { display: inline-block; padding: 12px 24px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+        .button-success { background: #28a745; }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+        .info { background: #d1ecf1; padding: 15px; border-radius: 5px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>� Subscription Renewal Reminder - 5 Days</h1>
+            <h2>{{ company_name }}</h2>
+        </div>
+
+        <div class="content">
+            <p>Dear {{ person_name }},</p>
+
+            <p>This is a friendly reminder that your OutdoorX subscription will expire in <strong>5 days</strong>.</p>
+
+            {% if subscription_package %}
+            <div class="info">
+                <h3>Subscription Details:</h3>
+                <p><strong>Package:</strong> {{ subscription_package }}</p>
+                <p><strong>End Date:</strong> {{ end_date }}</p>
+                <p><strong>Amount:</strong> ₹{{ subscription_amount }}</p>
+            </div>
+            {% endif %}
+
+            <p>To ensure uninterrupted service for your devices, please renew your subscription before it expires.</p>
+
+            <h3>Why Renew with OutdoorX?</h3>
+            <ul>
+                <li>✅ Continuous monitoring and control of your devices</li>
+                <li>✅ 24/7 customer support</li>
+                <li>✅ Regular software updates and security patches</li>
+                <li>✅ Access to premium features and analytics</li>
+            </ul>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{ pricing_url }}" class="button">View Renewal Plans</a>
+                <a href="{{ login_url }}" class="button button-success">Login to Renew</a>
+            </div>
+
+            <p>If you have any questions or need assistance with the renewal process, our support team is here to help.</p>
+
+            <p>Thank you for choosing OutdoorX for your energy management needs!</p>
+
+            <p>Best regards,<br>The OutdoorX Team</p>
+        </div>
+
+        <div class="footer">
+            <p>This is an automated reminder. You will receive additional reminders in 4, 3, and 2 days before expiration.</p>
+            <p>© 2024 OutdoorX. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
