@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "city",
     "city_areas",
     "common",
+    "core",
     "company",
     "country",
     "employee",
