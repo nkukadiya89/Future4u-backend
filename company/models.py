@@ -98,6 +98,12 @@ class Company(models.Model):
 
     class Meta:
         db_table = "company"
+        indexes = [
+            models.Index(fields=["deleted", "status"], name="company_del_status_idx"),
+            models.Index(fields=["created_at"], name="company_created_at_idx"),
+            models.Index(fields=["updated_at"], name="company_updated_at_idx"),
+            models.Index(fields=["expiry_date"], name="company_expiry_date_idx"),
+        ]
 
     def upload_company_logo_presentation(self, file_to_upload):
         allowed_type = [".jpg", ".png", ".jpeg"]
@@ -144,6 +150,12 @@ class KeyPersons(models.Model):
 
     class Meta:
         db_table = "key_persons"
+        indexes = [
+            models.Index(
+                fields=["company", "deleted"], name="keypersons_company_del_idx"
+            ),
+            models.Index(fields=["created_at"], name="keypersons_created_at_idx"),
+        ]
 
 
 class Attachment(models.Model):
@@ -174,6 +186,12 @@ class Attachment(models.Model):
 
     class Meta:
         db_table = "attachment"
+        indexes = [
+            models.Index(
+                fields=["company", "deleted"], name="attachment_company_del_idx"
+            ),
+            models.Index(fields=["created_at"], name="attachment_created_at_idx"),
+        ]
 
     def upload_company_attachment_presentation(self, file_to_upload):
         allowed_type = [".jpg", ".png", ".jpeg", ".pdf"]
@@ -214,6 +232,12 @@ class CompanyEmail(models.Model):
 
     class Meta:
         db_table = "company_email"
+        indexes = [
+            models.Index(
+                fields=["company", "deleted"], name="companyemail_company_del_idx"
+            ),
+            models.Index(fields=["created_at"], name="companyemail_created_at_idx"),
+        ]
 
 
 class CompanyProfile(models.Model):
@@ -234,3 +258,6 @@ class CompanyProfile(models.Model):
 
     class Meta:
         db_table = "company_profile"
+        indexes = [
+            models.Index(fields=["company"], name="companyprofile_company_idx"),
+        ]

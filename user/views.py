@@ -4,6 +4,7 @@ import random
 import threading
 from datetime import datetime
 
+import jwt
 from django.contrib.auth import logout
 from django.core.exceptions import MultipleObjectsReturned
 from django.db import transaction
@@ -145,7 +146,7 @@ class ResetPasswordViewSet(ModelViewSet):
         with transaction.atomic():
             try:
                 res_data = json.loads(request.body.decode("utf-8"))
-            except Exception:
+            except (UnicodeDecodeError, json.JSONDecodeError):
                 return Response(
                     {"success": False, "message": "Service not available"},
                     status=status.HTTP_401_UNAUTHORIZED,
@@ -153,7 +154,7 @@ class ResetPasswordViewSet(ModelViewSet):
 
             try:
                 payload = decode_token(token)
-            except Exception:
+            except jwt.InvalidTokenError:
                 return Response(
                     {"success": False, "message": "Token Expired"},
                     status=status.HTTP_401_UNAUTHORIZED,
@@ -474,14 +475,8 @@ class LogoutViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        try:
-            logout(request)
-
-            return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
-        except Exception:
-            return Response(
-                {"error": "Logout failed"}, status=status.HTTP_400_BAD_REQUEST
-            )
+        logout(request)
+        return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
 
 
 class RoleFamilyViewSet(ModelViewSet):

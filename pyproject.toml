@@ -1,0 +1,9 @@
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+exclude = "(/\\.venv/|/venv/|/migrations/|/staticfiles/)"
+
+[tool.isort]
+profile = "black"
+line_length = 88
+skip_glob = ["*/migrations/*", "*/staticfiles/*", "venv/*", ".venv/*"]

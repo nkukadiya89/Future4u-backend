@@ -11,7 +11,7 @@ from utils.pagination import Pagination
 
 
 class WhatsAppMessageLogViewSet(ModelViewSet):
-    queryset = WhatsAppMessageLog.objects.all().order_by("-id")
+    queryset = WhatsAppMessageLog.objects.order_by("-id")
     serializer_class = WhatsAppMessageLogSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
@@ -21,24 +21,15 @@ class WhatsAppMessageLogViewSet(ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
-        no_pagination = request.query_params.get("no_pagination")
-        if no_pagination:
-            serializer = self.serializer_class(
-                queryset, many=True, context={"request": request}
-            )
-            return Response({"success": True, "data": serializer.data})
-
-        if page is None:
+        if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
-        serializer = self.serializer_class(queryset, many=True)
-        return self.get_paginated_response({"sucess": True, "data": serializer.data})
+            return self.get_paginated_response(serializer.data)
+        serializer = self.serializer_class(queryset, many=True, context={"request": request})
+        return self.get_paginated_response(serializer.data)
 
 
 class ActivityLogViewSet(ModelViewSet):
-    queryset = ActivityLog.objects.all().order_by("-id")
+    queryset = ActivityLog.objects.order_by("-id")
     serializer_class = ActivityLogSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
@@ -48,20 +39,11 @@ class ActivityLogViewSet(ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
-        no_pagination = request.query_params.get("no_pagination")
-        if no_pagination:
-            serializer = self.serializer_class(
-                queryset, many=True, context={"request": request}
-            )
-            return Response({"success": True, "data": serializer.data})
-
-        if page is None:
+        if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
-        serializer = self.serializer_class(queryset, many=True)
-        return self.get_paginated_response({"sucess": True, "data": serializer.data})
+            return self.get_paginated_response(serializer.data)
+        serializer = self.serializer_class(queryset, many=True, context={"request": request})
+        return self.get_paginated_response(serializer.data)
 
     @action(detail=False, methods=["get"], url_path="get-activity-log")
     def get_login_user_activity_log(self, request, *args, **kwargs):
@@ -81,16 +63,14 @@ class ActivityLogViewSet(ModelViewSet):
             ).order_by("-id")
 
         else:
-            activity_log_list = ActivityLog.objects.all().order_by("-id")
+            activity_log_list = ActivityLog.objects.order_by("-id")
 
         if activity_log_list is not None:
             pagination = Pagination()
             result_page = pagination.paginate_queryset(activity_log_list, request)
 
             serializer = ActivityLogSerializer(result_page, many=True)
-            return pagination.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
+            return pagination.get_paginated_response(serializer.data)
         else:
             serializer = ActivityLogSerializer(activity_log_list, many=True)
             return Response({"success": True, "data": serializer.data})

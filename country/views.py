@@ -37,17 +37,11 @@ class CountryViewSet(ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
-        no_pagination = request.query_params.get("no_pagination")
-        if no_pagination:
-            serializer = self.serializer_class(queryset, many=True)
-            return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
+            return self.get_paginated_response(serializer.data)
         serializer = self.serializer_class(queryset, many=True)
-        return self.get_paginated_response({"success": True, "data": serializer.data})
+        return self.get_paginated_response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         data = request.data

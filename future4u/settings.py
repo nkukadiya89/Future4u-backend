@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 from datetime import timedelta
 from os import path
+import json
 
 from decouple import config
 
@@ -29,15 +30,15 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", cast=bool)
 
 allowed_host_str = config("ALLOWED_HOSTS", default="")
-ALLOWED_HOSTS = [origin.strip() for origin in allowed_host_str.split(",")]
+ALLOWED_HOSTS = [origin.strip() for origin in allowed_host_str.split(",") if origin.strip()]
 
 
 cors_allowed_origins_str = config("CORS_ALLOWED_ORIGINS", default="")
 CORS_ALLOWED_ORIGINS = [
-    origin.strip() for origin in cors_allowed_origins_str.split(",")
+    origin.strip() for origin in cors_allowed_origins_str.split(",") if origin.strip()
 ]
 CSRF_TRUSTED_ORIGINS = [
-    origin.strip() for origin in cors_allowed_origins_str.split(",")
+    origin.strip() for origin in cors_allowed_origins_str.split(",") if origin.strip()
 ]
 
 
@@ -71,6 +72,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    "future4u.middleware.APILatencyLoggingMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -172,6 +174,9 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ),
+    "DEFAULT_PAGINATION_CLASS": "utils.pagination.Pagination",
+    "PAGE_SIZE": 10,
+    "EXCEPTION_HANDLER": "base.api.exception_handler.standardized_exception_handler",
 }
 
 AUTH_USER_MODEL = "user.User"
@@ -186,3 +191,47 @@ SIMPLE_JWT = {
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 614400
+
+CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = config(
+    "CELERY_RESULT_BACKEND",
+    default="redis://localhost:6379/1",
+)
+
+API_RESPONSE_TARGET_MS = config("API_RESPONSE_TARGET_MS", cast=int, default=300)
+LOG_LEVEL = config("LOG_LEVEL", default="INFO")
+
+
+class JsonFormatter:
+    def format(self, record):
+        payload = {
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+        return json.dumps(payload)
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"json": {"()": "future4u.settings.JsonFormatter"}},
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
+        }
+    },
+    "loggers": {
+        "future4u.api": {
+            "handlers": ["console"],
+            "level": LOG_LEVEL,
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}

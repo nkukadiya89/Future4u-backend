@@ -1,0 +1,23 @@
+---
+description: Backend standards for API architecture, performance, and observability
+alwaysApply: true
+---
+
+# Backend API Standards
+
+- Keep views thin; move business logic into services/selectors/repositories.
+- Do not place domain logic in Django signals.
+- Avoid over-abstraction; prefer clear, direct code over premature generic layers.
+- Never use silent exception handling (`except: pass` or swallowed errors).
+- Keep function bodies under 40 lines; split into focused helpers when needed.
+- Enforce formatting/linting with `black`, `isort`, and `flake8`.
+- Use pagination for every list API endpoint.
+- Return consistent API payloads with success, message, data, errors, and meta.
+- Avoid `.all()` in production API query paths; always filter intentionally.
+- Use `select_related` / `prefetch_related` for relational API reads.
+- Ensure audit fields (`created_at`, `updated_at`, `created_by`, `updated_by`) on new business tables.
+- Add indexes for high-cardinality filters: foreign keys, status, and date fields.
+- Keep heavy operations async (Celery/background jobs), not request-thread blocking.
+- Monitor API latency and target p95 under 300ms.
+- Use structured logs and keep error tracking enabled in non-local environments.
+- Include manual architecture review as part of substantial backend changes.

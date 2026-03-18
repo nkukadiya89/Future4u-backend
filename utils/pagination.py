@@ -1,5 +1,6 @@
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
 
 class Pagination(PageNumberPagination):
@@ -16,3 +17,20 @@ class Pagination(PageNumberPagination):
             request.query_params[self.page_query_param] = 1
             request.query_params._mutable = False
             return super().paginate_queryset(queryset, request, view)
+
+    def get_paginated_response(self, data):
+        return Response(
+            {
+                "success": True,
+                "message": "Request successful",
+                "data": data,
+                "errors": [],
+                "meta": {
+                    "count": self.page.paginator.count,
+                    "next": self.get_next_link(),
+                    "previous": self.get_previous_link(),
+                    "page": self.page.number,
+                    "page_size": self.get_page_size(self.request),
+                },
+            }
+        )
