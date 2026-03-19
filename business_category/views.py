@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
+from django.utils.timezone import now
 from activity_log.models import ActivityLog
 from business_category.models import BusinessCategory
 from business_category.serializers import (
@@ -80,6 +80,9 @@ class BusinessCategoryViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.deleted = True
+        instance.deleted_at = now()
+        if hasattr(instance, "deleted_by"):
+            instance.deleted_by = request.user
         ip_address = get_client_ip(request)
         ActivityLog.log.business_category_archive(instance, ip_address, request.user)
         instance.save()

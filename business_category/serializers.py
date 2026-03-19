@@ -1,42 +1,21 @@
 from django.utils.timezone import now
 from rest_framework import serializers
 from business_category.models import BusinessCategory
+from common.serializers import BaseModelSerializer
 from utils.datetime_formatter import format_datetime
 
 
-class BusinessCategorySerializers(serializers.ModelSerializer):
-    created_at = serializers.SerializerMethodField(read_only=True)
-    updated_at = serializers.SerializerMethodField(read_only=True)
-    created_by_name = serializers.SerializerMethodField()
-    updated_by_name = serializers.SerializerMethodField()
-
+class BusinessCategorySerializers(BaseModelSerializer):
     class Meta:
         model = BusinessCategory
-        fields = [
+        fields = BaseModelSerializer.Meta.fields + [
             "id",
             "business_category",
-            "created_by_name",
-            "updated_by_name",
-            "created_at",
-            "updated_at",
-            "deleted",
         ]
         extra_kwargs = {
             "created_by": {"write_only": True},
             "updated_by": {"write_only": True},
         }
-
-    def get_created_at(self, obj):
-        return format_datetime(getattr(obj, "created_at", None))
-
-    def get_created_by_name(self, obj):
-        return f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else None
-
-    def get_updated_at(self, obj):
-        return format_datetime(getattr(obj, "updated_at", None))
-
-    def get_updated_by_name(self, obj):
-        return f"{obj.updated_by.first_name} {obj.updated_by.last_name}" if obj.updated_by else None
 
     def create(self, validated_data):
         request = self.context.get("request") if hasattr(self, "context") else None
@@ -106,22 +85,22 @@ class BusinessCategoryRestoreSerializer(serializers.ModelSerializer):
         return business_category
 
 
-class BusinessCategoryArchiveListSerializer(serializers.ModelSerializer):
-    created_at = serializers.SerializerMethodField(read_only=True)
-    updated_at = serializers.SerializerMethodField(read_only=True)
-    deleted_at = serializers.SerializerMethodField(read_only=True)
-    created_by_name = serializers.SerializerMethodField()
-    updated_by_name = serializers.SerializerMethodField()
-    deleted_by_name = serializers.SerializerMethodField()
+class BusinessCategoryArchiveListSerializer(BaseModelSerializer):
+    # created_at = serializers.SerializerMethodField(read_only=True)
+    # updated_at = serializers.SerializerMethodField(read_only=True)
+    # deleted_at = serializers.SerializerMethodField(read_only=True)
+    # created_by_name = serializers.SerializerMethodField()
+    # updated_by_name = serializers.SerializerMethodField()
+    # deleted_by_name = serializers.SerializerMethodField()
 
     class Meta:
         model = BusinessCategory
-        fields = [
+        fields = BaseModelSerializer.Meta.fields + [
             "id",
             "business_category",
-            "deleted_by_name",
-            "deleted_at",
-            "deleted",
+            # "deleted_by_name",
+            # "deleted_at",
+            # "deleted",
         ]
         extra_kwargs = {
             "created_by": {"write_only": True},
@@ -129,20 +108,20 @@ class BusinessCategoryArchiveListSerializer(serializers.ModelSerializer):
             "deleted_by": {"write_only": True},
         }
 
-    def get_created_at(self, obj):
-        return format_datetime(getattr(obj, "created_at", None))
+    # def get_created_at(self, obj):
+    #     return format_datetime(getattr(obj, "created_at", None))
 
-    def get_created_by_name(self, obj):
-        return f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else None
+    # def get_created_by_name(self, obj):
+    #     return f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else None
 
-    def get_updated_at(self, obj):
-        return format_datetime(getattr(obj, "updated_at", None))
+    # def get_updated_at(self, obj):
+    #     return format_datetime(getattr(obj, "updated_at", None))
 
-    def get_updated_by_name(self, obj):
-        return f"{obj.updated_by.first_name} {obj.updated_by.last_name}" if obj.updated_by else None
+    # def get_updated_by_name(self, obj):
+    #     return f"{obj.updated_by.first_name} {obj.updated_by.last_name}" if obj.updated_by else None
 
-    def get_deleted_at(self, obj):
-        return format_datetime(getattr(obj, "deleted_at", None))
+    # def get_deleted_at(self, obj):
+    #     return format_datetime(getattr(obj, "deleted_at", None))
 
-    def get_deleted_by_name(self, obj):
-        return f"{obj.deleted_by.first_name} {obj.deleted_by.last_name}" if obj.deleted_by else None
+    # def get_deleted_by_name(self, obj):
+    #     return f"{obj.deleted_by.first_name} {obj.deleted_by.last_name}" if obj.deleted_by else None

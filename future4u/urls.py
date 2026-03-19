@@ -16,7 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from user.user_auth import CustomTokenObtainPairView
+from django.urls import include
+from future4u.routers import future4u_router
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("get-token/", CustomTokenObtainPairView.as_view(), name="get_token"),
+    path("", include(future4u_router.urls)),
 ]

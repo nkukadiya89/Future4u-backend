@@ -3,6 +3,7 @@ from datetime import date
 from django.conf import settings
 from django.db import models
 from django.utils.timezone import now
+from django.utils import timezone
 
 
 # Create your models here.
@@ -34,3 +35,63 @@ class FinancialYearModel(models.Model):
 
     class Meta:
         db_table = "financial_year"
+
+
+class BaseModule(models.Model):
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_created",
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_updated",
+    )
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(class)s_deleted",
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    deleted = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        is_new = self._state.adding
+        user = kwargs.pop("user", None)
+        if is_new:
+
+            self.updated_at = None
+            self.updated_by = None 
+            if user and not self.created_by:
+                self.created_by = user
+        else:
+            self.updated_at = timezone.now()
+            if user:
+                self.updated_by = user
+
+        super().save(*args, **kwargs)
+    
+    def soft_delete(self, user=None):
+        """
+        Soft delete the record by setting deleted=True, deleted_at, and deleted_by.
+        This ensures audit trail is maintained.
+        """
+        self.deleted = True
+        self.deleted_at = timezone.now()
+        if user:
+            self.deleted_by = user
+        models.Model.save(self, update_fields=["deleted", "deleted_at", "deleted_by"])
+        
+        return (1, {self.__class__.__name__: [self.pk]})

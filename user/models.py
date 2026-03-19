@@ -81,6 +81,7 @@ class User(AbstractUser):
     employee = models.ForeignKey("employee.Employee", on_delete=models.DO_NOTHING, null=True)
     password_last_changed = models.DateTimeField(null=True)
     keep_me_logged_in = models.BooleanField(default=False)
+    full_name = models.CharField(max_length=201, null=True, blank=True, db_index=True)
 
     objects = UserManager()
 
@@ -90,6 +91,16 @@ class User(AbstractUser):
     class Meta:
         db_table = "user"
         ordering = ["-id"]
+        
+    def save(self, *args, **kwargs):
+        self.full_name = f"{self.first_name} {self.last_name}".strip()
+        super().save(*args, **kwargs)
+
+    @property
+    def full_name_property(self):
+        return f"{self.first_name} {self.last_name}".strip()
+
+
 
 
 class AuthGroupModel(models.Model):
