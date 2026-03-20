@@ -8,7 +8,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from activity_log.models import ActivityLog, WhatsAppMessageLog
 from activity_log.serializers import ActivityLogSerializer, WhatsAppMessageLogSerializer
 from utils import pagination
-# from utils.pagination import Pagination
+from utils.pagination import Pagination
 
 
 class WhatsAppMessageLogViewSet(ModelViewSet):
@@ -17,7 +17,7 @@ class WhatsAppMessageLogViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
-    # pagination_class = Pagination
+    pagination_class = Pagination
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -40,7 +40,7 @@ class ActivityLogViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
-    # pagination_class = Pagination
+    pagination_class = Pagination
 
     def get_queryset(self):
         user = self.request.user
@@ -65,7 +65,7 @@ class ActivityLogViewSet(ModelViewSet):
             serializer = self.serializer_class(queryset, many=True, context={"request": request})
             return Response({"success": True, "data": serializer.data})
 
-        if page is None:
+        if page is not None:
             serializer = self.serializer_class(page, many=True)
             return self.get_paginated_response({"success": True, "data": serializer.data})
         serializer = self.serializer_class(queryset, many=True)
