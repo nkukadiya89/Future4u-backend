@@ -18,19 +18,19 @@ def check_existing_cart_reminders():
     This ensures no reminders are missed during server downtime
     """
     try:
-        print("🔄 Checking for existing cart items needing reminders...")
+        print("Checking for existing cart items needing reminders...")
         
         # Check and send any pending reminders
         reminders_sent = check_and_send_cart_reminders()
         
         if reminders_sent > 0:
-            print(f"✅ Sent {reminders_sent} cart reminder emails on startup")
+            print(f"Sent {reminders_sent} cart reminder emails on startup")
         else:
-            print("✅ No pending cart reminders found on startup")
+            print("No pending cart reminders found on startup")
             
         return reminders_sent
         
     except Exception as e:
-        print(f"❌ Error checking existing cart reminders: {str(e)}")
+        print(f"Error checking existing cart reminders: {str(e)}")
         logger.error(f"Error in check_existing_cart_reminders: {str(e)}")
         return 0

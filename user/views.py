@@ -18,8 +18,6 @@ from company.models import Company
 from email_utils.send_email import decode_token, generate_forget_pass_token, send_mail
 from email_utils.send_success_mail import send_confirm_mail, send_success_mail
 from employee.models import Employee
-from end_client.models import EndClient
-from partner_company.models import PartnerCompany
 from user.models import RoleFamily, User
 from user.serializers import (
     LoginWithEmailOtpSerializer,
@@ -245,18 +243,6 @@ class ResetPasswordViewSet(ModelViewSet):
                 company.is_active = True
                 company.save()
 
-            partner_company = PartnerCompany.objects.filter(user=user).first()
-            if partner_company:
-                partner_company.status = "active"
-                partner_company.is_active = True
-                partner_company.save()
-
-            end_client = EndClient.objects.filter(user=user).first()
-            if end_client:
-                end_client.status = "active"
-                end_client.is_active = True
-                end_client.save()
-
         user.set_password(password1 and password2)
         user.is_active = True
         user.password_last_changed = datetime.now()
@@ -268,15 +254,11 @@ class ResetPasswordViewSet(ModelViewSet):
                 "name": user.first_name,
                 "email": user.email,
                 "company": user.company.name if user.company else None,
-                "partner_company": user.partner_company.company_name if user.partner_company else None,
-                "end_client": user.end_client.name if user.end_client else None,
                 "employee": user.employee.first_name if user.employee else None,
             }
 
             employee_id = User.objects.filter(employee=user.employee.id).first() if user.employee else None
             company_id = None
-            partner_company_id = None
-            end_client_id = None
 
             # Determine the company_id only if the employee is not set or
             # doesn't have an associated company
@@ -290,35 +272,7 @@ class ResetPasswordViewSet(ModelViewSet):
                     else None
                 )
 
-            if not company_id:
-                partner_company_id = (
-                    User.objects.filter(
-                        partner_company=user.partner_company.id,
-                        company__isnull=True,
-                        employee__isnull=True,
-                    ).first()
-                    if user.partner_company
-                    else None
-                )
-
-            if not partner_company_id and not company_id and not end_client_id:
-                employee_id = (
-                    User.objects.filter(
-                        employee=user.employee.id,
-                        company__isnull=True,
-                    ).first()
-                    if user.employee
-                    else None
-                )
-
-            if not partner_company_id and not company_id:
-                end_client_id = (
-                    User.objects.filter(
-                        end_client=user.end_client.id, company__isnull=True, partner_company__isnull=True
-                    ).first()
-                    if user.end_client
-                    else None
-                )
+            # partner_company / end_client routing removed
 
             # emp_id = None
             # company_name = None
@@ -685,8 +639,6 @@ class VerifyEmailOtpAndGiveTokenViewset(ModelViewSet):
                     company_id = None
                     if user.company:
                         company_id = user.company.id
-                    elif user.partner_company:
-                        company_id = user.partner_company.id
 
                     user_data = {
                         "user_id": user.id,
@@ -695,7 +647,6 @@ class VerifyEmailOtpAndGiveTokenViewset(ModelViewSet):
                         "last_name": user.last_name,
                         "phone": user.phone,
                         "company": company_id,
-                        "partner_company": (user.partner_company.id if user.partner_company else None),
                         "active_subscription": company_active_subscription,
                         "role": group_data,
                         "permission": permission_data,

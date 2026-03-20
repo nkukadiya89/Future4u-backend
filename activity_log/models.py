@@ -2,43 +2,12 @@ from django.conf import settings
 from django.db import models
 from django.utils.timezone import now
 
-from city_areas.models import CityArea
 from company.models import Company, CompanyPhoto
 from country.models import Country
-from end_client.models import EndClient
 from faq.models import FAQ
-from partner_company.models import PartnerCompany, PartnerCompanyDocument
 from subscription.models import Subscription, SubscriptionFeature, SubscriptionInvoice
 from user.models import User
 from user_profile.models import BusinessSetting
-
-
-class WhatsAppMessageLog(models.Model):
-    company = models.ForeignKey(
-        Company,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="company_whatsapp_logs",
-    )
-
-    phone_number = models.CharField(max_length=15)
-    request_user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="request_user_whatsapp_logs",
-    )
-    template_name = models.CharField(max_length=255)
-    response_code = models.IntegerField()
-    response_content = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(default=now)
-    activity = models.CharField(max_length=255)
-
-    def __str__(self):
-        return f"{self.phone_number} - {self.template_name} - {self.activity}"
-
-    class Meta:
-        db_table = "whatsapp_message_log"
 
 
 class EventQuerySet(models.QuerySet):
@@ -181,7 +150,6 @@ class EventCreater(object):
         details = f"{partner_company.company_name} - {user.email if user else 'System'}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_CREATE,
-            partner_company=partner_company,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -192,7 +160,6 @@ class EventCreater(object):
         details = f"{partner_company.company_name} - {user.email}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_MODIFY,
-            partner_company=partner_company,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -203,7 +170,6 @@ class EventCreater(object):
         details = f"{partner_company.company_name} - {user.email}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_ARCHIVE,
-            partner_company=partner_company,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -214,7 +180,6 @@ class EventCreater(object):
         details = f"{partner_company.company_name} - {user.email}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_RESTORE,
-            partner_company=partner_company,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -225,7 +190,6 @@ class EventCreater(object):
         details = f"{partner_company.company_name} - {user.email}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_BASIC_INFO_UPDATE,
-            partner_company=partner_company,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -236,7 +200,6 @@ class EventCreater(object):
         details = f"{partner_company.company_name} - {user.email}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_CHANGE_PASSWORD,
-            partner_company=partner_company,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -247,7 +210,6 @@ class EventCreater(object):
         details = f"{partner_company.company_name} - {user.email}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_STATUS_UPDATE,
-            partner_company=partner_company,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -259,10 +221,8 @@ class EventCreater(object):
         details = f"{partner_company_document.partner_company} - {partner_company_document.document_title}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_DOCUMENT_CREATE,
-            partner_company_document=partner_company_document,
             user=user,
             details=details,
-            partner_company=partner_company,
             ip_address=ip_address,
         )
 
@@ -271,10 +231,8 @@ class EventCreater(object):
         details = f"{partner_company_document.partner_company} - {partner_company_document.document_title}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_DOCUMENT_MODIFY,
-            partner_company_document=partner_company_document,
             user=user,
             details=details,
-            partner_company=partner_company,
             ip_address=ip_address,
         )
 
@@ -283,10 +241,8 @@ class EventCreater(object):
         details = f"{partner_company_document.partner_company} - {partner_company_document.document_title}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_DOCUMENT_ARCHIVE,
-            partner_company_document=partner_company_document,
             user=user,
             details=details,
-            partner_company=partner_company,
             ip_address=ip_address,
         )
 
@@ -295,10 +251,8 @@ class EventCreater(object):
         details = f"{partner_company_document.partner_company} - {partner_company_document.document_title}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_DOCUMENT_RESTORE,
-            partner_company_document=partner_company_document,
             user=user,
             details=details,
-            partner_company=partner_company,
             ip_address=ip_address,
         )
 
@@ -308,7 +262,6 @@ class EventCreater(object):
         details = f"{end_client.name} - {user.email}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_END_CLIENT_CREATE,
-            end_client=end_client,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -319,7 +272,6 @@ class EventCreater(object):
         details = f"{end_client.name} - {user.email}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_END_CLIENT_MODIFY,
-            end_client=end_client,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -330,7 +282,6 @@ class EventCreater(object):
         details = f"{end_client.name} - {user.email}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_END_CLIENT_ARCHIVE,
-            end_client=end_client,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -341,7 +292,6 @@ class EventCreater(object):
         details = f"{end_client.name} - {user.email}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_END_CLIENT_RESTORE,
-            end_client=end_client,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -352,7 +302,6 @@ class EventCreater(object):
         details = f"{end_client.name} - {user.email}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_END_CLIENT_PHOTO_DELETE,
-            end_client=end_client,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -363,7 +312,6 @@ class EventCreater(object):
         details = f"{end_client.name} - {user.email}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_END_CLIENT_BASIC_INFO_UPDATE,
-            end_client=end_client,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -374,7 +322,6 @@ class EventCreater(object):
         details = f"{end_client.name} - {user.email}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_END_CLIENT_CHANGE_PASSWORD,
-            end_client=end_client,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -385,7 +332,6 @@ class EventCreater(object):
         details = f"{end_client.name} - {user.email}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_END_CLIENT_STATUS_UPDATE,
-            end_client=end_client,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -402,7 +348,6 @@ class EventCreater(object):
             details=details,
             ip_address=ip_address,
             company=company,
-            partner_company=partner_company,
         )
 
     @staticmethod
@@ -415,7 +360,6 @@ class EventCreater(object):
             user=user,
             details=details,
             company=company,
-            partner_company=partner_company,
         )
 
     @staticmethod
@@ -428,7 +372,6 @@ class EventCreater(object):
             user=user,
             details=details,
             company=company,
-            partner_company=partner_company,
         )
 
     @staticmethod
@@ -441,7 +384,6 @@ class EventCreater(object):
             user=user,
             details=details,
             company=company,
-            partner_company=partner_company,
         )
 
     # Country
@@ -589,7 +531,6 @@ class EventCreater(object):
         )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_CITY_AREA_CREATE,
-            city_area=city_area,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -604,7 +545,6 @@ class EventCreater(object):
         )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_CITY_AREA_MODIFY,
-            city_area=city_area,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -619,7 +559,6 @@ class EventCreater(object):
         )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_CITY_AREA_ARCHIVE,
-            city_area=city_area,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -634,7 +573,6 @@ class EventCreater(object):
         )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_CITY_AREA_RESTORE,
-            city_area=city_area,
             user=user,
             details=details,
             ip_address=ip_address,
@@ -1028,14 +966,10 @@ class EventCreater(object):
 
     # Business Setting
     @staticmethod
-    def business_setting_update(business_setting, ip_address, user, company, partner_company):
+    def business_setting_update(business_setting, ip_address, user, company, partner_company=None):
         company_name = business_setting.company.name if business_setting.company else "N/A"
-        partner_company_name = (
-            business_setting.partner_company.company_name if business_setting.partner_company else "N/A"
-        )
         details = (
-            f"Company: {company_name} - Partner Company: {partner_company_name} - "
-            f"Country: {business_setting.country}"
+            f"Company: {company_name} - Country: {business_setting.country}"
         )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_BUSINESS_SETTING_MODIFY,
@@ -1043,7 +977,6 @@ class EventCreater(object):
             user=user,
             details=details,
             company=company,
-            partner_company=partner_company,
             ip_address=ip_address,
         )
 
@@ -1109,7 +1042,6 @@ class EventCreater(object):
             meter_config=meter_config,
             user=user,
             details=details,
-            partner_company=partner_company,
             ip_address=ip_address,
         )
 
@@ -1120,7 +1052,6 @@ class EventCreater(object):
             event_type=ActivityLog.EVENT_TYPE_METER_CONFIG_MODIFY,
             meter_config=meter_config,
             user=user,
-            partner_company=partner_company,
             details=details,
             ip_address=ip_address,
         )
@@ -1132,7 +1063,6 @@ class EventCreater(object):
             event_type=ActivityLog.EVENT_TYPE_METER_CONFIG_ARCHIVE,
             meter_config=meter_config,
             user=user,
-            partner_company=partner_company,
             details=details,
             ip_address=ip_address,
         )
@@ -1144,7 +1074,6 @@ class EventCreater(object):
             event_type=ActivityLog.EVENT_TYPE_METER_CONFIG_RESTORE,
             meter_config=meter_config,
             user=user,
-            partner_company=partner_company,
             details=details,
             ip_address=ip_address,
         )
@@ -1157,7 +1086,6 @@ class EventCreater(object):
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_CREATE,
             device_configuration=device_configuration,
             user=user,
-            partner_company=partner_company,
             details=details,
             ip_address=ip_address,
         )
@@ -1187,7 +1115,6 @@ class EventCreater(object):
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_EDIT_SITE,
             device_configuration=device_configuration,
             user=user,
-            partner_company=partner_company,
             details=details,
             ip_address=ip_address,
         )
@@ -1199,7 +1126,6 @@ class EventCreater(object):
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_UPDATE_STATUS,
             device_configuration=device_configuration,
             user=user,
-            partner_company=partner_company,
             details=details,
             ip_address=ip_address,
         )
@@ -1213,7 +1139,6 @@ class EventCreater(object):
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_CREATE_SCHEDULE,
             device_configuration=device_configuration,
             user=user,
-            partner_company=partner_company,
             company=company,
             details=details,
             ip_address=ip_address,
@@ -1228,7 +1153,6 @@ class EventCreater(object):
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_UPDATE_SCHEDULE,
             device_configuration=device_configuration,
             user=user,
-            partner_company=partner_company,
             company=company,
             details=details,
             ip_address=ip_address,
@@ -1242,7 +1166,6 @@ class EventCreater(object):
             device_configuration=device_configuration,
             user=user,
             company=company,
-            partner_company=partner_company,
             details=details,
             ip_address=ip_address,
         )
@@ -1254,7 +1177,6 @@ class EventCreater(object):
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_MODIFY,
             device_configuration=device_configuration,
             user=user,
-            partner_company=partner_company,
             details=details,
             ip_address=ip_address,
         )
@@ -1266,7 +1188,6 @@ class EventCreater(object):
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_ARCHIVE,
             device_configuration=device_configuration,
             user=user,
-            partner_company=partner_company,
             details=details,
             ip_address=ip_address,
         )
@@ -1278,7 +1199,6 @@ class EventCreater(object):
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_RESTORE,
             device_configuration=device_configuration,
             user=user,
-            partner_company=partner_company,
             details=details,
             ip_address=ip_address,
         )
@@ -1303,7 +1223,6 @@ class EventCreater(object):
             device_transfer=device_transfer,
             user=user,
             details=details,
-            partner_company=partner_company,
             ip_address=ip_address,
         )
 
@@ -1315,7 +1234,6 @@ class EventCreater(object):
             device_transfer=device_transfer,
             user=user,
             details=details,
-            partner_company=partner_company,
             ip_address=ip_address,
         )
 
@@ -1658,14 +1576,11 @@ class ActivityLog(models.Model):
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True)
     company_photo = models.ForeignKey(CompanyPhoto, on_delete=models.CASCADE, null=True)
-    partner_company = models.ForeignKey(PartnerCompany, on_delete=models.CASCADE, null=True)
-    partner_company_document = models.ForeignKey(PartnerCompanyDocument, on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     employee = models.ForeignKey("employee.Employee", on_delete=models.CASCADE, null=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True)
     state = models.ForeignKey("state.State", on_delete=models.CASCADE, null=True)
     city = models.ForeignKey("city.City", on_delete=models.CASCADE, null=True)
-    city_area = models.ForeignKey(CityArea, on_delete=models.CASCADE, null=True)
     business_category = models.ForeignKey("business_category.BusinessCategory", on_delete=models.CASCADE, null=True)
     business_setting = models.ForeignKey(BusinessSetting, on_delete=models.CASCADE, null=True)
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, null=True)
@@ -1673,7 +1588,6 @@ class ActivityLog(models.Model):
     subscription_feature = models.ForeignKey(SubscriptionFeature, on_delete=models.CASCADE, null=True)
     subscription_invoice = models.ForeignKey(SubscriptionInvoice, on_delete=models.CASCADE, null=True)
     faq = models.ForeignKey(FAQ, on_delete=models.CASCADE, null=True)
-    end_client = models.ForeignKey(EndClient, on_delete=models.CASCADE, null=True)
     event_type = models.CharField(max_length=50, choices=EVENT_TYPE)
     details = models.TextField(blank=True, default="")
     changed_at = models.DateTimeField(auto_now_add=True, db_index=True)

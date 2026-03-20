@@ -252,22 +252,12 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 # Deactivate only employee users, NOT company admin users
                 User.objects.filter(employee_id__in=company_employee_ids).update(is_active=False, status="inactive")
 
-        elif user.partner_company_id:
-            partner_company = user.partner_company
-            if not partner_company or not partner_company.is_active:
-                raise AuthenticationFailed(
-                    {
-                        "success": False,
-                        "message": "The associated partner company is not active. Login is not allowed.",
-                    }
-                )
         elif user.employee_id:
             employee = user.employee
             if (
                 not employee
                 or not employee.company
                 or not employee.company.is_active
-                or not employee.partner_company.is_active
             ):
                 raise AuthenticationFailed(
                     {
@@ -345,10 +335,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                     "phone": user.phone,
                     "company": user.company_id if is_company_admin else None,
                     "company_name": user.company.name if (user.company and is_company_admin) else None,
-                    "partner_company": user.partner_company_id,
-                    "partner_company_name": user.partner_company.company_name if user.partner_company else None,
-                    "end_client": user.end_client_id,
-                    "end_client_name": user.end_client.name if user.end_client else None,
                     "active_subscription": company_active_subscription if is_company_admin else None,
                     "expiry_date": company_expiry_date if is_company_admin else None,
                     "days_to_expire": company_days_to_expire if is_company_admin else None,

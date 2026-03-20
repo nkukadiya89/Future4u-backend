@@ -90,15 +90,9 @@ class ResendPasswordResetViewSet(ModelViewSet):
         """Determine the user type"""
         from company.models import Company
         from employee.models import Employee
-        from end_client.models import EndClient
-        from partner_company.models import PartnerCompany
 
         if Company.objects.filter(user=user).exists():
             return "Company"
-        elif PartnerCompany.objects.filter(user=user).exists():
-            return "Partner Company"
-        elif EndClient.objects.filter(user=user).exists():
-            return "End Client"
         elif Employee.objects.filter(user=user).exists():
             return "Employee"
         else:

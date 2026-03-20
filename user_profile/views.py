@@ -30,9 +30,7 @@ class BusinessSettingViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = BusinessSetting.objects.filter(
-            Q(user_id=user) | Q(company=user.company) | Q(partner_company__user=user)
-        ).order_by("-id")
+        queryset = BusinessSetting.objects.filter(Q(user_id=user) | Q(company=user.company)).order_by("-id")
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -79,46 +77,6 @@ class BusinessSettingViewSet(ModelViewSet):
                 }
                 return Response({"success": True, "data": filtered}, status=status.HTTP_201_CREATED)
 
-            # Tailor response when partner company business setting is created
-            if instance.partner_company_id:
-                filtered = {
-                    "id": payload.get("id"),
-                    "partner_company": payload.get("partner_company"),
-                    "partner_company_name": payload.get("partner_company_name"),
-                    "notifications": payload.get("notifications"),
-                    "sgst": payload.get("sgst"),
-                    "cgst": payload.get("cgst"),
-                    "igst": payload.get("igst"),
-                    "country": payload.get("country"),
-                    "country_name": payload.get("country_name"),
-                    "state": payload.get("state"),
-                    "state_name": payload.get("state_name"),
-                    "city": payload.get("city"),
-                    "city_name": payload.get("city_name"),
-                    "currency": payload.get("currency"),
-                }
-                return Response({"success": True, "data": filtered}, status=status.HTTP_201_CREATED)
-
-            # Tailor response when end client business setting is created
-            if instance.end_client_id:
-                filtered = {
-                    "id": payload.get("id"),
-                    "end_client": payload.get("end_client"),
-                    "end_client_name": payload.get("end_client_name"),
-                    "notifications": payload.get("notifications"),
-                    "sgst": payload.get("sgst"),
-                    "cgst": payload.get("cgst"),
-                    "igst": payload.get("igst"),
-                    "country": payload.get("country"),
-                    "country_name": payload.get("country_name"),
-                    "state": payload.get("state"),
-                    "state_name": payload.get("state_name"),
-                    "city": payload.get("city"),
-                    "city_name": payload.get("city_name"),
-                    "currency": payload.get("currency"),
-                }
-                return Response({"success": True, "data": filtered}, status=status.HTTP_201_CREATED)
-
             return Response({"success": True, "data": payload}, status=status.HTTP_201_CREATED)
         else:
             error_messages = " ".join([", ".join(value) for value in serializer.errors.values()])
@@ -130,16 +88,10 @@ class BusinessSettingViewSet(ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         pk = self.kwargs.get("pk")
         company_id = request.query_params.get("company_id")
-        partner_company_id = request.query_params.get("partner_company_id")
-        end_client_id = request.query_params.get("end_client_id")
 
         try:
             if company_id:
                 business_setting = BusinessSetting.objects.get(company_id=company_id)
-            elif partner_company_id:
-                business_setting = BusinessSetting.objects.get(partner_company_id=partner_company_id)
-            elif end_client_id:
-                business_setting = BusinessSetting.objects.get(end_client_id=end_client_id)
             else:
                 # Fallback to pk if neither is provided
                 business_setting = BusinessSetting.objects.get(id=pk)
@@ -155,16 +107,10 @@ class BusinessSettingViewSet(ModelViewSet):
     def update(self, request, *args, **kwargs):
         pk = self.kwargs.get("pk")
         company_id = request.query_params.get("company_id")
-        partner_company_id = request.query_params.get("partner_company_id")
-        end_client_id = request.query_params.get("end_client_id")
 
         try:
             if company_id:
                 business_setting = BusinessSetting.objects.get(company_id=company_id)
-            elif partner_company_id:
-                business_setting = BusinessSetting.objects.get(partner_company_id=partner_company_id)
-            elif end_client_id:
-                business_setting = BusinessSetting.objects.get(end_client_id=end_client_id)
             else:
                 # Fallback to pk if neither is provided
                 business_setting = BusinessSetting.objects.get(id=pk)
@@ -185,7 +131,6 @@ class BusinessSettingViewSet(ModelViewSet):
                 ip_address=ip_address,
                 user=request.user,
                 company=instance.company,
-                partner_company=instance.partner_company,
             )
 
             # Tailor response when company business setting is updated
@@ -194,46 +139,6 @@ class BusinessSettingViewSet(ModelViewSet):
                     "id": payload.get("id"),
                     "company": payload.get("company"),
                     "company_name": payload.get("company_name"),
-                    "notifications": payload.get("notifications"),
-                    "sgst": payload.get("sgst"),
-                    "cgst": payload.get("cgst"),
-                    "igst": payload.get("igst"),
-                    "country": payload.get("country"),
-                    "country_name": payload.get("country_name"),
-                    "state": payload.get("state"),
-                    "state_name": payload.get("state_name"),
-                    "city": payload.get("city"),
-                    "city_name": payload.get("city_name"),
-                    "currency": payload.get("currency"),
-                }
-                return Response({"success": True, "data": filtered}, status=status.HTTP_200_OK)
-
-            # Tailor response when partner company business setting is updated
-            if instance.partner_company_id:
-                filtered = {
-                    "id": payload.get("id"),
-                    "partner_company": payload.get("partner_company"),
-                    "partner_company_name": payload.get("partner_company_name"),
-                    "notifications": payload.get("notifications"),
-                    "sgst": payload.get("sgst"),
-                    "cgst": payload.get("cgst"),
-                    "igst": payload.get("igst"),
-                    "country": payload.get("country"),
-                    "country_name": payload.get("country_name"),
-                    "state": payload.get("state"),
-                    "state_name": payload.get("state_name"),
-                    "city": payload.get("city"),
-                    "city_name": payload.get("city_name"),
-                    "currency": payload.get("currency"),
-                }
-                return Response({"success": True, "data": filtered}, status=status.HTTP_200_OK)
-
-            # Tailor response when end client business setting is updated
-            if instance.end_client_id:
-                filtered = {
-                    "id": payload.get("id"),
-                    "end_client": payload.get("end_client"),
-                    "end_client_name": payload.get("end_client_name"),
                     "notifications": payload.get("notifications"),
                     "sgst": payload.get("sgst"),
                     "cgst": payload.get("cgst"),

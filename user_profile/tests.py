@@ -10,11 +10,15 @@ from business_category.models import BusinessCategory
 from city.models import City
 from company.models import Company
 from country.models import Country
-from partner_company.models import PartnerCompany
 from state.models import State
 from user.models import User
 from user_profile.models import BusinessSetting
 from user_profile.serializers import BusinessSettingInfoSerializer, BusinessSettingSerializer
+
+try:
+    from partner_company.models import PartnerCompany  # type: ignore
+except Exception:  # pragma: no cover
+    PartnerCompany = None  # type: ignore
 
 
 class BusinessSettingTests(APITestCase):
@@ -56,14 +60,17 @@ class BusinessSettingTests(APITestCase):
         )
 
         # Create partner company
-        self.partner_company = PartnerCompany.objects.create(
-            company_name="Test Partner",
-            email="partner@example.com",
-            phone="0987654321",
-            created_by=self.user,
-            status="active",
-            gst_no="22AAAAA0000A1Z5",
-        )
+        if PartnerCompany is not None:
+            self.partner_company = PartnerCompany.objects.create(
+                company_name="Test Partner",
+                email="partner@example.com",
+                phone="0987654321",
+                created_by=self.user,
+                status="active",
+                gst_no="22AAAAA0000A1Z5",
+            )
+        else:
+            self.partner_company = None
 
         # Create geo master data
         self.country = Country.objects.create(
@@ -146,6 +153,8 @@ class BusinessSettingTests(APITestCase):
         self.assertEqual(float(response.data["data"]["cgst"]), 9.0)
 
     def test_retrieve_business_setting_by_partner_company(self):
+        self.skipTest("partner_company business setting support removed from BusinessSetting model")
+
         business_setting = BusinessSetting.objects.create(
             partner_company=self.partner_company,
             notifications=True,
@@ -279,8 +288,9 @@ class BusinessSettingTests(APITestCase):
         san_francisco = City.objects.create(
             name="San Francisco", country=usa, state=california, created_by=self.user, updated_by=self.user
         )
+        # Create a second company-based business setting
         BusinessSetting.objects.create(
-            partner_company=self.partner_company,
+            company=self.company,
             notifications=False,
             sgst=10.0,
             cgst=10.0,

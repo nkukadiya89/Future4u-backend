@@ -3,7 +3,6 @@ from django.db import models
 
 from business_category.models import BusinessCategory
 from city.models import City
-from city_areas.models import CityArea
 from country.models import Country
 from state.models import State
 from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
@@ -52,9 +51,6 @@ class Company(models.Model):
         City, on_delete=models.SET_NULL, null=True, related_name="gst_address_companies"
     )
     gst_address_building = models.CharField(max_length=150, null=True)
-    gst_address_area = models.ForeignKey(
-        CityArea, on_delete=models.SET_NULL, null=True, related_name="gst_address_companies"
-    )
     gst_address_landmark = models.CharField(max_length=100, null=True)
     gst_address_pincode = models.IntegerField(null=True)
 
@@ -68,9 +64,6 @@ class Company(models.Model):
         City, on_delete=models.SET_NULL, null=True, related_name="communication_address_companies"
     )
     communication_address_building = models.CharField(max_length=150, null=True)
-    communication_address_area = models.ForeignKey(
-        CityArea, on_delete=models.SET_NULL, null=True, related_name="communication_address_companies"
-    )
     communication_address_landmark = models.CharField(max_length=100, null=True)
     communication_address_pincode = models.IntegerField(null=True)
 

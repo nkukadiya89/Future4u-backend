@@ -16,8 +16,6 @@ class Migration(migrations.Migration):
         ('auth', '0012_alter_user_first_name_max_length'),
         ('company', '0003_initial'),
         ('employee', '0001_initial'),
-        ('end_client', '0001_initial'),
-        ('partner_company', '0002_initial'),
     ]
 
     operations = [

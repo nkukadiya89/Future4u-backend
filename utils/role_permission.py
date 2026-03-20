@@ -1,8 +1,6 @@
 from django.contrib.auth.models import Permission
 
 from company.models import Company
-from end_client.models import EndClient
-from partner_company.models import PartnerCompany
 from user.models import (
     AuthGroupPermissionsModel,
     AuthPermissionModel,
@@ -68,6 +66,14 @@ def get_permission_by_group_ids(group_ids, user_assigned_groups=None, user_assgi
 
 def get_purticlare_permission(content_types, model_names, group_id, company_id, partner_company_id, end_client_id):
     get_all_groups = None
+
+    # partner_company / end_client features removed from the project,
+    # but some callers may still pass these ids.
+    if partner_company_id:
+        return {"Partner Company Not Available"}
+    if end_client_id:
+        return {"EndClient Not Available"}
+
     if company_id:
         try:
             company_instance = Company.objects.get(id=company_id)
@@ -77,30 +83,6 @@ def get_purticlare_permission(content_types, model_names, group_id, company_id, 
         get_groups = CustomGroup.objects.filter(name__icontains="Company Admin").values_list("name", flat=True)
         get_company_groups = CustomGroup.objects.filter(company=company_instance).values_list("name", flat=True)
         get_all_groups = list(get_groups) + list(get_company_groups)
-
-    elif partner_company_id:
-        try:
-            partner_company_instance = PartnerCompany.objects.get(id=partner_company_id)
-        except PartnerCompany.DoesNotExist:
-            return {"Partner Company Not Found"}
-
-        get_groups = CustomGroup.objects.filter(name__icontains="Partner Company Admin").values_list("name", flat=True)
-        get_partner_company_groups = CustomGroup.objects.filter(partner_company=partner_company_instance).values_list(
-            "name", flat=True
-        )
-        get_all_groups = list(get_groups) + list(get_partner_company_groups)
-
-    elif end_client_id:
-        try:
-            end_client_instance = PartnerCompany.objects.get(id=end_client_id)
-        except PartnerCompany.DoesNotExist:
-            return {"EndClient Not Found"}
-
-        get_groups = CustomGroup.objects.filter(name__icontains="EndClient Admin").values_list("name", flat=True)
-        get_end_client_groups = CustomGroup.objects.filter(end_client=end_client_instance).values_list(
-            "name", flat=True
-        )
-        get_all_groups = list(get_groups) + list(get_end_client_groups)
 
     else:
         get_super_admin_groups = CustomGroup.objects.filter(name__icontains="Super Admin")
@@ -345,6 +327,8 @@ def create_company_role_family(request, company_id):
 
 
 def create_partner_company_role_family(request, partner_company_id):
+    # partner_company features removed from the project.
+    return {"success": False, "message": "Partner company roles not available"}
     partner_company_group = []
 
     manager_family_permissions = [
@@ -510,6 +494,8 @@ def create_partner_company_role_family(request, partner_company_id):
 
 
 def create_end_client_role_family(request, end_client_id):
+    # end_client features removed from the project.
+    return {"success": False, "message": "End client roles not available"}
     end_client_group = []
 
     manager_family_permissions = [

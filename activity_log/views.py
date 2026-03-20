@@ -5,33 +5,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from activity_log.models import ActivityLog, WhatsAppMessageLog
-from activity_log.serializers import ActivityLogSerializer, WhatsAppMessageLogSerializer
+from activity_log.models import ActivityLog
+from activity_log.serializers import ActivityLogSerializer
 from utils import pagination
 from utils.pagination import Pagination
-
-
-class WhatsAppMessageLogViewSet(ModelViewSet):
-    queryset = WhatsAppMessageLog.objects.all().order_by("-id")
-    serializer_class = WhatsAppMessageLogSerializer
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
-    filter_backends = [SearchFilter, OrderingFilter]
-    pagination_class = Pagination
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        no_pagination = request.query_params.get("no_pagination")
-        if no_pagination:
-            serializer = self.serializer_class(queryset, many=True, context={"request": request})
-            return Response({"success": True, "data": serializer.data})
-
-        if page is None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
-        serializer = self.serializer_class(queryset, many=True)
-        return self.get_paginated_response({"success": True, "data": serializer.data})
 
 
 class ActivityLogViewSet(ModelViewSet):
@@ -51,9 +28,6 @@ class ActivityLogViewSet(ModelViewSet):
 
         if hasattr(user, "company") and user.company:
             return queryset.filter(company=user.company)
-
-        if hasattr(user, "partner company") and user.partner_company:
-            return queryset.filter(partner_company=user.partner_company)
 
         return queryset.filter(user=user)
 

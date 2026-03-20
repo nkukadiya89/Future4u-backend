@@ -14,8 +14,6 @@ class Migration(migrations.Migration):
         ('city', '0002_initial'),
         ('company', '0003_initial'),
         ('country', '0001_initial'),
-        ('end_client', '0001_initial'),
-        ('partner_company', '0002_initial'),
         ('state', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]

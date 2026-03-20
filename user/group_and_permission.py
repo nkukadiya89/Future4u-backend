@@ -28,14 +28,16 @@ class GroupViewSet(ModelViewSet):
         no_pagination = self.request.query_params.get("no_pagination")
         company_id = self.request.query_params.get("company_id")
         partner_company_id = self.request.query_params.get("partner_company_id")
+
+        # partner_company / end_client groups removed from the data model
+        if partner_company_id:
+            return Response(
+                {"success": False, "message": "partner company groups are not available anymore"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if company_id:
             queryset = self.filter_queryset(
                 CustomGroup.objects.filter(company=company_id, deleted=False).order_by("-id")
-            )
-
-        elif partner_company_id:
-            queryset = self.filter_queryset(
-                CustomGroup.objects.filter(partner_company=partner_company_id, deleted=False).order_by("-id")
             )
 
         else:
@@ -43,7 +45,6 @@ class GroupViewSet(ModelViewSet):
                 CustomGroup.objects.filter(
                     created_by=user.id,
                     company__isnull=True,
-                    partner_company__isnull=True,
                     deleted=False,
                 ).order_by("-id")
             )
@@ -227,8 +228,10 @@ class PermissionViewSet(ModelViewSet):
                     User.objects.get(company=company_id)
                     user_assigned_groups = Group.objects.get(name="Company Admin")
                 else:
-                    User.objects.get(partner_company=partner_company_id, company__isnull=True)
-                    user_assigned_groups = Group.objects.get(name="Partner Company Admin")
+                    return Response(
+                        {"success": False, "message": "partner company groups are not available anymore"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
             except Group.DoesNotExist:
                 return Response(

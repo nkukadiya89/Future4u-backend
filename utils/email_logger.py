@@ -5,8 +5,6 @@ from django.contrib.auth import get_user_model
 from django.utils.html import strip_tags
 
 from company.models import Company
-from end_client.models import EndClient
-from partner_company.models import PartnerCompany
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -87,15 +85,12 @@ def find_related_objects_from_email(email_address):
     result["company"] = company
     result["company_id"] = str(company.id) if company else None
 
-    # Find partner company by email
-    partner_company = PartnerCompany.objects.filter(email=email_address).first()
-    result["partner_company"] = partner_company
-    result["partner_company_id"] = str(partner_company.id) if partner_company else None
-
-    # Find end client by email
-    end_client = EndClient.objects.filter(email=email_address).first()
-    result["end_client"] = end_client
-    result["end_client_id"] = str(end_client.id) if end_client else None
+    # partner_company / end_client removed from the project.
+    # Keep the keys for backwards compatibility with callers.
+    result["partner_company"] = None
+    result["partner_company_id"] = None
+    result["end_client"] = None
+    result["end_client_id"] = None
 
     return result
 

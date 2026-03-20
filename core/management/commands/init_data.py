@@ -9,11 +9,15 @@ from django.utils.timezone import now
 
 from business_category.models import BusinessCategory
 from city.models import City
-from city_areas.models import CityArea
 from country.models import Country
 from state.models import State
 from subscription.models import Subscription, SubscriptionFeature
 from user.models import CustomGroup, RoleFamily, User
+
+try:
+    from city_areas.models import CityArea  # type: ignore
+except Exception:  # pragma: no cover
+    CityArea = None  # type: ignore
 
 
 class Command(BaseCommand):
@@ -41,7 +45,8 @@ class Command(BaseCommand):
             self.load_country()
             self.load_state()
             self.load_city()
-            self.load_city_area()
+            if CityArea is not None:
+                self.load_city_area()
             self.load_subscription()
 
     # Super User Create
@@ -500,6 +505,9 @@ class Command(BaseCommand):
 
     # City Area Upload CSV
     def load_city_area(self):
+        if CityArea is None:
+            self.stdout.write(self.style.WARNING("Skipping city area load: 'city_areas' app removed"))
+            return
         self.stdout.write("Loading City Area....")
         file_path = path.join(settings.BASE_DIR, "core", "management", "source", "city_area.csv")
 

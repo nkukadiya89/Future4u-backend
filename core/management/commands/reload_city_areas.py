@@ -6,9 +6,13 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from city.models import City
-from city_areas.models import CityArea
 from country.models import Country
 from state.models import State
+
+try:
+    from city_areas.models import CityArea  # type: ignore
+except Exception:  # pragma: no cover
+    CityArea = None  # type: ignore
 
 User = get_user_model()
 
@@ -28,6 +32,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         csv_file_path = options["csv_file"]
         force = options["force"]
+
+        if CityArea is None:
+            self.stdout.write(self.style.WARNING("Skipping reload: 'city_areas' app removed"))
+            return
 
         # Check if CSV file exists
         if not os.path.exists(csv_file_path):

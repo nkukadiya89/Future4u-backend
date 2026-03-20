@@ -5,8 +5,6 @@ from django.utils.translation import gettext_lazy as _
 
 from company.models import Company
 from future4u import settings
-from end_client.models import EndClient
-from partner_company.models import PartnerCompany
 
 
 class UserManager(BaseUserManager):
@@ -76,8 +74,6 @@ class User(AbstractUser):
     email_verified = models.BooleanField(default=False)
     phone_verified = models.BooleanField(default=False)
     company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, null=True)
-    partner_company = models.ForeignKey("partner_company.PartnerCompany", on_delete=models.DO_NOTHING, null=True)
-    end_client = models.ForeignKey(EndClient, on_delete=models.DO_NOTHING, null=True)
     employee = models.ForeignKey("employee.Employee", on_delete=models.DO_NOTHING, null=True)
     password_last_changed = models.DateTimeField(null=True)
     keep_me_logged_in = models.BooleanField(default=False)
@@ -188,18 +184,6 @@ class CustomGroup(Group):
         on_delete=models.SET_NULL,
         null=True,
         related_name="company_group",
-    )
-    partner_company = models.ForeignKey(
-        PartnerCompany,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="partner_company_group",
-    )
-    end_client = models.ForeignKey(
-        EndClient,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="end_client_group",
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

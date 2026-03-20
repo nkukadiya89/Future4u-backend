@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('city', '0003_initial'),
-        ('city_areas', '0003_initial'),
         ('company', '0003_initial'),
         ('country', '0001_initial'),
         ('state', '0001_initial'),

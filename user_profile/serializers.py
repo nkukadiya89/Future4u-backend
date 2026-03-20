@@ -10,8 +10,6 @@ class BusinessSettingSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "company",
-            "partner_company",
-            "end_client",
             "user_id",
             "notifications",
             "sgst",
@@ -44,8 +42,6 @@ class BusinessSettingSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         # Update instance attributes with validated data
         instance.company = validated_data.get("company", instance.company)
-        instance.partner_company = validated_data.get("partner_company", instance.partner_company)
-        instance.end_client = validated_data.get("end_client", instance.end_client)
         instance.notifications = validated_data.get("notifications", instance.notifications)
         instance.sgst = validated_data.get("sgst", instance.sgst)
         instance.cgst = validated_data.get("cgst", instance.cgst)
@@ -62,8 +58,6 @@ class BusinessSettingSerializer(serializers.ModelSerializer):
 
 class BusinessSettingInfoSerializer(serializers.ModelSerializer):
     company_name = serializers.CharField(source="company.name", required=False)
-    partner_company_name = serializers.CharField(source="partner_company.company_name", required=False)
-    end_client_name = serializers.CharField(source="end_client.name", required=False, allow_null=True)
     country_name = serializers.CharField(source="country.name", required=False, allow_null=True)
     state_name = serializers.CharField(source="state.name", required=False, allow_null=True)
     city_name = serializers.CharField(source="city.name", required=False, allow_null=True)
@@ -74,10 +68,6 @@ class BusinessSettingInfoSerializer(serializers.ModelSerializer):
             "id",
             "company",
             "company_name",
-            "partner_company",
-            "partner_company_name",
-            "end_client",
-            "end_client_name",
             "notifications",
             "sgst",
             "cgst",

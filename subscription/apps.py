@@ -20,7 +20,7 @@ class SubcriptionConfig(AppConfig):
             check_existing_cart_reminders()
             
         except Exception as e:
-            print(f"🛒 Startup check error: {str(e)}")
+            print(f"Cart reminder startup check error: {str(e)}")
 
     def start_cart_reminder_checker(self):
         """Start background thread to check and send cart reminders every 6 hours"""
@@ -34,14 +34,14 @@ class SubcriptionConfig(AppConfig):
                     reminders_sent = check_and_send_cart_reminders()
                     
                     if reminders_sent > 0:
-                        print(f"🛒 Cart reminder: Sent {reminders_sent} reminder emails automatically")
+                        print(f"Cart reminder: Sent {reminders_sent} reminder emails automatically")
                     
                 except Exception as e:
-                    print(f"🛒 Cart reminder error: {str(e)}")
+                    print(f"Cart reminder error: {str(e)}")
                 
                 time.sleep(21600)
         
         thread = threading.Thread(target=cart_reminder_worker, daemon=True)
         thread.start()
         
-        print("🛒 Cart reminder checker started - will run every 6 hours")
+        print("Cart reminder checker started - will run every 6 hours")

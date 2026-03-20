@@ -5,8 +5,6 @@ from django.utils.timezone import now
 from city.models import City
 from company.models import Company
 from country.models import Country
-from end_client.models import EndClient
-from partner_company.models import PartnerCompany
 from state.models import State
 
 
@@ -17,21 +15,6 @@ class BusinessSetting(models.Model):
         on_delete=models.CASCADE,
         related_name="company_business_setting",
         null=True,
-    )
-
-    partner_company = models.ForeignKey(
-        PartnerCompany,
-        on_delete=models.CASCADE,
-        related_name="partner_company_business_setting",
-        null=True,
-    )
-
-    end_client = models.ForeignKey(
-        EndClient,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="end_client_business_setting",
     )
 
     user_id = models.ForeignKey(

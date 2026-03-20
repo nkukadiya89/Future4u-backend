@@ -3,7 +3,6 @@ from rest_framework import serializers
 
 from activity_log.models import ActivityLog
 from city.models import City
-from city_areas.models import CityArea
 from company.models import Company, CompanyPhoto, CompanyService, Enquiry
 from country.models import Country
 from state.models import State
@@ -24,15 +23,11 @@ class CreateCompanySerializer(serializers.ModelSerializer):
         queryset=State.objects.all(), required=False, allow_null=True
     )
     gst_address_city = serializers.PrimaryKeyRelatedField(queryset=City.objects.all(), required=False, allow_null=True)
-    gst_address_area = serializers.PrimaryKeyRelatedField(
-        queryset=CityArea.objects.all(), required=False, allow_null=True
-    )
 
     # Read-only fields for names
     gst_address_country_name = serializers.CharField(source="gst_address_country.name", read_only=True)
     gst_address_state_name = serializers.CharField(source="gst_address_state.name", read_only=True)
     gst_address_city_name = serializers.CharField(source="gst_address_city.name", read_only=True)
-    gst_address_area_name = serializers.CharField(source="gst_address_area.city_area_name", read_only=True)
 
     class Meta:
         model = Company
@@ -52,8 +47,6 @@ class CreateCompanySerializer(serializers.ModelSerializer):
             "gst_address_city",
             "gst_address_city_name",
             "gst_address_building",
-            "gst_address_area",
-            "gst_address_area_name",
             "gst_address_landmark",
             "gst_address_pincode",
             "status",
@@ -237,9 +230,6 @@ class CompanySerializer(serializers.ModelSerializer):
         queryset=State.objects.all(), required=False, allow_null=True
     )
     gst_address_city = serializers.PrimaryKeyRelatedField(queryset=City.objects.all(), required=False, allow_null=True)
-    gst_address_area = serializers.PrimaryKeyRelatedField(
-        queryset=CityArea.objects.all(), required=False, allow_null=True
-    )
     communication_address_country = serializers.PrimaryKeyRelatedField(
         queryset=Country.objects.all(), required=False, allow_null=True
     )
@@ -249,23 +239,16 @@ class CompanySerializer(serializers.ModelSerializer):
     communication_address_city = serializers.PrimaryKeyRelatedField(
         queryset=City.objects.all(), required=False, allow_null=True
     )
-    communication_address_area = serializers.PrimaryKeyRelatedField(
-        queryset=CityArea.objects.all(), required=False, allow_null=True
-    )
 
     # Read-only fields for names
     gst_address_country_name = serializers.CharField(source="gst_address_country.name", read_only=True)
     gst_address_state_name = serializers.CharField(source="gst_address_state.name", read_only=True)
     gst_address_city_name = serializers.CharField(source="gst_address_city.name", read_only=True)
-    gst_address_area_name = serializers.CharField(source="gst_address_area.city_area_name", read_only=True)
     communication_address_country_name = serializers.CharField(
         source="communication_address_country.name", read_only=True
     )
     communication_address_state_name = serializers.CharField(source="communication_address_state.name", read_only=True)
     communication_address_city_name = serializers.CharField(source="communication_address_city.name", read_only=True)
-    communication_address_area_name = serializers.CharField(
-        source="communication_address_area.city_area_name", read_only=True
-    )
 
     class Meta:
         model = Company
@@ -288,8 +271,6 @@ class CompanySerializer(serializers.ModelSerializer):
             "gst_address_city",
             "gst_address_city_name",
             "gst_address_building",
-            "gst_address_area",
-            "gst_address_area_name",
             "gst_address_landmark",
             "gst_address_pincode",
             "communication_address_country",
@@ -299,8 +280,6 @@ class CompanySerializer(serializers.ModelSerializer):
             "communication_address_city",
             "communication_address_city_name",
             "communication_address_building",
-            "communication_address_area",
-            "communication_address_area_name",
             "communication_address_landmark",
             "communication_address_pincode",
             "status",
@@ -665,7 +644,6 @@ class CompanySerializer(serializers.ModelSerializer):
         instance.gst_address_state = validated_data.get("gst_address_state", instance.gst_address_state)
         instance.gst_address_city = validated_data.get("gst_address_city", instance.gst_address_city)
         instance.gst_address_building = validated_data.get("gst_address_building", instance.gst_address_building)
-        instance.gst_address_area = validated_data.get("gst_address_area", instance.gst_address_area)
         instance.gst_address_landmark = validated_data.get("gst_address_landmark", instance.gst_address_landmark)
         instance.gst_address_pincode = validated_data.get("gst_address_pincode", instance.gst_address_pincode)
         instance.communication_address_country = validated_data.get(
@@ -679,9 +657,6 @@ class CompanySerializer(serializers.ModelSerializer):
         )
         instance.communication_address_building = validated_data.get(
             "communication_address_building", instance.communication_address_building
-        )
-        instance.communication_address_area = validated_data.get(
-            "communication_address_area", instance.communication_address_area
         )
         instance.communication_address_landmark = validated_data.get(
             "communication_address_landmark", instance.communication_address_landmark
@@ -742,15 +717,11 @@ class CompanyInfoSerializer(serializers.ModelSerializer):
     gst_address_country_name = serializers.CharField(source="gst_address_country.name", read_only=True)
     gst_address_state_name = serializers.CharField(source="gst_address_state.name", read_only=True)
     gst_address_city_name = serializers.CharField(source="gst_address_city.name", read_only=True)
-    gst_address_area_name = serializers.CharField(source="gst_address_area.city_area_name", read_only=True)
     communication_address_country_name = serializers.CharField(
         source="communication_address_country.name", read_only=True
     )
     communication_address_state_name = serializers.CharField(source="communication_address_state.name", read_only=True)
     communication_address_city_name = serializers.CharField(source="communication_address_city.name", read_only=True)
-    communication_address_area_name = serializers.CharField(
-        source="communication_address_area.city_area_name", read_only=True
-    )
 
     class Meta:
         model = Company
@@ -775,8 +746,6 @@ class CompanyInfoSerializer(serializers.ModelSerializer):
             "gst_address_city",
             "gst_address_city_name",
             "gst_address_building",
-            "gst_address_area",
-            "gst_address_area_name",
             "gst_address_landmark",
             "gst_address_pincode",
             "communication_address_country",
@@ -786,8 +755,6 @@ class CompanyInfoSerializer(serializers.ModelSerializer):
             "communication_address_city",
             "communication_address_city_name",
             "communication_address_building",
-            "communication_address_area",
-            "communication_address_area_name",
             "communication_address_landmark",
             "communication_address_pincode",
             "created_by_name",
@@ -865,14 +832,12 @@ class CompanyArchiveListSerializer(serializers.ModelSerializer):
             "gst_address_state",
             "gst_address_city",
             "gst_address_building",
-            "gst_address_area",
             "gst_address_landmark",
             "gst_address_pincode",
             "communication_address_country",
             "communication_address_state",
             "communication_address_city",
             "communication_address_building",
-            "communication_address_area",
             "communication_address_landmark",
             "communication_address_pincode",
             "status",

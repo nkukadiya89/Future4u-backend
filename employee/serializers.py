@@ -162,8 +162,6 @@ class AddEmployeeSerializer(serializers.ModelSerializer):
 
         if employee_instance.created_by:
             user.company = employee_instance.created_by.company
-            user.partner_company = employee_instance.created_by.partner_company
-            user.end_client = employee_instance.created_by.end_client
         user.employee = employee_instance
         user.role = assign_role[0] if assign_role else None
 
@@ -180,7 +178,11 @@ class AddEmployeeSerializer(serializers.ModelSerializer):
         user.save()
 
         ActivityLog.log.employee_create(
-            employee_instance, ip_address, request.user, request.user.company, request.user.partner_company
+            employee_instance,
+            ip_address,
+            request.user,
+            request.user.company,
+            getattr(request.user, "partner_company", None),
         )
 
         return employee_instance
@@ -294,7 +296,7 @@ class AddEmployeeSerializer(serializers.ModelSerializer):
 
         user.save()
 
-        ActivityLog.log.employee_modify(instance, user, request.user.company, request.user.partner_company)
+        ActivityLog.log.employee_modify(instance, user, request.user.company, getattr(request.user, "partner_company", None))
 
         instance.save()
         return instance

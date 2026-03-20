@@ -2,5 +2,6 @@ from django.apps import AppConfig
 
 
 class EndClientConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"   
-    name = 'end_client'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "end_client"
+
