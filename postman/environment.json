@@ -1,0 +1,33 @@
+{
+  "id": "d1a689c4-5377-48c6-8898-a94f48b73c2b",
+  "name": "Future4u Environment",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api",
+      "enabled": true
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "user_email",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "user_password",
+      "value": "",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "schema": "https://schema.getpostman.com/json/collection/v2.1.0/postman_environment.json"
+}
