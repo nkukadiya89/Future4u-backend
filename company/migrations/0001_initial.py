@@ -97,7 +97,6 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(blank=True, null=True)),
                 ('deleted_at', models.DateTimeField(blank=True, null=True)),
                 ('business_category', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='companies', to='business_category.businesscategory')),
-                ('communication_address_area', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='communication_address_companies', to='city_areas.cityarea')),
                 ('communication_address_city', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='communication_address_companies', to='city.city')),
             ],
         ),

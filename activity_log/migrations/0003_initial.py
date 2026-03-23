@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('activity_log', '0002_initial'),
         ('city', '0002_initial'),
+        ('city_areas', '0001_initial'),
         ('company', '0003_initial'),
         ('country', '0001_initial'),
         ('employee', '0001_initial'),
