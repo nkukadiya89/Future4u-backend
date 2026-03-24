@@ -15,6 +15,8 @@ from domain.services import domain_service
 from education_level.serializers import EducationLevelSerializer
 from education_level.services import education_level_service
 from state.models import State
+from stream.serializers import StreamSerializer
+from stream.services import stream_service
 from subscription.models import Subscription, SubscriptionFeature
 from user.models import CustomGroup, RoleFamily, User
 
@@ -57,6 +59,7 @@ class Command(BaseCommand):
                 self.load_city_area()
             self.load_domain_master()
             self.load_education_levels()
+            self.load_streams()
             self.load_subscription()
 
     # Super User Create
@@ -638,6 +641,15 @@ class Command(BaseCommand):
             file_path=file_path,
             serializer_class=EducationLevelSerializer,
             importer=education_level_service.bulk_import_levels,
+        )
+
+    def load_streams(self):
+        self.stdout.write("Loading Streams...")
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "stream_master_sample.csv")
+        self._bulk_import_from_csv(
+            file_path=file_path,
+            serializer_class=StreamSerializer,
+            importer=stream_service.bulk_import_streams,
         )
 
     # Subscription Create

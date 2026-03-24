@@ -1,0 +1,21 @@
+stream_code,stream_name,sequence_order,parent_safe_label,traditional_equivalent,description,is_active
+science,Science,1,1,Science Group,Physics Chemistry Mathematics Biology focused stream,1
+commerce,Commerce,2,1,Business Commerce Group,Accounts Business Studies Economics focused stream,1
+arts,Arts Humanities,3,1,Humanities Group,History Geography Political Science Sociology stream,1
+vocational,Vocational,4,1,Skill Based Track,Practical skill based education like ITI trades,1
+diploma_technical,Diploma Technical,5,1,Polytechnic,Engineering diploma streams like mechanical civil electrical,1
+diploma_non_technical,Diploma Non Technical,6,1,Non Tech Diploma,Hotel management design paramedical diplomas,1
+agriculture,Agriculture,7,0,Agri Stream,Agriculture farming agri business studies,1
+sports,Sports,8,0,Physical Education Track,Sports training physical education and performance,1
+fine_arts,Fine Arts,9,0,Creative Arts,Painting sculpture performing arts,1
+design,Design,10,0,Creative Design,UI UX fashion interior design animation,1
+media,Media Communication,11,0,Mass Communication,Journalism film media communication studies,1
+computer_science,Computer Science,12,1,IT Stream,Programming software development and computing,1
+business_management,Business Management,13,1,Management Stream,Entrepreneurship business and management studies,1
+health_science,Health Science,14,1,Medical Stream,Nursing paramedical public health related fields,1
+law,Law,15,0,Legal Studies,Legal education and judiciary preparation,1
+hospitality,Hospitality Tourism,16,0,Hotel Management,Hospitality travel tourism and service industry,1
+education,Education Teaching,17,0,Teaching Track,BEd teaching and academic training paths,1
+defense,Defense Services,18,0,Armed Forces Track,Army navy airforce and defense services preparation,1
+aviation,Aviation,19,0,Aviation Studies,Pilot cabin crew and aviation management,1
+entrepreneurship,Entrepreneurship,20,0,Startup Track,Startup building business creation innovation,1
