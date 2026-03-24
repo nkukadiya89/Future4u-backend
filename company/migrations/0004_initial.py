@@ -11,6 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('city', '0003_initial'),
+        ('city_areas', '0001_initial'),
         ('company', '0003_initial'),
         ('country', '0001_initial'),
         ('state', '0001_initial'),
@@ -18,6 +19,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AddField(
+            model_name='company',
+            name='communication_address_area',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='communication_address_companies', to='city_areas.cityarea'),
+        ),
         migrations.AddField(
             model_name='company',
             name='created_by',

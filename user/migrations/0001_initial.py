@@ -16,6 +16,8 @@ class Migration(migrations.Migration):
         ('auth', '0012_alter_user_first_name_max_length'),
         ('company', '0003_initial'),
         ('employee', '0001_initial'),
+        ('end_client', '0001_initial'),
+        ('partner_company', '0001_initial'),
     ]
 
     operations = [
@@ -108,9 +110,7 @@ class Migration(migrations.Migration):
                 ('keep_me_logged_in', models.BooleanField(default=False)),
                 ('company', models.ForeignKey(null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='company.company')),
                 ('employee', models.ForeignKey(null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='employee.employee')),
-                ('end_client', models.ForeignKey(null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='end_client.endclient')),
                 ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
-                ('partner_company', models.ForeignKey(null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='partner_company.partnercompany')),
                 ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
             ],
             options={
@@ -167,8 +167,6 @@ class Migration(migrations.Migration):
                 ('deleted', models.BooleanField(default=False)),
                 ('company', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='company_group', to='company.company')),
                 ('created_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='group_created', to=settings.AUTH_USER_MODEL)),
-                ('end_client', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='end_client_group', to='end_client.endclient')),
-                ('partner_company', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='partner_company_group', to='partner_company.partnercompany')),
                 ('updated_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='group_updated', to=settings.AUTH_USER_MODEL)),
                 ('role_family', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='role_family', to='user.rolefamily')),
             ],

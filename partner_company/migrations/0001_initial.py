@@ -1,0 +1,147 @@
+import django.db.models.deletion
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    initial = True
+
+    dependencies = [
+        ("city", "0001_initial"),
+        ("city_areas", "0001_initial"),
+        ("country", "0001_initial"),
+        ("state", "0001_initial"),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name="PartnerCompany",
+            fields=[
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
+                ("partner_company_logo", models.CharField(blank=True, max_length=250, null=True)),
+                ("gst_no", models.CharField(blank=True, max_length=15, null=True)),
+                ("company_name", models.CharField(max_length=50)),
+                ("person_name", models.CharField(blank=True, max_length=150, null=True)),
+                ("email", models.EmailField(max_length=254)),
+                ("phone", models.CharField(blank=True, max_length=20, null=True)),
+                ("gst_address_building", models.CharField(blank=True, max_length=150, null=True)),
+                ("gst_address_landmark", models.CharField(blank=True, max_length=100, null=True)),
+                ("gst_address_pincode", models.IntegerField(blank=True, null=True)),
+                ("communication_address_building", models.CharField(blank=True, max_length=150, null=True)),
+                ("communication_address_landmark", models.CharField(blank=True, max_length=100, null=True)),
+                ("communication_address_pincode", models.IntegerField(blank=True, null=True)),
+                ("status", models.CharField(blank=True, max_length=25, null=True)),
+                ("is_active", models.BooleanField(default=False)),
+                ("deleted", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(blank=True, null=True)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "communication_address_area",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="partner_company_comm_area",
+                        to="city_areas.cityarea",
+                    ),
+                ),
+                (
+                    "communication_address_city",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="partner_company_comm_city",
+                        to="city.city",
+                    ),
+                ),
+                (
+                    "communication_address_country",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="partner_company_comm_country",
+                        to="country.country",
+                    ),
+                ),
+                (
+                    "communication_address_state",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="partner_company_comm_state",
+                        to="state.state",
+                    ),
+                ),
+                (
+                    "gst_address_area",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="partner_company_gst_area",
+                        to="city_areas.cityarea",
+                    ),
+                ),
+                (
+                    "gst_address_city",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="partner_company_gst_city",
+                        to="city.city",
+                    ),
+                ),
+                (
+                    "gst_address_country",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="partner_company_gst_country",
+                        to="country.country",
+                    ),
+                ),
+                (
+                    "gst_address_state",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="partner_company_gst_state",
+                        to="state.state",
+                    ),
+                ),
+            ],
+            options={
+                "db_table": "partner_company",
+            },
+        ),
+        migrations.CreateModel(
+            name="PartnerCompanyDocument",
+            fields=[
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
+                ("document_title", models.CharField(blank=True, max_length=50, null=True)),
+                ("document_file", models.CharField(blank=True, max_length=250, null=True)),
+                ("deleted", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(blank=True, null=True)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "partner_company",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="partner_company_documents",
+                        to="partner_company.partnercompany",
+                    ),
+                ),
+            ],
+            options={
+                "db_table": "partner_company_document",
+            },
+        ),
+    ]
