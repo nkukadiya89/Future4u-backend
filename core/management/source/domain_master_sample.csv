@@ -1,0 +1,43 @@
+domain_code,domain_name,parent,parent_acceptance_level,future_relevance_score,description,is_active
+ai_data,AI & Data,,5,98,Artificial intelligence machine learning and data science,1
+cybersecurity,Cybersecurity,,5,97,Digital security and threat protection,1
+healthtech,HealthTech,,5,96,Technology in healthcare and medical systems,1
+biotech,Biotechnology,,4,95,Bioengineering genetics and life sciences,1
+fintech,FinTech,,5,94,Financial technology and digital payments,1
+climate_tech,Climate Tech,,4,96,Sustainability climate solutions and carbon reduction,1
+renewable_energy,Renewable Energy,,5,97,Solar wind and alternative energy systems,1
+ev_mobility,EV & Mobility,,5,95,Electric vehicles and future transportation,1
+robotics,Robotics & Automation,,4,96,Industrial and service automation systems,1
+space_tech,Space Technology,,3,94,Satellite systems and space exploration,1
+edtech,EdTech,,5,92,Technology in education and learning systems,1
+agritech,Agritech,,4,93,Technology in agriculture and food systems,1
+iot,IoT & Smart Systems,,4,94,Connected devices and smart infrastructure,1
+blockchain,Blockchain & Web3,,3,91,Decentralized systems and digital assets,1
+cloud_computing,Cloud Computing,,5,96,Cloud infrastructure and distributed systems,1
+devops,DevOps & Platform Engineering,,5,95,CI CD and infrastructure automation,1
+ar_vr,AR VR & Metaverse,,3,89,Immersive technologies and virtual environments,1
+gaming,Game Development,,4,90,Interactive entertainment and game systems,1
+creator_economy,Creator Economy,,5,88,Content creation and digital monetization,1
+digital_marketing,Digital Marketing,,5,91,Online marketing growth and branding,1
+ecommerce,E-Commerce,,5,93,Online commerce and marketplaces,1
+supply_chain,Supply Chain & Logistics,,5,94,Logistics warehousing and distribution tech,1
+manufacturing,Advanced Manufacturing,,5,95,Smart factories and industry 4.0,1
+construction_tech,Construction Tech,,4,92,Smart construction and infrastructure tech,1
+legaltech,LegalTech,,3,88,Technology in legal services and compliance,1
+hrtech,HRTech,,5,90,Human resource and workforce technology,1
+sports_tech,SportsTech,,4,87,Sports analytics and performance tech,1
+traveltech,TravelTech,,4,89,Technology in travel and tourism industry,1
+foodtech,FoodTech,,4,91,Food innovation and delivery ecosystems,1
+fashiontech,FashionTech,,3,86,Technology in fashion and apparel industry,1
+nanotech,Nanotechnology,,3,93,Advanced material science and nano systems,1
+quantum,Quantum Computing,,2,95,Next-gen computing using quantum mechanics,1
+defense_tech,Defense Technology,,3,94,Military systems and defense innovation,1
+energy_storage,Energy Storage,,4,95,Batteries and energy storage solutions,1
+urban_tech,Urban Tech & Smart Cities,,4,93,Smart infrastructure and city systems,1
+water_tech,Water Technology,,4,92,Water purification and management systems,1
+mental_health,Mental Health & Wellness,,5,94,Psychological health and wellbeing solutions,1
+med_devices,Medical Devices,,5,95,Healthcare equipment and diagnostics,1
+pharma,Pharmaceuticals,,5,94,Drug development and medical research,1
+insurance_tech,InsurTech,,5,90,Insurance innovation and risk tech,1
+data_engineering,Data Engineering,,5,96,Data pipelines and infrastructure,1
+ai_ethics,AI Ethics & Governance,,4,93,Responsible AI and policy systems,1

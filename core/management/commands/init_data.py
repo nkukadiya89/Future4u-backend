@@ -10,6 +10,10 @@ from django.utils.timezone import now
 from business_category.models import BusinessCategory
 from city.models import City
 from country.models import Country
+from domain.serializers import DomainSerializer
+from domain.services import domain_service
+from education_level.serializers import EducationLevelSerializer
+from education_level.services import education_level_service
 from state.models import State
 from subscription.models import Subscription, SubscriptionFeature
 from user.models import CustomGroup, RoleFamily, User
@@ -26,6 +30,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser) -> None:
         parser.add_argument("--country", type=bool, help="Country data to be uploaded")
         parser.add_argument("--zone_name", type=bool, help="ZoneName data to be uploaded")
+        parser.add_argument("--domain", type=bool, help="Domain master data to be uploaded")
+        parser.add_argument("--education_level", type=bool, help="Education level data to be uploaded")
 
         parser.add_argument("--groups", type=bool, help="Create Groups")
         parser.add_argument("--user", type=bool, help="Create Super User")
@@ -35,24 +41,29 @@ class Command(BaseCommand):
         if (
             kwargs["country"] is None
             and kwargs["zone_name"] is None
+            and kwargs["domain"] is None
+            and kwargs["education_level"] is None
             and kwargs["groups"] is None
             and kwargs["user"] is None
         ):
-            self.create_super_user()
-            self.create_custom_groups()
-            self.create_role_family()
+            admin_user = self.create_super_user()
+            self.create_custom_groups(admin_user=admin_user)
+            self.create_role_family(admin_user=admin_user)
             self.load_business_category()
             self.load_country()
             self.load_state()
             self.load_city()
             if CityArea is not None:
                 self.load_city_area()
+            self.load_domain_master()
+            self.load_education_levels()
             self.load_subscription()
 
     # Super User Create
     def create_super_user(self):
         self.stdout.write("Creating Super User.......")
-        user = User.objects.create(
+        init_email = config("INIT_EMAIL")
+        defaults = dict(
             is_superuser=True,
             is_staff=True,
             is_active=True,
@@ -60,7 +71,6 @@ class Command(BaseCommand):
             first_name="Future4u",
             last_name="Admin",
             about_me="Admin ",
-            email=config("INIT_EMAIL"),
             profile_image="null",
             whatsapp_verified=False,
             designation="Super Admin",
@@ -77,11 +87,18 @@ class Command(BaseCommand):
             phone_verified=True,
             company=None,
         )
+        user, created = User.objects.get_or_create(email=init_email, defaults=defaults)
+        if not created:
+            for k, v in defaults.items():
+                setattr(user, k, v)
         new_password = config("INIT_ADMIN_PASSWORD")
         user.set_password(new_password)
 
         user.save()
-        self.stdout.write("Super User Created!.......")
+        if created:
+            self.stdout.write("Super User Created!.......")
+        else:
+            self.stdout.write("Super User already exists, updated profile/password.")
         return user
 
     # Role Family Create
@@ -108,9 +125,12 @@ class Command(BaseCommand):
         },
     ]
 
-    def create_role_family(self):
+    def create_role_family(self, admin_user=None):
         self.stdout.write("Creating Role Family...........")
-        created_by_user = User.objects.get(pk=1)
+        created_by_user = admin_user or User.objects.filter(is_superuser=True).first() or User.objects.first()
+        if not created_by_user:
+            self.stdout.write(self.style.WARNING("Skipping role family creation: no user found"))
+            return []
         role_family = []
 
         for data in self.role_family_data:
@@ -124,16 +144,29 @@ class Command(BaseCommand):
             role_family.append(roles_family)
         return role_family
 
-    def create_custom_groups(self):
+    def create_custom_groups(self, admin_user=None):
         self.stdout.write("Creating Groups.......")
-        user = User.objects.get(id=1)
+        user = admin_user or User.objects.filter(is_superuser=True).first() or User.objects.first()
+        if not user:
+            self.stdout.write(self.style.WARNING("Skipping group creation: no user found"))
+            return
 
-        super_admin_group = CustomGroup.objects.create(name="Super Admin", group_name="Super Admin", created_by=user)
-        company_admin_group = CustomGroup.objects.create(name="Company Admin", group_name="Company Admin")
-        partner_admin_group = CustomGroup.objects.create(
-            name="Partner Company Admin", group_name="Partner Company Admin"
+        super_admin_group, _ = CustomGroup.objects.update_or_create(
+            name="Super Admin",
+            defaults={"group_name": "Super Admin", "created_by": user},
         )
-        end_client_admin_group = CustomGroup.objects.create(name="EndClient Admin", group_name="EndClient Admin")
+        company_admin_group, _ = CustomGroup.objects.update_or_create(
+            name="Company Admin",
+            defaults={"group_name": "Company Admin"},
+        )
+        partner_admin_group, _ = CustomGroup.objects.update_or_create(
+            name="Partner Company Admin",
+            defaults={"group_name": "Partner Company Admin"},
+        )
+        end_client_admin_group, _ = CustomGroup.objects.update_or_create(
+            name="EndClient Admin",
+            defaults={"group_name": "EndClient Admin"},
+        )
 
         self.stdout.write("Custom Groups Created!.......")
 
@@ -554,6 +587,58 @@ class Command(BaseCommand):
             CityArea.objects.bulk_create(city_areas_to_create, ignore_conflicts=True)
 
         self.stdout.write("City Area data uploaded successfully.")
+
+    class _Req:
+        __slots__ = ("user",)
+
+        def __init__(self, user):
+            self.user = user
+
+    def _bulk_import_from_csv(self, *, file_path, serializer_class, importer):
+        rows = []
+        with open(file_path, "r", encoding="utf-8-sig") as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=",")
+            for row in reader:
+                if not any((v or "").strip() for v in row.values()):
+                    continue
+                rows.append(dict(row))
+        if not rows:
+            self.stdout.write(self.style.WARNING(f"No rows found in {file_path}"))
+            return
+        user = User.objects.filter(is_superuser=True).first() or User.objects.order_by("pk").first()
+        if not user:
+            self.stdout.write(self.style.WARNING("Skipping import: no user available for audit fields"))
+            return
+        result = importer(
+            user=user,
+            rows=rows,
+            serializer_class=serializer_class,
+            context={"request": self._Req(user)},
+        )
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Load complete ({path.basename(file_path)}): "
+                f"success={result['success_count']} errors={result['error_count']}"
+            )
+        )
+
+    def load_domain_master(self):
+        self.stdout.write("Loading Domain Master...")
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "domain_master_sample.csv")
+        self._bulk_import_from_csv(
+            file_path=file_path,
+            serializer_class=DomainSerializer,
+            importer=domain_service.bulk_import_domains,
+        )
+
+    def load_education_levels(self):
+        self.stdout.write("Loading Education Levels...")
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "education_level_master_sample.csv")
+        self._bulk_import_from_csv(
+            file_path=file_path,
+            serializer_class=EducationLevelSerializer,
+            importer=education_level_service.bulk_import_levels,
+        )
 
     # Subscription Create
     subscription_data = [
