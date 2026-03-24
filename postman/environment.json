@@ -26,6 +26,11 @@
       "key": "user_password",
       "value": "",
       "enabled": true
+    },
+    {
+      "key": "education_level_id",
+      "value": "",
+      "enabled": true
     }
   ],
   "_postman_variable_scope": "environment",

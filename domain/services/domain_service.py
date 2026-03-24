@@ -393,7 +393,11 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
                 )
             )
             continue
-        ser = serializer_class(data=row, context=context)
+        existing = None
+        domain_code = (row.get("domain_code") or "").strip()
+        if domain_code:
+            existing = Domain.objects.filter(domain_code__iexact=domain_code).first()
+        ser = serializer_class(instance=existing, data=row, partial=bool(existing), context=context)
         if not ser.is_valid():
             msg = json.dumps(ser.errors)[:500]
             errors.append(
@@ -407,7 +411,13 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
             continue
         try:
             with transaction.atomic():
-                ser.save()
+                obj = ser.save()
+                # Restore archived records when re-imported.
+                if getattr(obj, "is_archived", False):
+                    obj.is_archived = False
+                    obj.updated_by = user
+                    obj.updated_at = timezone.now()
+                    obj.save(update_fields=["is_archived", "updated_by", "updated_at"])
                 imported += 1
         except ValidationError as e:
             detail = e.detail

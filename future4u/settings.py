@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "company",
     "country",
     "domain",
+    "education_level",
     "employee",
     "end_client",
     "faq",
