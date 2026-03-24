@@ -9,7 +9,6 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
-from base import services as base_services
 from education_level.models import EducationLevel, EducationLevelImportBatch, EducationLevelImportError
 
 logger = logging.getLogger(__name__)
@@ -20,7 +19,22 @@ SAMPLE_CSV_HEADERS = (
     "sequence_order",
     "min_age",
     "max_age",
+    "is_active",
 )
+REQUIRED_IMPORT_HEADERS = {"level_code", "display_name", "sequence_order", "min_age", "max_age"}
+HEADER_ALIASES = {
+    "code": "level_code",
+    "education_level_code": "level_code",
+    "education_code": "level_code",
+    "name": "display_name",
+    "education_level_name": "display_name",
+    "order": "sequence_order",
+    "sequence": "sequence_order",
+    "minage": "min_age",
+    "maxage": "max_age",
+    "active": "is_active",
+    "status": "is_active",
+}
 
 
 def education_level_base_queryset():
@@ -30,14 +44,14 @@ def education_level_base_queryset():
 def list_levels(*, include_archived: bool = False):
     qs = education_level_base_queryset()
     if not include_archived:
-        qs = qs.filter(is_archived=False)
+        qs = qs.filter(deleted=False)
     return qs.order_by("sequence_order", "display_name")
 
 
 def get_level(*, pk: UUID, include_archived: bool = False):
     qs = education_level_base_queryset().filter(pk=pk)
     if not include_archived:
-        qs = qs.filter(is_archived=False)
+        qs = qs.filter(deleted=False)
     return qs.first()
 
 
@@ -143,24 +157,30 @@ def assert_can_archive(level: EducationLevel):
 @transaction.atomic
 def archive_level(*, level: EducationLevel, user) -> EducationLevel:
     assert_can_archive(level)
-    return base_services.soft_delete(level, user=user)
+    level.soft_delete(user=user)
+    return level
 
 
 @transaction.atomic
 def restore_level(*, level: EducationLevel, user) -> EducationLevel:
-    return base_services.restore(level, user=user)
+    level.deleted = False
+    level.deleted_at = None
+    level.deleted_by = None
+    level.updated_at = timezone.now()
+    level.updated_by = user
+    level.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_at", "updated_by"])
+    return level
 
 
 @transaction.atomic
 def bulk_archive(*, ids: list, user) -> int:
     if not ids:
         raise ValidationError({"ids": "This field is required."})
-    qs = EducationLevel.objects.filter(id__in=ids, is_archived=False)
+    qs = EducationLevel.objects.filter(id__in=ids, deleted=False)
     count = 0
     for level in qs:
         assert_can_archive(level)
-        level.is_archived = True
-        level.save(user=user)
+        level.soft_delete(user=user)
         count += 1
     return count
 
@@ -169,8 +189,10 @@ def bulk_archive(*, ids: list, user) -> int:
 def bulk_restore(*, ids: list, user) -> int:
     if not ids:
         raise ValidationError({"ids": "This field is required."})
-    return EducationLevel.objects.filter(id__in=ids, is_archived=True).update(
-        is_archived=False,
+    return EducationLevel.objects.filter(id__in=ids, deleted=True).update(
+        deleted=False,
+        deleted_at=None,
+        deleted_by=None,
         updated_at=timezone.now(),
         updated_by=user,
     )
@@ -196,7 +218,7 @@ def bulk_set_active(*, ids: list, user, is_active: bool) -> int:
 
 def dropdown_levels():
     return (
-        EducationLevel.objects.filter(is_active=True, is_archived=False)
+        EducationLevel.objects.filter(is_active=True, deleted=False)
         .only("id", "level_code", "display_name", "sequence_order")
         .order_by("sequence_order", "display_name")
     )
@@ -218,11 +240,11 @@ def reorder_levels(*, orders: list[dict], user) -> int:
     if len(set(seq_list)) != len(seq_list):
         raise ValidationError({"orders": "Duplicate sequence_order values provided."})
 
-    existing = EducationLevel.objects.filter(id__in=id_list, is_archived=False).only("id", "sequence_order")
+    existing = EducationLevel.objects.filter(id__in=id_list, deleted=False).only("id", "sequence_order")
     if existing.count() != len(id_list):
         raise ValidationError({"orders": "Some ids are invalid or archived."})
 
-    unaffected = EducationLevel.objects.filter(is_archived=False).exclude(id__in=id_list).values_list("sequence_order", flat=True)
+    unaffected = EducationLevel.objects.filter(deleted=False).exclude(id__in=id_list).values_list("sequence_order", flat=True)
     unaffected_set = set(unaffected)
     conflict = [v for v in seq_list if v in unaffected_set]
     if conflict:
@@ -248,7 +270,8 @@ def normalize_import_row(row: dict[str, Any]) -> dict[str, Any]:
         kk = (str(k) if k is not None else "").strip()
         if not kk:
             continue
-        out[kk] = v
+        key = HEADER_ALIASES.get(kk.lower(), kk.lower())
+        out[key] = v
     for k in ("sequence_order", "min_age", "max_age"):
         if k in out and out[k] not in ("", None):
             if isinstance(out[k], int):
@@ -281,7 +304,16 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
             header_row = next(rows_iter, None)
             if not header_row:
                 return [], ["Empty spreadsheet."]
-            headers = [str(h).strip() if h is not None else "" for h in header_row]
+            headers = []
+            for h in header_row:
+                raw_h = str(h).strip() if h is not None else ""
+                if raw_h:
+                    headers.append(HEADER_ALIASES.get(raw_h.lower(), raw_h.lower()))
+                else:
+                    headers.append("")
+            missing = sorted(REQUIRED_IMPORT_HEADERS - set([h for h in headers if h]))
+            if missing:
+                return [], [f"Missing required headers: {', '.join(missing)}"]
             out_rows = []
             for tup in rows_iter:
                 if all(x is None or str(x).strip() == "" for x in tup):
@@ -298,6 +330,13 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
         reader = csv.DictReader(io.StringIO(text))
         if not reader.fieldnames:
             return [], ["CSV has no header row."]
+        normalized_headers = [
+            HEADER_ALIASES.get((str(h).strip().lower() if h else ""), (str(h).strip().lower() if h else ""))
+            for h in reader.fieldnames
+        ]
+        missing = sorted(REQUIRED_IMPORT_HEADERS - set([h for h in normalized_headers if h]))
+        if missing:
+            return [], [f"Missing required headers: {', '.join(missing)}"]
         out_rows = []
         for r in reader:
             if not any((v or "").strip() for v in r.values()):
@@ -330,7 +369,11 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
                 )
             )
             continue
-        ser = serializer_class(data=row, context=context)
+        existing = None
+        level_code = (row.get("level_code") or "").strip().lower()
+        if level_code:
+            existing = EducationLevel.objects.filter(level_code__iexact=level_code).first()
+        ser = serializer_class(instance=existing, data=row, partial=bool(existing), context=context)
         if not ser.is_valid():
             msg = json.dumps(ser.errors)[:500]
             errors.append(
@@ -344,7 +387,15 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
             continue
         try:
             with transaction.atomic():
-                ser.save()
+                obj = ser.save()
+                # If an existing archived record is re-imported, restore it.
+                if getattr(obj, "deleted", False):
+                    obj.deleted = False
+                    obj.deleted_at = None
+                    obj.deleted_by = None
+                    obj.updated_by = user
+                    obj.updated_at = timezone.now()
+                    obj.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_by", "updated_at"])
                 imported += 1
         except ValidationError as e:
             detail = e.detail
@@ -432,7 +483,7 @@ def sample_csv_bytes() -> bytes:
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(SAMPLE_CSV_HEADERS)
-    w.writerow(["10th", "10th Standard", "1", "14", "16"])
-    w.writerow(["12th", "12th Standard", "2", "16", "18"])
-    w.writerow(["graduation", "Graduation", "3", "18", "30"])
+    w.writerow(["primary", "Primary School", "1", "6", "12", "1"])
+    w.writerow(["secondary", "Secondary School (10th)", "2", "13", "16", "1"])
+    w.writerow(["higher_secondary", "Higher Secondary (12th)", "3", "16", "18", "1"])
     return buf.getvalue().encode("utf-8")

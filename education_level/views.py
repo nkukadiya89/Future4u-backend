@@ -48,8 +48,8 @@ class EducationLevelViewSet(ModelViewSet):
         qs = education_level_service.education_level_base_queryset()
         act = getattr(self, "action", None)
         if act == "archived":
-            return qs.filter(is_archived=True).order_by("-updated_at", "-created_at")
-        return qs.filter(is_archived=False).order_by("sequence_order", "display_name")
+            return qs.filter(deleted=True).order_by("-updated_at", "-created_at")
+        return qs.filter(deleted=False).order_by("sequence_order", "display_name")
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
@@ -74,7 +74,7 @@ class EducationLevelViewSet(ModelViewSet):
             UUID(str(pk))
         except (ValueError, TypeError):
             raise NotFound()
-        qs = education_level_service.education_level_base_queryset().filter(is_archived=False)
+        qs = education_level_service.education_level_base_queryset().filter(deleted=False)
         try:
             return qs.get(pk=pk)
         except EducationLevel.DoesNotExist:

@@ -1,9 +1,14 @@
 from rest_framework import serializers
 
-from base.serializers import AuditFieldsMixin
 from education_level.models import EducationLevel, EducationLevelImportBatch, EducationLevelImportError
 from education_level.services import education_level_service
 from user.serializers import UserQuickSerializer
+from utils.datetime_formatter import format_datetime
+
+
+class AuditFieldsMixin:
+    def format_audit_datetime(self, value):
+        return format_datetime(value)
 
 
 class EducationLevelSerializer(AuditFieldsMixin, serializers.ModelSerializer):
@@ -11,6 +16,8 @@ class EducationLevelSerializer(AuditFieldsMixin, serializers.ModelSerializer):
     updated_at = serializers.SerializerMethodField(read_only=True)
     created_by = UserQuickSerializer(read_only=True)
     updated_by = UserQuickSerializer(read_only=True)
+
+    is_archived = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = EducationLevel
@@ -38,6 +45,9 @@ class EducationLevelSerializer(AuditFieldsMixin, serializers.ModelSerializer):
 
     def get_updated_at(self, obj):
         return self._format_dt(obj.updated_at)
+
+    def get_is_archived(self, obj):
+        return bool(obj.deleted)
 
     def validate_level_code(self, value):
         value = (value or "").strip().lower()

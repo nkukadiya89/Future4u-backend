@@ -7,7 +7,6 @@ from django.urls import path, reverse
 from django.utils.html import format_html
 from rest_framework.exceptions import ValidationError as DRFValidationError
 
-from base.admin import BaseAdmin
 from education_level.models import EducationLevel
 from education_level.serializers import EducationLevelSerializer
 from education_level.services import education_level_service
@@ -28,7 +27,7 @@ class EducationLevelAdminForm(forms.ModelForm):
 
 
 @admin.register(EducationLevel)
-class EducationLevelAdmin(BaseAdmin):
+class EducationLevelAdmin(admin.ModelAdmin):
     form = EducationLevelAdminForm
     change_list_template = "admin/education_level/education_level/change_list.html"
 
@@ -39,16 +38,16 @@ class EducationLevelAdmin(BaseAdmin):
         "min_age",
         "max_age",
         "is_active",
-        "is_archived",
+        "deleted",
         "created_at",
         "row_actions",
     )
     list_display_links = ("level_code", "display_name")
     search_fields = ("level_code", "display_name")
-    list_filter = ("is_active", "is_archived")
+    list_filter = ("is_active", "deleted")
     ordering = ("sequence_order", "display_name")
     raw_id_fields = ("created_by", "updated_by")
-    readonly_fields = ("created_by", "created_at", "updated_by", "updated_at")
+    readonly_fields = ("created_by", "created_at", "updated_by", "updated_at", "deleted_at", "deleted_by")
     actions = (
         "activate_selected",
         "deactivate_selected",
@@ -70,7 +69,7 @@ class EducationLevelAdmin(BaseAdmin):
                 )
             },
         ),
-        ("Archive", {"fields": ("is_archived",)}),
+        ("Archive/Restore", {"fields": ("deleted", "deleted_at", "deleted_by")}),
         (
             "Audit",
             {
@@ -171,7 +170,7 @@ class EducationLevelAdmin(BaseAdmin):
                 return HttpResponseRedirect(request.get_full_path())
             if request.POST.get("education_level_admin_archive_one"):
                 pk = request.POST["education_level_admin_archive_one"]
-                obj = EducationLevel.objects.filter(pk=pk, is_archived=False).first()
+                obj = EducationLevel.objects.filter(pk=pk, deleted=False).first()
                 if obj:
                     try:
                         education_level_service.archive_level(level=obj, user=request.user)
@@ -181,7 +180,7 @@ class EducationLevelAdmin(BaseAdmin):
                 return HttpResponseRedirect(request.get_full_path())
             if request.POST.get("education_level_admin_restore_one"):
                 pk = request.POST["education_level_admin_restore_one"]
-                obj = EducationLevel.objects.filter(pk=pk, is_archived=True).first()
+                obj = EducationLevel.objects.filter(pk=pk, deleted=True).first()
                 if obj:
                     education_level_service.restore_level(level=obj, user=request.user)
                     self.message_user(request, "Restored.")
@@ -208,7 +207,7 @@ class EducationLevelAdmin(BaseAdmin):
 
     @admin.action(description="Archive selected (soft)")
     def archive_selected(self, request, queryset):
-        for obj in queryset.filter(is_archived=False):
+        for obj in queryset.filter(deleted=False):
             try:
                 education_level_service.archive_level(level=obj, user=request.user)
             except DRFValidationError as exc:
@@ -217,7 +216,7 @@ class EducationLevelAdmin(BaseAdmin):
     @admin.action(description="Restore selected")
     def restore_selected(self, request, queryset):
         n = 0
-        for obj in queryset.filter(is_archived=True):
+        for obj in queryset.filter(deleted=True):
             education_level_service.restore_level(level=obj, user=request.user)
             n += 1
         self.message_user(request, f"{n} education level(s) restored.")

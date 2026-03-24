@@ -54,7 +54,7 @@ class EducationLevelAPITests(TestCase):
 
         r = self.client.delete(reverse("education-level-detail", args=[pk]))
         self.assertEqual(r.status_code, status.HTTP_200_OK)
-        self.assertTrue(EducationLevel.objects.get(pk=pk).is_archived)
+        self.assertTrue(EducationLevel.objects.get(pk=pk).deleted)
 
     def test_level_code_case_insensitive_unique(self):
         url = reverse("education-level-list")
@@ -131,7 +131,7 @@ class EducationLevelAPITests(TestCase):
             format="json",
         )
         self.assertEqual(r.status_code, status.HTTP_200_OK)
-        self.assertFalse(EducationLevel.objects.get(pk=p1).is_archived)
+        self.assertFalse(EducationLevel.objects.get(pk=p1).deleted)
 
     def test_bulk_upload_csv_file(self):
         csv_body = (

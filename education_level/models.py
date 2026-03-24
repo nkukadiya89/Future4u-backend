@@ -5,16 +5,17 @@ from django.db import models
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 
-from base.models import BaseModel
+from common.models import BaseModule
 
 
-class EducationLevel(BaseModel):
+class EducationLevel(BaseModule):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     level_code = models.CharField(max_length=64)
     display_name = models.CharField(max_length=255)
     sequence_order = models.PositiveIntegerField(unique=True)
     min_age = models.PositiveIntegerField()
     max_age = models.PositiveIntegerField()
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         db_table = "education_level"
@@ -28,7 +29,7 @@ class EducationLevel(BaseModel):
             models.Index(fields=["level_code"]),
             models.Index(fields=["sequence_order"]),
             models.Index(fields=["is_active"]),
-            models.Index(fields=["is_archived"]),
+            models.Index(fields=["deleted"]),
         ]
         ordering = ["sequence_order", "display_name"]
 
