@@ -1,0 +1,3 @@
+stream_code,domain_code,weight_score,is_primary,is_active
+science,engineering,95,1,1
+commerce,business,90,1,1

@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     "pincode",
     "state",
     "subscription",
+    "stream",
+    "stream_domain_mapping",
     "user",
     "user_profile",
 
