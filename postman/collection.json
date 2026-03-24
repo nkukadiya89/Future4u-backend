@@ -10783,6 +10783,301 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Stream Master",
+      "item": [
+        {
+          "name": "Create Stream",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/streams/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "streams",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stream_code\": \"science\",\n  \"stream_name\": \"Science\",\n  \"sequence_order\": 1,\n  \"parent_safe_label\": true,\n  \"traditional_equivalent\": \"General Science\",\n  \"description\": \"Physics/Chemistry/Biology path\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"is_active\": true\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Streams",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/streams/?search=&is_active=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "streams",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "is_active",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/streams/{{stream_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "streams",
+                "{{stream_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/streams/{{stream_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "streams",
+                "{{stream_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stream_code\": \"science\",\n  \"stream_name\": \"Science Updated\",\n  \"sequence_order\": 1,\n  \"parent_safe_label\": true,\n  \"traditional_equivalent\": \"General Science\",\n  \"description\": \"Updated description\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"is_active\": true\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Partial Update",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/streams/{{stream_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "streams",
+                "{{stream_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stream_name\": \"Science (PATCH)\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete (Archive)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/streams/{{stream_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "streams",
+                "{{stream_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/streams/{{stream_id}}/change-status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "streams",
+                "{{stream_id}}",
+                "change-status",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": false\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Dropdown",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/streams/dropdown/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "streams",
+                "dropdown",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Import",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/streams/bulk-import/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "streams",
+                "bulk-import",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rows\": [\n    {\n      \"stream_code\": \"commerce\",\n      \"stream_name\": \"Commerce\",\n      \"sequence_order\": 2,\n      \"parent_safe_label\": true,\n      \"traditional_equivalent\": \"Business Studies\",\n      \"description\": \"Accounts/Economics path\",\n      \"education_level\": \"{{education_level_id}}\",\n      \"is_active\": true\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }
