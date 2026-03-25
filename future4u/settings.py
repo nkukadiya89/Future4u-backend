@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "activity_log",
     "business_category",
+    "career",
     "city",
     "city_areas",
     "common",

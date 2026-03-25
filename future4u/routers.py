@@ -1,6 +1,7 @@
 from rest_framework import routers
 from activity_log.routers import activity_log_router
 from business_category.routers import bussiness_category_router
+from career.routers import career_router
 from city.routers import city_router
 from company.routers import company_router
 from country.routers import country_router
@@ -24,6 +25,7 @@ future4u_router = routers.DefaultRouter()
 
 future4u_router.registry.extend(activity_log_router.registry)
 future4u_router.registry.extend(bussiness_category_router.registry)
+future4u_router.registry.extend(career_router.registry)
 future4u_router.registry.extend(city_router.registry)
 future4u_router.registry.extend(company_router.registry)
 future4u_router.registry.extend(country_router.registry)

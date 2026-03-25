@@ -8,6 +8,8 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import now
 
 from business_category.models import BusinessCategory
+from career.serializers import CareerSerializer
+from career.services import career_service
 from city.models import City
 from country.models import Country
 from domain.serializers import DomainSerializer
@@ -39,6 +41,7 @@ class Command(BaseCommand):
         parser.add_argument("--domain", type=bool, help="Domain master data to be uploaded")
         parser.add_argument("--education_level", type=bool, help="Education level data to be uploaded")
         parser.add_argument("--skill", type=bool, help="Skill master data to be uploaded")
+        parser.add_argument("--career", type=bool, help="Career master data to be uploaded")
 
         parser.add_argument("--groups", type=bool, help="Create Groups")
         parser.add_argument("--user", type=bool, help="Create Super User")
@@ -51,6 +54,7 @@ class Command(BaseCommand):
             and kwargs["domain"] is None
             and kwargs["education_level"] is None
             and kwargs["skill"] is None
+            and kwargs["career"] is None
             and kwargs["groups"] is None
             and kwargs["user"] is None
         ):
@@ -66,6 +70,7 @@ class Command(BaseCommand):
             self.load_domain_master()
             self.load_education_levels()
             self.load_skills()
+            self.load_careers()
             self.load_streams()
             self.load_stream_domain_mappings()
             self.load_subscription()
@@ -667,6 +672,15 @@ class Command(BaseCommand):
             file_path=file_path,
             serializer_class=SkillSerializer,
             importer=skill_service.bulk_import_skills,
+        )
+
+    def load_careers(self):
+        self.stdout.write("Loading Careers...")
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "career_master_sample.csv")
+        self._bulk_import_from_csv(
+            file_path=file_path,
+            serializer_class=CareerSerializer,
+            importer=career_service.bulk_import_careers,
         )
 
     def load_stream_domain_mappings(self):
