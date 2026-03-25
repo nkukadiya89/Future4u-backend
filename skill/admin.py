@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin, messages
 from django.http import HttpResponse, HttpResponseRedirect
 from django.middleware.csrf import get_token
@@ -12,8 +13,15 @@ from skill.serializers import SkillSerializer
 from skill.services import skill_service
 
 
+class SkillAdminForm(forms.ModelForm):
+    class Meta:
+        model = Skill
+        fields = "__all__"
+
+
 @admin.register(Skill)
 class SkillAdmin(BaseAdmin):
+    form = SkillAdminForm
     change_list_template = "admin/skill/skill/change_list.html"
 
     list_display = (
@@ -28,7 +36,7 @@ class SkillAdmin(BaseAdmin):
     list_display_links = ("skill_code", "skill_name")
     search_fields = ("skill_code", "skill_name")
     list_filter = ("skill_type", "is_active", "is_archived")
-    ordering = ("skill_name",)
+    ordering = ("-created_at",)
     raw_id_fields = ("created_by", "updated_by")
     readonly_fields = ("created_by", "created_at", "updated_by", "updated_at")
     actions = (

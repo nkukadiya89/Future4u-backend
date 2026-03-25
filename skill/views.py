@@ -30,7 +30,7 @@ class SkillViewSet(ModelViewSet):
     serializer_class = SkillSerializer
     pagination_class = Pagination
     filter_backends = [CustomSearchFilter, OrderingFilter]
-    search_fields = ["skill_code", "skill_name"]
+    search_fields = ["skill_code", "skill_name", "description"]
     ordering_fields = [
         "skill_code",
         "skill_name",
@@ -46,7 +46,7 @@ class SkillViewSet(ModelViewSet):
         act = getattr(self, "action", None)
         if act == "archived":
             return qs.filter(is_archived=True).order_by("-updated_at", "-created_at")
-        return qs.filter(is_archived=False).order_by("skill_name")
+        return qs.filter(is_archived=False).order_by("-created_at")
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)

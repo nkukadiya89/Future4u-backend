@@ -38,7 +38,7 @@ class Skill(BaseModel):
         ]
 
     def __str__(self):
-        return self.skill_name
+        return f"{self.skill_code} - {self.skill_name}"
 
 
 class SkillImportBatch(models.Model):

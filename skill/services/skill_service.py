@@ -36,6 +36,33 @@ def skill_base_queryset():
     return Skill.objects.select_related("created_by", "updated_by")
 
 
+def list_skills(*, include_archived: bool = False):
+    qs = skill_base_queryset()
+    if not include_archived:
+        qs = qs.filter(is_archived=False)
+    return qs.order_by("-created_at")
+
+
+def get_skill(*, pk: UUID, include_archived: bool = False):
+    qs = skill_base_queryset().filter(pk=pk)
+    if not include_archived:
+        qs = qs.filter(is_archived=False)
+    return qs.first()
+
+
+def filter_skills(
+    queryset,
+    *,
+    is_active=None,
+    skill_type=None,
+):
+    if is_active is not None:
+        queryset = queryset.filter(is_active=is_active)
+    if skill_type not in (None, ""):
+        queryset = queryset.filter(skill_type=str(skill_type).strip().lower())
+    return queryset
+
+
 def case_insensitive_code_exists(*, code: str, exclude_pk: UUID | None = None) -> bool:
     q = Skill.objects.filter(skill_code__iexact=code)
     if exclude_pk:
@@ -73,7 +100,7 @@ def validate_skill_type(value: Any) -> str:
 
 
 def validate_skill_data(*, data: dict[str, Any], instance: Skill | None = None) -> dict[str, Any]:
-    code = (data.get("skill_code") or "").strip().lower()
+    code = (data.get("skill_code") or "").strip()
     if not code:
         raise ValidationError({"skill_code": "This field may not be blank."})
     name = (data.get("skill_name") or "").strip()
@@ -110,7 +137,7 @@ def update_skill(*, skill: Skill, user, validated_data: dict) -> Skill:
 @transaction.atomic
 def soft_archive_skill(*, skill: Skill, user) -> Skill:
     assert_can_archive(skill)
-    return base_services.soft_delete(skill, user=user, archive_field="is_archived")
+    return base_services.soft_delete(skill, user=user)
 
 
 archive_skill = soft_archive_skill
@@ -118,7 +145,7 @@ archive_skill = soft_archive_skill
 
 @transaction.atomic
 def restore_skill(*, skill: Skill, user) -> Skill:
-    return base_services.restore(skill, user=user, archive_field="is_archived")
+    return base_services.restore(skill, user=user)
 
 
 @transaction.atomic
@@ -182,9 +209,11 @@ def normalize_import_row(row: dict[str, Any]) -> dict[str, Any]:
         key = HEADER_ALIASES.get(kk.lower(), kk.lower())
         out[key] = v
 
-    for s in ("skill_code", "skill_type"):
-        if s in out and out[s] not in (None, ""):
-            out[s] = str(out[s]).strip().lower()
+    if "skill_code" in out and out["skill_code"] not in (None, ""):
+        out["skill_code"] = str(out["skill_code"]).strip()
+
+    if "skill_type" in out and out["skill_type"] not in (None, ""):
+        out["skill_type"] = str(out["skill_type"]).strip().lower()
 
     if "skill_name" in out and out["skill_name"] not in (None, ""):
         out["skill_name"] = str(out["skill_name"]).strip()
