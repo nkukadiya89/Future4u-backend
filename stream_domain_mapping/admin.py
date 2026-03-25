@@ -15,7 +15,7 @@ from stream_domain_mapping.services import stream_domain_mapping_service
 class StreamDomainMappingAdminForm(forms.ModelForm):
     class Meta:
         model = StreamDomainMapping
-        exclude = ("deleted", "deleted_at", "deleted_by")
+        fields = "__all__"
 
 
 @admin.register(StreamDomainMapping)

@@ -15,7 +15,7 @@ from stream.services import stream_service
 class StreamAdminForm(forms.ModelForm):
     class Meta:
         model = Stream
-        exclude = ("deleted", "deleted_at", "deleted_by")
+        fields = "__all__"
 
 
 @admin.register(Stream)

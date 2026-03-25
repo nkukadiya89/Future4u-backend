@@ -15,7 +15,7 @@ from education_level.services import education_level_service
 class EducationLevelAdminForm(forms.ModelForm):
     class Meta:
         model = EducationLevel
-        exclude = ("deleted", "deleted_at", "deleted_by")
+        fields = "__all__"
 
     def clean(self):
         cleaned = super().clean()
