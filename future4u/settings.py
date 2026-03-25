@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "subscription",
     "stream",
     "stream_domain_mapping",
+    "skill",
     "user",
     "user_profile",
 
