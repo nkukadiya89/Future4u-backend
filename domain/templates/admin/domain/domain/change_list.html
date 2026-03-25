@@ -1,6 +1,36 @@
 {% extends "admin/change_list.html" %}
-{% block object-tools-items %}
-<li><a href="{{ upload_url }}">Upload Domains</a></li>
-<li><a href="{{ sample_csv_url }}">Download Sample CSV</a></li>
+
+{% block extrastyle %}
 {{ block.super }}
+<style>
+  /* Keep results + filters in a stable two-column layout. */
+  body.change-list #changelist {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+
+  body.change-list #changelist-form {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  body.change-list #changelist-filter {
+    flex: 0 0 280px !important;
+    width: 280px !important;
+    float: none !important;
+    clear: none !important;
+    margin: 0 !important;
+  }
+
+  body.change-list #result_list {
+    width: 100% !important;
+  }
+</style>
+{% endblock %}
+
+{% block object-tools-items %}
+{{ block.super }}
+<li><a href="{{ upload_url }}" class="addlink">Upload domains</a></li>
+<li><a href="{{ sample_csv_url }}" class="viewsitelink">Download sample CSV</a></li>
 {% endblock %}
