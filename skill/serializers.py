@@ -39,7 +39,7 @@ class SkillSerializer(AuditFieldsMixin, serializers.ModelSerializer):
         return self._format_dt(obj.updated_at)
 
     def validate_skill_code(self, value):
-        value = (value or "").strip().lower()
+        value = (value or "").strip()
         if not value:
             raise serializers.ValidationError("This field may not be blank.")
         exclude = self.instance.pk if getattr(self.instance, "pk", None) else None

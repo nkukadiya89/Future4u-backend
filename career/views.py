@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from django.http import HttpResponse
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ValidationError
@@ -10,39 +11,38 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from skill.models import Skill
-from skill.permissions import SkillMasterPermission
-from skill.serializers import (
-    SkillBulkIdsSerializer,
-    SkillBulkImportSerializer,
-    SkillChangeStatusSerializer,
-    SkillDropdownSerializer,
-    SkillImportBatchSerializer,
-    SkillImportErrorSerializer,
-    SkillSerializer,
+from career.models import Career
+from career.permissions import CareerMasterPermission
+from career.serializers import (
+    CareerBulkIdsSerializer,
+    CareerBulkImportSerializer,
+    CareerChangeStatusSerializer,
+    CareerDropdownSerializer,
+    CareerImportBatchSerializer,
+    CareerImportErrorSerializer,
+    CareerSerializer,
 )
-from skill.services import skill_service
+from career.services import career_service
 from utils.custom_filters import CustomSearchFilter
 from utils.pagination import Pagination
 
 
-class SkillViewSet(ModelViewSet):
-    serializer_class = SkillSerializer
+class CareerViewSet(ModelViewSet):
+    serializer_class = CareerSerializer
     pagination_class = Pagination
     filter_backends = [CustomSearchFilter, OrderingFilter]
-    search_fields = ["skill_code", "skill_name", "description"]
+    search_fields = ["career_code", "career_name"]
     ordering_fields = [
-        "skill_code",
-        "skill_name",
-        "skill_type",
+        "career_code",
+        "career_name",
         "created_at",
         "updated_at",
     ]
-    permission_classes = [SkillMasterPermission]
+    permission_classes = [CareerMasterPermission]
     authentication_classes = [JWTAuthentication]
 
     def get_queryset(self):
-        qs = skill_service.skill_base_queryset()
+        qs = career_service.career_base_queryset()
         act = getattr(self, "action", None)
         if act == "archived":
             return qs.filter(is_archived=True).order_by("-updated_at", "-created_at")
@@ -57,9 +57,9 @@ class SkillViewSet(ModelViewSet):
                 queryset = queryset.filter(is_active=True)
             elif v in ("false", "0", "no"):
                 queryset = queryset.filter(is_active=False)
-        skill_type = req.get("skill_type")
-        if skill_type not in (None, ""):
-            queryset = queryset.filter(skill_type=str(skill_type).strip().lower())
+        edu = req.get("education_level")
+        if edu not in (None, ""):
+            queryset = queryset.filter(Q(min_education_level_id=edu) | Q(max_education_level_id=edu))
         return queryset
 
     def get_object(self):
@@ -68,10 +68,10 @@ class SkillViewSet(ModelViewSet):
             UUID(str(pk))
         except (ValueError, TypeError):
             raise NotFound()
-        qs = skill_service.skill_base_queryset().filter(is_archived=False)
+        qs = career_service.career_base_queryset().filter(is_archived=False)
         try:
             return qs.get(pk=pk)
-        except Skill.DoesNotExist:
+        except Career.DoesNotExist:
             raise NotFound()
 
     def list(self, request, *args, **kwargs):
@@ -97,7 +97,7 @@ class SkillViewSet(ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response(
-                {"success": True, "message": "Skill created", "data": serializer.data},
+                {"success": True, "message": "Career created", "data": serializer.data},
                 status=status.HTTP_201_CREATED,
             )
         return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -121,7 +121,7 @@ class SkillViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         try:
-            skill_service.soft_archive_skill(skill=instance, user=request.user)
+            career_service.soft_archive_career(career=instance, user=request.user)
         except ValidationError as e:
             return Response({"success": False, "message": e.detail}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"success": True, "message": "Archived Successfully"}, status=status.HTTP_200_OK)
@@ -132,22 +132,22 @@ class SkillViewSet(ModelViewSet):
         page = self.paginate_queryset(queryset)
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = SkillSerializer(queryset, many=True, context={"request": request})
+            serializer = CareerSerializer(queryset, many=True, context={"request": request})
             return Response({"success": True, "data": serializer.data})
         if page is not None:
-            serializer = SkillSerializer(page, many=True, context={"request": request})
+            serializer = CareerSerializer(page, many=True, context={"request": request})
             return self.get_paginated_response({"success": True, "data": serializer.data})
-        serializer = SkillSerializer(queryset, many=True, context={"request": request})
+        serializer = CareerSerializer(queryset, many=True, context={"request": request})
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
     @action(detail=True, methods=["post"], url_path="change-status")
     def change_status(self, request, pk=None, *args, **kwargs):
         instance = self.get_object()
-        ser = SkillChangeStatusSerializer(data=request.data)
+        ser = CareerChangeStatusSerializer(data=request.data)
         if not ser.is_valid():
             return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
-        skill_service.set_active_status(
-            skill=instance,
+        career_service.set_active_status(
+            career=instance,
             user=request.user,
             is_active=ser.validated_data["is_active"],
         )
@@ -155,50 +155,50 @@ class SkillViewSet(ModelViewSet):
         return Response(
             {
                 "success": True,
-                "data": SkillSerializer(instance, context={"request": request}).data,
+                "data": CareerSerializer(instance, context={"request": request}).data,
             }
         )
 
     @action(detail=False, methods=["get"], url_path="dropdown")
     def dropdown(self, request, *args, **kwargs):
-        qs = skill_service.dropdown_skills()
-        serializer = SkillDropdownSerializer(qs, many=True)
+        qs = career_service.dropdown_careers()
+        serializer = CareerDropdownSerializer(qs, many=True)
         return Response({"success": True, "data": serializer.data})
 
     @action(detail=False, methods=["post"], url_path="bulk-archive")
     def bulk_archive(self, request, *args, **kwargs):
-        ser = SkillBulkIdsSerializer(data=request.data)
+        ser = CareerBulkIdsSerializer(data=request.data)
         if not ser.is_valid():
             return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            n = skill_service.bulk_archive(ids=list(ser.validated_data["ids"]), user=request.user)
+            n = career_service.bulk_archive(ids=list(ser.validated_data["ids"]), user=request.user)
         except ValidationError as e:
             return Response({"success": False, "message": e.detail}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"success": True, "message": "Bulk archived successfully", "count": n})
 
     @action(detail=False, methods=["post"], url_path="bulk-restore")
     def bulk_restore(self, request, *args, **kwargs):
-        ser = SkillBulkIdsSerializer(data=request.data)
+        ser = CareerBulkIdsSerializer(data=request.data)
         if not ser.is_valid():
             return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
-        n = skill_service.bulk_restore(ids=list(ser.validated_data["ids"]), user=request.user)
+        n = career_service.bulk_restore(ids=list(ser.validated_data["ids"]), user=request.user)
         return Response({"success": True, "message": "Bulk restored successfully", "count": n})
 
     @action(detail=False, methods=["post"], url_path="bulk-import")
     def bulk_import(self, request, *args, **kwargs):
-        ser = SkillBulkImportSerializer(data=request.data)
+        ser = CareerBulkImportSerializer(data=request.data)
         if not ser.is_valid():
             return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
-        batch = skill_service.bulk_import_rows(
+        batch = career_service.bulk_import_rows(
             user=request.user,
             rows=ser.validated_data["rows"],
-            serializer_class=SkillSerializer,
+            serializer_class=CareerSerializer,
             context={"request": request},
         )
         return Response(
             {
                 "success": True,
-                "data": SkillImportBatchSerializer(batch, context={"request": request}).data,
+                "data": CareerImportBatchSerializer(batch, context={"request": request}).data,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -211,14 +211,14 @@ class SkillViewSet(ModelViewSet):
     )
     def bulk_upload(self, request, *args, **kwargs):
         upload = request.FILES.get("file")
-        rows, parse_errors = skill_service.parse_import_file(upload)
+        rows, parse_errors = career_service.parse_import_file(upload)
         if not rows:
             msg = parse_errors or ["No data rows in file."]
             return Response({"success": False, "message": msg}, status=status.HTTP_400_BAD_REQUEST)
-        result = skill_service.bulk_import_skills(
+        result = career_service.bulk_import_careers(
             user=request.user,
             rows=rows,
-            serializer_class=SkillSerializer,
+            serializer_class=CareerSerializer,
             context={"request": request},
         )
         payload = {
@@ -234,16 +234,16 @@ class SkillViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="import-logs")
     def import_logs(self, request, *args, **kwargs):
-        qs = skill_service.import_batches_queryset()
+        qs = career_service.import_batches_queryset()
         page = self.paginate_queryset(qs)
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = SkillImportBatchSerializer(qs, many=True, context={"request": request})
+            serializer = CareerImportBatchSerializer(qs, many=True, context={"request": request})
             return Response({"success": True, "data": serializer.data})
         if page is not None:
-            serializer = SkillImportBatchSerializer(page, many=True, context={"request": request})
+            serializer = CareerImportBatchSerializer(page, many=True, context={"request": request})
             return self.get_paginated_response({"success": True, "data": serializer.data})
-        serializer = SkillImportBatchSerializer(qs, many=True, context={"request": request})
+        serializer = CareerImportBatchSerializer(qs, many=True, context={"request": request})
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
     @action(detail=False, methods=["get"], url_path="import-errors")
@@ -255,16 +255,16 @@ class SkillViewSet(ModelViewSet):
                 bid = UUID(str(batch_id))
             except (ValueError, TypeError):
                 return Response({"success": False, "message": "Invalid batch_id"}, status=status.HTTP_400_BAD_REQUEST)
-        qs = skill_service.import_errors_queryset(batch_id=bid)
+        qs = career_service.import_errors_queryset(batch_id=bid)
         page = self.paginate_queryset(qs)
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = SkillImportErrorSerializer(qs, many=True)
+            serializer = CareerImportErrorSerializer(qs, many=True)
             return Response({"success": True, "data": serializer.data})
         if page is not None:
-            serializer = SkillImportErrorSerializer(page, many=True)
+            serializer = CareerImportErrorSerializer(page, many=True)
             return self.get_paginated_response({"success": True, "data": serializer.data})
-        serializer = SkillImportErrorSerializer(qs, many=True)
+        serializer = CareerImportErrorSerializer(qs, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
     @action(detail=False, methods=["get"], url_path="error-report/download")
@@ -276,7 +276,7 @@ class SkillViewSet(ModelViewSet):
                 bid = UUID(str(batch_id))
             except (ValueError, TypeError):
                 return Response({"success": False, "message": "Invalid batch_id"}, status=status.HTTP_400_BAD_REQUEST)
-        filename, data = skill_service.error_report_csv_bytes(batch_id=bid)
+        filename, data = career_service.error_report_csv_bytes(batch_id=bid)
         resp = HttpResponse(data, content_type="text/csv; charset=utf-8")
         resp["Content-Disposition"] = f'attachment; filename="{filename}"'
         return resp

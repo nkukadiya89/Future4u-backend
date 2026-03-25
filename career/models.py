@@ -5,43 +5,50 @@ from django.db import models
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 
-from base.models import BaseModel
+from common.models import BaseModule
 
 
-class SkillType(models.TextChoices):
-    TECHNICAL = "technical", "Technical"
-    SOFT = "soft", "Soft"
-    ANALYTICAL = "analytical", "Analytical"
-    CREATIVE = "creative", "Creative"
-
-
-class Skill(BaseModel):
+class Career(BaseModule):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    skill_code = models.CharField(max_length=64)
-    skill_name = models.CharField(max_length=255)
-    skill_type = models.CharField(max_length=32, choices=SkillType.choices)
+    career_code = models.CharField(max_length=64)
+    career_name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    is_archived = models.BooleanField(default=False)
+    min_education_level = models.ForeignKey(
+        "education_level.EducationLevel",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="careers_min_level",
+    )
+    max_education_level = models.ForeignKey(
+        "education_level.EducationLevel",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="careers_max_level",
+    )
 
     class Meta:
-        db_table = "skill"
+        db_table = "career"
         constraints = [
             UniqueConstraint(
-                Lower("skill_code"),
-                name="skill_skill_code_ci_uniq",
+                Lower("career_code"),
+                name="career_career_code_ci_uniq",
             ),
         ]
         indexes = [
-            models.Index(fields=["skill_code"]),
-            models.Index(fields=["skill_type"]),
+            models.Index(fields=["career_code"]),
             models.Index(fields=["is_active"]),
             models.Index(fields=["is_archived"]),
         ]
 
     def __str__(self):
-        return f"{self.skill_code} - {self.skill_name}"
+        return self.career_name
 
 
-class SkillImportBatch(models.Model):
+class CareerImportBatch(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     created_by = models.ForeignKey(
@@ -49,7 +56,7 @@ class SkillImportBatch(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="skill_import_batches",
+        related_name="career_import_batches",
     )
     total_rows = models.PositiveIntegerField(default=0)
     imported_count = models.PositiveIntegerField(default=0)
@@ -57,14 +64,14 @@ class SkillImportBatch(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        db_table = "skill_import_batch"
+        db_table = "career_import_batch"
         ordering = ["-created_at"]
 
 
-class SkillImportError(models.Model):
+class CareerImportError(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     batch = models.ForeignKey(
-        SkillImportBatch,
+        CareerImportBatch,
         on_delete=models.CASCADE,
         related_name="error_rows",
     )
@@ -73,6 +80,6 @@ class SkillImportError(models.Model):
     row_data = models.JSONField(default=dict)
 
     class Meta:
-        db_table = "skill_import_error"
+        db_table = "career_import_error"
         ordering = ["batch", "row_number"]
 

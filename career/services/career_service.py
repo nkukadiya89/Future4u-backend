@@ -10,71 +10,79 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from base import services as base_services
-from skill.models import Skill, SkillImportBatch, SkillImportError, SkillType
+from career.models import Career, CareerImportBatch, CareerImportError
+from education_level.models import EducationLevel
 
 logger = logging.getLogger(__name__)
 
 SAMPLE_CSV_HEADERS = (
-    "skill_code",
-    "skill_name",
-    "skill_type",
+    "career_code",
+    "career_name",
+    "min_education_level",
+    "max_education_level",
     "description",
     "is_active",
 )
-REQUIRED_IMPORT_HEADERS = {"skill_code", "skill_name", "skill_type"}
+REQUIRED_IMPORT_HEADERS = {"career_code", "career_name", "min_education_level"}
 HEADER_ALIASES = {
-    "code": "skill_code",
-    "skill_master_code": "skill_code",
-    "name": "skill_name",
-    "type": "skill_type",
+    "code": "career_code",
+    "career_master_code": "career_code",
+    "name": "career_name",
+    "min_education_level_code": "min_education_level",
+    "max_education_level_code": "max_education_level",
     "active": "is_active",
     "status": "is_active",
 }
 
 
-def skill_base_queryset():
-    return Skill.objects.select_related("created_by", "updated_by")
-
-
-def list_skills(*, include_archived: bool = False):
-    qs = skill_base_queryset()
-    if not include_archived:
-        qs = qs.filter(is_archived=False)
-    return qs.order_by("-created_at")
-
-
-def get_skill(*, pk: UUID, include_archived: bool = False):
-    qs = skill_base_queryset().filter(pk=pk)
-    if not include_archived:
-        qs = qs.filter(is_archived=False)
-    return qs.first()
-
-
-def filter_skills(
-    queryset,
-    *,
-    is_active=None,
-    skill_type=None,
-):
-    if is_active is not None:
-        queryset = queryset.filter(is_active=is_active)
-    if skill_type not in (None, ""):
-        queryset = queryset.filter(skill_type=str(skill_type).strip().lower())
-    return queryset
+def career_base_queryset():
+    return Career.objects.select_related(
+        "created_by",
+        "updated_by",
+        "min_education_level",
+        "max_education_level",
+    )
 
 
 def case_insensitive_code_exists(*, code: str, exclude_pk: UUID | None = None) -> bool:
-    q = Skill.objects.filter(skill_code__iexact=code)
+    q = Career.objects.filter(career_code__iexact=code)
     if exclude_pk:
         q = q.exclude(pk=exclude_pk)
     return q.exists()
 
 
-def blocking_foreign_key_usage(skill: Skill) -> str | None:
-    for rel in skill._meta.related_objects:
+def _resolve_education_level_value(value):
+    if value in (None, ""):
+        return None
+    raw = str(value).strip()
+    if not raw:
+        return None
+    obj = EducationLevel.objects.filter(level_code__iexact=raw, deleted=False).first()
+    if obj:
+        return obj
+    try:
+        return EducationLevel.objects.filter(pk=raw, deleted=False).first()
+    except Exception:
+        return None
+
+
+def _assert_education_level_mapping(*, min_education_level, max_education_level):
+    if not min_education_level:
+        raise ValidationError({"min_education_level": "This field is required."})
+    if max_education_level is None:
+        return
+    if max_education_level.sequence_order < min_education_level.sequence_order:
+        raise ValidationError({"max_education_level": "Max education level cannot be below min education level."})
+
+
+def _recommendation_blocker(career: Career) -> str | None:
+    for rel in career._meta.related_objects:
+        model_name = rel.related_model.__name__.lower()
+        if "recommend" not in model_name:
+            continue
         accessor = rel.get_accessor_name()
         try:
-            related = getattr(skill, accessor)
+            related = getattr(career, accessor)
         except Exception:
             continue
         if hasattr(related, "exists"):
@@ -85,79 +93,69 @@ def blocking_foreign_key_usage(skill: Skill) -> str | None:
     return None
 
 
-def assert_can_archive(skill: Skill):
-    blocker = blocking_foreign_key_usage(skill)
+def blocking_foreign_key_usage(career: Career) -> str | None:
+    for rel in career._meta.related_objects:
+        accessor = rel.get_accessor_name()
+        try:
+            related = getattr(career, accessor)
+        except Exception:
+            continue
+        if hasattr(related, "exists"):
+            if related.exists():
+                return rel.related_model.__name__
+        elif related is not None:
+            return rel.related_model.__name__
+    return None
+
+
+def assert_can_archive(career: Career):
+    recommendation_blocker = _recommendation_blocker(career)
+    if recommendation_blocker:
+        raise ValidationError(f"Cannot archive: used in recommendations ({recommendation_blocker}).")
+    blocker = blocking_foreign_key_usage(career)
     if blocker:
         raise ValidationError(f"Cannot archive: referenced by {blocker}.")
 
 
-def validate_skill_type(value: Any) -> str:
-    raw = (value or "").strip().lower()
-    allowed = {c for c, _ in SkillType.choices}
-    if raw not in allowed:
-        raise ValidationError({"skill_type": f"Invalid skill_type. Allowed: {', '.join(sorted(allowed))}."})
-    return raw
-
-
-def validate_skill_data(*, data: dict[str, Any], instance: Skill | None = None) -> dict[str, Any]:
-    code = (data.get("skill_code") or "").strip()
-    if not code:
-        raise ValidationError({"skill_code": "This field may not be blank."})
-    name = (data.get("skill_name") or "").strip()
-    if not name:
-        raise ValidationError({"skill_name": "This field may not be blank."})
-    exclude_pk = instance.pk if instance and instance.pk else None
-    if case_insensitive_code_exists(code=code, exclude_pk=exclude_pk):
-        raise ValidationError({"skill_code": "Skill code must be unique (case-insensitive)."})
-    st = validate_skill_type(data.get("skill_type"))
-    return {
-        "skill_code": code,
-        "skill_name": name,
-        "skill_type": st,
-        "description": (data.get("description") or "").strip(),
-        "is_active": bool(data.get("is_active", True)),
-    }
-
-
 @transaction.atomic
-def create_skill(*, user, validated_data: dict) -> Skill:
-    instance = Skill(**validated_data)
+def create_career(*, user, validated_data: dict) -> Career:
+    instance = Career(**validated_data)
     instance.save(user=user)
     return instance
 
 
 @transaction.atomic
-def update_skill(*, skill: Skill, user, validated_data: dict) -> Skill:
+def update_career(*, career: Career, user, validated_data: dict) -> Career:
     for k, v in validated_data.items():
-        setattr(skill, k, v)
-    skill.save(user=user)
-    return skill
+        setattr(career, k, v)
+    career.save(user=user)
+    return career
 
 
 @transaction.atomic
-def soft_archive_skill(*, skill: Skill, user) -> Skill:
-    assert_can_archive(skill)
-    return base_services.soft_delete(skill, user=user)
+def soft_archive_career(*, career: Career, user) -> Career:
+    assert_can_archive(career)
+    return base_services.soft_delete(career, user=user)
 
 
-archive_skill = soft_archive_skill
+archive_career = soft_archive_career
 
 
 @transaction.atomic
-def restore_skill(*, skill: Skill, user) -> Skill:
-    return base_services.restore(skill, user=user)
+def restore_career(*, career: Career, user) -> Career:
+    return base_services.restore(career, user=user)
 
 
 @transaction.atomic
 def bulk_archive(*, ids: list, user) -> int:
     if not ids:
         raise ValidationError({"ids": "This field is required."})
-    qs = Skill.objects.filter(id__in=ids, is_archived=False)
+    qs = Career.objects.filter(id__in=ids, is_archived=False)
     count = 0
-    for s in qs:
-        assert_can_archive(s)
-        s.is_archived = True
-        s.save(user=user)
+    for c in qs.select_related("min_education_level", "max_education_level"):
+        assert_can_archive(c)
+        c.is_archived = True
+        c.save(user=user)
         count += 1
     return count
 
@@ -166,7 +164,7 @@ def bulk_archive(*, ids: list, user) -> int:
 def bulk_restore(*, ids: list, user) -> int:
     if not ids:
         raise ValidationError({"ids": "This field is required."})
-    updated = Skill.objects.filter(id__in=ids, is_archived=True).update(
+    updated = Career.objects.filter(id__in=ids, is_archived=True).update(
         is_archived=False,
         updated_at=timezone.now(),
         updated_by=user,
@@ -175,28 +173,39 @@ def bulk_restore(*, ids: list, user) -> int:
 
 
 @transaction.atomic
-def set_active_status(*, skill: Skill, user, is_active: bool) -> Skill:
-    skill.is_active = is_active
-    skill.save(user=user)
-    return skill
+def set_active_status(*, career: Career, user, is_active: bool) -> Career:
+    career.is_active = is_active
+    career.save(user=user)
+    return career
 
 
 @transaction.atomic
 def bulk_set_active(*, ids: list, user, is_active: bool) -> int:
     if not ids:
         return 0
-    return Skill.objects.filter(id__in=ids).update(
+    return Career.objects.filter(id__in=ids).update(
         is_active=is_active,
         updated_at=timezone.now(),
         updated_by=user,
     )
 
 
-def dropdown_skills():
+def dropdown_careers():
     return (
-        Skill.objects.filter(is_active=True, is_archived=False)
-        .only("id", "skill_code", "skill_name", "skill_type")
-        .order_by("skill_name")
+        Career.objects.filter(is_active=True, is_archived=False)
+        .select_related("min_education_level", "max_education_level")
+        .only(
+            "id",
+            "career_code",
+            "career_name",
+            "min_education_level__id",
+            "min_education_level__level_code",
+            "min_education_level__display_name",
+            "max_education_level__id",
+            "max_education_level__level_code",
+            "max_education_level__display_name",
+        )
+        .order_by("career_name")
     )
 
 
@@ -209,20 +218,18 @@ def normalize_import_row(row: dict[str, Any]) -> dict[str, Any]:
         key = HEADER_ALIASES.get(kk.lower(), kk.lower())
         out[key] = v
 
-    if "skill_code" in out and out["skill_code"] not in (None, ""):
-        out["skill_code"] = str(out["skill_code"]).strip()
-
-    if "skill_type" in out and out["skill_type"] not in (None, ""):
-        out["skill_type"] = str(out["skill_type"]).strip().lower()
-
-    if "skill_name" in out and out["skill_name"] not in (None, ""):
-        out["skill_name"] = str(out["skill_name"]).strip()
-
+    if "career_code" in out and out["career_code"] not in (None, ""):
+        out["career_code"] = str(out["career_code"]).strip().lower()
+    if "career_name" in out and out["career_name"] not in (None, ""):
+        out["career_name"] = str(out["career_name"]).strip()
     if "description" in out and out["description"] not in (None, ""):
         out["description"] = str(out["description"]).strip()
-
     if "is_active" in out and out["is_active"] not in ("", None):
         out["is_active"] = str(out["is_active"]).lower() in ("1", "true", "yes", "y")
+
+    for key in ("min_education_level", "max_education_level"):
+        if key in out and out[key] in ("", None):
+            out[key] = None
 
     return out
 
@@ -290,13 +297,13 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
 
 
 @transaction.atomic
-def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict) -> SkillImportBatch:
-    batch = SkillImportBatch.objects.create(
+def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict) -> CareerImportBatch:
+    batch = CareerImportBatch.objects.create(
         created_by=user,
         total_rows=len(rows),
     )
     imported = 0
-    errors: list[SkillImportError] = []
+    errors: list[CareerImportError] = []
     seen_codes: set[str] = set()
     for idx, raw_row in enumerate(rows, start=1):
         row = dict(raw_row)
@@ -304,7 +311,7 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
             row = normalize_import_row(row)
         except ValueError as e:
             errors.append(
-                SkillImportError(
+                CareerImportError(
                     batch=batch,
                     row_number=idx,
                     message=str(e)[:500],
@@ -312,27 +319,67 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
                 )
             )
             continue
-        row_code = (row.get("skill_code") or "").strip().lower()
+        row_code = (row.get("career_code") or "").strip().lower()
         if row_code:
             if row_code in seen_codes:
                 errors.append(
-                    SkillImportError(
+                    CareerImportError(
                         batch=batch,
                         row_number=idx,
-                        message=f"Duplicate skill_code in upload: {row_code}"[:500],
+                        message=f"Duplicate career_code in upload: {row_code}"[:500],
                         row_data=row if isinstance(row, dict) else {},
                     )
                 )
                 continue
             seen_codes.add(row_code)
+        min_edu = _resolve_education_level_value(row.get("min_education_level"))
+        if min_edu is None:
+            errors.append(
+                CareerImportError(
+                    batch=batch,
+                    row_number=idx,
+                    message="Invalid min_education_level (use level_code or UUID of active education level).",
+                    row_data=row if isinstance(row, dict) else {},
+                )
+            )
+            continue
+        max_edu = _resolve_education_level_value(row.get("max_education_level"))
+        if row.get("max_education_level") not in (None, "") and max_edu is None:
+            errors.append(
+                CareerImportError(
+                    batch=batch,
+                    row_number=idx,
+                    message="Invalid max_education_level (use level_code or UUID of active education level).",
+                    row_data=row if isinstance(row, dict) else {},
+                )
+            )
+            continue
+        try:
+            _assert_education_level_mapping(min_education_level=min_edu, max_education_level=max_edu)
+        except ValidationError as e:
+            detail = e.detail
+            msg = json.dumps(detail)[:500] if isinstance(detail, (dict, list)) else str(detail)[:500]
+            errors.append(
+                CareerImportError(
+                    batch=batch,
+                    row_number=idx,
+                    message=msg,
+                    row_data=row if isinstance(row, dict) else {},
+                )
+            )
+            continue
+        row["min_education_level"] = str(min_edu.pk)
+        row["max_education_level"] = str(max_edu.pk) if max_edu else None
+
         existing = None
         if row_code:
-            existing = Skill.objects.filter(skill_code__iexact=row_code).first()
+            existing = Career.objects.filter(career_code__iexact=row_code).first()
+
         ser = serializer_class(instance=existing, data=row, partial=bool(existing), context=context)
         if not ser.is_valid():
             msg = json.dumps(ser.errors)[:500]
             errors.append(
-                SkillImportError(
+                CareerImportError(
                     batch=batch,
                     row_number=idx,
                     message=msg[:500],
@@ -356,7 +403,7 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
             else:
                 msg = str(detail)[:500]
             errors.append(
-                SkillImportError(
+                CareerImportError(
                     batch=batch,
                     row_number=idx,
                     message=msg,
@@ -366,7 +413,7 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
         except Exception as e:
             logger.exception("bulk row %s", idx)
             errors.append(
-                SkillImportError(
+                CareerImportError(
                     batch=batch,
                     row_number=idx,
                     message=str(e)[:500],
@@ -374,7 +421,7 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
                 )
             )
     if errors:
-        SkillImportError.objects.bulk_create(errors)
+        CareerImportError.objects.bulk_create(errors)
     batch.imported_count = imported
     batch.failed_count = len(errors)
     batch.completed_at = timezone.now()
@@ -382,14 +429,14 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
     return batch
 
 
-def bulk_import_skills(*, user, rows: list[dict], serializer_class, context: dict) -> dict[str, Any]:
+def bulk_import_careers(*, user, rows: list[dict], serializer_class, context: dict) -> dict[str, Any]:
     batch = bulk_import_rows(
         user=user,
         rows=rows,
         serializer_class=serializer_class,
         context=context,
     )
-    err_qs = SkillImportError.objects.filter(batch=batch).order_by("row_number")
+    err_qs = CareerImportError.objects.filter(batch=batch).order_by("row_number")
     error_details = [{"row": e.row_number, "message": e.message, "row_data": e.row_data} for e in err_qs.iterator(chunk_size=200)]
     return {
         "success_count": batch.imported_count,
@@ -400,11 +447,11 @@ def bulk_import_skills(*, user, rows: list[dict], serializer_class, context: dic
 
 
 def import_batches_queryset():
-    return SkillImportBatch.objects.select_related("created_by").order_by("-created_at")
+    return CareerImportBatch.objects.select_related("created_by").order_by("-created_at")
 
 
 def import_errors_queryset(*, batch_id: UUID | None = None):
-    qs = SkillImportError.objects.select_related("batch").order_by("-batch__created_at", "row_number")
+    qs = CareerImportError.objects.select_related("batch").order_by("-batch__created_at", "row_number")
     if batch_id:
         qs = qs.filter(batch_id=batch_id)
     return qs
@@ -415,11 +462,11 @@ def error_report_csv_bytes(*, batch_id: UUID | None = None) -> tuple[str, bytes]
     if batch_id is None:
         first = qs.first()
         if not first:
-            return "skill_import_errors_empty.csv", b"row_number,message\n"
+            return "career_import_errors_empty.csv", b"row_number,message\n"
         qs = import_errors_queryset(batch_id=first.batch_id)
-        filename = f"skill_import_errors_{first.batch_id}.csv"
+        filename = f"career_import_errors_{first.batch_id}.csv"
     else:
-        filename = f"skill_import_errors_{batch_id}.csv"
+        filename = f"career_import_errors_{batch_id}.csv"
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(["row_number", "message", "row_data"])
@@ -432,7 +479,7 @@ def sample_csv_bytes() -> bytes:
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(SAMPLE_CSV_HEADERS)
-    w.writerow(["python", "Python", "technical", "Programming language", "1"])
-    w.writerow(["communication", "Communication", "soft", "Verbal & written communication", "1"])
+    w.writerow(["software_engineer", "Software Engineer", "higher_secondary", "graduation", "Build software systems", "1"])
+    w.writerow(["data_analyst", "Data Analyst", "graduation", "", "Analyze and interpret data", "1"])
     return buf.getvalue().encode("utf-8")
 
