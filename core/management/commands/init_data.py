@@ -14,6 +14,8 @@ from domain.serializers import DomainSerializer
 from domain.services import domain_service
 from education_level.serializers import EducationLevelSerializer
 from education_level.services import education_level_service
+from skill.serializers import SkillSerializer
+from skill.services import skill_service
 from state.models import State
 from stream.serializers import StreamSerializer
 from stream.services import stream_service
@@ -36,6 +38,7 @@ class Command(BaseCommand):
         parser.add_argument("--zone_name", type=bool, help="ZoneName data to be uploaded")
         parser.add_argument("--domain", type=bool, help="Domain master data to be uploaded")
         parser.add_argument("--education_level", type=bool, help="Education level data to be uploaded")
+        parser.add_argument("--skill", type=bool, help="Skill master data to be uploaded")
 
         parser.add_argument("--groups", type=bool, help="Create Groups")
         parser.add_argument("--user", type=bool, help="Create Super User")
@@ -47,6 +50,7 @@ class Command(BaseCommand):
             and kwargs["zone_name"] is None
             and kwargs["domain"] is None
             and kwargs["education_level"] is None
+            and kwargs["skill"] is None
             and kwargs["groups"] is None
             and kwargs["user"] is None
         ):
@@ -61,6 +65,7 @@ class Command(BaseCommand):
                 self.load_city_area()
             self.load_domain_master()
             self.load_education_levels()
+            self.load_skills()
             self.load_streams()
             self.load_stream_domain_mappings()
             self.load_subscription()
@@ -653,6 +658,15 @@ class Command(BaseCommand):
             file_path=file_path,
             serializer_class=StreamSerializer,
             importer=stream_service.bulk_import_streams,
+        )
+
+    def load_skills(self):
+        self.stdout.write("Loading Skills...")
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "skill_master_sample.csv")
+        self._bulk_import_from_csv(
+            file_path=file_path,
+            serializer_class=SkillSerializer,
+            importer=skill_service.bulk_import_skills,
         )
 
     def load_stream_domain_mappings(self):
