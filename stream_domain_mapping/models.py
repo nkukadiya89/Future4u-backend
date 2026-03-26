@@ -3,10 +3,10 @@ import uuid
 from django.conf import settings
 from django.db import models
 
-from common.models import BaseModule
+from base.models import BaseMappingModel
 
 
-class StreamDomainMapping(BaseModule):
+class StreamDomainMapping(BaseMappingModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     stream = models.ForeignKey(
         "stream.Stream",
@@ -18,9 +18,7 @@ class StreamDomainMapping(BaseModule):
         on_delete=models.CASCADE,
         related_name="stream_domain_mappings",
     )
-    weight_score = models.PositiveSmallIntegerField()
     is_primary = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
 
     class Meta:
         db_table = "stream_domain_mapping"

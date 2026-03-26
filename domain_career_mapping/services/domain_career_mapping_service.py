@@ -10,6 +10,7 @@ from django.db.models import Q
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
+from base.services import BaseService
 from domain_career_mapping.models import (
     DomainCareerMapping,
     DomainCareerMappingImportBatch,
@@ -164,12 +165,7 @@ def archive_mapping(*, mapping: DomainCareerMapping, user) -> DomainCareerMappin
 
 @transaction.atomic
 def restore_mapping(*, mapping: DomainCareerMapping, user) -> DomainCareerMapping:
-    mapping.deleted = False
-    mapping.deleted_at = None
-    mapping.deleted_by = None
-    mapping.updated_at = timezone.now()
-    mapping.updated_by = user
-    mapping.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_at", "updated_by"])
+    BaseService.restore(mapping, user=user)
     return mapping
 
 
@@ -252,6 +248,7 @@ def normalize_import_row(row: dict[str, Any]) -> dict[str, Any]:
     if "weight_score" in out and out["weight_score"] not in ("", None):
         try:
             out["weight_score"] = int(float(str(out["weight_score"]).strip()))
+            BaseService.validate_weight(out["weight_score"])
         except (TypeError, ValueError):
             raise ValueError("Invalid weight_score")
     if "is_active" in out:

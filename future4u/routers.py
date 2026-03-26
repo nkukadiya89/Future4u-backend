@@ -16,6 +16,7 @@ from stream.routers import stream_router
 from stream_domain_mapping.routers import stream_domain_mapping_router
 from user_profile.routers import user_profile_router
 from user.routers import user_router
+from subscription.routers import subscription_router
 
 try:
     from domain.routers import domain_router
@@ -44,3 +45,4 @@ future4u_router.registry.extend(domain_skill_mapping_router.registry)
 future4u_router.registry.extend(domain_career_mapping_router.registry)
 future4u_router.registry.extend(user_profile_router.registry)
 future4u_router.registry.extend(user_router.registry)
+future4u_router.registry.extend(subscription_router.registry)

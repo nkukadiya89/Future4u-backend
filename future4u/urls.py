@@ -24,4 +24,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("get-token/", CustomTokenObtainPairView.as_view(), name="get_token"),
     path("", include(future4u_router.urls)),
+    path("", include("subscription.urls")),
 ]

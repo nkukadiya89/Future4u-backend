@@ -355,6 +355,7 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
     )
     imported = 0
     errors: list[EducationLevelImportError] = []
+    seen_codes: set[str] = set()
     for idx, raw_row in enumerate(rows, start=1):
         row = dict(raw_row)
         try:
@@ -371,6 +372,18 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
             continue
         existing = None
         level_code = (row.get("level_code") or "").strip().lower()
+        if level_code:
+            if level_code in seen_codes:
+                errors.append(
+                    EducationLevelImportError(
+                        batch=batch,
+                        row_number=idx,
+                        message="Duplicate level_code in import file",
+                        row_data=row if isinstance(row, dict) else {},
+                    )
+                )
+                continue
+            seen_codes.add(level_code)
         if level_code:
             existing = EducationLevel.objects.filter(level_code__iexact=level_code).first()
         ser = serializer_class(instance=existing, data=row, partial=bool(existing), context=context)
