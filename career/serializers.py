@@ -11,6 +11,7 @@ class CareerSerializer(AuditFieldsMixin, serializers.ModelSerializer):
     updated_at = serializers.SerializerMethodField(read_only=True)
     created_by = UserQuickSerializer(read_only=True)
     updated_by = UserQuickSerializer(read_only=True)
+    is_archived = serializers.SerializerMethodField(read_only=True)
     min_education_level_id = serializers.UUIDField(source="min_education_level.id", read_only=True)
     min_education_level_code = serializers.CharField(source="min_education_level.level_code", read_only=True)
     min_education_level_name = serializers.CharField(source="min_education_level.display_name", read_only=True)
@@ -50,6 +51,9 @@ class CareerSerializer(AuditFieldsMixin, serializers.ModelSerializer):
 
     def get_updated_at(self, obj):
         return self._format_dt(obj.updated_at)
+
+    def get_is_archived(self, obj):
+        return bool(getattr(obj, "deleted", False))
 
     def validate_career_code(self, value):
         value = (value or "").strip().lower()

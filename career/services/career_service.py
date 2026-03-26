@@ -150,12 +150,11 @@ def restore_career(*, career: Career, user) -> Career:
 def bulk_archive(*, ids: list, user) -> int:
     if not ids:
         raise ValidationError({"ids": "This field is required."})
-    qs = Career.objects.filter(id__in=ids, is_archived=False)
+    qs = Career.objects.filter(id__in=ids, deleted=False)
     count = 0
     for c in qs.select_related("min_education_level", "max_education_level"):
         assert_can_archive(c)
-        c.is_archived = True
-        c.save(user=user)
+        c.soft_delete(user=user)
         count += 1
     return count
 
@@ -164,8 +163,10 @@ def bulk_archive(*, ids: list, user) -> int:
 def bulk_restore(*, ids: list, user) -> int:
     if not ids:
         raise ValidationError({"ids": "This field is required."})
-    updated = Career.objects.filter(id__in=ids, is_archived=True).update(
-        is_archived=False,
+    updated = Career.objects.filter(id__in=ids, deleted=True).update(
+        deleted=False,
+        deleted_at=None,
+        deleted_by=None,
         updated_at=timezone.now(),
         updated_by=user,
     )
@@ -192,7 +193,7 @@ def bulk_set_active(*, ids: list, user, is_active: bool) -> int:
 
 def dropdown_careers():
     return (
-        Career.objects.filter(is_active=True, is_archived=False)
+        Career.objects.filter(is_active=True, deleted=False)
         .select_related("min_education_level", "max_education_level")
         .only(
             "id",
@@ -390,11 +391,13 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
         try:
             with transaction.atomic():
                 obj = ser.save()
-                if getattr(obj, "is_archived", False):
-                    obj.is_archived = False
+                if getattr(obj, "deleted", False):
+                    obj.deleted = False
+                    obj.deleted_at = None
+                    obj.deleted_by = None
                     obj.updated_by = user
                     obj.updated_at = timezone.now()
-                    obj.save(update_fields=["is_archived", "updated_by", "updated_at"])
+                    obj.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_by", "updated_at"])
                 imported += 1
         except ValidationError as e:
             detail = e.detail

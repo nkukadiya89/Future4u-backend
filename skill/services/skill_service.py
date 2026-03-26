@@ -39,14 +39,14 @@ def skill_base_queryset():
 def list_skills(*, include_archived: bool = False):
     qs = skill_base_queryset()
     if not include_archived:
-        qs = qs.filter(is_archived=False)
+        qs = qs.filter(deleted=False)
     return qs.order_by("-created_at")
 
 
 def get_skill(*, pk: UUID, include_archived: bool = False):
     qs = skill_base_queryset().filter(pk=pk)
     if not include_archived:
-        qs = qs.filter(is_archived=False)
+        qs = qs.filter(deleted=False)
     return qs.first()
 
 
@@ -152,12 +152,11 @@ def restore_skill(*, skill: Skill, user) -> Skill:
 def bulk_archive(*, ids: list, user) -> int:
     if not ids:
         raise ValidationError({"ids": "This field is required."})
-    qs = Skill.objects.filter(id__in=ids, is_archived=False)
+    qs = Skill.objects.filter(id__in=ids, deleted=False)
     count = 0
     for s in qs:
         assert_can_archive(s)
-        s.is_archived = True
-        s.save(user=user)
+        s.soft_delete(user=user)
         count += 1
     return count
 
@@ -166,8 +165,10 @@ def bulk_archive(*, ids: list, user) -> int:
 def bulk_restore(*, ids: list, user) -> int:
     if not ids:
         raise ValidationError({"ids": "This field is required."})
-    updated = Skill.objects.filter(id__in=ids, is_archived=True).update(
-        is_archived=False,
+    updated = Skill.objects.filter(id__in=ids, deleted=True).update(
+        deleted=False,
+        deleted_at=None,
+        deleted_by=None,
         updated_at=timezone.now(),
         updated_by=user,
     )
@@ -194,7 +195,7 @@ def bulk_set_active(*, ids: list, user, is_active: bool) -> int:
 
 def dropdown_skills():
     return (
-        Skill.objects.filter(is_active=True, is_archived=False)
+        Skill.objects.filter(is_active=True, deleted=False)
         .only("id", "skill_code", "skill_name", "skill_type")
         .order_by("skill_name")
     )
@@ -343,11 +344,13 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
         try:
             with transaction.atomic():
                 obj = ser.save()
-                if getattr(obj, "is_archived", False):
-                    obj.is_archived = False
+                if getattr(obj, "deleted", False):
+                    obj.deleted = False
+                    obj.deleted_at = None
+                    obj.deleted_by = None
                     obj.updated_by = user
                     obj.updated_at = timezone.now()
-                    obj.save(update_fields=["is_archived", "updated_by", "updated_at"])
+                    obj.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_by", "updated_at"])
                 imported += 1
         except ValidationError as e:
             detail = e.detail

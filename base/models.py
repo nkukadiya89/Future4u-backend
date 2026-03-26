@@ -3,14 +3,15 @@ from django.db import models
 from common.models import BaseModule
 
 
-class BaseModel(BaseModule):
+class MasterBaseModel(BaseModule):
     """
-    Shared abstract model for masters using active/archive flags.
-    Inherits audit + soft-delete audit behavior from BaseModule.
+    Shared abstract base for "master" tables.
+
+    - Keeps `BaseModule` as the source of truth for archive/soft-delete via `deleted`.
+    - Adds `is_active` for master-table enable/disable behavior.
     """
 
     is_active = models.BooleanField(default=True)
-    is_archived = models.BooleanField(default=False)
 
     class Meta:
         abstract = True

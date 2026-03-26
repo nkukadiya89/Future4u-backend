@@ -73,7 +73,7 @@ class CareerAPITests(TestCase):
 
         r = self.client.delete(reverse("career-detail", args=[pk]))
         self.assertEqual(r.status_code, status.HTTP_200_OK)
-        self.assertTrue(Career.objects.get(pk=pk).is_archived)
+        self.assertTrue(Career.objects.get(pk=pk).deleted)
 
     def test_career_code_case_insensitive_unique(self):
         url = reverse("career-list")
@@ -136,7 +136,7 @@ class CareerAPITests(TestCase):
             format="json",
         )
         self.assertEqual(r.status_code, status.HTTP_200_OK)
-        self.assertFalse(Career.objects.get(pk=p1).is_archived)
+        self.assertFalse(Career.objects.get(pk=p1).deleted)
 
     def test_bulk_upload_csv_file(self):
         csv_body = (

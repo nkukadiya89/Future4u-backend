@@ -7,7 +7,7 @@ class BaseAdmin(admin.ModelAdmin):
     Child admins can override hook methods for custom behavior.
     """
 
-    list_filter = ("is_active", "is_archived")
+    list_filter = ("is_active", "deleted")
     search_fields = ()
 
     actions = (
@@ -21,11 +21,18 @@ class BaseAdmin(admin.ModelAdmin):
         return queryset.update(is_active=is_active)
 
     def _archive_object(self, request, obj):
-        obj.is_archived = True
-        obj.save(user=request.user)
+        if hasattr(obj, "soft_delete"):
+            obj.soft_delete(user=request.user)
+        else:
+            obj.deleted = True
+            obj.save(user=request.user)
 
     def _restore_object(self, request, obj):
-        obj.is_archived = False
+        obj.deleted = False
+        if hasattr(obj, "deleted_at"):
+            obj.deleted_at = None
+        if hasattr(obj, "deleted_by"):
+            obj.deleted_by = None
         obj.save(user=request.user)
 
     @admin.action(description="Activate selected")
@@ -41,7 +48,7 @@ class BaseAdmin(admin.ModelAdmin):
     @admin.action(description="Archive selected (soft)")
     def archive_selected(self, request, queryset):
         count = 0
-        for obj in queryset.filter(is_archived=False):
+        for obj in queryset.filter(deleted=False):
             self._archive_object(request, obj)
             count += 1
         self.message_user(request, f"{count} record(s) archived.")
@@ -49,7 +56,7 @@ class BaseAdmin(admin.ModelAdmin):
     @admin.action(description="Restore selected")
     def restore_selected(self, request, queryset):
         count = 0
-        for obj in queryset.filter(is_archived=True):
+        for obj in queryset.filter(deleted=True):
             self._restore_object(request, obj)
             count += 1
         self.message_user(request, f"{count} record(s) restored.")

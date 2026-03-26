@@ -5,10 +5,10 @@ from django.db import models
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 
-from base.models import BaseModel
+from base.models import MasterBaseModel
 
 
-class Domain(BaseModel):
+class Domain(MasterBaseModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     domain_code = models.CharField(max_length=64)
     domain_name = models.CharField(max_length=255)
@@ -33,7 +33,7 @@ class Domain(BaseModel):
         indexes = [
             models.Index(fields=["domain_code"]),
             models.Index(fields=["is_active"]),
-            models.Index(fields=["is_archived"]),
+            models.Index(fields=["deleted"]),
         ]
 
     def __str__(self):

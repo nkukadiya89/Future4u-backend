@@ -19,6 +19,7 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
     updated_at = serializers.SerializerMethodField(read_only=True)
     created_by = UserQuickSerializer(read_only=True)
     updated_by = UserQuickSerializer(read_only=True)
+    is_archived = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Domain
@@ -49,6 +50,9 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
     def get_updated_at(self, obj):
         return self._format_dt(obj.updated_at)
 
+    def get_is_archived(self, obj):
+        return bool(getattr(obj, "deleted", False))
+
     def validate_parent_acceptance_level(self, value):
         if value < 1 or value > 5:
             raise serializers.ValidationError("Must be between 1 and 5.")
@@ -74,7 +78,7 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
         if "parent_id" in self.initial_data:
             raw = self.initial_data.get("parent_id")
             if raw not in (None, ""):
-                parent = Domain.objects.filter(pk=raw, is_archived=False).first()
+                parent = Domain.objects.filter(pk=raw, deleted=False).first()
                 if not parent:
                     raise serializers.ValidationError({"parent_id": "Invalid parent."})
         user = self.context["request"].user
@@ -94,7 +98,7 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
             if raw in (None, ""):
                 parent = None
             else:
-                parent = Domain.objects.filter(pk=raw, is_archived=False).first()
+                parent = Domain.objects.filter(pk=raw, deleted=False).first()
                 if not parent:
                     raise serializers.ValidationError({"parent_id": "Invalid parent."})
         return domain_service.update_domain(

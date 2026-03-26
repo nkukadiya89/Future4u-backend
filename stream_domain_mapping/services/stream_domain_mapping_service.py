@@ -55,7 +55,7 @@ def _resolve_domain(domain_code):
         return None
     from domain.models import Domain
 
-    return Domain.objects.filter(domain_code__iexact=str(domain_code).strip(), is_archived=False).first()
+    return Domain.objects.filter(domain_code__iexact=str(domain_code).strip(), deleted=False).first()
 
 
 def pair_exists(*, stream_id, domain_id, exclude_pk: UUID | None = None) -> bool:

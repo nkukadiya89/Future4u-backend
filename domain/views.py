@@ -46,8 +46,8 @@ class DomainViewSet(ModelViewSet):
         qs = domain_service.domain_base_queryset()
         act = getattr(self, "action", None)
         if act == "archived":
-            return qs.filter(is_archived=True).order_by("-updated_at", "-created_at")
-        return qs.filter(is_archived=False).order_by("-created_at")
+            return qs.filter(deleted=True).order_by("-updated_at", "-created_at")
+        return qs.filter(deleted=False).order_by("-created_at")
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
@@ -71,7 +71,7 @@ class DomainViewSet(ModelViewSet):
             UUID(str(pk))
         except (ValueError, TypeError):
             raise NotFound()
-        qs = domain_service.domain_base_queryset().filter(is_archived=False)
+        qs = domain_service.domain_base_queryset().filter(deleted=False)
         try:
             return qs.get(pk=pk)
         except Domain.DoesNotExist:

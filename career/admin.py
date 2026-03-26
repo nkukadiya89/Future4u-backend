@@ -29,13 +29,13 @@ class CareerAdmin(BaseAdmin):
         "career_name",
         "min_education_level",
         "is_active",
-        "is_archived",
+        "deleted",
         "created_at",
         "row_actions",
     )
     list_display_links = ("career_code", "career_name")
     search_fields = ("career_code", "career_name")
-    list_filter = ("min_education_level", "max_education_level", "is_active", "is_archived")
+    list_filter = ("min_education_level", "max_education_level", "is_active", "deleted")
     ordering = ("-created_at",)
     raw_id_fields = ("created_by", "updated_by")
     readonly_fields = ("created_by", "created_at", "updated_by", "updated_at")
@@ -60,7 +60,7 @@ class CareerAdmin(BaseAdmin):
                 )
             },
         ),
-        ("Archive", {"fields": ("is_archived",)}),
+        ("Archive", {"fields": ("deleted", "deleted_at", "deleted_by")}),
         (
             "Audit",
             {
@@ -161,7 +161,7 @@ class CareerAdmin(BaseAdmin):
                 return HttpResponseRedirect(request.get_full_path())
             if request.POST.get("career_admin_archive_one"):
                 pk = request.POST["career_admin_archive_one"]
-                obj = Career.objects.filter(pk=pk, is_archived=False).first()
+                obj = Career.objects.filter(pk=pk, deleted=False).first()
                 if obj:
                     try:
                         career_service.archive_career(career=obj, user=request.user)
@@ -171,7 +171,7 @@ class CareerAdmin(BaseAdmin):
                 return HttpResponseRedirect(request.get_full_path())
             if request.POST.get("career_admin_restore_one"):
                 pk = request.POST["career_admin_restore_one"]
-                obj = Career.objects.filter(pk=pk, is_archived=True).first()
+                obj = Career.objects.filter(pk=pk, deleted=True).first()
                 if obj:
                     career_service.restore_career(career=obj, user=request.user)
                     self.message_user(request, "Restored.")
@@ -198,7 +198,7 @@ class CareerAdmin(BaseAdmin):
 
     @admin.action(description="Archive selected (soft)")
     def archive_selected(self, request, queryset):
-        for obj in queryset.filter(is_archived=False):
+        for obj in queryset.filter(deleted=False):
             try:
                 career_service.archive_career(career=obj, user=request.user)
             except DRFValidationError as exc:
@@ -207,7 +207,7 @@ class CareerAdmin(BaseAdmin):
     @admin.action(description="Restore selected")
     def restore_selected(self, request, queryset):
         n = 0
-        for obj in queryset.filter(is_archived=True):
+        for obj in queryset.filter(deleted=True):
             career_service.restore_career(career=obj, user=request.user)
             n += 1
         self.message_user(request, f"{n} career(s) restored.")

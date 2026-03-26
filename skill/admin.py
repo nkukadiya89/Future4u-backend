@@ -29,13 +29,13 @@ class SkillAdmin(BaseAdmin):
         "skill_name",
         "skill_type",
         "is_active",
-        "is_archived",
+        "deleted",
         "created_at",
         "row_actions",
     )
     list_display_links = ("skill_code", "skill_name")
     search_fields = ("skill_code", "skill_name")
-    list_filter = ("skill_type", "is_active", "is_archived")
+    list_filter = ("skill_type", "is_active", "deleted")
     ordering = ("-created_at",)
     raw_id_fields = ("created_by", "updated_by")
     readonly_fields = ("created_by", "created_at", "updated_by", "updated_at")
@@ -59,7 +59,7 @@ class SkillAdmin(BaseAdmin):
                 )
             },
         ),
-        ("Archive", {"fields": ("is_archived",)}),
+        ("Archive", {"fields": ("deleted", "deleted_at", "deleted_by")}),
         (
             "Audit",
             {
@@ -160,7 +160,7 @@ class SkillAdmin(BaseAdmin):
                 return HttpResponseRedirect(request.get_full_path())
             if request.POST.get("skill_admin_archive_one"):
                 pk = request.POST["skill_admin_archive_one"]
-                obj = Skill.objects.filter(pk=pk, is_archived=False).first()
+                obj = Skill.objects.filter(pk=pk, deleted=False).first()
                 if obj:
                     try:
                         skill_service.archive_skill(skill=obj, user=request.user)
@@ -170,7 +170,7 @@ class SkillAdmin(BaseAdmin):
                 return HttpResponseRedirect(request.get_full_path())
             if request.POST.get("skill_admin_restore_one"):
                 pk = request.POST["skill_admin_restore_one"]
-                obj = Skill.objects.filter(pk=pk, is_archived=True).first()
+                obj = Skill.objects.filter(pk=pk, deleted=True).first()
                 if obj:
                     skill_service.restore_skill(skill=obj, user=request.user)
                     self.message_user(request, "Restored.")
@@ -197,7 +197,7 @@ class SkillAdmin(BaseAdmin):
 
     @admin.action(description="Archive selected (soft)")
     def archive_selected(self, request, queryset):
-        for obj in queryset.filter(is_archived=False):
+        for obj in queryset.filter(deleted=False):
             try:
                 skill_service.archive_skill(skill=obj, user=request.user)
             except DRFValidationError as exc:
@@ -206,7 +206,7 @@ class SkillAdmin(BaseAdmin):
     @admin.action(description="Restore selected")
     def restore_selected(self, request, queryset):
         n = 0
-        for obj in queryset.filter(is_archived=True):
+        for obj in queryset.filter(deleted=True):
             skill_service.restore_skill(skill=obj, user=request.user)
             n += 1
         self.message_user(request, f"{n} skill(s) restored.")

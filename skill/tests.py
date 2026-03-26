@@ -87,7 +87,7 @@ class SkillAPITests(TestCase):
 
         r = self.client.delete(reverse("skill-detail", args=[pk]))
         self.assertEqual(r.status_code, status.HTTP_200_OK)
-        self.assertTrue(Skill.objects.get(pk=pk).is_archived)
+        self.assertTrue(Skill.objects.get(pk=pk).deleted)
 
     def test_skill_code_case_insensitive_unique(self):
         url = reverse("skill-list")
@@ -154,7 +154,7 @@ class SkillAPITests(TestCase):
             format="json",
         )
         self.assertEqual(r.status_code, status.HTTP_200_OK)
-        self.assertFalse(Skill.objects.get(pk=p1).is_archived)
+        self.assertFalse(Skill.objects.get(pk=p1).deleted)
 
     def test_bulk_upload_csv_file(self):
         csv_body = (

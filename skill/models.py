@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 
-from base.models import BaseModel
+from base.models import MasterBaseModel
 
 
 class SkillType(models.TextChoices):
@@ -15,7 +15,7 @@ class SkillType(models.TextChoices):
     CREATIVE = "creative", "Creative"
 
 
-class Skill(BaseModel):
+class Skill(MasterBaseModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     skill_code = models.CharField(max_length=64)
     skill_name = models.CharField(max_length=255)
@@ -34,11 +34,11 @@ class Skill(BaseModel):
             models.Index(fields=["skill_code"]),
             models.Index(fields=["skill_type"]),
             models.Index(fields=["is_active"]),
-            models.Index(fields=["is_archived"]),
+            models.Index(fields=["deleted"]),
         ]
 
     def __str__(self):
-        return f"{self.skill_code} - {self.skill_name}"
+        return self.skill_name
 
 
 class SkillImportBatch(models.Model):

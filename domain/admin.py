@@ -16,7 +16,7 @@ from domain.services import domain_service
 class DomainAdminForm(forms.ModelForm):
     class Meta:
         model = Domain
-        exclude = ("deleted", "deleted_at", "deleted_by")
+        fields = "__all__"
 
     def clean(self):
         cleaned = super().clean()
@@ -48,14 +48,14 @@ class DomainAdmin(BaseAdmin):
         "domain_name",
         "parent",
         "is_active",
-        "is_archived",
+        "deleted",
         "score_display",
         "created_at",
         "row_actions",
     )
     list_display_links = ("domain_code", "domain_name")
     search_fields = ("domain_code", "domain_name")
-    list_filter = ("is_active", "is_archived", "parent")
+    list_filter = ("is_active", "deleted", "parent")
     list_select_related = ("parent",)
     ordering = ("-created_at",)
     raw_id_fields = ("parent", "created_by", "updated_by")
@@ -82,7 +82,7 @@ class DomainAdmin(BaseAdmin):
                 )
             },
         ),
-        ("Archive", {"fields": ("is_archived",)}),
+        ("Archive", {"fields": ("deleted", "deleted_at", "deleted_by")}),
         (
             "Audit",
             {
@@ -187,7 +187,7 @@ class DomainAdmin(BaseAdmin):
                 return HttpResponseRedirect(request.get_full_path())
             if request.POST.get("domain_admin_archive_one"):
                 pk = request.POST["domain_admin_archive_one"]
-                obj = Domain.objects.filter(pk=pk, is_archived=False).first()
+                obj = Domain.objects.filter(pk=pk, deleted=False).first()
                 if obj:
                     try:
                         domain_service.archive_domain(domain=obj, user=request.user)
@@ -197,7 +197,7 @@ class DomainAdmin(BaseAdmin):
                 return HttpResponseRedirect(request.get_full_path())
             if request.POST.get("domain_admin_restore_one"):
                 pk = request.POST["domain_admin_restore_one"]
-                obj = Domain.objects.filter(pk=pk, is_archived=True).first()
+                obj = Domain.objects.filter(pk=pk, deleted=True).first()
                 if obj:
                     domain_service.restore_domain(domain=obj, user=request.user)
                     self.message_user(request, "Restored.")
@@ -224,7 +224,7 @@ class DomainAdmin(BaseAdmin):
 
     @admin.action(description="Archive selected (soft)")
     def archive_selected(self, request, queryset):
-        for obj in queryset.filter(is_archived=False):
+        for obj in queryset.filter(deleted=False):
             try:
                 domain_service.archive_domain(domain=obj, user=request.user)
             except DRFValidationError as exc:
@@ -233,7 +233,7 @@ class DomainAdmin(BaseAdmin):
     @admin.action(description="Restore selected")
     def restore_selected(self, request, queryset):
         n = 0
-        for obj in queryset.filter(is_archived=True):
+        for obj in queryset.filter(deleted=True):
             domain_service.restore_domain(domain=obj, user=request.user)
             n += 1
         self.message_user(request, f"{n} domain(s) restored.")

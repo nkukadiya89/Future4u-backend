@@ -31,14 +31,14 @@ def domain_base_queryset():
 def list_domains(*, include_archived: bool = False):
     qs = domain_base_queryset()
     if not include_archived:
-        qs = qs.filter(is_archived=False)
+        qs = qs.filter(deleted=False)
     return qs.order_by("-created_at")
 
 
 def get_domain(*, pk: UUID, include_archived: bool = False):
     qs = domain_base_queryset().filter(pk=pk)
     if not include_archived:
-        qs = qs.filter(is_archived=False)
+        qs = qs.filter(deleted=False)
     return qs.first()
 
 
@@ -94,7 +94,7 @@ def blocking_foreign_key_usage(domain: Domain) -> str | None:
 
 
 def assert_can_archive(domain: Domain):
-    if Domain.objects.filter(parent=domain, is_archived=False).exists():
+    if Domain.objects.filter(parent=domain, deleted=False).exists():
         raise ValidationError("Cannot archive: active child domains exist.")
     blocker = blocking_foreign_key_usage(domain)
     if blocker:
@@ -186,12 +186,11 @@ def restore_domain(*, domain: Domain, user) -> Domain:
 def bulk_archive(*, ids: list, user) -> int:
     if not ids:
         raise ValidationError({"ids": "This field is required."})
-    qs = Domain.objects.filter(id__in=ids, is_archived=False)
+    qs = Domain.objects.filter(id__in=ids, deleted=False)
     count = 0
     for d in qs.select_related("parent"):
         assert_can_archive(d)
-        d.is_archived = True
-        d.save(user=user)
+        d.soft_delete(user=user)
         count += 1
     return count
 
@@ -200,8 +199,10 @@ def bulk_archive(*, ids: list, user) -> int:
 def bulk_restore(*, ids: list, user) -> int:
     if not ids:
         raise ValidationError({"ids": "This field is required."})
-    updated = Domain.objects.filter(id__in=ids, is_archived=True).update(
-        is_archived=False,
+    updated = Domain.objects.filter(id__in=ids, deleted=True).update(
+        deleted=False,
+        deleted_at=None,
+        deleted_by=None,
         updated_at=timezone.now(),
         updated_by=user,
     )
@@ -228,7 +229,7 @@ def bulk_set_active(*, ids: list, user, is_active: bool) -> int:
 
 def dropdown_domains():
     return (
-        Domain.objects.filter(is_active=True, is_archived=False)
+        Domain.objects.filter(is_active=True, deleted=False)
         .only("id", "domain_code", "domain_name", "parent_id")
         .order_by("domain_name")
     )
@@ -236,7 +237,7 @@ def dropdown_domains():
 
 def tree_domains():
     rows = list(
-        Domain.objects.filter(is_archived=False)
+        Domain.objects.filter(deleted=False)
         .only(
             "id",
             "domain_code",
@@ -308,7 +309,7 @@ def resolve_parent_code_in_row(row: dict[str, Any]) -> str | None:
     pc = str(raw).strip()
     row.pop("parent", None)
     row.pop("parent_code", None)
-    p = Domain.objects.filter(domain_code__iexact=pc, is_archived=False).first()
+    p = Domain.objects.filter(domain_code__iexact=pc, deleted=False).first()
     if not p:
         return f"Unknown parent domain_code: {pc}"
     row["parent_id"] = str(p.id)
@@ -368,6 +369,7 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
     )
     imported = 0
     errors: list[DomainImportError] = []
+    seen_codes: set[str] = set()
     for idx, raw_row in enumerate(rows, start=1):
         row = dict(raw_row)
         try:
@@ -382,6 +384,19 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
                 )
             )
             continue
+        row_code = (row.get("domain_code") or "").strip().lower()
+        if row_code:
+            if row_code in seen_codes:
+                errors.append(
+                    DomainImportError(
+                        batch=batch,
+                        row_number=idx,
+                        message=f"Duplicate domain_code in upload: {row_code}"[:500],
+                        row_data=row if isinstance(row, dict) else {},
+                    )
+                )
+                continue
+            seen_codes.add(row_code)
         perr = resolve_parent_code_in_row(row)
         if perr:
             errors.append(
@@ -413,11 +428,13 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
             with transaction.atomic():
                 obj = ser.save()
                 # Restore archived records when re-imported.
-                if getattr(obj, "is_archived", False):
-                    obj.is_archived = False
+                if getattr(obj, "deleted", False):
+                    obj.deleted = False
+                    obj.deleted_at = None
+                    obj.deleted_by = None
                     obj.updated_by = user
                     obj.updated_at = timezone.now()
-                    obj.save(update_fields=["is_archived", "updated_by", "updated_at"])
+                    obj.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_by", "updated_at"])
                 imported += 1
         except ValidationError as e:
             detail = e.detail

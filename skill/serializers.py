@@ -11,6 +11,7 @@ class SkillSerializer(AuditFieldsMixin, serializers.ModelSerializer):
     updated_at = serializers.SerializerMethodField(read_only=True)
     created_by = UserQuickSerializer(read_only=True)
     updated_by = UserQuickSerializer(read_only=True)
+    is_archived = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Skill
@@ -37,6 +38,9 @@ class SkillSerializer(AuditFieldsMixin, serializers.ModelSerializer):
 
     def get_updated_at(self, obj):
         return self._format_dt(obj.updated_at)
+
+    def get_is_archived(self, obj):
+        return bool(getattr(obj, "deleted", False))
 
     def validate_skill_code(self, value):
         value = (value or "").strip()

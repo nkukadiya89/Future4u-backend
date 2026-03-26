@@ -5,16 +5,14 @@ from django.db import models
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 
-from common.models import BaseModule
+from base.models import MasterBaseModel
 
 
-class Career(BaseModule):
+class Career(MasterBaseModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     career_code = models.CharField(max_length=64)
     career_name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    is_active = models.BooleanField(default=True)
-    is_archived = models.BooleanField(default=False)
     min_education_level = models.ForeignKey(
         "education_level.EducationLevel",
         on_delete=models.SET_NULL,
@@ -41,7 +39,7 @@ class Career(BaseModule):
         indexes = [
             models.Index(fields=["career_code"]),
             models.Index(fields=["is_active"]),
-            models.Index(fields=["is_archived"]),
+            models.Index(fields=["deleted"]),
         ]
 
     def __str__(self):

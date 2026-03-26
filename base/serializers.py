@@ -19,7 +19,7 @@ class SoftDeleteMixin:
     Serializer helper for common non-archived filtering.
     """
 
-    archive_field = "is_archived"
+    archive_field = "deleted"
 
     @classmethod
     def non_archived_queryset(cls, queryset):

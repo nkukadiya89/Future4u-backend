@@ -54,7 +54,7 @@ class DomainAPITests(TestCase):
 
         r = self.client.delete(reverse("domain-detail", args=[pk]))
         self.assertEqual(r.status_code, status.HTTP_200_OK)
-        self.assertTrue(Domain.objects.get(pk=pk).is_archived)
+        self.assertTrue(Domain.objects.get(pk=pk).deleted)
 
     def test_domain_code_case_insensitive_unique(self):
         url = reverse("domain-list")
@@ -150,7 +150,7 @@ class DomainAPITests(TestCase):
             format="json",
         )
         self.assertEqual(r.status_code, status.HTTP_200_OK)
-        self.assertFalse(Domain.objects.get(pk=p1).is_archived)
+        self.assertFalse(Domain.objects.get(pk=p1).deleted)
 
     def test_bulk_upload_csv_file(self):
         csv_body = (
