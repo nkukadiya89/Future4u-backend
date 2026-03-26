@@ -38,41 +38,7 @@ class BusinessSettingTests(APITestCase):
             business_category="Test Category", created_by=self.user
         )
 
-        # Create company with all required fields
-        self.company = Company.objects.create(
-            name="Test Company",
-            email="company@example.com",
-            phone="1234567890",
-            created_by=self.user,
-            company_type="Advertisers",
-            business_category=self.business_category,
-            status="active",
-            gst_no="22AAAAA0000A1Z5",
-            person_name="Test Person",
-            gst_address_country="India",
-            gst_address_state="Gujarat",
-            gst_address_city="Ahmedabad",
-            gst_address_pincode=380015,
-            communication_address_country="India",
-            communication_address_state="Gujarat",
-            communication_address_city="Ahmedabad",
-            communication_address_pincode=380015,
-        )
-
-        # Create partner company
-        if PartnerCompany is not None:
-            self.partner_company = PartnerCompany.objects.create(
-                company_name="Test Partner",
-                email="partner@example.com",
-                phone="0987654321",
-                created_by=self.user,
-                status="active",
-                gst_no="22AAAAA0000A1Z5",
-            )
-        else:
-            self.partner_company = None
-
-        # Create geo master data
+        # Create geo master data (required for Company FK address fields)
         self.country = Country.objects.create(
             name="India",
             code="IN",
@@ -90,6 +56,45 @@ class BusinessSettingTests(APITestCase):
             created_by=self.user,
             updated_by=self.user,
         )
+
+        # Create company with all required fields
+        self.company = Company.objects.create(
+            name="Test Company",
+            email="company@example.com",
+            phone="1234567890",
+            created_by=self.user,
+            updated_by=self.user,
+            company_type="Advertisers",
+            business_category=self.business_category,
+            status="active",
+            gst_no="22AAAAA0000A1Z5",
+            person_name="Test Person",
+            gst_address_country=self.country,
+            gst_address_state=self.state,
+            gst_address_city=self.city,
+            gst_address_pincode=380015,
+            communication_address_country=self.country,
+            communication_address_state=self.state,
+            communication_address_city=self.city,
+            communication_address_pincode=380015,
+        )
+
+        # Associate user with company (view queryset expects this)
+        self.user.company = self.company
+        self.user.save()
+
+        # Create partner company
+        if PartnerCompany is not None:
+            self.partner_company = PartnerCompany.objects.create(
+                company_name="Test Partner",
+                email="partner@example.com",
+                phone="0987654321",
+                created_by=self.user,
+                status="active",
+                gst_no="22AAAAA0000A1Z5",
+            )
+        else:
+            self.partner_company = None
 
         # Test data for business setting
         self.business_setting_data = {

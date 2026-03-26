@@ -162,13 +162,40 @@ class CompanyCustomActionsTests(BaseAPITest):
         url = reverse("company-update-company-basic-info", args=[c.id])
         import json as _json
 
+        from country.models import Country
+        from state.models import State
+        from city.models import City
+
+        country = Country.objects.create(
+            name="India",
+            code="IN",
+            phone_code="91",
+            created_by=self.user,
+            updated_by=self.user,
+        )
+        state = State.objects.create(
+            name="Gujarat",
+            country=country,
+            created_by=self.user,
+            updated_by=self.user,
+        )
+        city = City.objects.create(
+            name="Ahmedabad",
+            country=country,
+            state=state,
+            created_by=self.user,
+            updated_by=self.user,
+        )
+
         fd = {
             "company_name": "Renamed",
             "person_name": "P",
             "email": "p@x.com",
             "phone": "6666666666",
             "gst_no": "22DDDDD0000D1Z5",
-            "gst_address_city": "Ahmedabad",
+            "gst_address_country": country.id,
+            "gst_address_state": state.id,
+            "gst_address_city": city.id,
         }
         payload = {"form_data": _json.dumps(fd)}
         r = self.client.patch(url, data=payload, format="multipart")

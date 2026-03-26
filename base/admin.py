@@ -1,15 +1,8 @@
 from django.contrib import admin
 
 
-class BaseAdmin(admin.ModelAdmin):
-    """
-    Reusable admin actions for active/archive status.
-    Child admins can override hook methods for custom behavior.
-    """
-
+class BaseAdminMixin:
     list_filter = ("is_active", "deleted")
-    search_fields = ()
-
     actions = (
         "activate_selected",
         "deactivate_selected",
@@ -60,4 +53,13 @@ class BaseAdmin(admin.ModelAdmin):
             self._restore_object(request, obj)
             count += 1
         self.message_user(request, f"{count} record(s) restored.")
+
+
+class BaseAdmin(BaseAdminMixin, admin.ModelAdmin):
+    """
+    Reusable admin actions for active/archive status.
+    Child admins can override hook methods for custom behavior.
+    """
+
+    search_fields = ()
 

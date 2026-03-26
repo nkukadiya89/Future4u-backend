@@ -7,6 +7,7 @@ from django.urls import path, reverse
 from django.utils.html import format_html
 from rest_framework.exceptions import ValidationError as DRFValidationError
 
+from base.admin import BaseAdminMixin
 from stream_domain_mapping.models import StreamDomainMapping
 from stream_domain_mapping.serializers import StreamDomainMappingSerializer
 from stream_domain_mapping.services import stream_domain_mapping_service
@@ -19,7 +20,7 @@ class StreamDomainMappingAdminForm(forms.ModelForm):
 
 
 @admin.register(StreamDomainMapping)
-class StreamDomainMappingAdmin(admin.ModelAdmin):
+class StreamDomainMappingAdmin(BaseAdminMixin, admin.ModelAdmin):
     form = StreamDomainMappingAdminForm
     change_list_template = "admin/stream_domain_mapping/streamdomainmapping/change_list.html"
 

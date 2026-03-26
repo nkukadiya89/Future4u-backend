@@ -7,6 +7,7 @@ from django.urls import path, reverse
 from django.utils.html import format_html
 from rest_framework.exceptions import ValidationError as DRFValidationError
 
+from base.admin import BaseAdminMixin
 from domain_career_mapping.models import DomainCareerMapping
 from domain_career_mapping.serializers import DomainCareerMappingSerializer
 from domain_career_mapping.services import domain_career_mapping_service
@@ -19,7 +20,7 @@ class DomainCareerMappingAdminForm(forms.ModelForm):
 
 
 @admin.register(DomainCareerMapping)
-class DomainCareerMappingAdmin(admin.ModelAdmin):
+class DomainCareerMappingAdmin(BaseAdminMixin, admin.ModelAdmin):
     form = DomainCareerMappingAdminForm
     change_list_template = "admin/domain_career_mapping/domaincareermapping/change_list.html"
 

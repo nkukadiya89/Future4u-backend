@@ -3,10 +3,10 @@ import uuid
 from django.conf import settings
 from django.db import models
 
-from common.models import BaseModule
+from base.models import BaseMappingModel
 
 
-class DomainCareerMapping(BaseModule):
+class DomainCareerMapping(BaseMappingModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     domain = models.ForeignKey(
         "domain.Domain",
@@ -18,8 +18,6 @@ class DomainCareerMapping(BaseModule):
         on_delete=models.CASCADE,
         related_name="domain_career_mappings",
     )
-    weight_score = models.PositiveSmallIntegerField()
-    is_active = models.BooleanField(default=True)
 
     class Meta:
         db_table = "domain_career_mapping"

@@ -509,13 +509,13 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
             if gst_no:
                 company.gst_no = gst_no
 
-            # Update GST Address
-            if gst_address_country:
-                company.gst_address_country = gst_address_country
-            if gst_address_state:
-                company.gst_address_state = gst_address_state
-            if gst_address_city:
-                company.gst_address_city = gst_address_city
+            # Update GST Address (accept FK ids in payload)
+            if gst_address_country not in (None, ""):
+                company.gst_address_country_id = gst_address_country
+            if gst_address_state not in (None, ""):
+                company.gst_address_state_id = gst_address_state
+            if gst_address_city not in (None, ""):
+                company.gst_address_city_id = gst_address_city
             if gst_address_building:
                 company.gst_address_building = gst_address_building
             if gst_address_area:
@@ -525,13 +525,13 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
             if gst_address_pincode:
                 company.gst_address_pincode = gst_address_pincode
 
-            # Update Communication Address
-            if communication_address_country:
-                company.communication_address_country = communication_address_country
-            if communication_address_state:
-                company.communication_address_state = communication_address_state
-            if communication_address_city:
-                company.communication_address_city = communication_address_city
+            # Update Communication Address (accept FK ids in payload)
+            if communication_address_country not in (None, ""):
+                company.communication_address_country_id = communication_address_country
+            if communication_address_state not in (None, ""):
+                company.communication_address_state_id = communication_address_state
+            if communication_address_city not in (None, ""):
+                company.communication_address_city_id = communication_address_city
             if communication_address_building:
                 company.communication_address_building = communication_address_building
             if communication_address_area:

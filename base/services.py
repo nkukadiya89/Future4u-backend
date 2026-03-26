@@ -21,6 +21,10 @@ def restore(instance, *, user=None, archive_field="deleted"):
             setattr(instance, "deleted_at", None)
         if hasattr(instance, "deleted_by"):
             setattr(instance, "deleted_by", None)
+        if hasattr(instance, "updated_at"):
+            instance.updated_at = timezone.now()
+        if user is not None and hasattr(instance, "updated_by"):
+            instance.updated_by = user
         _save_instance(instance, user=user)
         return instance
     setattr(instance, archive_field, False)
@@ -45,3 +49,36 @@ def _save_instance(instance, *, user=None):
     instance.updated_at = timezone.now()
     instance.save()
 
+
+class BaseService:
+    @staticmethod
+    def soft_delete(instance, *, user=None):
+        return soft_delete(instance, user=user, archive_field="deleted")
+
+    @staticmethod
+    def restore(instance, *, user=None):
+        return restore(instance, user=user, archive_field="deleted")
+
+    @staticmethod
+    def validate_weight(value):
+        if value is None:
+            return
+        try:
+            v = int(value)
+        except (TypeError, ValueError):
+            raise ValueError("Invalid weight_score")
+        if v < 0 or v > 100:
+            raise ValueError("weight_score must be between 0 and 100")
+
+    @staticmethod
+    def validate_unique_pair(queryset, filters: dict, *, exclude_pk=None):
+        q = queryset.filter(**filters)
+        if exclude_pk is not None:
+            q = q.exclude(pk=exclude_pk)
+        if q.exists():
+            try:
+                from rest_framework.exceptions import ValidationError
+
+                raise ValidationError("Duplicate mapping.")
+            except Exception:
+                raise ValueError("Duplicate mapping.")
