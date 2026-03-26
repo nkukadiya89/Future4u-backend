@@ -1,5 +1,26 @@
 career_code,career_name,min_education_level,description,is_active
-software_engineer,Software Engineer,higher_secondary,Design and build software applications,1
-data_analyst,Data Analyst,graduation,Analyze datasets and derive business insights,1
-digital_marketer,Digital Marketer,higher_secondary,Plan and execute digital growth campaigns,1
-
+data_scientist,Data Scientist,graduation,Analyze data and build predictive models,1
+ml_engineer,Machine Learning Engineer,graduation,Build and deploy ML models,1
+data_analyst,Data Analyst,graduation,Interpret data and generate insights,1
+software_engineer,Software Engineer,graduation,Develop software systems and applications,1
+cybersecurity_analyst,Cybersecurity Analyst,graduation,Protect systems from cyber threats,1
+ethical_hacker,Ethical Hacker,graduation,Test system security vulnerabilities,1
+financial_analyst,Financial Analyst,graduation,Analyze financial data and trends,1
+investment_banker,Investment Banker,post_graduation,Manage large financial transactions and investments,1
+digital_marketer,Digital Marketer,graduation,Promote products through digital channels,1
+seo_specialist,SEO Specialist,graduation,Optimize website ranking in search engines,1
+uiux_designer,UI UX Designer,graduation,Design user-friendly digital interfaces,1
+graphic_designer,Graphic Designer,graduation,Create visual content for branding,1
+robotics_engineer,Robotics Engineer,graduation,Design and build robotic systems,1
+cloud_engineer,Cloud Engineer,graduation,Manage cloud infrastructure and services,1
+product_manager,Product Manager,graduation,Plan and manage product lifecycle,1
+agriculture_officer,Agriculture Officer,graduation,Manage agricultural operations and policies,1
+journalist,Journalist,graduation,Report news and media content,1
+content_creator,Content Creator,graduation,Create digital content across platforms,1
+doctor,Doctor,graduation,Diagnose and treat patients,1
+pharmacist,Pharmacist,graduation,Prepare and dispense medicines,1
+teacher,Teacher,graduation,Educate students in schools or institutions,1
+defense_officer,Defense Officer,graduation,Serve in armed forces,1
+pilot,Pilot,graduation,Operate aircraft and aviation systems,1
+entrepreneur,Entrepreneur,graduation,Start and manage own business,1
+hotel_manager,Hotel Manager,graduation,Manage hospitality operations,1
