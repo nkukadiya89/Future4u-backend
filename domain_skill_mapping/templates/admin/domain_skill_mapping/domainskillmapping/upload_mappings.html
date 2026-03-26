@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <h1>{% trans "Upload Domain Skill Mappings" %}</h1>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <p>
+      <input type="file" name="file" accept=".csv,.xlsx,.xls" required />
+    </p>
+    <p>
+      <button type="submit" class="default">{% trans "Upload" %}</button>
+      <a href="../" class="button">{% trans "Back" %}</a>
+    </p>
+  </form>
+{% endblock %}
+

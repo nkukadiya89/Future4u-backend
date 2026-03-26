@@ -11861,6 +11861,367 @@
       ]
     },
     {
+      "name": "Domain Skill Mapping",
+      "item": [
+        {
+          "name": "Create Mapping",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/domain-skill-mappings/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "domain-skill-mappings",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": \"{{domain_id}}\",\n  \"skill\": \"{{skill_id}}\",\n  \"weight_score\": 85,\n  \"is_core\": true,\n  \"is_active\": true\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/domain-skill-mappings/?domain=&skill=&is_active=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "domain-skill-mappings",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "domain",
+                  "value": ""
+                },
+                {
+                  "key": "skill",
+                  "value": ""
+                },
+                {
+                  "key": "is_active",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/domain-skill-mappings/{{mapping_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "domain-skill-mappings",
+                "{{mapping_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/domain-skill-mappings/{{mapping_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "domain-skill-mappings",
+                "{{mapping_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": \"{{domain_id}}\",\n  \"skill\": \"{{skill_id}}\",\n  \"weight_score\": 90,\n  \"is_core\": false,\n  \"is_active\": true\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Patch",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/domain-skill-mappings/{{mapping_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "domain-skill-mappings",
+                "{{mapping_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"weight_score\": 92\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete (Archive)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/domain-skill-mappings/{{mapping_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "domain-skill-mappings",
+                "{{mapping_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deleted (Soft)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/domain-skill-mappings/deleted/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "domain-skill-mappings",
+                "deleted",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Delete",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/domain-skill-mappings/bulk-delete/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "domain-skill-mappings",
+                "bulk-delete",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\"{{mapping_id}}\"]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Restore",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/domain-skill-mappings/bulk-restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "domain-skill-mappings",
+                "bulk-restore",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\"{{mapping_id}}\"]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "By Domain",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/domain-skill-mappings/by-domain/{{domain_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "domain-skill-mappings",
+                "by-domain",
+                "{{domain_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Import",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/domain-skill-mappings/bulk-import/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "domain-skill-mappings",
+                "bulk-import",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rows\": [\n    {\n      \"domain_code\": \"engineering\",\n      \"skill_code\": \"python\",\n      \"weight_score\": 95,\n      \"is_core\": true,\n      \"is_active\": true\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Career Master",
       "item": [
         {
