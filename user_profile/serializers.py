@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
-from user_profile.models import BusinessSetting
+from user_profile.models import BusinessSetting, UserProfile
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ["id", "user", "education_level", "stream"]
 
 
 class BusinessSettingSerializer(serializers.ModelSerializer):
