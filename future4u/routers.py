@@ -1,5 +1,6 @@
 from rest_framework import routers
 from activity_log.routers import activity_log_router
+from assessment.routers import assessment_router
 from business_category.routers import bussiness_category_router
 from career.routers import career_router
 from city.routers import city_router
@@ -15,6 +16,7 @@ from state.routers import state_router
 from stream.routers import stream_router
 from stream_domain_mapping.routers import stream_domain_mapping_router
 from user_profile.routers import user_profile_router
+from user_skill.routers import user_skill_router
 from user.routers import user_router
 from subscription.routers import subscription_router
 
@@ -27,6 +29,7 @@ except ModuleNotFoundError:
 future4u_router = routers.DefaultRouter()
 
 future4u_router.registry.extend(activity_log_router.registry)
+future4u_router.registry.extend(assessment_router.registry)
 future4u_router.registry.extend(bussiness_category_router.registry)
 future4u_router.registry.extend(career_router.registry)
 future4u_router.registry.extend(city_router.registry)
@@ -44,5 +47,6 @@ future4u_router.registry.extend(stream_domain_mapping_router.registry)
 future4u_router.registry.extend(domain_skill_mapping_router.registry)
 future4u_router.registry.extend(domain_career_mapping_router.registry)
 future4u_router.registry.extend(user_profile_router.registry)
+future4u_router.registry.extend(user_skill_router.registry)
 future4u_router.registry.extend(user_router.registry)
 future4u_router.registry.extend(subscription_router.registry)

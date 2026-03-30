@@ -62,8 +62,10 @@ INSTALLED_APPS = [
     "stream_domain_mapping",
     "domain_skill_mapping",
     "domain_career_mapping",
+    "assessment",
     "skill",
     "user",
+    "user_skill",
     "user_profile",
 
 
