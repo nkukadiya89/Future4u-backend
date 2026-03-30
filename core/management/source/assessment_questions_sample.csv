@@ -1,0 +1,21 @@
+dimension,question_text,is_active,option_1,option_2,option_3,option_4,option_5
+aptitude,I enjoy solving complex logical problems,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,I like analyzing data and finding patterns,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,I am interested in how technology can solve real-world problems,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,I enjoy working with numbers and calculations,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,I prefer creative tasks like designing or writing,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,I enjoy helping people solve their problems,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,I prefer working in a team rather than alone,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,I like taking leadership roles in projects,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,I am interested in finance and business growth,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,I like understanding how machines and systems work,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,I enjoy studying biology and health-related topics,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,I like creating content like videos or articles,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,I enjoy planning and organizing tasks,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,I am comfortable making decisions under pressure,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,I can understand new concepts quickly,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,I enjoy debugging and fixing problems,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,I am comfortable communicating with new people,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,I prefer structured work over flexible work,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,I am curious about how businesses operate,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,I enjoy learning new technologies regularly,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree

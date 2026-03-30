@@ -63,6 +63,10 @@ class BaseModule(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
     deleted = models.BooleanField(default=False)
 
+    @property
+    def is_deleted(self):
+        return self.deleted
+
     class Meta:
         abstract = True
 

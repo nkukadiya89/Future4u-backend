@@ -103,9 +103,20 @@ class VerifyLoginWithEmailOtpSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    education_level = serializers.SerializerMethodField()
+    stream = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "email", "first_name", "phone"]
+        fields = ["id", "email", "first_name", "phone", "education_level", "stream"]
+
+    def get_education_level(self, obj):
+        profile = getattr(obj, "profile", None)
+        return getattr(profile, "education_level_id", None) if profile else None
+
+    def get_stream(self, obj):
+        profile = getattr(obj, "profile", None)
+        return getattr(profile, "stream_id", None) if profile else None
 
 
 class RoleFamilySerializer(serializers.ModelSerializer):

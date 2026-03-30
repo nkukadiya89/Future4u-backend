@@ -9,6 +9,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.core.cache import cache
 
 from domain.models import Domain
 from domain.permissions import DomainMasterPermission
@@ -24,6 +25,7 @@ from domain.serializers import (
 from domain.services import domain_service
 from utils.custom_filters import CustomSearchFilter
 from utils.pagination import Pagination
+from utils.cache_keys import dropdown_key
 
 
 class DomainViewSet(ModelViewSet):
@@ -164,9 +166,22 @@ class DomainViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="dropdown")
     def dropdown(self, request, *args, **kwargs):
+        key = dropdown_key("domains")
+        try:
+            cached = cache.get(key)
+        except Exception:
+            cached = None
+        if cached is not None:
+            return Response({"success": True, "data": cached})
+
         qs = domain_service.dropdown_domains()
         serializer = DomainDropdownSerializer(qs, many=True)
-        return Response({"success": True, "data": serializer.data})
+        data = serializer.data
+        try:
+            cache.set(key, data, 60 * 60)
+        except Exception:
+            pass
+        return Response({"success": True, "data": data})
 
     @action(detail=False, methods=["get"], url_path="tree")
     def tree(self, request, *args, **kwargs):

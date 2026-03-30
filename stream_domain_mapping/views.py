@@ -14,6 +14,7 @@ from stream_domain_mapping.permissions import StreamDomainMappingPermission
 from stream_domain_mapping.serializers import (
     StreamDomainMappingBulkIdsSerializer,
     StreamDomainMappingBulkImportSerializer,
+    StreamDomainMappingChangeStatusSerializer,
     StreamDomainMappingSerializer,
 )
 from stream_domain_mapping.services import stream_domain_mapping_service
@@ -113,6 +114,22 @@ class StreamDomainMappingViewSet(ModelViewSet):
         except ValidationError as e:
             return Response({"success": False, "message": e.detail}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"success": True, "message": "Archived Successfully"}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="change-status")
+    def change_status(self, request, pk=None, *args, **kwargs):
+        instance = self.get_object()
+        ser = StreamDomainMappingChangeStatusSerializer(data=request.data)
+        if not ser.is_valid():
+            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+        stream_domain_mapping_service.set_active_status(
+            mapping=instance,
+            user=request.user,
+            is_active=ser.validated_data["is_active"],
+        )
+        instance.refresh_from_db()
+        return Response(
+            {"success": True, "message": "Status updated", "data": StreamDomainMappingSerializer(instance, context={"request": request}).data}
+        )
 
     @action(detail=False, methods=["get"], url_path="archived")
     def archived(self, request, *args, **kwargs):

@@ -10,6 +10,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.core.cache import cache
 
 from career.models import Career
 from career.permissions import CareerMasterPermission
@@ -25,6 +26,7 @@ from career.serializers import (
 from career.services import career_service
 from utils.custom_filters import CustomSearchFilter
 from utils.pagination import Pagination
+from utils.cache_keys import dropdown_key
 
 
 class CareerViewSet(ModelViewSet):
@@ -161,9 +163,25 @@ class CareerViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="dropdown")
     def dropdown(self, request, *args, **kwargs):
+        edu = request.query_params.get("education_level")
+        key = dropdown_key("careers") if not edu else f"{dropdown_key('careers')}:education_level:{edu}"
+        try:
+            cached = cache.get(key)
+        except Exception:
+            cached = None
+        if cached is not None:
+            return Response({"success": True, "data": cached})
+
         qs = career_service.dropdown_careers()
+        if edu not in (None, ""):
+            qs = qs.filter(Q(min_education_level_id=edu) | Q(max_education_level_id=edu))
         serializer = CareerDropdownSerializer(qs, many=True)
-        return Response({"success": True, "data": serializer.data})
+        data = serializer.data
+        try:
+            cache.set(key, data, 60 * 60)
+        except Exception:
+            pass
+        return Response({"success": True, "data": data})
 
     @action(detail=False, methods=["post"], url_path="bulk-archive")
     def bulk_archive(self, request, *args, **kwargs):

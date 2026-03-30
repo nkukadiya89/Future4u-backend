@@ -9,6 +9,34 @@ from state.models import State
 
 
 # Business Setting Database Model
+class UserProfile(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="profile",
+    )
+    education_level = models.ForeignKey(
+        "education_level.EducationLevel",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="user_profiles",
+    )
+    stream = models.ForeignKey(
+        "stream.Stream",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="user_profiles",
+    )
+
+    def __str__(self):
+        return f"Profile<{self.user_id}>"
+
+    class Meta:
+        db_table = "user_profile"
+
+
 class BusinessSetting(models.Model):
     company = models.ForeignKey(
         Company,
