@@ -67,8 +67,6 @@ INSTALLED_APPS = [
     "user",
     "user_skill",
     "user_profile",
-
-
 ]
 
 MIDDLEWARE = [
