@@ -9,6 +9,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.core.cache import cache
 
 from skill.models import Skill
 from skill.permissions import SkillMasterPermission
@@ -24,6 +25,7 @@ from skill.serializers import (
 from skill.services import skill_service
 from utils.custom_filters import CustomSearchFilter
 from utils.pagination import Pagination
+from utils.cache_keys import dropdown_key
 
 
 class SkillViewSet(ModelViewSet):
@@ -161,9 +163,25 @@ class SkillViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="dropdown")
     def dropdown(self, request, *args, **kwargs):
+        skill_type = request.query_params.get("skill_type")
+        key = dropdown_key("skills") if not skill_type else f"{dropdown_key('skills')}:skill_type:{str(skill_type).strip().lower()}"
+        try:
+            cached = cache.get(key)
+        except Exception:
+            cached = None
+        if cached is not None:
+            return Response({"success": True, "data": cached})
+
         qs = skill_service.dropdown_skills()
+        if skill_type not in (None, ""):
+            qs = qs.filter(skill_type=str(skill_type).strip().lower())
         serializer = SkillDropdownSerializer(qs, many=True)
-        return Response({"success": True, "data": serializer.data})
+        data = serializer.data
+        try:
+            cache.set(key, data, 60 * 60)
+        except Exception:
+            pass
+        return Response({"success": True, "data": data})
 
     @action(detail=False, methods=["post"], url_path="bulk-archive")
     def bulk_archive(self, request, *args, **kwargs):

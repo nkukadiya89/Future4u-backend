@@ -9,6 +9,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.core.cache import cache
 
 from education_level.models import EducationLevel
 from education_level.permissions import EducationLevelMasterPermission
@@ -25,6 +26,7 @@ from education_level.serializers import (
 from education_level.services import education_level_service
 from utils.custom_filters import CustomSearchFilter
 from utils.pagination import Pagination
+from utils.cache_keys import dropdown_key
 
 
 class EducationLevelViewSet(ModelViewSet):
@@ -167,9 +169,22 @@ class EducationLevelViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="dropdown")
     def dropdown(self, request, *args, **kwargs):
+        key = dropdown_key("education_level")
+        try:
+            cached = cache.get(key)
+        except Exception:
+            cached = None
+        if cached is not None:
+            return Response({"success": True, "data": cached})
+
         qs = education_level_service.dropdown_levels()
         serializer = EducationLevelDropdownSerializer(qs, many=True)
-        return Response({"success": True, "data": serializer.data})
+        data = serializer.data
+        try:
+            cache.set(key, data, 60 * 60)
+        except Exception:
+            pass
+        return Response({"success": True, "data": data})
 
     @action(detail=False, methods=["post"], url_path="reorder")
     def reorder(self, request, *args, **kwargs):

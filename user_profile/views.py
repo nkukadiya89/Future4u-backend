@@ -7,12 +7,19 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.core.cache import cache
 
 from activity_log.models import ActivityLog
-from user_profile.models import BusinessSetting
-from user_profile.serializers import BusinessSettingInfoSerializer, BusinessSettingSerializer
+from user_profile.models import BusinessSetting, UserProfile
+from user_profile.serializers import (
+    BusinessSettingInfoSerializer,
+    BusinessSettingSerializer,
+    UserProfileSerializer,
+    UserProfileUpsertSerializer,
+)
 from utils.generate_ip_address import get_client_ip
 from utils.pagination import Pagination
+from utils.cache_keys import recommendation_key
 
 
 class BusinessSettingViewSet(ModelViewSet):
@@ -242,4 +249,67 @@ class BusinessSettingViewSet(ModelViewSet):
                     "currency": business_setting.currency,
                 },
             }
+        )
+
+
+class UserProfileViewSet(ModelViewSet):
+    """
+    Endpoints:
+    - GET   /api/profile/
+    - POST  /api/profile/
+    - PATCH /api/profile/
+    """
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    http_method_names = ["get", "post", "patch", "head", "options"]
+    # Rate limiting (view-level, safe)
+    from utils.throttles import PerUserBurstRateThrottle  # local import avoids broad dependency at module import time
+
+    throttle_classes = [PerUserBurstRateThrottle]
+
+    def get_queryset(self):
+        return UserProfile.objects.filter(user=self.request.user).select_related("education_level", "stream")
+
+    def list(self, request, *args, **kwargs):
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        data = UserProfileSerializer(profile).data
+        return Response({"success": True, "status": True, "message": "", "data": data}, status=status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        ser = UserProfileUpsertSerializer(profile, data=request.data, partial=True)
+        if not ser.is_valid():
+            return Response(
+                {"success": False, "status": False, "message": ser.errors, "data": {}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        ser.save()
+        try:
+            cache.delete(recommendation_key(request.user.id))
+        except Exception:
+            pass
+        out = UserProfileSerializer(profile).data
+        return Response(
+            {"success": True, "status": True, "message": "Profile saved", "data": out},
+            status=status.HTTP_200_OK,
+        )
+
+    def partial_update(self, request, *args, **kwargs):
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        ser = UserProfileUpsertSerializer(profile, data=request.data, partial=True)
+        if not ser.is_valid():
+            return Response(
+                {"success": False, "status": False, "message": ser.errors, "data": {}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        ser.save()
+        try:
+            cache.delete(recommendation_key(request.user.id))
+        except Exception:
+            pass
+        out = UserProfileSerializer(profile).data
+        return Response(
+            {"success": True, "status": True, "message": "Profile updated", "data": out},
+            status=status.HTTP_200_OK,
         )

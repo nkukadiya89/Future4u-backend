@@ -81,6 +81,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Optional analytics/tracking layer (safe, disabled by default).
+if str(config("ANALYTICS_ENABLED", default="0")).lower() in ("1", "true", "yes"):
+    MIDDLEWARE.append("utils.analytics_middleware.ApiAnalyticsMiddleware")
+
 ROOT_URLCONF = 'future4u.urls'
 
 TEMPLATES = [

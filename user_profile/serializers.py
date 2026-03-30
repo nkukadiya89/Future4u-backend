@@ -9,6 +9,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ["id", "user", "education_level", "stream"]
 
 
+class UserProfileUpsertSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ["education_level", "stream"]
+
+
 class BusinessSettingSerializer(serializers.ModelSerializer):
 
     class Meta:

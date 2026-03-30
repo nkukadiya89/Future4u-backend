@@ -55,3 +55,12 @@ class UserResponseSerializer(serializers.ModelSerializer):
         request = self.context.get("request") if hasattr(self, "context") else None
         user = getattr(request, "user", None) if request else None
         return UserResponse.objects.create(user=user, **validated_data)
+
+
+class AssessmentSubmitItemSerializer(serializers.Serializer):
+    question_id = serializers.IntegerField()
+    option_id = serializers.IntegerField()
+
+
+class AssessmentSubmitSerializer(serializers.Serializer):
+    responses = AssessmentSubmitItemSerializer(many=True)

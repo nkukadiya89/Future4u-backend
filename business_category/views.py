@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.core.cache import cache
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -19,6 +20,7 @@ from business_category.serializers import (
 from utils.generate_ip_address import get_client_ip
 from utils.pagination import Pagination
 from common.master_view import BaseModelViewSet
+from utils.cache_keys import dropdown_key
 
 
 class BusinessCategoryViewSet(BaseModelViewSet, ArchiveMixin):
@@ -114,19 +116,26 @@ class BusinessCategoryViewSet(BaseModelViewSet, ArchiveMixin):
 
     @action(detail=False, methods=["get"], url_path="dropdown")
     def dropdown(self, request):
-        queryset = BusinessCategory.objects.filter(deleted=False)
-
         filter_param = request.query_params.get("filter")
+        key = dropdown_key("business_category") if not filter_param else f"{dropdown_key('business_category')}:filter:{filter_param}"
+        try:
+            cached = cache.get(key)
+        except Exception:
+            cached = None
+        if cached is not None:
+            return Response({"success": True, "data": cached}, status=status.HTTP_200_OK)
+
+        queryset = BusinessCategory.objects.filter(deleted=False)
         if filter_param:
-            queryset = queryset.filter(name__icontains=filter_param) | queryset.filter(
-                code__icontains=filter_param
-            )
+            queryset = queryset.filter(name__icontains=filter_param) | queryset.filter(code__icontains=filter_param)
 
         serializer = BusinessCategoryDropdownSerializer(queryset, many=True)
-        return Response(
-            {"success": True, "data": serializer.data},
-            status=status.HTTP_200_OK,
-        )
+        data = serializer.data
+        try:
+            cache.set(key, data, 60 * 60)
+        except Exception:
+            pass
+        return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
 
 
 class BusinessCategoryArchiveViewSet(ModelViewSet):

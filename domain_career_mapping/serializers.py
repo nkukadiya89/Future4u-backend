@@ -89,3 +89,7 @@ class DomainCareerMappingBulkIdsSerializer(serializers.Serializer):
 class DomainCareerMappingBulkImportSerializer(serializers.Serializer):
     rows = serializers.ListField(child=serializers.DictField(), allow_empty=False)
 
+
+class DomainCareerMappingChangeStatusSerializer(serializers.Serializer):
+    is_active = serializers.BooleanField()
+
