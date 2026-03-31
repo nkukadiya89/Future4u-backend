@@ -12,6 +12,8 @@ from utils.cache_keys import recommendation_key
 def _compute_payload(user_id: int) -> dict[str, Any]:
     out = generate_recommendation(user_id)
     return {
+        "message": out.get("message") or "ok",
+        "suggestion": out.get("suggestion") or [],
         "top_domains": out.get("top_domains") or [],
         "top_careers": out.get("top_careers") or [],
         "skill_gaps": out.get("skill_gaps") or [],

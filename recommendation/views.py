@@ -32,8 +32,10 @@ class RecommendationListAPIView(APIView):
             try:
                 out = generate_recommendation(request.user.id)
             except Exception:
-                out = {"top_domains": [], "top_careers": [], "skill_gaps": []}
+                out = {"message": "Unable to generate recommendations right now.", "suggestion": [], "top_domains": [], "top_careers": [], "skill_gaps": []}
             cached = {
+                "message": out.get("message") or "ok",
+                "suggestion": out.get("suggestion") or [],
                 "top_domains": out.get("top_domains") or [],
                 "top_careers": out.get("top_careers") or [],
                 "skill_gaps": out.get("skill_gaps") or [],
@@ -49,6 +51,15 @@ class RecommendationListAPIView(APIView):
                 refresh_recommendation_cache_async(request.user.id, ttl_seconds=60 * 5)
             except Exception:
                 pass
+
+        # Always return a non-empty structured payload for UX safety.
+        if not isinstance(cached, dict):
+            cached = {"message": "ok", "suggestion": [], "top_domains": [], "top_careers": [], "skill_gaps": []}
+        cached.setdefault("message", "ok")
+        cached.setdefault("suggestion", [])
+        cached.setdefault("top_domains", [])
+        cached.setdefault("top_careers", [])
+        cached.setdefault("skill_gaps", [])
 
         return Response({"success": True, "data": cached}, status=status.HTTP_200_OK)
 
