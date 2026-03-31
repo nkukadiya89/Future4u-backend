@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Avg, Q
 
 from assessment.models import UserResponse
+from career.models import Career
 from domain_career_mapping.models import DomainCareerMapping
 from domain_skill_mapping.models import DomainSkillMapping
 from stream_domain_mapping.models import StreamDomainMapping
@@ -27,6 +28,7 @@ class _UserContext:
 def _empty(message: str) -> dict[str, Any]:
     return {
         "message": message,
+        "suggestion": [],
         "top_domains": [],
         "top_careers": [],
         "skill_gaps": [],
@@ -72,6 +74,80 @@ def _top_factor(scores: dict[str, float]) -> tuple[str, float]:
         if v > best_val:
             best_dim, best_val = d, v
     return best_dim, best_val
+
+
+def _estimate_skill_proficiency_40_70(*, skill_name: str, dim_scores: dict[str, float]) -> int:
+    """
+    Heuristic skill proficiency estimator when UserSkill is missing.
+    Keeps output within 40–70 range as per UX spec.
+    """
+    name = (skill_name or "").strip().lower()
+    aptitude = float(dim_scores.get("aptitude", 50.0))
+    interest = float(dim_scores.get("interest", 50.0))
+    personality = float(dim_scores.get("personality", 50.0))
+    work_style = float(dim_scores.get("work_style", 50.0))
+
+    technical_keywords = (
+        "python",
+        "java",
+        "javascript",
+        "typescript",
+        "c++",
+        "c#",
+        "sql",
+        "database",
+        "coding",
+        "program",
+        "programming",
+        "development",
+        "api",
+        "backend",
+        "frontend",
+        "cloud",
+        "devops",
+        "linux",
+        "network",
+        "data",
+        "excel",
+        "ai",
+        "ml",
+        "machine learning",
+    )
+    domain_keywords = (
+        "marketing",
+        "sales",
+        "finance",
+        "account",
+        "accounting",
+        "design",
+        "ui",
+        "ux",
+        "health",
+        "medical",
+        "nursing",
+        "sports",
+        "education",
+        "teaching",
+        "law",
+        "hr",
+        "human resources",
+        "communication",
+        "writing",
+        "content",
+        "business",
+        "management",
+    )
+
+    if any(k in name for k in technical_keywords):
+        basis = aptitude  # high aptitude => technical skills
+    elif any(k in name for k in domain_keywords):
+        basis = interest  # high interest => domain skills
+    else:
+        # Unknown skill taxonomy: blend, but still anchored on aptitude/interest.
+        basis = (aptitude * 0.45) + (interest * 0.45) + (personality * 0.05) + (work_style * 0.05)
+
+    # Map 0–100 -> 40–70
+    return int(round(max(40.0, min(70.0, 40.0 + (float(basis) / 100.0) * 30.0))))
 
 
 def _domain_reason(*, top_dim: str, top_dim_score: float, mapping_weight: int, domain_future_relevance: int | None) -> str:
@@ -253,6 +329,18 @@ def generate_recommendation(user_id: int) -> dict[str, Any]:
                 ),
             }
         )
+    # Deduplicate careers across domains: keep the highest scoring entry per career id.
+    career_map: dict[str, dict[str, Any]] = {}
+    for career in top_careers:
+        career_id = str(career.get("id") or "")
+        if not career_id:
+            continue
+        if career_id not in career_map:
+            career_map[career_id] = career
+            continue
+        if float(career.get("score") or 0.0) > float(career_map[career_id].get("score") or 0.0):
+            career_map[career_id] = career
+    top_careers = list(career_map.values())
     top_careers.sort(key=lambda x: (-float(x["score"]), x["name"], x["id"]))
     top_careers = top_careers[:20]
 
@@ -297,19 +385,30 @@ def generate_recommendation(user_id: int) -> dict[str, Any]:
     proficiency_by_skill: dict[Any, int] = {r.skill_id: int(r.proficiency_score) for r in user_skill_rows}
 
     def _gap_level(gap: int | None) -> str:
-        if gap is None:
-            return "UNKNOWN"
         if gap > 50:
             return "HIGH"
         if gap >= 20:
             return "MEDIUM"
         return "LOW"
 
-    gap_rank = {"HIGH": 0, "MEDIUM": 1, "LOW": 2, "UNKNOWN": 3}
+    # If we can't infer skills from either UserSkill or assessment answers, degrade gracefully.
+    # Still compute gap levels deterministically (never UNKNOWN), but provide a guidance message.
+    skill_gap_message = "ok"
+    if not user_skill_rows:
+        has_assessment = UserResponse.objects.filter(user_id=user_id, question__is_active=True).exists()
+        if not has_assessment:
+            skill_gap_message = (
+                "Skill gap analysis requires further input. You can update your skills for better accuracy."
+            )
+
+    gap_rank = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
     skill_gaps: list[dict[str, Any]] = []
     for sid, req_w in required_weight_by_skill.items():
         prof = proficiency_by_skill.get(sid)
-        gap = None if prof is None else int(req_w) - int(prof)
+        if prof is None:
+            # Auto-estimate when missing, keeping within 40–70.
+            prof = _estimate_skill_proficiency_40_70(skill_name=skill_name_by_id.get(sid, "") or "", dim_scores=dim_scores)
+        gap = int(req_w) - int(prof)
         level = _gap_level(gap)
         skill_gaps.append(
             {
@@ -320,8 +419,50 @@ def generate_recommendation(user_id: int) -> dict[str, Any]:
     skill_gaps.sort(key=lambda x: (gap_rank.get(x["gap_level"], 99), x["skill"]))
     skill_gaps = skill_gaps[:50]
 
+    # UX fallback: if education eligibility filters produced no careers, return a helpful message
+    # and (optionally) a small list of education-eligible starter careers.
+    if not top_careers:
+        suggestion = [
+            "Explore diploma programs",
+            "Consider skill-based careers",
+            "Improve your education level",
+        ]
+        fallback_qs = (
+            Career.objects.filter(deleted=False, is_active=True)
+            .select_related("min_education_level", "max_education_level")
+            .filter(
+                Q(min_education_level__isnull=True)
+                | Q(min_education_level__sequence_order__lte=ctx.education_sequence)
+            )
+            .filter(
+                Q(max_education_level__isnull=True)
+                | Q(max_education_level__sequence_order__gte=ctx.education_sequence)
+            )
+            .only("id", "career_name")
+            .order_by("career_name")
+        )
+        # Keep this intentionally small; it's UX filler, not part of the scoring engine.
+        fallback_rows = list(fallback_qs[:10])
+        top_careers = [
+            {
+                "id": str(c.pk),
+                "name": getattr(c, "career_name", "") or "",
+                "score": 0.0,
+                "reason": "Suggested starter path based on your current education level.",
+            }
+            for c in fallback_rows
+        ]
+        return {
+            "message": "Based on your current education level, we recommend exploring foundational paths or upgrading qualifications.",
+            "suggestion": suggestion,
+            "top_domains": top_domains,
+            "top_careers": top_careers,
+            "skill_gaps": skill_gaps,
+        }
+
     return {
-        "message": "ok",
+        "message": skill_gap_message,
+        "suggestion": [],
         "top_domains": top_domains,
         "top_careers": top_careers,
         "skill_gaps": skill_gaps,
