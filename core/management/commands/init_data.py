@@ -723,7 +723,7 @@ class Command(BaseCommand):
     def load_assessment_questions(self):
         self.stdout.write("Seeding Assessment Questions...")
         # Idempotent; safe to run multiple times.
-        call_command("seed_assessment_questions", per_dimension=6)
+        call_command("seed_assessment_questions")
 
     # Subscription Create
     subscription_data = [
