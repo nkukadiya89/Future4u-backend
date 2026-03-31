@@ -1,7 +1,7 @@
-from rest_framework import mixins, status, viewsets
-from rest_framework.decorators import action
 from django.db import transaction
 from django.db.models import Sum
+from rest_framework import mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -14,6 +14,8 @@ from assessment.serializers import (
     QuestionSerializer,
     UserResponseSerializer,
 )
+from assessment.services.recommendation_engine_service import RecommendationEngineService
+from assessment.serializers import QuestionSerializer, UserResponseSerializer
 
 
 class QuestionViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -199,3 +201,7 @@ class ApiAssessmentSummaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet
         )
         data = {r["question__dimension"]: (r["score"] or 0) for r in rows}
         return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
+    @action(detail=False, methods=["get"], url_path="recommendation")
+    def recommendation(self, request, *args, **kwargs):
+        result = RecommendationEngineService().recommend(user_id=request.user.id)
+        return Response({"success": True, "data": result}, status=status.HTTP_200_OK)
