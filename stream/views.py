@@ -9,6 +9,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.core.cache import cache
 
 from stream.models import Stream
 from stream.permissions import StreamMasterPermission
@@ -24,6 +25,7 @@ from stream.serializers import (
 from stream.services import stream_service
 from utils.custom_filters import CustomSearchFilter
 from utils.pagination import Pagination
+from utils.cache_keys import dropdown_key
 
 
 class StreamViewSet(ModelViewSet):
@@ -161,9 +163,25 @@ class StreamViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="dropdown")
     def dropdown(self, request, *args, **kwargs):
+        edu = request.query_params.get("education_level")
+        key = dropdown_key("streams") if not edu else f"{dropdown_key('streams')}:education_level:{edu}"
+        try:
+            cached = cache.get(key)
+        except Exception:
+            cached = None
+        if cached is not None:
+            return Response({"success": True, "data": cached})
+
         qs = stream_service.dropdown_streams()
+        if edu not in (None, ""):
+            qs = qs.filter(education_level_id=edu)
         serializer = StreamDropdownSerializer(qs, many=True)
-        return Response({"success": True, "data": serializer.data})
+        data = serializer.data
+        try:
+            cache.set(key, data, 60 * 60)
+        except Exception:
+            pass
+        return Response({"success": True, "data": data})
 
     @action(detail=False, methods=["post"], url_path="bulk-archive")
     def bulk_archive(self, request, *args, **kwargs):

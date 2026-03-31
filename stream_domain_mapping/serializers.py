@@ -86,3 +86,7 @@ class StreamDomainMappingBulkIdsSerializer(serializers.Serializer):
 class StreamDomainMappingBulkImportSerializer(serializers.Serializer):
     rows = serializers.ListField(child=serializers.DictField(), allow_empty=False)
 
+
+class StreamDomainMappingChangeStatusSerializer(serializers.Serializer):
+    is_active = serializers.BooleanField()
+

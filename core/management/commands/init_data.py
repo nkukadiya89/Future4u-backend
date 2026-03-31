@@ -4,6 +4,7 @@ from os import path
 from decouple import config
 from django.conf import settings
 from django.contrib.auth.models import Permission
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now
 
@@ -16,6 +17,10 @@ from domain.serializers import DomainSerializer
 from domain.services import domain_service
 from education_level.serializers import EducationLevelSerializer
 from education_level.services import education_level_service
+from domain_career_mapping.serializers import DomainCareerMappingSerializer
+from domain_career_mapping.services import domain_career_mapping_service
+from domain_skill_mapping.serializers import DomainSkillMappingSerializer
+from domain_skill_mapping.services import domain_skill_mapping_service
 from skill.serializers import SkillSerializer
 from skill.services import skill_service
 from state.models import State
@@ -42,6 +47,7 @@ class Command(BaseCommand):
         parser.add_argument("--education_level", type=bool, help="Education level data to be uploaded")
         parser.add_argument("--skill", type=bool, help="Skill master data to be uploaded")
         parser.add_argument("--career", type=bool, help="Career master data to be uploaded")
+        parser.add_argument("--assessment", type=bool, help="Assessment questions/options to be seeded")
 
         parser.add_argument("--groups", type=bool, help="Create Groups")
         parser.add_argument("--user", type=bool, help="Create Super User")
@@ -55,6 +61,7 @@ class Command(BaseCommand):
             and kwargs["education_level"] is None
             and kwargs["skill"] is None
             and kwargs["career"] is None
+            and kwargs["assessment"] is None
             and kwargs["groups"] is None
             and kwargs["user"] is None
         ):
@@ -73,6 +80,9 @@ class Command(BaseCommand):
             self.load_careers()
             self.load_streams()
             self.load_stream_domain_mappings()
+            self.load_domain_skill_mappings()
+            self.load_domain_career_mappings()
+            self.load_assessment_questions()
             self.load_subscription()
 
     # Super User Create
@@ -691,6 +701,29 @@ class Command(BaseCommand):
             serializer_class=StreamDomainMappingSerializer,
             importer=stream_domain_mapping_service.bulk_import_mappings,
         )
+
+    def load_domain_skill_mappings(self):
+        self.stdout.write("Loading Domain Skill Mappings...")
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "domain_skill_mapping_sample.csv")
+        self._bulk_import_from_csv(
+            file_path=file_path,
+            serializer_class=DomainSkillMappingSerializer,
+            importer=domain_skill_mapping_service.bulk_import_mappings,
+        )
+
+    def load_domain_career_mappings(self):
+        self.stdout.write("Loading Domain Career Mappings...")
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "domain_career_mapping_sample.csv")
+        self._bulk_import_from_csv(
+            file_path=file_path,
+            serializer_class=DomainCareerMappingSerializer,
+            importer=domain_career_mapping_service.bulk_import_mappings,
+        )
+
+    def load_assessment_questions(self):
+        self.stdout.write("Seeding Assessment Questions...")
+        # Idempotent; safe to run multiple times.
+        call_command("seed_assessment_questions", per_dimension=6)
 
     # Subscription Create
     subscription_data = [

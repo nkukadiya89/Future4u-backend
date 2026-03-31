@@ -86,3 +86,7 @@ class DomainSkillMappingBulkIdsSerializer(serializers.Serializer):
 class DomainSkillMappingBulkImportSerializer(serializers.Serializer):
     rows = serializers.ListField(child=serializers.DictField(), allow_empty=False)
 
+
+class DomainSkillMappingChangeStatusSerializer(serializers.Serializer):
+    is_active = serializers.BooleanField()
+

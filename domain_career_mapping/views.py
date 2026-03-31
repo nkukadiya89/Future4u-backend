@@ -14,6 +14,7 @@ from domain_career_mapping.permissions import DomainCareerMappingPermission
 from domain_career_mapping.serializers import (
     DomainCareerMappingBulkIdsSerializer,
     DomainCareerMappingBulkImportSerializer,
+    DomainCareerMappingChangeStatusSerializer,
     DomainCareerMappingSerializer,
 )
 from domain_career_mapping.services import domain_career_mapping_service
@@ -114,6 +115,22 @@ class DomainCareerMappingViewSet(ModelViewSet):
             return Response({"success": False, "message": e.detail}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"success": True, "message": "Archived Successfully"}, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=["post"], url_path="change-status")
+    def change_status(self, request, pk=None, *args, **kwargs):
+        instance = self.get_object()
+        ser = DomainCareerMappingChangeStatusSerializer(data=request.data)
+        if not ser.is_valid():
+            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+        domain_career_mapping_service.set_active_status(
+            mapping=instance,
+            user=request.user,
+            is_active=ser.validated_data["is_active"],
+        )
+        instance.refresh_from_db()
+        return Response(
+            {"success": True, "message": "Status updated", "data": DomainCareerMappingSerializer(instance, context={"request": request}).data}
+        )
+
     @action(detail=False, methods=["get"], url_path="deleted")
     def deleted(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -128,6 +145,11 @@ class DomainCareerMappingViewSet(ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
+    @action(detail=False, methods=["get"], url_path="archived")
+    def archived(self, request, *args, **kwargs):
+        # Alias for deleted=True (backward compatible with existing /deleted/)
+        return self.deleted(request, *args, **kwargs)
+
     @action(detail=False, methods=["post"], url_path="bulk-delete")
     def bulk_delete(self, request, *args, **kwargs):
         ser = DomainCareerMappingBulkIdsSerializer(data=request.data)
@@ -138,6 +160,11 @@ class DomainCareerMappingViewSet(ModelViewSet):
         except ValidationError as e:
             return Response({"success": False, "message": e.detail}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"success": True, "message": "Bulk deleted successfully", "count": n})
+
+    @action(detail=False, methods=["post"], url_path="bulk-archive")
+    def bulk_archive(self, request, *args, **kwargs):
+        # Alias for bulk-delete (backward compatible)
+        return self.bulk_delete(request, *args, **kwargs)
 
     @action(detail=False, methods=["post"], url_path="bulk-restore")
     def bulk_restore(self, request, *args, **kwargs):
