@@ -12,6 +12,12 @@ class Question(models.Model):
 
     question_text = models.TextField()
     dimension = models.CharField(max_length=20, choices=Dimension.choices)
+    mapped_domains = models.ManyToManyField(
+        "domain.Domain",
+        related_name="assessment_questions",
+        blank=True,
+    )
+    signal_strength = models.PositiveSmallIntegerField(default=1)
     is_active = models.BooleanField(default=True)
 
     class Meta:

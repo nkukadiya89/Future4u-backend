@@ -10,9 +10,10 @@ class OptionInline(admin.TabularInline):
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ("id", "dimension", "is_active", "question_text")
+    list_display = ("id", "dimension", "signal_strength", "is_active", "question_text")
     list_filter = ("dimension", "is_active")
     search_fields = ("question_text",)
+    filter_horizontal = ("mapped_domains",)
     inlines = [OptionInline]
 
 
