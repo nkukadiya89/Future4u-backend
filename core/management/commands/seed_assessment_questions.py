@@ -8,6 +8,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from assessment.models import Option, Question
+from domain.models import Domain
 
 
 DEFAULT_OPTIONS = [
@@ -23,6 +24,8 @@ DIMENSIONS = ("interest", "aptitude", "personality", "work_style")
 SAMPLE_HEADERS = (
     "dimension",
     "question_text",
+    "mapped_domains",
+    "signal_strength",
     "is_active",
     "option_1",
     "option_2",
@@ -89,7 +92,7 @@ class Command(BaseCommand):
             for dim in DIMENSIONS:
                 for i in range(1, per_dimension + 1):
                     qt = _question_text(dimension=dim, idx=i)
-                    row = [dim, qt, "1" if is_active else "0"]
+                    row = [dim, qt, "", "1", "1" if is_active else "0"]
                     for score_value, option_text in DEFAULT_OPTIONS:
                         row.append(f"{score_value}:{option_text}")
                     w.writerow(row)
@@ -103,13 +106,18 @@ class Command(BaseCommand):
             reader = csv.DictReader(f)
             if not reader.fieldnames:
                 raise ValueError("CSV has no header row.")
-            missing = [h for h in SAMPLE_HEADERS if h not in reader.fieldnames]
+            has_mapped_domains_column = "mapped_domains" in reader.fieldnames
+            has_signal_strength_column = "signal_strength" in reader.fieldnames
+            required_headers = ("dimension", "question_text", "is_active", "option_1", "option_2", "option_3", "option_4", "option_5")
+            missing = [h for h in required_headers if h not in reader.fieldnames]
             if missing:
                 raise ValueError(f"Missing headers: {', '.join(missing)}")
 
             for idx, r in enumerate(reader, start=2):
                 dim = (r.get("dimension") or "").strip()
                 qt = (r.get("question_text") or "").strip()
+                mapped_domains_raw = (r.get("mapped_domains") or "").strip()
+                signal_strength_raw = (r.get("signal_strength") or "").strip()
                 active_raw = (r.get("is_active") or "1").strip().lower()
                 is_active = active_raw in ("1", "true", "yes", "y")
 
@@ -117,33 +125,68 @@ class Command(BaseCommand):
                     raise ValueError(f"Row {idx}: invalid dimension '{dim}'")
                 if not qt:
                     raise ValueError(f"Row {idx}: question_text is required")
+                try:
+                    signal_strength = max(1, int(signal_strength_raw)) if has_signal_strength_column else 1
+                except ValueError as exc:
+                    raise ValueError(f"Row {idx}: signal_strength must be a positive integer") from exc
+
+                domain_codes = [code.strip() for code in mapped_domains_raw.split(",") if code.strip()]
+                domain_ids = []
+                if domain_codes:
+                    domains = []
+                    for code in domain_codes:
+                        obj = Domain.objects.filter(domain_code__iexact=code, deleted=False).first()
+                        if obj:
+                            domains.append(obj)
+                    found_codes = {d.domain_code.lower() for d in domains}
+                    missing_codes = [c for c in domain_codes if c.lower() not in found_codes]
+                    if missing_codes:
+                        raise ValueError(f"Row {idx}: invalid mapped_domains code(s): {', '.join(missing_codes)}")
+                    domain_ids = [d.id for d in domains]
 
                 if dry_run:
-                    self.stdout.write(f"[DRY RUN] CSV Question: ({dim}) {qt}")
+                    self.stdout.write(
+                        f"[DRY RUN] CSV Question: ({dim}) {qt} "
+                        f"[signal_strength={signal_strength}, mapped_domains={domain_codes}]"
+                    )
                     continue
 
                 q, q_created = Question.objects.get_or_create(
                     dimension=dim,
                     question_text=qt,
-                    defaults={"is_active": is_active},
+                    defaults={"is_active": is_active, "signal_strength": signal_strength if has_signal_strength_column else 1},
                 )
                 if q_created:
                     created_q += 1
                 else:
+                    changed_fields = []
                     if q.is_active != is_active:
                         q.is_active = is_active
-                        q.save(update_fields=["is_active"])
+                        changed_fields.append("is_active")
+                    if has_signal_strength_column and q.signal_strength != signal_strength:
+                        q.signal_strength = signal_strength
+                        changed_fields.append("signal_strength")
+                    if changed_fields:
+                        q.save(update_fields=changed_fields)
                         updated_q += 1
+
+                if has_mapped_domains_column:
+                    if domain_ids:
+                        q.mapped_domains.set(domain_ids)
+                    else:
+                        q.mapped_domains.clear()
 
                 for i in range(1, 6):
                     cell = (r.get(f"option_{i}") or "").strip()
                     if not cell:
                         continue
                     if ":" not in cell:
-                        raise ValueError(f"Row {idx}: option_{i} must be formatted 'score:label'")
-                    score_str, label = cell.split(":", 1)
-                    score_value = int(score_str.strip())
-                    label = label.strip()
+                        score_value = i
+                        label = cell.strip()
+                    else:
+                        score_str, label = cell.split(":", 1)
+                        score_value = int(score_str.strip())
+                        label = label.strip()
                     if score_value < 1 or score_value > 5:
                         raise ValueError(f"Row {idx}: option score must be 1..5")
                     if not label:
@@ -217,14 +260,20 @@ class Command(BaseCommand):
                 q, was_created = Question.objects.get_or_create(
                     dimension=dim,
                     question_text=qt,
-                    defaults={"is_active": is_active},
+                    defaults={"is_active": is_active, "signal_strength": 1},
                 )
                 if was_created:
                     created_q += 1
                 else:
+                    changed_fields = []
                     if q.is_active != is_active:
                         q.is_active = is_active
-                        q.save(update_fields=["is_active"])
+                        changed_fields.append("is_active")
+                    if q.signal_strength != 1:
+                        q.signal_strength = 1
+                        changed_fields.append("signal_strength")
+                    if changed_fields:
+                        q.save(update_fields=changed_fields)
                         updated_q += 1
 
                 for score_value, option_text in DEFAULT_OPTIONS:
