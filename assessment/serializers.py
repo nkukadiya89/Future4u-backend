@@ -11,10 +11,19 @@ class OptionSerializer(serializers.ModelSerializer):
 
 class QuestionSerializer(serializers.ModelSerializer):
     options = OptionSerializer(many=True, read_only=True)
+    mapped_domains = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Question
-        fields = ["id", "question_text", "dimension", "is_active", "options"]
+        fields = [
+            "id",
+            "question_text",
+            "dimension",
+            "signal_strength",
+            "mapped_domains",
+            "is_active",
+            "options",
+        ]
 
 
 class UserResponseSerializer(serializers.ModelSerializer):
