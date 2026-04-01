@@ -22,270 +22,23 @@ TIER_12TH = 3
 TIER_DIPLOMA = 5
 TIER_GRADUATE = 6
 
-# ── Domain dimension affinity matrix ──────────────────────────────────────────
-# Each domain defines how much each dimension contributes to fit.
-# High aptitude user → gets tech/analytical domains
-# High interest/personality → gets creative/people domains
-_DOMAIN_AFFINITY: dict[str, dict[str, float]] = {
-    "ai_data": {
-        "interest": 0.20,
-        "aptitude": 0.50,
-        "personality": 0.10,
-        "work_style": 0.20,
-    },
-    "data_engineering": {
-        "interest": 0.15,
-        "aptitude": 0.55,
-        "personality": 0.10,
-        "work_style": 0.20,
-    },
-    "cybersecurity": {
-        "interest": 0.20,
-        "aptitude": 0.50,
-        "personality": 0.15,
-        "work_style": 0.15,
-    },
-    "cloud_computing": {
-        "interest": 0.15,
-        "aptitude": 0.50,
-        "personality": 0.10,
-        "work_style": 0.25,
-    },
-    "devops": {
-        "interest": 0.15,
-        "aptitude": 0.45,
-        "personality": 0.10,
-        "work_style": 0.30,
-    },
-    "quantum": {
-        "interest": 0.20,
-        "aptitude": 0.60,
-        "personality": 0.10,
-        "work_style": 0.10,
-    },
-    "nanotech": {
-        "interest": 0.25,
-        "aptitude": 0.55,
-        "personality": 0.10,
-        "work_style": 0.10,
-    },
-    "blockchain": {
-        "interest": 0.20,
-        "aptitude": 0.50,
-        "personality": 0.10,
-        "work_style": 0.20,
-    },
-    "robotics": {
-        "interest": 0.25,
-        "aptitude": 0.45,
-        "personality": 0.10,
-        "work_style": 0.20,
-    },
-    "ev_mobility": {
-        "interest": 0.25,
-        "aptitude": 0.40,
-        "personality": 0.10,
-        "work_style": 0.25,
-    },
-    "manufacturing": {
-        "interest": 0.20,
-        "aptitude": 0.35,
-        "personality": 0.15,
-        "work_style": 0.30,
-    },
-    "energy_storage": {
-        "interest": 0.20,
-        "aptitude": 0.45,
-        "personality": 0.10,
-        "work_style": 0.25,
-    },
-    "renewable_energy": {
-        "interest": 0.25,
-        "aptitude": 0.40,
-        "personality": 0.15,
-        "work_style": 0.20,
-    },
-    "space_tech": {
-        "interest": 0.30,
-        "aptitude": 0.50,
-        "personality": 0.10,
-        "work_style": 0.10,
-    },
-    "iot": {
-        "interest": 0.25,
-        "aptitude": 0.45,
-        "personality": 0.10,
-        "work_style": 0.20,
-    },
-    "construction_tech": {
-        "interest": 0.20,
-        "aptitude": 0.35,
-        "personality": 0.15,
-        "work_style": 0.30,
-    },
-    "urban_tech": {
-        "interest": 0.25,
-        "aptitude": 0.40,
-        "personality": 0.15,
-        "work_style": 0.20,
-    },
-    "water_tech": {
-        "interest": 0.25,
-        "aptitude": 0.40,
-        "personality": 0.15,
-        "work_style": 0.20,
-    },
-    "healthtech": {
-        "interest": 0.30,
-        "aptitude": 0.35,
-        "personality": 0.25,
-        "work_style": 0.10,
-    },
-    "biotech": {
-        "interest": 0.25,
-        "aptitude": 0.45,
-        "personality": 0.20,
-        "work_style": 0.10,
-    },
-    "pharma": {
-        "interest": 0.25,
-        "aptitude": 0.45,
-        "personality": 0.20,
-        "work_style": 0.10,
-    },
-    "med_devices": {
-        "interest": 0.25,
-        "aptitude": 0.40,
-        "personality": 0.25,
-        "work_style": 0.10,
-    },
-    "mental_health": {
-        "interest": 0.30,
-        "aptitude": 0.20,
-        "personality": 0.40,
-        "work_style": 0.10,
-    },
-    "fintech": {
-        "interest": 0.25,
-        "aptitude": 0.40,
-        "personality": 0.15,
-        "work_style": 0.20,
-    },
-    "ecommerce": {
-        "interest": 0.30,
-        "aptitude": 0.30,
-        "personality": 0.20,
-        "work_style": 0.20,
-    },
-    "supply_chain": {
-        "interest": 0.20,
-        "aptitude": 0.35,
-        "personality": 0.15,
-        "work_style": 0.30,
-    },
-    "insurance_tech": {
-        "interest": 0.20,
-        "aptitude": 0.40,
-        "personality": 0.20,
-        "work_style": 0.20,
-    },
-    "hrtech": {
-        "interest": 0.25,
-        "aptitude": 0.25,
-        "personality": 0.35,
-        "work_style": 0.15,
-    },
-    "climate_tech": {
-        "interest": 0.35,
-        "aptitude": 0.35,
-        "personality": 0.15,
-        "work_style": 0.15,
-    },
-    "agritech": {
-        "interest": 0.30,
-        "aptitude": 0.35,
-        "personality": 0.15,
-        "work_style": 0.20,
-    },
-    "ar_vr": {
-        "interest": 0.40,
-        "aptitude": 0.30,
-        "personality": 0.20,
-        "work_style": 0.10,
-    },
-    "gaming": {
-        "interest": 0.40,
-        "aptitude": 0.35,
-        "personality": 0.15,
-        "work_style": 0.10,
-    },
-    "creator_economy": {
-        "interest": 0.45,
-        "aptitude": 0.15,
-        "personality": 0.30,
-        "work_style": 0.10,
-    },
-    "digital_marketing": {
-        "interest": 0.40,
-        "aptitude": 0.25,
-        "personality": 0.25,
-        "work_style": 0.10,
-    },
-    "marketing": {
-        "interest": 0.40,
-        "aptitude": 0.20,
-        "personality": 0.30,
-        "work_style": 0.10,
-    },
-    "edtech": {
-        "interest": 0.35,
-        "aptitude": 0.25,
-        "personality": 0.30,
-        "work_style": 0.10,
-    },
-    "legaltech": {
-        "interest": 0.25,
-        "aptitude": 0.40,
-        "personality": 0.25,
-        "work_style": 0.10,
-    },
-    "ai_ethics": {
-        "interest": 0.30,
-        "aptitude": 0.35,
-        "personality": 0.25,
-        "work_style": 0.10,
-    },
-    "traveltech": {
-        "interest": 0.40,
-        "aptitude": 0.20,
-        "personality": 0.30,
-        "work_style": 0.10,
-    },
-    "foodtech": {
-        "interest": 0.35,
-        "aptitude": 0.25,
-        "personality": 0.25,
-        "work_style": 0.15,
-    },
-    "fashiontech": {
-        "interest": 0.45,
-        "aptitude": 0.15,
-        "personality": 0.30,
-        "work_style": 0.10,
-    },
-    "sports_tech": {
-        "interest": 0.40,
-        "aptitude": 0.25,
-        "personality": 0.25,
-        "work_style": 0.10,
-    },
-    "defense_tech": {
-        "interest": 0.25,
-        "aptitude": 0.35,
-        "personality": 0.20,
-        "work_style": 0.20,
-    },
-}
+def _domain_affinity_from_domain(domain) -> dict[str, float] | None:
+    """
+    Domain-level affinity weights are now stored in the DB (Domain master).
+    If weights are not configured, return None and callers will fall back to equal weights.
+    """
+    iw = getattr(domain, "interest_weight", None)
+    aw = getattr(domain, "aptitude_weight", None)
+    pw = getattr(domain, "personality_weight", None)
+    ww = getattr(domain, "work_style_weight", None)
+    if any(v is None for v in (iw, aw, pw, ww)):
+        return None
+    return {
+        "interest": float(iw),
+        "aptitude": float(aw),
+        "personality": float(pw),
+        "work_style": float(ww),
+    }
 
 
 @dataclass(frozen=True)
@@ -515,6 +268,10 @@ def _score_domains_from_stream_codes(
             "domain__domain_name",
             "domain__domain_code",
             "domain__future_relevance_score",
+            "domain__interest_weight",
+            "domain__aptitude_weight",
+            "domain__personality_weight",
+            "domain__work_style_weight",
         )
     )
     if not rows:
@@ -535,21 +292,13 @@ def _score_domains_from_stream_codes(
     for did, stream_w in best_stream_weight_by_domain.items():
         d = domain_ref[did]
         domain_code = getattr(d, "domain_code", "") or ""
-        final = _domain_fit_score(
-            domain_code=domain_code, dim_scores=dim_scores, stream_weight=stream_w
-        )
+        affinity = _domain_affinity_from_domain(d)
+        final = _domain_fit_score(affinity=affinity, dim_scores=dim_scores, stream_weight=stream_w)
         score_by_id[did] = float(final)
 
-        affinity = _DOMAIN_AFFINITY.get(domain_code, {dim: 0.25 for dim in DIMENSIONS})
-        top_dim = max(
-            affinity, key=lambda k: dim_scores.get(k, 0.0) * affinity.get(k, 0.0)
-        )
-        dim_label = {
-            "interest": "interest",
-            "aptitude": "aptitude",
-            "personality": "personality fit",
-            "work_style": "work style",
-        }.get(top_dim, top_dim)
+        affinity_for_reason = affinity or {dim: 0.25 for dim in DIMENSIONS}
+        top_dim = max(affinity_for_reason, key=lambda k: dim_scores.get(k, 0.0) * affinity_for_reason.get(k, 0.0))
+        dim_label = {"interest": "interest", "aptitude": "aptitude", "personality": "personality fit", "work_style": "work style"}.get(top_dim, top_dim)
         reason = f"Strong {dim_label} match for future stream options"
         items.append(
             {
@@ -569,16 +318,12 @@ def _score_domains_from_stream_codes(
 
 # ── Domain scoring (shared across tiers) ──────────────────────────────────────
 
-
-def _domain_fit_score(
-    *, domain_code: str, dim_scores: dict[str, float], stream_weight: int
-) -> float:
+def _domain_fit_score(*, affinity: dict[str, float] | None, dim_scores: dict[str, float], stream_weight: int) -> float:
     """
     Score = 70% from how well user's dimension scores match domain's affinity profile
             30% from stream-domain mapping weight (relevance of stream to domain)
     This ensures diverse results — a creative user gets creative domains regardless of stream.
     """
-    affinity = _DOMAIN_AFFINITY.get(domain_code)
     if affinity:
         fit = sum(dim_scores.get(d, 0.0) * w for d, w in affinity.items())
     else:
@@ -593,21 +338,12 @@ def _score_domains(
 ) -> tuple[list[dict], dict, set]:
     rows = list(
         StreamDomainMapping.objects.filter(
-            stream_id=ctx.stream_id,
-            deleted=False,
-            is_active=True,
-            domain__deleted=False,
-            domain__is_active=True,
-        )
-        .select_related("domain")
-        .only(
-            "id",
-            "weight_score",
-            "domain__id",
-            "domain__domain_name",
-            "domain__domain_code",
-            "domain__future_relevance_score",
-        )
+            stream_id=ctx.stream_id, deleted=False, is_active=True,
+            domain__deleted=False, domain__is_active=True,
+        ).select_related("domain")
+        .only("id", "weight_score", "domain__id", "domain__domain_name",
+              "domain__domain_code", "domain__future_relevance_score",
+              "domain__interest_weight", "domain__aptitude_weight", "domain__personality_weight", "domain__work_style_weight")
     )
     if not rows:
         return [], {}, set()
@@ -618,23 +354,15 @@ def _score_domains(
     for m in rows:
         d = m.domain
         stream_w = int(getattr(m, "weight_score", 0) or 0)
-        domain_code = getattr(d, "domain_code", "") or ""
-        final = _domain_fit_score(
-            domain_code=domain_code, dim_scores=dim_scores, stream_weight=stream_w
-        )
+        affinity = _domain_affinity_from_domain(d)
+        final = _domain_fit_score(affinity=affinity, dim_scores=dim_scores, stream_weight=stream_w)
         score_by_id[d.pk] = float(final)
 
         # Build human-readable reason from top contributing dimension for this domain
-        affinity = _DOMAIN_AFFINITY.get(domain_code, {d: 0.25 for d in DIMENSIONS})
-        top_dim = max(
-            affinity, key=lambda k: dim_scores.get(k, 0.0) * affinity.get(k, 0.0)
-        )
-        dim_label = {
-            "interest": "interest",
-            "aptitude": "aptitude",
-            "personality": "personality fit",
-            "work_style": "work style",
-        }.get(top_dim, top_dim)
+        affinity_for_reason = affinity or {d: 0.25 for d in DIMENSIONS}
+        top_dim = max(affinity_for_reason, key=lambda k: dim_scores.get(k, 0.0) * affinity_for_reason.get(k, 0.0))
+        dim_label = {"interest": "interest", "aptitude": "aptitude",
+                     "personality": "personality fit", "work_style": "work style"}.get(top_dim, top_dim)
         rel = getattr(d, "future_relevance_score", None)
         rel_note = (
             " · high future relevance"

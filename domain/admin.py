@@ -49,6 +49,10 @@ class DomainAdmin(BaseAdmin):
         "parent",
         "is_active",
         "deleted",
+        "interest_weight",
+        "aptitude_weight",
+        "personality_weight",
+        "work_style_weight",
         "score_display",
         "created_at",
         "row_actions",
@@ -78,6 +82,12 @@ class DomainAdmin(BaseAdmin):
                     "parent_acceptance_level",
                     "future_relevance_score",
                     "description",
+                    (
+                        "interest_weight",
+                        "aptitude_weight",
+                        "personality_weight",
+                        "work_style_weight",
+                    ),
                     "is_active",
                 )
             },

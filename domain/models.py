@@ -2,6 +2,8 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 
@@ -23,6 +25,29 @@ class Domain(MasterBaseModel):
     future_relevance_score = models.PositiveSmallIntegerField()
     description = models.TextField(blank=True)
 
+    # How much each assessment dimension contributes to this domain's fit score.
+    # Nullable to allow "use default/fallback" behavior.
+    interest_weight = models.FloatField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+    )
+    aptitude_weight = models.FloatField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+    )
+    personality_weight = models.FloatField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+    )
+    work_style_weight = models.FloatField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+    )
+
     class Meta:
         db_table = "domain"
         constraints = [
@@ -39,6 +64,30 @@ class Domain(MasterBaseModel):
 
     def __str__(self):
         return f"{self.domain_code} - {self.domain_name}"
+
+    def clean(self):
+        """
+        Validation for dimension affinity weights:
+        - either all 4 weights are null (meaning: fallback weights will be used), OR all 4 are provided
+        - each weight must be in [0, 1] (field validators)
+        - sum must be ~1.0 when provided
+        """
+        super().clean()
+        fields = (
+            "interest_weight",
+            "aptitude_weight",
+            "personality_weight",
+            "work_style_weight",
+        )
+        values = [getattr(self, f) for f in fields]
+        provided = [v for v in values if v is not None]
+        if not provided:
+            return
+        if len(provided) != 4:
+            raise ValidationError({f: "Provide all 4 weights, or leave all blank." for f in fields})
+        total = float(sum(provided))
+        if abs(total - 1.0) > 0.001:
+            raise ValidationError({f: "Weights must sum to 1.0." for f in fields})
 
 
 class DomainImportBatch(models.Model):
