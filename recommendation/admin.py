@@ -47,7 +47,7 @@ def _pretty_json(value) -> str:
         return str(value)
 
 
-def _qa_relevant_questions(*, stream_id, per_dimension: int = 3) -> list[Question]:
+def _qa_relevant_questions(*, stream_id, per_dimension: int = 5) -> list[Question]:
     """
     Prefer questions mapped to domains relevant to the selected stream.
     Fallback to all active questions if no mapping exists.
@@ -186,7 +186,7 @@ def _recommendation_qa_view(request):
                     )
 
             effective_stream_id = ctx.stream_id if ctx else None
-            questions = _qa_relevant_questions(stream_id=effective_stream_id, per_dimension=3)
+            questions = _qa_relevant_questions(stream_id=effective_stream_id, per_dimension=5)
             if questions:
                 qids = [q.id for q in questions]
                 existing_answers = {

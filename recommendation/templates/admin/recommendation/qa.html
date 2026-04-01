@@ -30,12 +30,12 @@
 
     {% if questions %}
       <div class="module">
-        <h2>Assessment (quick QA: 3 per dimension)</h2>
+        <h2>Assessment (QA: 5 per dimension)</h2>
         <form method="post">
           {% csrf_token %}
           <input type="hidden" name="_qa_submit" value="1" />
           <p class="help">
-            Showing a small set for QA: <strong>3 questions per dimension</strong> (12 total).
+            Showing a focused set for QA: <strong>5 questions per dimension</strong> (20 total).
             Questions are chosen from the selected stream’s mapped domains when available (otherwise from all active questions),
             prioritizing higher <code>signal_strength</code>.
           </p>

@@ -69,27 +69,64 @@ def _score_1_5_to_0_100(value: float) -> float:
 
 
 def _assessment_dimension_scores(*, user_id: int) -> dict[str, float]:
-    rows = (
-        UserResponse.objects.filter(user_id=user_id, question__is_active=True)
-        .values("question__dimension")
-        .annotate(avg=Avg("score_value"), answered=Count("id"))
-    )
-    totals = {
-        r["dimension"]: r["total"]
-        for r in Question.objects.filter(is_active=True)
-        .values("dimension")
-        .annotate(total=Count("id"))
-    }
+    """
+    Returns dimension scores in 0..100 based on answered questions only.
+
+    Important: We intentionally DO NOT scale by (answered / total_question_bank).
+    Scaling by the total number of questions in the DB makes scores unusably small
+    when the product asks only a small number of questions (e.g., 5 per dimension).
+    """
     by_dim: dict[str, float] = {d: 0.0 for d in DIMENSIONS}
-    for r in rows:
+
+    # Weighted average of answered questions using signal_strength.
+    # This makes "high-signal" questions contribute more to the dimension score.
+    resp_rows = (
+        UserResponse.objects.filter(user_id=user_id, question__is_active=True)
+        .values("question__dimension", "score_value", "question__signal_strength")
+    )
+    sums: dict[str, float] = {d: 0.0 for d in DIMENSIONS}
+    weights: dict[str, float] = {d: 0.0 for d in DIMENSIONS}
+
+    for r in resp_rows:
         dim = r.get("question__dimension")
-        if dim not in DIMENSIONS or r.get("avg") is None:
+        if dim not in DIMENSIONS:
             continue
-        raw = _score_1_5_to_0_100(float(r["avg"]))
-        answered = int(r.get("answered") or 0)
-        total = int(totals.get(dim) or 1)
-        by_dim[dim] = raw * (answered / total)
+        try:
+            score = float(r.get("score_value") or 0.0)
+            w = float(r.get("question__signal_strength") or 1.0)
+        except (TypeError, ValueError):
+            continue
+        if w <= 0:
+            w = 1.0
+        sums[dim] += score * w
+        weights[dim] += w
+
+    for dim in DIMENSIONS:
+        if weights[dim] <= 0:
+            by_dim[dim] = 0.0
+            continue
+        avg_1_5 = sums[dim] / weights[dim]
+        by_dim[dim] = _score_1_5_to_0_100(avg_1_5)
+
     return by_dim
+
+
+def _assessment_confidence(*, user_id: int, target_per_dimension: int = 5) -> tuple[dict[str, float], float]:
+    """
+    Confidence is computed separately from the score.
+    This lets recommendations remain stable/strong with partial data while still
+    reflecting how much assessment input we actually have.
+    """
+    answered = {
+        r["question__dimension"]: int(r["answered"] or 0)
+        for r in UserResponse.objects.filter(user_id=user_id, question__is_active=True)
+        .values("question__dimension")
+        .annotate(answered=Count("id"))
+    }
+    t = max(1, int(target_per_dimension))
+    by_dim = {d: min(1.0, (answered.get(d, 0) / t)) for d in DIMENSIONS}
+    overall = sum(by_dim.values()) / len(DIMENSIONS)
+    return by_dim, overall
 
 
 def _top_factor(scores: dict[str, float]) -> tuple[str, float]:
@@ -249,7 +286,10 @@ def _recommend_streams(*, dim_scores: dict[str, float]) -> list[dict[str, Any]]:
 
 
 def _score_domains_from_stream_codes(
-    *, stream_codes: list[str], dim_scores: dict[str, float]
+    *,
+    stream_codes: list[str],
+    dim_scores: dict[str, float],
+    confidence_overall: float,
 ) -> tuple[list[dict], dict, set]:
     rows = list(
         StreamDomainMapping.objects.filter(
@@ -293,7 +333,12 @@ def _score_domains_from_stream_codes(
         d = domain_ref[did]
         domain_code = getattr(d, "domain_code", "") or ""
         affinity = _domain_affinity_from_domain(d)
-        final = _domain_fit_score(affinity=affinity, dim_scores=dim_scores, stream_weight=stream_w)
+        final = _domain_fit_score(
+            affinity=affinity,
+            dim_scores=dim_scores,
+            stream_weight=stream_w,
+            confidence_overall=confidence_overall,
+        )
         score_by_id[did] = float(final)
 
         affinity_for_reason = affinity or {dim: 0.25 for dim in DIMENSIONS}
@@ -318,23 +363,38 @@ def _score_domains_from_stream_codes(
 
 # ── Domain scoring (shared across tiers) ──────────────────────────────────────
 
-def _domain_fit_score(*, affinity: dict[str, float] | None, dim_scores: dict[str, float], stream_weight: int) -> float:
+def _domain_fit_score(
+    *,
+    affinity: dict[str, float] | None,
+    dim_scores: dict[str, float],
+    stream_weight: int,
+    confidence_overall: float = 1.0,
+) -> float:
     """
     Score = 70% from how well user's dimension scores match domain's affinity profile
             30% from stream-domain mapping weight (relevance of stream to domain)
     This ensures diverse results — a creative user gets creative domains regardless of stream.
     """
+    confidence_overall = max(0.0, min(1.0, float(confidence_overall)))
     if affinity:
-        fit = sum(dim_scores.get(d, 0.0) * w for d, w in affinity.items())
+        fit_assessment = sum(dim_scores.get(d, 0.0) * w for d, w in affinity.items())
     else:
         # fallback for domains not in affinity map: use equal weights
-        fit = sum(dim_scores.get(d, 0.0) for d in DIMENSIONS) / len(DIMENSIONS)
+        fit_assessment = sum(dim_scores.get(d, 0.0) for d in DIMENSIONS) / len(DIMENSIONS)
+
+    # Blend with a neutral fallback when assessment coverage is partial.
+    # This keeps scores "strong" (not near-zero) when user answered only a few questions.
+    fit_fallback = 50.0
+    fit = (confidence_overall * fit_assessment) + ((1.0 - confidence_overall) * fit_fallback)
     # Normalise stream weight to 0-100 scale and blend
     return (fit * 0.70) + (stream_weight * 0.30)
 
 
 def _score_domains(
-    *, ctx: _UserContext, dim_scores: dict[str, float]
+    *,
+    ctx: _UserContext,
+    dim_scores: dict[str, float],
+    confidence_overall: float,
 ) -> tuple[list[dict], dict, set]:
     rows = list(
         StreamDomainMapping.objects.filter(
@@ -355,7 +415,12 @@ def _score_domains(
         d = m.domain
         stream_w = int(getattr(m, "weight_score", 0) or 0)
         affinity = _domain_affinity_from_domain(d)
-        final = _domain_fit_score(affinity=affinity, dim_scores=dim_scores, stream_weight=stream_w)
+        final = _domain_fit_score(
+            affinity=affinity,
+            dim_scores=dim_scores,
+            stream_weight=stream_w,
+            confidence_overall=confidence_overall,
+        )
         score_by_id[d.pk] = float(final)
 
         # Build human-readable reason from top contributing dimension for this domain
@@ -510,40 +575,18 @@ def generate_recommendation(user_id: int, *, ctx_override: _UserContext | None =
         )
 
     dim_scores = _assessment_dimension_scores(user_id=user_id)
+    _, confidence_overall = _assessment_confidence(user_id=user_id, target_per_dimension=5)
     top_dim, _ = _top_factor(dim_scores)
     seq = ctx.education_sequence
 
     # ── TIER 1: 10th grade ────────────────────────────────────────────────────
     if seq <= TIER_10TH:
         recommended_streams = _recommend_streams(dim_scores=dim_scores)
-        stream_codes = [
-            s.get("stream_code") for s in recommended_streams if s.get("stream_code")
-        ]
-        top_domains, domain_score_by_id, top_domain_pk_set = (
-            _score_domains_from_stream_codes(
-                stream_codes=stream_codes,
-                dim_scores=dim_scores,
-            )
-        )
-        top_careers = (
-            _score_careers(
-                top_domain_pk_set=top_domain_pk_set,
-                domain_score_by_id=domain_score_by_id,
-                top_dim=top_dim,
-                edu_seq=seq,
-                filter_by_edu=False,
-            )
-            if top_domain_pk_set
-            else []
-        )
-        skill_gaps = (
-            _score_skill_gaps(
-                top_domain_pk_set=top_domain_pk_set,
-                user_id=user_id,
-                dim_scores=dim_scores,
-            )
-            if top_domain_pk_set
-            else []
+        stream_codes = [s.get("stream_code") for s in recommended_streams if s.get("stream_code")]
+        top_domains, domain_score_by_id, top_domain_pk_set = _score_domains_from_stream_codes(
+            stream_codes=stream_codes,
+            dim_scores=dim_scores,
+            confidence_overall=confidence_overall,
         )
         # Keep only stronger signals for cleaner 10th-grade output.
         strong_top_careers = [
@@ -569,7 +612,7 @@ def generate_recommendation(user_id: int, *, ctx_override: _UserContext | None =
 
     # ── TIER 2: 12th grade ────────────────────────────────────────────────────
     if seq == TIER_12TH:
-        top_domains, _, _ = _score_domains(ctx=ctx, dim_scores=dim_scores)
+        top_domains, _, _ = _score_domains(ctx=ctx, dim_scores=dim_scores, confidence_overall=confidence_overall)
         if not top_domains:
             return _empty("No domain mappings found for your stream.")
         return {
@@ -585,7 +628,7 @@ def generate_recommendation(user_id: int, *, ctx_override: _UserContext | None =
     # ── TIER 3: ITI / Diploma ─────────────────────────────────────────────────
     if seq <= TIER_DIPLOMA:
         top_domains, domain_score_by_id, top_domain_pk_set = _score_domains(
-            ctx=ctx, dim_scores=dim_scores
+            ctx=ctx, dim_scores=dim_scores, confidence_overall=confidence_overall
         )
         if not top_domains:
             return _empty("No domain mappings found for your stream.")
@@ -608,7 +651,7 @@ def generate_recommendation(user_id: int, *, ctx_override: _UserContext | None =
 
     # ── TIER 4: Graduate+ ─────────────────────────────────────────────────────
     top_domains, domain_score_by_id, top_domain_pk_set = _score_domains(
-        ctx=ctx, dim_scores=dim_scores
+        ctx=ctx, dim_scores=dim_scores, confidence_overall=confidence_overall
     )
     if not top_domains:
         return _empty("No domain mappings found for your stream.")
