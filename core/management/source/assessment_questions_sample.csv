@@ -335,3 +335,57 @@ personality,"I am adaptable and flexible","traveltech",3,1,Strongly Agree,Agree,
 personality,"I enjoy interacting with people","traveltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
 work_style,"I prefer dynamic environments","traveltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
 work_style,"I enjoy service-oriented work","traveltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in protecting digital systems from cyber threats","cybersecurity",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy learning about hacking techniques and how to defend against them","cybersecurity",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I find network security and data protection fascinating","cybersecurity",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can analyze security vulnerabilities in systems","cybersecurity",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I am good at identifying patterns in data that indicate threats","cybersecurity",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am methodical and thorough when investigating problems","cybersecurity",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I stay calm under pressure when systems are under attack","cybersecurity",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer working in high-stakes environments where security matters","cybersecurity",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy continuously learning about new cyber threats","cybersecurity",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in how everyday devices connect to the internet","iot",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy building smart home or automation systems","iot",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I find connected devices and sensor networks exciting","iot",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand how hardware and software interact in embedded systems","iot",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I am good at troubleshooting connectivity issues in devices","iot",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy tinkering with electronics and gadgets","iot",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am curious about how physical and digital worlds merge","iot",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer hands-on technical work with devices and systems","iot",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy working on projects that blend hardware and software","iot",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in creating campaigns that reach large audiences","digital_marketing",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy analyzing what makes content go viral on social media","digital_marketing",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I find SEO and online advertising strategies fascinating","digital_marketing",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can interpret analytics data to improve marketing performance","digital_marketing",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I am good at crafting messages that resonate with target audiences","digital_marketing",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am creative and enjoy experimenting with new content formats","digital_marketing",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am persuasive and enjoy influencing people's decisions","digital_marketing",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer fast-paced work with measurable results","digital_marketing",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy collaborating with creative and business teams","digital_marketing",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in understanding human emotions and mental wellbeing","mental_health",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy helping people work through personal challenges","mental_health",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I find psychology and behavioral science fascinating","mental_health",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can listen actively and understand people's emotional states","mental_health",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I am good at identifying signs of stress or anxiety in others","mental_health",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am empathetic and patient with people in distress","mental_health",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I remain composed and supportive in emotionally charged situations","mental_health",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer working directly with people rather than machines","mental_health",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy roles that involve counseling or coaching others","mental_health",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in how medical devices diagnose and treat diseases","med_devices",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy learning about the engineering behind healthcare equipment","med_devices",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I find the intersection of biology and technology exciting","med_devices",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand technical specifications of medical instruments","med_devices",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I am good at applying scientific knowledge to solve health problems","med_devices",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am precise and careful when working with sensitive equipment","med_devices",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I value accuracy and safety above speed","med_devices",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer working in clinical or laboratory environments","med_devices",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy roles that directly improve patient outcomes","med_devices",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in how drugs are developed and tested","pharma",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy studying chemistry and its applications in medicine","pharma",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I find pharmaceutical research and clinical trials fascinating","pharma",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand complex chemical and biological processes","pharma",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I am good at following precise protocols and procedures","pharma",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am detail-oriented and methodical in laboratory work","pharma",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am patient and persistent when experiments take time","pharma",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer structured research environments with clear protocols","pharma",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy contributing to discoveries that improve human health","pharma",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree

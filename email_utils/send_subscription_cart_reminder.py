@@ -1,7 +1,6 @@
 import logging
 import os
 from datetime import timedelta
-import smtplib
 
 from decouple import config
 from django.conf import settings
@@ -10,11 +9,6 @@ from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils.timezone import now
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from django.shortcuts import HttpResponse
-
 
 from subscription.models import SubscriptionCart
 from utils.email_logger import log_email_failed, log_email_sent
@@ -24,18 +18,17 @@ logger = logging.getLogger(__name__)
 
 
 def send_subscription_cart_reminder_email(cart_items, company, user_email):
+    from_email = settings.DEFAULT_FROM_EMAIL
     try:
-        from_email = settings.DEFAULT_FROM_EMAIL
         app_url = config('APP_URL')
-        
+
         cart_data = []
         for item in cart_items:
             business_setting = BusinessSetting.objects.filter(company_id=company.id).first()
-            
-            is_gujarat = False
-            if business_setting and business_setting.state:
-                is_gujarat = business_setting.state.name.lower() == "gujarat"
-            
+            is_gujarat = bool(
+                business_setting and business_setting.state
+                and business_setting.state.name.lower() == "gujarat"
+            )
             if is_gujarat:
                 sgst_rate = business_setting.sgst if business_setting else 9
                 cgst_rate = business_setting.cgst if business_setting else 9
@@ -44,7 +37,7 @@ def send_subscription_cart_reminder_email(cart_items, company, user_email):
                 sgst_rate = None
                 cgst_rate = business_setting.cgst if business_setting else 18
                 igst_rate = business_setting.igst if business_setting else 18
-            
+
             cart_data.append({
                 'package_name': item.subscription.package_name,
                 'quantity': item.quantity,
@@ -56,21 +49,18 @@ def send_subscription_cart_reminder_email(cart_items, company, user_email):
                 'sgst_rate': sgst_rate,
                 'igst_rate': igst_rate,
             })
-        
+
         context = {
             'company_name': company.name,
             'person_name': company.name,
             'cart_items': cart_data,
-            # 'checkout_url': f"{app_url}subscription-cart/checkout/",
             'cart_url': f"{app_url}cart-summary",
         }
-        
-        # Render email content
+
         html_content = render_to_string('subscription-cart-reminder.html', context)
         text_content = strip_tags(html_content)
-        
-        # Create email
         subject = f"Complete Your Subscription Purchase - {company.name}"
+
         email = EmailMultiAlternatives(
             subject=subject,
             body=text_content,
@@ -78,59 +68,19 @@ def send_subscription_cart_reminder_email(cart_items, company, user_email):
             to=[user_email],
         )
         email.attach_alternative(html_content, "text/html")
-        
-        # Send email
         email.send()
-        
-        # Attach logo image
-        try:
-            msg = MIMEMultipart()
-            msg["From"] = from_email
-            msg["To"] = user_email
-            msg["Subject"] = subject
-            
-            html_part = MIMEText(html_content, "html")
-            msg.attach(html_part)
-            
-            BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            url = os.path.join(BASE_DIR, "static/images/e-switch-h-final.png")
-            with open(url, "rb") as image_file:
-                img_data = image_file.read()
-            msImage = MIMEImage(img_data)
-            msImage.add_header("Content-ID", "<image1>")
-            msg.attach(msImage)
-            
-            # Send email with logo
-            try:
-                mail_server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-                mail_server.ehlo()
-                mail_server.login(config("ADMIN_EMAIL"), config("EMAIL_PASSWORD"))
-                mail_server.sendmail(config("ADMIN_EMAIL"), msg["To"].split(", "), msg.as_string())
-                mail_server.quit()
-                return HttpResponse("Mail Sent", status=200)
 
-            except Exception as e:
-                return HttpResponse(f"Mail could not be sent: {str(e)}", status=500)
-            
-        except Exception as logo_error:
-            # If logo attachment fails, the basic email was already sent
-            logger.warning(f"Logo attachment failed but email was sent: {str(logo_error)}")
-        
-        # Log successful email
         log_email_sent(
             email_obj=email,
             email_type="cart_reminder",
             related_company=company,
             sender_id=1,
         )
-        
-        logger.info(f"Subscription cart reminder email sent successfully to {user_email}")
+        logger.info(f"Subscription cart reminder email sent to {user_email}")
         return True
-        
+
     except Exception as e:
         logger.error(f"Failed to send subscription cart reminder email to {user_email}: {str(e)}")
-        
-        # Log failed email
         log_email_failed(
             recipient_email=user_email,
             subject="Subscription Cart Reminder",
@@ -140,7 +90,6 @@ def send_subscription_cart_reminder_email(cart_items, company, user_email):
             related_company=company,
             sender_id=1,
         )
-        
         return False
 
 
@@ -164,8 +113,7 @@ def check_and_send_cart_reminders():
             ).filter(
                 Q(last_reminder_sent__lt=cutoff_time) | Q(last_reminder_sent__isnull=True)
             ).select_related('company', 'subscription')
-        except:
-            # Fallback if last_reminder_sent field doesn't exist yet
+        except Exception:
             carts_needing_reminder = SubscriptionCart.objects.filter(
                 deleted=False,
                 created_at__lt=cutoff_time,
@@ -212,9 +160,8 @@ def check_and_send_cart_reminders():
                     try:
                         SubscriptionCart.objects.filter(
                             id__in=[item.id for item in cart_items]
-                        ).update(last_reminder_sent=now)
-                    except:
-                        # Field doesn't exist - skip update
+                        ).update(last_reminder_sent=now())
+                    except Exception:
                         pass
                     
                     reminders_sent += 1
