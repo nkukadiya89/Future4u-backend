@@ -1,0 +1,55 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content %}
+  <div class="content">
+    <p>
+      This page runs the recommendation engine for a selected user and shows diagnostics.
+      It does not modify any data.
+    </p>
+
+    <form method="get" style="margin: 16px 0;">
+      <fieldset class="module aligned">
+        {{ form.as_p }}
+      </fieldset>
+      <div class="submit-row">
+        <input type="submit" class="default" value="Run recommendation" />
+      </div>
+    </form>
+
+    <p class="help">
+      Tip: Use <strong>Education Level</strong> and <strong>Stream</strong> overrides to simulate different user profiles.
+      Overrides are not saved.
+    </p>
+
+    {% if error %}
+      <div class="messagelist">
+        <ul class="errorlist">
+          <li>{{ error }}</li>
+        </ul>
+      </div>
+    {% endif %}
+
+    {% if diagnostics_pretty %}
+      <div class="module">
+        <h2>Diagnostics</h2>
+        <pre style="white-space: pre-wrap; word-break: break-word;">{{ diagnostics_pretty }}</pre>
+      </div>
+    {% endif %}
+
+    {% if dim_scores_pretty %}
+      <div class="module">
+        <h2>Dimension scores</h2>
+        <pre style="white-space: pre-wrap; word-break: break-word;">{{ dim_scores_pretty }}</pre>
+      </div>
+    {% endif %}
+
+    {% if result_pretty %}
+      <div class="module">
+        <h2>Engine output</h2>
+        <pre style="white-space: pre-wrap; word-break: break-word;">{{ result_pretty }}</pre>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
+

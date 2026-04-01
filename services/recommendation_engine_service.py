@@ -498,13 +498,12 @@ def _score_skill_gaps(
 
 # ── Main entry point ───────────────────────────────────────────────────────────
 
-
-def generate_recommendation(user_id: int) -> dict[str, Any]:
+def generate_recommendation(user_id: int, *, ctx_override: _UserContext | None = None) -> dict[str, Any]:
     User = get_user_model()
     if not User.objects.filter(pk=user_id).exists():
         return _empty("User not found.")
 
-    ctx = _fetch_context(user_id=user_id)
+    ctx = ctx_override or _fetch_context(user_id=user_id)
     if ctx is None:
         return _empty(
             "Complete your profile (education level + stream) to get recommendations."
