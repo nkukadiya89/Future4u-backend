@@ -1,30 +1,337 @@
 dimension,question_text,mapped_domains,signal_strength,is_active,option_1,option_2,option_3,option_4,option_5
-interest,"I enjoy analyzing data to find patterns and insights","ai_data,fintech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-interest,"I am curious about how artificial intelligence works","ai_data",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-interest,"I like understanding how money, markets, and investments work","fintech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-interest,"I enjoy creating visual designs or digital content","design,marketing",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-interest,"I am interested in improving healthcare using technology","healthtech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-interest,"I like learning about farming, sustainability, and agriculture","agritech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-interest,"I am interested in electric vehicles and future transportation","ev",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-interest,"I enjoy playing or understanding sports deeply","sports",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-aptitude,"I can understand technical concepts like programming or systems easily","ai_data,ev",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-aptitude,"I am good at handling numbers, calculations, and financial data","fintech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-aptitude,"I can understand biological or health-related concepts well","healthtech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-aptitude,"I have strong creativity and visualization skills","design,marketing",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-aptitude,"I can understand mechanical or electrical systems easily","ev",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-aptitude,"I perform well in physically demanding activities","sports",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-aptitude,"I can learn practical and field-based skills quickly","agritech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-personality,"I enjoy solving complex problems independently","ai_data,ev",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-personality,"I like helping people improve their health or well-being","healthtech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-personality,"I am highly competitive and driven to win","sports",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-personality,"I enjoy persuading or influencing people","marketing",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-personality,"I prefer structured and logical thinking","ai_data,fintech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-personality,"I am patient and consistent in long-term efforts","agritech,healthtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-personality,"I enjoy mentoring or guiding others","sports,healthtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-work_style,"I prefer working in a highly technical and analytical environment","ai_data,fintech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-work_style,"I like working in creative and flexible environments","design,marketing",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-work_style,"I prefer field work rather than desk jobs","agritech,sports",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-work_style,"I am comfortable working in labs or clinical environments","healthtech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-work_style,"I enjoy working on machines or hardware systems","ev",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-work_style,"I like interacting with people frequently in my work","marketing,healthtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
-work_style,"I prefer structured routines over flexible schedules","fintech,ai_data",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in how products are manufactured at scale","manufacturing",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy understanding production processes","manufacturing",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand mechanical systems and workflows","manufacturing,robotics",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy optimizing processes for efficiency","manufacturing,supply_chain",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am detail-oriented in physical systems","manufacturing",2,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I like structured environments","manufacturing,supply_chain",2,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer working in factories or production units","manufacturing",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy hands-on industrial work","manufacturing,robotics",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in ethical implications of AI decisions","ai_ethics",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I like thinking about fairness in technology","ai_ethics",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can evaluate ethical dilemmas logically","ai_ethics,legaltech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy analyzing policy frameworks","ai_ethics,legaltech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I value fairness over speed","ai_ethics",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I prefer structured rules","ai_ethics",2,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer compliance-driven work","ai_ethics,legaltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy auditing systems","ai_ethics",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in immersive technologies like AR/VR","ar_vr",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy creating interactive experiences","ar_vr,gaming",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand 3D environments and design","ar_vr,gaming",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy experimenting with new interfaces","ar_vr",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am creative with visuals","ar_vr,gaming",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy innovation-driven work","ar_vr",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer creative tech environments","ar_vr",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy prototyping experiences","ar_vr",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in biological sciences and innovation","biotech,healthtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy studying living systems","biotech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand scientific experiments","biotech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy lab-based problem solving","biotech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am patient in research work","biotech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy scientific thinking","biotech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer lab environments","biotech,pharma",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy structured research work","biotech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in decentralized systems","blockchain",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy learning about crypto technologies","blockchain",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand distributed systems","blockchain",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving system-level problems","blockchain,cloud_computing",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am curious about emerging tech","blockchain",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I like independent thinking","blockchain",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer startup environments","blockchain",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy innovation-driven work","blockchain",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy working with cloud platforms and infrastructure","cloud_computing",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I like understanding how scalable systems are built","cloud_computing",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand distributed systems and networking","cloud_computing,devops",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving infrastructure-related problems","cloud_computing,devops",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I prefer structured and reliable systems","cloud_computing",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I value stability over experimentation","cloud_computing",2,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy managing backend systems and services","cloud_computing",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer working on system architecture","cloud_computing",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy automating development and deployment processes","devops",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I like improving system performance and reliability","devops",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can write scripts to automate tasks","devops",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy debugging deployment issues","devops",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am comfortable handling operational challenges","devops",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy working with both dev and ops teams","devops",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer continuous improvement workflows","devops",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy working in fast-paced environments","devops",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy working with large datasets","data_engineering",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I like building data pipelines","data_engineering",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can structure and clean data efficiently","data_engineering",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy working with databases and ETL processes","data_engineering",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am detail-oriented with data","data_engineering",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I prefer logical workflows","data_engineering",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy backend data processing work","data_engineering",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer working with structured data systems","data_engineering",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy building online stores and platforms","ecommerce",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I like understanding customer buying behavior","ecommerce,marketing",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can analyze product performance data","ecommerce",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy optimizing sales funnels","ecommerce",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am business-oriented","ecommerce",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy customer-focused thinking","ecommerce",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer dynamic business environments","ecommerce",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy managing digital platforms","ecommerce",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in improving education using technology","edtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy helping others learn","edtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can simplify complex topics for others","edtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy creating learning materials","edtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am patient when teaching others","edtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy mentoring people","edtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer collaborative environments","edtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy structured learning systems","edtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in managing people and teams","hrtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy understanding human behavior at work","hrtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can assess people’s strengths and weaknesses","hrtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy designing HR processes","hrtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am empathetic towards others","hrtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy resolving conflicts","hrtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer people-oriented roles","hrtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy team-based environments","hrtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in insurance systems and risk management","insurance_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy understanding financial risk models","insurance_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can analyze risk scenarios logically","insurance_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy evaluating policy frameworks","insurance_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am cautious in decision-making","insurance_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I value risk assessment over speed","insurance_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer structured environments","insurance_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy analytical work","insurance_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in laws and legal systems","legaltech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy analyzing legal cases","legaltech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can interpret rules and regulations","legaltech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy logical reasoning in legal contexts","legaltech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I value fairness and justice","legaltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I prefer structured arguments","legaltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy policy-driven work","legaltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer research-oriented environments","legaltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy working with cloud platforms and infrastructure","cloud_computing",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I like understanding how scalable systems are built","cloud_computing",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand distributed systems and networking","cloud_computing,devops",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving infrastructure-related problems","cloud_computing,devops",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I prefer structured and reliable systems","cloud_computing",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I value stability over experimentation","cloud_computing",2,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy managing backend systems and services","cloud_computing",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer working on system architecture","cloud_computing",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy automating development and deployment processes","devops",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I like improving system performance and reliability","devops",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can write scripts to automate tasks","devops",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy debugging deployment issues","devops",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am comfortable handling operational challenges","devops",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy working with both dev and ops teams","devops",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer continuous improvement workflows","devops",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy working in fast-paced environments","devops",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy working with large datasets","data_engineering",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I like building data pipelines","data_engineering",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can structure and clean data efficiently","data_engineering",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy working with databases and ETL processes","data_engineering",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am detail-oriented with data","data_engineering",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I prefer logical workflows","data_engineering",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy backend data processing work","data_engineering",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer working with structured data systems","data_engineering",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy building online stores and platforms","ecommerce",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I like understanding customer buying behavior","ecommerce,marketing",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can analyze product performance data","ecommerce",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy optimizing sales funnels","ecommerce",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am business-oriented","ecommerce",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy customer-focused thinking","ecommerce",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer dynamic business environments","ecommerce",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy managing digital platforms","ecommerce",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in improving education using technology","edtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy helping others learn","edtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can simplify complex topics for others","edtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy creating learning materials","edtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am patient when teaching others","edtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy mentoring people","edtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer collaborative environments","edtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy structured learning systems","edtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in managing people and teams","hrtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy understanding human behavior at work","hrtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can assess people’s strengths and weaknesses","hrtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy designing HR processes","hrtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am empathetic towards others","hrtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy resolving conflicts","hrtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer people-oriented roles","hrtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy team-based environments","hrtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in insurance systems and risk management","insurance_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy understanding financial risk models","insurance_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can analyze risk scenarios logically","insurance_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy evaluating policy frameworks","insurance_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am cautious in decision-making","insurance_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I value risk assessment over speed","insurance_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer structured environments","insurance_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy analytical work","insurance_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in laws and legal systems","legaltech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy analyzing legal cases","legaltech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can interpret rules and regulations","legaltech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy logical reasoning in legal contexts","legaltech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I value fairness and justice","legaltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I prefer structured arguments","legaltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy policy-driven work","legaltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer research-oriented environments","legaltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in solving climate-related challenges","climate_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I care about sustainability and environmental impact","climate_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand environmental systems and data","climate_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving large-scale environmental problems","climate_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am motivated by impact-driven work","climate_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I value sustainability over profit","climate_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer working on long-term impact projects","climate_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy working in interdisciplinary teams","climate_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in electric vehicles and future mobility","ev_mobility",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy learning about automotive innovation","ev_mobility",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand mechanical and electrical systems","ev_mobility",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving engineering challenges","ev_mobility",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am curious about future transport solutions","ev_mobility",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy working on innovative ideas","ev_mobility",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer engineering environments","ev_mobility",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy working on physical systems","ev_mobility",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in battery technology and storage systems","energy_storage",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy working on energy efficiency problems","energy_storage",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand electrical and chemical systems","energy_storage",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving storage and optimization challenges","energy_storage",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am detail-oriented in technical systems","energy_storage",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy research and experimentation","energy_storage",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer lab or industrial environments","energy_storage",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy solving real-world energy problems","energy_storage",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in renewable energy sources","renewable_energy",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy learning about solar and wind technologies","renewable_energy",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand energy generation systems","renewable_energy",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving sustainability challenges","renewable_energy",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am driven by environmental impact","renewable_energy",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I value long-term solutions","renewable_energy",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer working on green technologies","renewable_energy",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy interdisciplinary collaboration","renewable_energy",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in water management and technology","water_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy solving water-related challenges","water_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand environmental and engineering systems","water_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving infrastructure-related problems","water_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I care about public welfare","water_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I value sustainability","water_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer field and system-based work","water_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy solving civic challenges","water_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in smart cities and urban systems","urban_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy solving urban infrastructure problems","urban_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand city-scale systems","urban_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy integrating technology into infrastructure","urban_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I care about improving city life","urban_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy working on public systems","urban_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer interdisciplinary work","urban_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy planning and execution roles","urban_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in construction and infrastructure development","construction_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy building physical structures","construction_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand engineering drawings and systems","construction_tech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving construction challenges","construction_tech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am practical and execution-focused","construction_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy structured project work","construction_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer field-based work","construction_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy managing large projects","construction_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in logistics and supply chains","supply_chain",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy optimizing processes and operations","supply_chain",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can analyze operational workflows","supply_chain",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving distribution problems","supply_chain",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am organized and systematic","supply_chain",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy process optimization","supply_chain",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer operations-focused roles","supply_chain",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy managing workflows","supply_chain",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy creating content for audiences","creator_economy",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I like building personal brands online","creator_economy",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can create engaging content","creator_economy",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I understand audience preferences","creator_economy,marketing",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am expressive and creative","creator_economy",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy being visible publicly","creator_economy",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer flexible work","creator_economy",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy independent work","creator_economy",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy designing and developing games","gaming",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I like interactive storytelling","gaming",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand game mechanics","gaming",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving game logic problems","gaming",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am creative and imaginative","gaming",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy experimentation","gaming",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer creative environments","gaming",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy project-based work","gaming",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in agriculture and farming technologies","agritech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy improving food production systems","agritech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand biological and environmental systems","agritech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving agricultural challenges","agritech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I care about sustainability","agritech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy working in natural environments","agritech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer field-based work","agritech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy hands-on problem solving","agritech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy working with data to generate insights","ai_data",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am curious about how AI systems work","ai_data",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can analyze data patterns effectively","ai_data",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving data-driven problems","ai_data",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I prefer logical thinking over intuition","ai_data",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am comfortable working with abstract concepts","ai_data",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy working on analytical tasks","ai_data",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer working with structured data systems","ai_data",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy understanding financial systems and markets","fintech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in digital payments and investments","fintech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can analyze financial data and trends","fintech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving finance-related problems","fintech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am comfortable making financial decisions","fintech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I value precision in financial matters","fintech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer analytical and structured work","fintech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy working with numbers regularly","fintech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in national security and defense systems","defense_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy learning about advanced defense technologies","defense_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand complex technical defense systems","defense_tech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving high-risk technical challenges","defense_tech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am disciplined and responsible","defense_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I can work under pressure","defense_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer mission-driven work","defense_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I am comfortable in structured environments","defense_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy creating fashion and design concepts","fashiontech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in fashion trends and innovation","fashiontech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can design creative fashion products","fashiontech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy combining creativity with technology","fashiontech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am creative and expressive","fashiontech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy visual aesthetics","fashiontech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer creative environments","fashiontech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy working on design projects","fashiontech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in food innovation and technology","foodtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy learning about food production systems","foodtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand food processing techniques","foodtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving food-related challenges","foodtech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I care about food quality and safety","foodtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy experimenting with food ideas","foodtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer hands-on work","foodtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy working in production environments","foodtech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy exploring nano-scale technologies","nanotech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in material science innovation","nanotech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand microscopic systems","nanotech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy scientific experimentation","nanotech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am curious about advanced science","nanotech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy deep research work","nanotech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer lab environments","nanotech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy precision-based work","nanotech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in quantum computing and physics","quantum",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy exploring advanced computing concepts","quantum",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand complex mathematical models","quantum",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy theoretical problem solving","quantum",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am comfortable with abstract thinking","quantum",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy deep analytical work","quantum",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer research environments","quantum",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy long-term problem solving","quantum",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in space exploration and technology","space_tech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy learning about satellites and aerospace systems","space_tech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can understand complex engineering systems","space_tech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving high-complexity problems","space_tech",5,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am curious about the universe","space_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy exploration and discovery","space_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer research and innovation work","space_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy working on complex missions","space_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in sports analytics and performance tech","sports_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy improving sports performance using data","sports_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can analyze performance metrics","sports_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving performance optimization problems","sports_tech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am competitive and goal-driven","sports_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy sports environments","sports_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer dynamic environments","sports_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy performance-focused work","sports_tech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I am interested in travel and tourism technologies","traveltech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+interest,"I enjoy exploring new places and systems","traveltech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I can manage travel systems and logistics","traveltech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+aptitude,"I enjoy solving travel-related challenges","traveltech",4,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I am adaptable and flexible","traveltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+personality,"I enjoy interacting with people","traveltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I prefer dynamic environments","traveltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree
+work_style,"I enjoy service-oriented work","traveltech",3,1,Strongly Agree,Agree,Neutral,Disagree,Strongly Disagree

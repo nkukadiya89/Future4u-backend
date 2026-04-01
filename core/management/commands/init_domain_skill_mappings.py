@@ -12,25 +12,13 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Write sample domain-skill-mapping CSV and/or load mappings from CSV."
+    help = "Load domain-skill mappings from CSV (defaults to core/management/source/domain_skill_mapping_sample.csv)."
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--sample-path",
-            default=str(
-                Path(settings.BASE_DIR) / "core" / "management" / "source" / "domain_skill_mapping_sample.csv"
-            ),
-            help="Path to write sample CSV.",
-        )
-        parser.add_argument(
-            "--no-sample",
-            action="store_true",
-            help="Do not write the sample CSV file.",
-        )
-        parser.add_argument(
-            "--load",
+            "--path",
             dest="load_path",
-            default=str(Path(settings.BASE_DIR) / "core" / "management" / "source" / "domain_skill_mapping.csv"),
+            default=str(Path(settings.BASE_DIR) / "core" / "management" / "source" / "domain_skill_mapping_sample.csv"),
             help="Load domain-skill mappings from CSV at this path.",
         )
         parser.add_argument(
@@ -40,12 +28,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        if not options.get("no_sample"):
-            sample_path = Path(options["sample_path"])
-            sample_path.parent.mkdir(parents=True, exist_ok=True)
-            sample_path.write_bytes(domain_skill_mapping_service.sample_csv_bytes())
-            self.stdout.write(self.style.SUCCESS(f"Sample CSV written: {sample_path.resolve()}"))
-
         load_path = options.get("load_path")
         if not load_path:
             return

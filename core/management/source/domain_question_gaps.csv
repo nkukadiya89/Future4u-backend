@@ -1,155 +1,31 @@
 # domain_code,domain_name,active_mapped_questions
-manufacturing,Advanced Manufacturing,0
-ai_ethics,AI Ethics & Governance,0
-ar_vr,AR VR & Metaverse,0
-biotech,Biotechnology,0
-blockchain,Blockchain & Web3,0
-climate_tech,Climate Tech,0
-cloud_computing,Cloud Computing,0
-construction_tech,Construction Tech,0
-creator_economy,Creator Economy,0
 cybersecurity,Cybersecurity,0
-data_engineering,Data Engineering,0
-defense_tech,Defense Technology,0
-devops,DevOps & Platform Engineering,0
 digital_marketing,Digital Marketing,0
-ecommerce,E-Commerce,0
-edtech,EdTech,0
-energy_storage,Energy Storage,0
-ev_mobility,EV & Mobility,0
-fashiontech,FashionTech,0
-foodtech,FoodTech,0
-gaming,Game Development,0
-hrtech,HRTech,0
-insurance_tech,InsurTech,0
+healthtech,HealthTech,1
 iot,IoT & Smart Systems,0
-legaltech,LegalTech,0
 med_devices,Medical Devices,0
 mental_health,Mental Health & Wellness,0
-nanotech,Nanotechnology,0
 pharma,Pharmaceuticals,0
-quantum,Quantum Computing,0
-renewable_energy,Renewable Energy,0
-robotics,Robotics & Automation,0
-space_tech,Space Technology,0
-sports_tech,SportsTech,0
-supply_chain,Supply Chain & Logistics,0
-traveltech,TravelTech,0
-urban_tech,Urban Tech & Smart Cities,0
-water_tech,Water Technology,0
 
 dimension,question_text,mapped_domains,signal_strength,is_active,option_1,option_2,option_3,option_4,option_5
-interest,"In the last 30 days, how often did you choose to learn or read about Advanced Manufacturing even when it wasn't required?",manufacturing,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Advanced Manufacturing-related tasks, how often do you break down a messy problem into clear steps and finish it?",manufacturing,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Advanced Manufacturing, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",manufacturing,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about AI Ethics & Governance even when it wasn't required?",ai_ethics,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on AI Ethics & Governance-related tasks, how often do you break down a messy problem into clear steps and finish it?",ai_ethics,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to AI Ethics & Governance, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",ai_ethics,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about AR VR & Metaverse even when it wasn't required?",ar_vr,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on AR VR & Metaverse-related tasks, how often do you break down a messy problem into clear steps and finish it?",ar_vr,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to AR VR & Metaverse, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",ar_vr,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Biotechnology even when it wasn't required?",biotech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Biotechnology-related tasks, how often do you break down a messy problem into clear steps and finish it?",biotech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Biotechnology, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",biotech,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Blockchain & Web3 even when it wasn't required?",blockchain,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Blockchain & Web3-related tasks, how often do you break down a messy problem into clear steps and finish it?",blockchain,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Blockchain & Web3, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",blockchain,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Climate Tech even when it wasn't required?",climate_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Climate Tech-related tasks, how often do you break down a messy problem into clear steps and finish it?",climate_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Climate Tech, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",climate_tech,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Cloud Computing even when it wasn't required?",cloud_computing,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Cloud Computing-related tasks, how often do you break down a messy problem into clear steps and finish it?",cloud_computing,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Cloud Computing, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",cloud_computing,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Construction Tech even when it wasn't required?",construction_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Construction Tech-related tasks, how often do you break down a messy problem into clear steps and finish it?",construction_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Construction Tech, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",construction_tech,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Creator Economy even when it wasn't required?",creator_economy,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Creator Economy-related tasks, how often do you break down a messy problem into clear steps and finish it?",creator_economy,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Creator Economy, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",creator_economy,1,1,Never,Rarely,Sometimes,Often,Very often
 interest,"In the last 30 days, how often did you choose to learn or read about Cybersecurity even when it wasn't required?",cybersecurity,2,1,Never,Rarely,Sometimes,Often,Very often
 aptitude,"When working on Cybersecurity-related tasks, how often do you break down a messy problem into clear steps and finish it?",cybersecurity,2,1,Never,Rarely,Sometimes,Often,Very often
 work_style,"In group activities related to Cybersecurity, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",cybersecurity,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Data Engineering even when it wasn't required?",data_engineering,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Data Engineering-related tasks, how often do you break down a messy problem into clear steps and finish it?",data_engineering,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Data Engineering, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",data_engineering,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Defense Technology even when it wasn't required?",defense_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Defense Technology-related tasks, how often do you break down a messy problem into clear steps and finish it?",defense_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Defense Technology, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",defense_tech,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about DevOps & Platform Engineering even when it wasn't required?",devops,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on DevOps & Platform Engineering-related tasks, how often do you break down a messy problem into clear steps and finish it?",devops,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to DevOps & Platform Engineering, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",devops,1,1,Never,Rarely,Sometimes,Often,Very often
 interest,"In the last 30 days, how often did you choose to learn or read about Digital Marketing even when it wasn't required?",digital_marketing,2,1,Never,Rarely,Sometimes,Often,Very often
 aptitude,"When working on Digital Marketing-related tasks, how often do you break down a messy problem into clear steps and finish it?",digital_marketing,2,1,Never,Rarely,Sometimes,Often,Very often
 work_style,"In group activities related to Digital Marketing, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",digital_marketing,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about E-Commerce even when it wasn't required?",ecommerce,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on E-Commerce-related tasks, how often do you break down a messy problem into clear steps and finish it?",ecommerce,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to E-Commerce, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",ecommerce,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about EdTech even when it wasn't required?",edtech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on EdTech-related tasks, how often do you break down a messy problem into clear steps and finish it?",edtech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to EdTech, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",edtech,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Energy Storage even when it wasn't required?",energy_storage,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Energy Storage-related tasks, how often do you break down a messy problem into clear steps and finish it?",energy_storage,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Energy Storage, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",energy_storage,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about EV & Mobility even when it wasn't required?",ev_mobility,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on EV & Mobility-related tasks, how often do you break down a messy problem into clear steps and finish it?",ev_mobility,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to EV & Mobility, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",ev_mobility,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about FashionTech even when it wasn't required?",fashiontech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on FashionTech-related tasks, how often do you break down a messy problem into clear steps and finish it?",fashiontech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to FashionTech, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",fashiontech,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about FoodTech even when it wasn't required?",foodtech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on FoodTech-related tasks, how often do you break down a messy problem into clear steps and finish it?",foodtech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to FoodTech, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",foodtech,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Game Development even when it wasn't required?",gaming,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Game Development-related tasks, how often do you break down a messy problem into clear steps and finish it?",gaming,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Game Development, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",gaming,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about HRTech even when it wasn't required?",hrtech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on HRTech-related tasks, how often do you break down a messy problem into clear steps and finish it?",hrtech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to HRTech, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",hrtech,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about InsurTech even when it wasn't required?",insurance_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on InsurTech-related tasks, how often do you break down a messy problem into clear steps and finish it?",insurance_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to InsurTech, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",insurance_tech,1,1,Never,Rarely,Sometimes,Often,Very often
+interest,"In the last 30 days, how often did you choose to learn or read about HealthTech even when it wasn't required?",healthtech,2,1,Never,Rarely,Sometimes,Often,Very often
+aptitude,"When working on HealthTech-related tasks, how often do you break down a messy problem into clear steps and finish it?",healthtech,2,1,Never,Rarely,Sometimes,Often,Very often
+work_style,"In group activities related to HealthTech, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",healthtech,1,1,Never,Rarely,Sometimes,Often,Very often
 interest,"In the last 30 days, how often did you choose to learn or read about IoT & Smart Systems even when it wasn't required?",iot,2,1,Never,Rarely,Sometimes,Often,Very often
 aptitude,"When working on IoT & Smart Systems-related tasks, how often do you break down a messy problem into clear steps and finish it?",iot,2,1,Never,Rarely,Sometimes,Often,Very often
 work_style,"In group activities related to IoT & Smart Systems, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",iot,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about LegalTech even when it wasn't required?",legaltech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on LegalTech-related tasks, how often do you break down a messy problem into clear steps and finish it?",legaltech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to LegalTech, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",legaltech,1,1,Never,Rarely,Sometimes,Often,Very often
 interest,"In the last 30 days, how often did you choose to learn or read about Medical Devices even when it wasn't required?",med_devices,2,1,Never,Rarely,Sometimes,Often,Very often
 aptitude,"When working on Medical Devices-related tasks, how often do you break down a messy problem into clear steps and finish it?",med_devices,2,1,Never,Rarely,Sometimes,Often,Very often
 work_style,"In group activities related to Medical Devices, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",med_devices,1,1,Never,Rarely,Sometimes,Often,Very often
 interest,"In the last 30 days, how often did you choose to learn or read about Mental Health & Wellness even when it wasn't required?",mental_health,2,1,Never,Rarely,Sometimes,Often,Very often
 aptitude,"When working on Mental Health & Wellness-related tasks, how often do you break down a messy problem into clear steps and finish it?",mental_health,2,1,Never,Rarely,Sometimes,Often,Very often
 work_style,"In group activities related to Mental Health & Wellness, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",mental_health,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Nanotechnology even when it wasn't required?",nanotech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Nanotechnology-related tasks, how often do you break down a messy problem into clear steps and finish it?",nanotech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Nanotechnology, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",nanotech,1,1,Never,Rarely,Sometimes,Often,Very often
 interest,"In the last 30 days, how often did you choose to learn or read about Pharmaceuticals even when it wasn't required?",pharma,2,1,Never,Rarely,Sometimes,Often,Very often
 aptitude,"When working on Pharmaceuticals-related tasks, how often do you break down a messy problem into clear steps and finish it?",pharma,2,1,Never,Rarely,Sometimes,Often,Very often
 work_style,"In group activities related to Pharmaceuticals, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",pharma,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Quantum Computing even when it wasn't required?",quantum,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Quantum Computing-related tasks, how often do you break down a messy problem into clear steps and finish it?",quantum,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Quantum Computing, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",quantum,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Renewable Energy even when it wasn't required?",renewable_energy,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Renewable Energy-related tasks, how often do you break down a messy problem into clear steps and finish it?",renewable_energy,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Renewable Energy, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",renewable_energy,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Robotics & Automation even when it wasn't required?",robotics,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Robotics & Automation-related tasks, how often do you break down a messy problem into clear steps and finish it?",robotics,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Robotics & Automation, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",robotics,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Space Technology even when it wasn't required?",space_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Space Technology-related tasks, how often do you break down a messy problem into clear steps and finish it?",space_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Space Technology, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",space_tech,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about SportsTech even when it wasn't required?",sports_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on SportsTech-related tasks, how often do you break down a messy problem into clear steps and finish it?",sports_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to SportsTech, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",sports_tech,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Supply Chain & Logistics even when it wasn't required?",supply_chain,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Supply Chain & Logistics-related tasks, how often do you break down a messy problem into clear steps and finish it?",supply_chain,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Supply Chain & Logistics, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",supply_chain,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about TravelTech even when it wasn't required?",traveltech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on TravelTech-related tasks, how often do you break down a messy problem into clear steps and finish it?",traveltech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to TravelTech, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",traveltech,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Urban Tech & Smart Cities even when it wasn't required?",urban_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Urban Tech & Smart Cities-related tasks, how often do you break down a messy problem into clear steps and finish it?",urban_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Urban Tech & Smart Cities, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",urban_tech,1,1,Never,Rarely,Sometimes,Often,Very often
-interest,"In the last 30 days, how often did you choose to learn or read about Water Technology even when it wasn't required?",water_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-aptitude,"When working on Water Technology-related tasks, how often do you break down a messy problem into clear steps and finish it?",water_tech,2,1,Never,Rarely,Sometimes,Often,Very often
-work_style,"In group activities related to Water Technology, how often do you take ownership to coordinate people, tools, or timelines to complete the work?",water_tech,1,1,Never,Rarely,Sometimes,Often,Very often
