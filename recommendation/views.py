@@ -32,10 +32,13 @@ class RecommendationListAPIView(APIView):
             try:
                 out = generate_recommendation(request.user.id)
             except Exception:
-                out = {"message": "Unable to generate recommendations right now.", "suggestion": [], "top_domains": [], "top_careers": [], "skill_gaps": []}
+                out = {"message": "Unable to generate recommendations right now.", "tier": "unknown", "suggestion": [], "recommended_streams": [], "top_domains": [], "top_careers": [], "skill_gaps": [], "next_step": None}
             cached = {
                 "message": out.get("message") or "ok",
+                "tier": out.get("tier") or "unknown",
+                "next_step": out.get("next_step"),
                 "suggestion": out.get("suggestion") or [],
+                "recommended_streams": out.get("recommended_streams") or [],
                 "top_domains": out.get("top_domains") or [],
                 "top_careers": out.get("top_careers") or [],
                 "skill_gaps": out.get("skill_gaps") or [],
@@ -54,9 +57,13 @@ class RecommendationListAPIView(APIView):
 
         # Always return a non-empty structured payload for UX safety.
         if not isinstance(cached, dict):
-            cached = {"message": "ok", "suggestion": [], "top_domains": [], "top_careers": [], "skill_gaps": []}
+            cached = {"message": "ok", "tier": "unknown", "next_step": None, "suggestion": [],
+                      "recommended_streams": [], "top_domains": [], "top_careers": [], "skill_gaps": []}
         cached.setdefault("message", "ok")
+        cached.setdefault("tier", "unknown")
+        cached.setdefault("next_step", None)
         cached.setdefault("suggestion", [])
+        cached.setdefault("recommended_streams", [])
         cached.setdefault("top_domains", [])
         cached.setdefault("top_careers", [])
         cached.setdefault("skill_gaps", [])
