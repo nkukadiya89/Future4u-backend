@@ -1,44 +1,23 @@
-domain_code,domain_name,parent,parent_acceptance_level,future_relevance_score,description,is_active,interest_weight,aptitude_weight,personality_weight,work_style_weight
-ai_data,AI & Data,,5,98,Artificial intelligence machine learning and data science,1,0.2,0.5,0.1,0.2
-cybersecurity,Cybersecurity,,5,97,Digital security and threat protection,1,0.2,0.5,0.15,0.15
-healthtech,HealthTech,,5,96,Technology in healthcare and medical systems,1,0.3,0.35,0.25,0.1
-biotech,Biotechnology,,4,95,Bioengineering genetics and life sciences,1,0.25,0.45,0.2,0.1
-fintech,FinTech,,5,94,Financial technology and digital payments,1,0.25,0.4,0.15,0.2
-climate_tech,Climate Tech,,4,96,Sustainability climate solutions and carbon reduction,1,0.35,0.35,0.15,0.15
-renewable_energy,Renewable Energy,,5,97,Solar wind and alternative energy systems,1,0.25,0.4,0.15,0.2
-ev_mobility,EV & Mobility,,5,95,Electric vehicles and future transportation,1,0.25,0.4,0.1,0.25
-robotics,Robotics & Automation,,4,96,Industrial and service automation systems,1,0.25,0.45,0.1,0.2
-space_tech,Space Technology,,3,94,Satellite systems and space exploration,1,0.3,0.5,0.1,0.1
-edtech,EdTech,,5,92,Technology in education and learning systems,1,0.35,0.25,0.3,0.1
-agritech,Agritech,,4,93,Technology in agriculture and food systems,1,0.3,0.35,0.15,0.2
-iot,IoT & Smart Systems,,4,94,Connected devices and smart infrastructure,1,0.25,0.45,0.1,0.2
-blockchain,Blockchain & Web3,,3,91,Decentralized systems and digital assets,1,0.2,0.5,0.1,0.2
-cloud_computing,Cloud Computing,,5,96,Cloud infrastructure and distributed systems,1,0.15,0.5,0.1,0.25
-devops,DevOps & Platform Engineering,,5,95,CI CD and infrastructure automation,1,0.15,0.45,0.1,0.3
-ar_vr,AR VR & Metaverse,,3,89,Immersive technologies and virtual environments,1,0.4,0.3,0.2,0.1
-gaming,Game Development,,4,90,Interactive entertainment and game systems,1,0.4,0.35,0.15,0.1
-creator_economy,Creator Economy,,5,88,Content creation and digital monetization,1,0.45,0.15,0.3,0.1
-digital_marketing,Digital Marketing,,5,91,Online marketing growth and branding,1,0.4,0.25,0.25,0.1
-ecommerce,E-Commerce,,5,93,Online commerce and marketplaces,1,0.3,0.3,0.2,0.2
-supply_chain,Supply Chain & Logistics,,5,94,Logistics warehousing and distribution tech,1,0.2,0.35,0.15,0.3
-manufacturing,Advanced Manufacturing,,5,95,Smart factories and industry 4.0,1,0.2,0.35,0.15,0.3
-construction_tech,Construction Tech,,4,92,Smart construction and infrastructure tech,1,0.2,0.35,0.15,0.3
-legaltech,LegalTech,,3,88,Technology in legal services and compliance,1,0.25,0.4,0.25,0.1
-hrtech,HRTech,,5,90,Human resource and workforce technology,1,0.25,0.25,0.35,0.15
-sports_tech,SportsTech,,4,87,Sports analytics and performance tech,1,0.4,0.25,0.25,0.1
-traveltech,TravelTech,,4,89,Technology in travel and tourism industry,1,0.4,0.2,0.3,0.1
-foodtech,FoodTech,,4,91,Food innovation and delivery ecosystems,1,0.35,0.25,0.25,0.15
-fashiontech,FashionTech,,3,86,Technology in fashion and apparel industry,1,0.45,0.15,0.3,0.1
-nanotech,Nanotechnology,,3,93,Advanced material science and nano systems,1,0.25,0.55,0.1,0.1
-quantum,Quantum Computing,,2,95,Next-gen computing using quantum mechanics,1,0.2,0.6,0.1,0.1
-defense_tech,Defense Technology,,3,94,Military systems and defense innovation,1,0.25,0.35,0.2,0.2
-energy_storage,Energy Storage,,4,95,Batteries and energy storage solutions,1,0.2,0.45,0.1,0.25
-urban_tech,Urban Tech & Smart Cities,,4,93,Smart infrastructure and city systems,1,0.25,0.4,0.15,0.2
-water_tech,Water Technology,,4,92,Water purification and management systems,1,0.25,0.4,0.15,0.2
-mental_health,Mental Health & Wellness,,5,94,Psychological health and wellbeing solutions,1,0.3,0.2,0.4,0.1
-med_devices,Medical Devices,,5,95,Healthcare equipment and diagnostics,1,0.25,0.4,0.25,0.1
-pharma,Pharmaceuticals,,5,94,Drug development and medical research,1,0.25,0.45,0.2,0.1
-insurance_tech,InsurTech,,5,90,Insurance innovation and risk tech,1,0.2,0.4,0.2,0.2
-data_engineering,Data Engineering,,5,96,Data pipelines and infrastructure,1,0.15,0.55,0.1,0.2
-ai_ethics,AI Ethics & Governance,,4,93,Responsible AI and policy systems,1,0.3,0.35,0.25,0.1
-marketing,Marketing,,5,95,Promotion branding advertising and consumer engagement across digital and offline channels,1,0.4,0.2,0.3,0.1
+stream_code,stream_name,sequence_order,parent_safe_label,traditional_equivalent,description,is_active,education_level
+science,Science,1,1,Science Group,Physics Chemistry Mathematics Biology focused stream,1,higher_secondary
+commerce,Commerce,2,1,Business Commerce Group,Accounts Business Studies Economics focused stream,1,higher_secondary
+arts,Arts Humanities,3,1,Humanities Group,History Geography Political Science Sociology stream,1,higher_secondary
+vocational,Vocational,4,1,Skill Based Track,Practical skill based education like ITI trades,1,higher_secondary
+diploma_technical,Diploma Technical,5,1,Polytechnic,Engineering diploma streams like mechanical civil electrical,1,diploma
+diploma_non_technical,Diploma Non Technical,6,1,Non Tech Diploma,Hotel management design paramedical diplomas,1,diploma
+agriculture,Agriculture,7,0,Agri Stream,Agriculture farming agri business studies,1,higher_secondary
+sports,Sports,8,0,Physical Education Track,Sports training physical education and performance,1,higher_secondary
+fine_arts,Fine Arts,9,0,Creative Arts,Painting sculpture performing arts,1,higher_secondary
+design,Design,10,0,Creative Design,UI UX fashion interior design animation,1,graduation
+media,Media Communication,11,0,Mass Communication,Journalism film media communication studies,1,graduation
+computer_science,Computer Science,12,1,IT Stream,Programming software development and computing,1,graduation
+business_management,Business Management,13,1,Management Stream,Entrepreneurship business and management studies,1,graduation
+health_science,Health Science,14,1,Medical Stream,Nursing paramedical public health related fields,1,graduation
+law,Law,15,0,Legal Studies,Legal education and judiciary preparation,1,graduation
+hospitality,Hospitality Tourism,16,0,Hotel Management,Hospitality travel tourism and service industry,1,graduation
+education,Education Teaching,17,0,Teaching Track,BEd teaching and academic training paths,1,graduation
+defense,Defense Services,18,0,Armed Forces Track,Army navy airforce and defense services preparation,1,graduation
+aviation,Aviation,19,0,Aviation Studies,Pilot cabin crew and aviation management,1,graduation
+entrepreneurship,Entrepreneurship,20,0,Startup Track,Startup building business creation innovation,1,graduation
+
+ 

@@ -1,4 +1,4 @@
-from django.db import transaction
+from django.db import models, transaction
 from django.db.models import Sum
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
@@ -44,21 +44,50 @@ class UserResponseViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 class ApiAssessmentQuestionsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     GET /api/assessment/questions/
-    - active questions only
-    - include options
-    - grouped by dimension
+    - Returns questions filtered to the logged-in user's education level.
+    - For 12th-grade users, also filters by their selected stream (if set).
+    - Groups questions by dimension.
     """
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     serializer_class = QuestionSerializer
 
+    def _get_user_profile(self, user):
+        from user_profile.models import UserProfile
+        try:
+            return UserProfile.objects.select_related("education_level", "stream").get(user=user)
+        except UserProfile.DoesNotExist:
+            return None
+
     def get_queryset(self):
-        return (
+        user = self.request.user
+        profile = self._get_user_profile(user)
+        edu_level = getattr(profile, "education_level", None) if profile else None
+        user_stream = getattr(profile, "stream", None) if profile else None
+
+        qs = (
             Question.objects.filter(is_active=True)
-            .prefetch_related("options")
-            .order_by("dimension", "id")
+            .prefetch_related("options", "mapped_domains", "mapped_streams")
+            .select_related("education_level", "target_stream")
         )
+
+        if edu_level is not None:
+            # Show questions tagged to this exact education level OR truly generic (no level tag)
+            # Q(education_level=edu_level) handles level-specific questions
+            # Q(education_level__isnull=True) handles generic questions with no level restriction
+            # Questions tagged to OTHER levels are automatically excluded by this filter
+            qs = qs.filter(
+                models.Q(education_level=edu_level) | models.Q(education_level__isnull=True)
+            )
+            HIGHER_SECONDARY_CODE = "higher_secondary"
+            level_code = (edu_level.level_code or "").lower()
+            if level_code == HIGHER_SECONDARY_CODE and user_stream is not None:
+                qs = qs.filter(
+                    models.Q(target_stream=user_stream) | models.Q(target_stream__isnull=True)
+                )
+
+        return qs.order_by("dimension", "id")
 
     def list(self, request, *args, **kwargs):
         qs = self.get_queryset()

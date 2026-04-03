@@ -9,9 +9,25 @@ class Question(models.Model):
         APTITUDE = "aptitude", "Aptitude"
         PERSONALITY = "personality", "Personality"
         WORK_STYLE = "work_style", "Work Style"
+        BACKGROUND = "background", "Background"  # warmup / context questions
+
+    class QuestionType(models.TextChoices):
+        SCALE = "scale", "Scale (1-5 agreement)"
+        MCQ = "mcq", "Multiple Choice (pick one)"
+        YESNO = "yesno", "Yes / No"
 
     question_text = models.TextField()
     dimension = models.CharField(max_length=20, choices=Dimension.choices)
+    question_type = models.CharField(
+        max_length=10,
+        choices=QuestionType.choices,
+        default=QuestionType.SCALE,
+        help_text="Controls how options are presented to the user.",
+    )
+    sequence_order = models.PositiveSmallIntegerField(
+        default=0,
+        help_text="Display order within the same education level and dimension.",
+    )
     mapped_domains = models.ManyToManyField(
         "domain.Domain",
         related_name="assessment_questions",
@@ -20,12 +36,39 @@ class Question(models.Model):
     signal_strength = models.PositiveSmallIntegerField(default=1)
     is_active = models.BooleanField(default=True)
 
+    # Education-level aware filtering
+    education_level = models.ForeignKey(
+        "education_level.EducationLevel",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assessment_questions",
+        help_text="If set, this question is only shown to users at this education level.",
+    )
+    # For 12th-grade users: optionally restrict question to a specific stream
+    target_stream = models.ForeignKey(
+        "stream.Stream",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assessment_questions",
+        db_column="stream_id",
+        help_text="If set, this question is only shown to 12th-grade users who selected this stream.",
+    )
+    # For 10th-grade users: which streams does a positive answer signal?
+    mapped_streams = models.ManyToManyField(
+        "stream.Stream",
+        related_name="signal_questions",
+        blank=True,
+        help_text="Streams this question signals affinity for (used for 10th-grade stream recommendations).",
+    )
+
     class Meta:
         db_table = "assessment_question"
-        ordering = ["id"]
+        ordering = ["education_level", "sequence_order", "id"]
 
     def __str__(self):
-        return f"{self.dimension}: {self.question_text[:60]}"
+        return f"[{self.dimension}] {self.question_text[:60]}"
 
 
 class Option(models.Model):
@@ -38,10 +81,14 @@ class Option(models.Model):
     score_value = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
+    sequence_order = models.PositiveSmallIntegerField(
+        default=0,
+        help_text="Display order of this option within its question.",
+    )
 
     class Meta:
         db_table = "assessment_option"
-        ordering = ["id"]
+        ordering = ["sequence_order", "id"]
 
     def __str__(self):
         return f"Q{self.question_id} - {self.option_text[:40]}"
