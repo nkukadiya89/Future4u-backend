@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.contrib.auth.models import Group, Permission
 from django.utils import timezone
 from django.utils.timezone import now
+from decouple import config
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -45,120 +46,6 @@ def get_user_groups(user):
     return group_data
 
 
-# class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         # Make original username field (email) optional and add a common `username` field
-#         if "email" in self.fields:
-#             self.fields["email"].required = False
-#         self.fields["username"] = serializers.CharField(required=False)
-
-#     def validate(self, attrs):
-#         # Accept a single common field `login` (email or mobile/phone)
-#         request_data = self.context["request"].data
-#         raw_login = request_data.get("username") or attrs.get("username") or attrs.get("email")
-
-#         if not raw_login:
-#             raise AuthenticationFailed({"success": False, "message": "Username and password are required"})
-
-#         login_input = str(raw_login).strip()
-
-#         keep_me_logged = self.context["request"].data.get("keep_me_logged_in", False)
-
-#         # Determine whether the login is email or phone
-#         if "@" in login_input and "." in login_input:
-#             user = User.objects.filter(email__iexact=login_input).first()
-
-#         else:
-#             user = User.objects.filter(phone=login_input).first()
-
-#         if user is None:
-#             raise AuthenticationFailed(
-#                 {
-#                     "success": False,
-#                     "message": "No active account found with the given credentials",
-#                 }
-#             )
-
-#         attrs["email"] = user.email
-#         token = super(CustomTokenObtainPairSerializer, self).validate(attrs)
-
-#         permission_data = get_user_permissions(user)
-#         group_permission_data = get_user_group_permissions(user)
-#         group_data = get_user_groups(user)
-
-#         company_role = None
-#         company_expiry_date = None
-#         company_active_subscription = None
-#         company_days_to_expire = None
-
-#         # Check if user is Company Admin
-#         is_company_admin = any(group.get("name") == "Company Admin" for group in group_data)
-
-#         if user.company_id and is_company_admin:
-#             company_role = Group.objects.get(name="Company Admin").name
-
-#             company_details = (
-#                 Company.objects.filter(id=user.company_id)
-#                 .values("active_subscription", "expiry_date", "days_to_expire")
-#                 .first()
-#                 or {}
-#             )
-
-#             company_active_subscription = company_details.get("active_subscription", None)
-#             company_expiry_date = company_details.get("expiry_date", None)
-#             company_days_to_expire = company_details.get("days_to_expire", None)
-
-#         token.update(
-#             {
-#                 "userData": {
-#                     "user_id": user.id,
-#                     "email": user.email,
-#                     "first_name": user.first_name,
-#                     "last_name": user.last_name,
-#                     "phone": user.phone,
-#                     "company": user.company_id if is_company_admin else None,
-#                     "company_name": user.company.name if (user.company and is_company_admin) else None,
-#                     "partner_company": user.partner_company_id,
-#                     "partner_company_name": user.partner_company.company_name if user.partner_company else None,
-#                     "end_client": user.end_client_id,
-#                     "end_client_name": user.end_client.name if user.end_client else None,
-#                     "active_subscription": company_active_subscription if is_company_admin else None,
-#                     "expiry_date": company_expiry_date if is_company_admin else None,
-#                     "days_to_expire": company_days_to_expire if is_company_admin else None,
-#                     "role": group_data,
-#                     "company_role": company_role,
-#                     "permission": permission_data,
-#                     "group_permission": group_permission_data,
-#                     "keep_me_logged_in": keep_me_logged,
-#                     "last_login": user.last_login,
-#                 }
-#             }
-#         )
-#         if keep_me_logged:
-#             access_token = AccessToken(token["access"])
-#             refresh_token = RefreshToken(token["refresh"])
-
-#             # Set custom lifetime
-#             access_token.set_exp(lifetime=timedelta(days=365))
-#             refresh_token.set_exp(lifetime=timedelta(days=365))
-
-#             token["access"] = str(access_token)
-#             token["refresh"] = str(refresh_token)
-
-#         user.keep_me_logged_in = keep_me_logged
-#         user.last_login = now()
-#         user.save()
-
-#         data = {
-#             "success": True,
-#             "message": "Login Successful",
-#             "data": token,
-#         }
-
-#         return data
-
-
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -168,8 +55,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         self.fields["username"] = serializers.CharField(required=False)
 
     def validate(self, attrs):
-        # login_value = attrs.get("email").lower()
-
         # Accept a single common field `login` (email or mobile/phone)
         request_data = self.context["request"].data
         raw_login = request_data.get("username") or attrs.get("username") or attrs.get("email")
@@ -352,9 +237,11 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             access_token = AccessToken(token["access"])
             refresh_token = RefreshToken(token["refresh"])
 
-            # Set custom lifetime
-            access_token.set_exp(lifetime=timedelta(days=365))
-            refresh_token.set_exp(lifetime=timedelta(days=365))
+            access_days = config("JWT_KEEP_ME_LOGGED_ACCESS_DAYS", default=1, cast=int)
+            refresh_days = config("JWT_KEEP_ME_LOGGED_REFRESH_DAYS", default=30, cast=int)
+
+            access_token.set_exp(lifetime=timedelta(days=access_days))
+            refresh_token.set_exp(lifetime=timedelta(days=refresh_days))
 
             token["access"] = str(access_token)
             token["refresh"] = str(refresh_token)

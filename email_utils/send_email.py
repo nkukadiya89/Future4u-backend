@@ -1,5 +1,6 @@
 import os
 import smtplib
+import logging
 from datetime import datetime, timedelta
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
@@ -11,6 +12,8 @@ from django.shortcuts import HttpResponse
 from django.template.loader import render_to_string
 
 from utils.email_logger import log_email_failed, log_email_sent
+
+logger = logging.getLogger(__name__)
 
 
 def generate_token(email=None, token_time=None):
@@ -55,7 +58,7 @@ def send_mail(subject, template, data):
     context["name"] = data["name"]
     custom_message_content = None  # Initialize custom message content
 
-    app_url = config("APP_URL")
+    app_url = config("APP_URL", default="")
     if template == "register-success.html" or template == "verify_account.html":
         token = generate_token(data["email"], 30)
         context["login_url"] = app_url + "login"
@@ -146,9 +149,18 @@ def send_mail(subject, template, data):
 
     to_email = data["email"]
 
+    admin_email = config("ADMIN_EMAIL", default="")
+    email_password = config("EMAIL_PASSWORD", default="")
+
+    if not admin_email or not email_password:
+        error_message = "Email configuration is incomplete."
+        log_email_failed(to_email, subject, error_message, admin_email or "N/A", email_type=template.replace(".html", ""))
+        logger.warning("Skipping email send for template %s because SMTP credentials are missing.", template)
+        return HttpResponse(error_message, status=503)
+
     msg = MIMEMultipart()
     msg.set_unixfrom("author")
-    msg["From"] = "OutdoorX <" + config("ADMIN_EMAIL") + ">"
+    msg["From"] = "OutdoorX <" + admin_email + ">"
     msg["To"] = to_email
     msg["Subject"] = subject
     part2 = MIMEText(html_body, "html")
@@ -171,10 +183,10 @@ def send_mail(subject, template, data):
     mail_server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
     mail_server.ehlo()
 
-    mail_server.login(config("ADMIN_EMAIL"), config("EMAIL_PASSWORD"))
+    mail_server.login(admin_email, email_password)
 
     try:
-        mail_server.sendmail(config("ADMIN_EMAIL"), msg["To"], msg.as_string())
+        mail_server.sendmail(admin_email, msg["To"], msg.as_string())
         # Log successful email
         log_email_sent(msg, email_type=template.replace(".html", ""), custom_message_content=custom_message_content)
     except Exception as e:

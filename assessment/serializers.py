@@ -23,6 +23,8 @@ class QuestionSerializer(serializers.ModelSerializer):
             "mapped_domains",
             "is_active",
             "options",
+            "education_level",
+            "stream",
         ]
 
 

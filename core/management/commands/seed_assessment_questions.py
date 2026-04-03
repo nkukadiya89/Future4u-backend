@@ -24,6 +24,7 @@ SAMPLE_HEADERS = (
     "option_3",
     "option_4",
     "option_5",
+    "education_level",
 )
 
 
@@ -81,6 +82,7 @@ class Command(BaseCommand):
                 mapped_domains_raw = (r.get("mapped_domains") or "").strip()
                 signal_strength_raw = (r.get("signal_strength") or "").strip()
                 active_raw = (r.get("is_active") or "1").strip().lower()
+                education_level_code = (r.get("education_level") or "").strip()
                 is_active = active_raw in ("1", "true", "yes", "y")
 
                 if dim not in DIMENSIONS:
@@ -111,10 +113,24 @@ class Command(BaseCommand):
                         )
                     domain_ids = [d.id for d in domains]
 
+                education_level_obj = None
+                if education_level_code:
+                    from education_level.models import EducationLevel
+
+                    education_level_obj = EducationLevel.objects.filter(
+                        level_code__iexact=education_level_code, is_active=True, deleted=False
+                    ).first()
+                    if not education_level_obj:
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"Row {idx}: education_level '{education_level_code}' not found (skipping education level)"
+                            )
+                        )
+
                 if dry_run:
                     self.stdout.write(
                         f"[DRY RUN] CSV Question: ({dim}) {qt} "
-                        f"[signal_strength={signal_strength}, mapped_domains={domain_codes}]"
+                        f"[signal_strength={signal_strength}, mapped_domains={domain_codes}, education_level={education_level_code}]"
                     )
                     continue
 
@@ -125,6 +141,9 @@ class Command(BaseCommand):
                 )
                 if q_created:
                     created_q += 1
+                    if education_level_obj:
+                        q.education_level = education_level_obj
+                        q.save(update_fields=["education_level"])
                 else:
                     changed_fields = []
                     if q.is_active != is_active:
@@ -133,6 +152,9 @@ class Command(BaseCommand):
                     if has_signal_strength_column and q.signal_strength != signal_strength:
                         q.signal_strength = signal_strength
                         changed_fields.append("signal_strength")
+                    if q.education_level_id != (education_level_obj.id if education_level_obj else None):
+                        q.education_level = education_level_obj
+                        changed_fields.append("education_level")
                     if changed_fields:
                         q.save(update_fields=changed_fields)
                         updated_q += 1

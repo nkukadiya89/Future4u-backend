@@ -1,21 +1,21 @@
 from django.db import transaction
 from django.db.models import Sum
+from django.core.cache import cache
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from django.core.cache import cache
 
-from assessment.models import Option,Question, UserResponse
-from assessment.services.recommendation_engine_service import RecommendationEngineService
+from assessment.models import Option, Question, UserResponse
 from assessment.serializers import (
     AssessmentSubmitSerializer,
     QuestionSerializer,
     UserResponseSerializer,
 )
-from assessment.services.recommendation_engine_service import RecommendationEngineService
-from assessment.serializers import QuestionSerializer, UserResponseSerializer
+from services.recommendation_engine_service import generate_recommendation
+from user_profile.models import UserProfile
+from utils.throttles import PerUserBurstRateThrottle
 
 
 class QuestionViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -31,10 +31,6 @@ class UserResponseViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    @action(detail=False, methods=["get"], url_path="recommendation")
-    def recommendation(self, request, *args, **kwargs):
-        result = RecommendationEngineService().recommend(user_id=request.user.id)
-        return Response({"success": True, "data": result}, status=status.HTTP_200_OK)
 
 class ApiAssessmentQuestionsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
@@ -49,11 +45,32 @@ class ApiAssessmentQuestionsViewSet(mixins.ListModelMixin, viewsets.GenericViewS
     serializer_class = QuestionSerializer
 
     def get_queryset(self):
-        return (
+        qs = (
             Question.objects.filter(is_active=True)
             .prefetch_related("options")
             .order_by("dimension", "id")
         )
+
+        try:
+            profile = UserProfile.objects.select_related("education_level", "stream").get(user=self.request.user)
+        except UserProfile.DoesNotExist:
+            profile = None
+
+        if profile and profile.education_level:
+            from django.db.models import Q as DQ
+            # Show questions tagged for this edu level OR universal questions (no tag)
+            qs = qs.filter(
+                DQ(education_level=profile.education_level) | DQ(education_level__isnull=True)
+            )
+
+        if profile and profile.stream:
+            from django.db.models import Q as DQ
+            # Show questions tagged for this stream OR universal questions (no stream tag)
+            qs = qs.filter(
+                DQ(stream=profile.stream) | DQ(stream__isnull=True)
+            )
+
+        return qs
 
     def list(self, request, *args, **kwargs):
         qs = self.get_queryset()
@@ -78,7 +95,6 @@ class ApiAssessmentSubmitViewSet(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     serializer_class = AssessmentSubmitSerializer
-    from utils.throttles import PerUserBurstRateThrottle
 
     throttle_classes = [PerUserBurstRateThrottle]
 
@@ -201,7 +217,8 @@ class ApiAssessmentSummaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet
         )
         data = {r["question__dimension"]: (r["score"] or 0) for r in rows}
         return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
+
     @action(detail=False, methods=["get"], url_path="recommendation")
     def recommendation(self, request, *args, **kwargs):
-        result = RecommendationEngineService().recommend(user_id=request.user.id)
+        result = generate_recommendation(request.user.id)
         return Response({"success": True, "data": result}, status=status.HTTP_200_OK)

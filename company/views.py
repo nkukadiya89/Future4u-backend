@@ -33,6 +33,7 @@ from utils.aws_file_upload import delete_uploaded_file
 from utils.document_verification import GovernmentDocVerification
 from utils.generate_ip_address import get_client_ip
 from utils.pagination import Pagination
+from utils.throttles import PerUserBurstRateThrottle, PerUserSustainedRateThrottle
 
 
 class SearchOrderingFilter:
@@ -124,8 +125,9 @@ class SearchOrderingFilter:
 class CreateCompanyAccountViewSet(viewsets.ViewSet):
     queryset = Company.objects.all()
     serializer_class = CreateCompanySerializer
-    permission_classes = []
+    permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [PerUserBurstRateThrottle, PerUserSustainedRateThrottle]
 
     def send_email(self, user, context):
         if user:

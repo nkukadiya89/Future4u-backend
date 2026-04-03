@@ -17,6 +17,22 @@ class Question(models.Model):
         related_name="assessment_questions",
         blank=True,
     )
+    education_level = models.ForeignKey(
+        "education_level.EducationLevel",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assessment_questions",
+        help_text="Optional education level filter for the question (e.g., 10th, 12th).",
+    )
+    stream = models.ForeignKey(
+        "stream.Stream",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assessment_questions",
+        help_text="Optional stream filter for the question (e.g., Science, Commerce).",
+    )
     signal_strength = models.PositiveSmallIntegerField(default=1)
     is_active = models.BooleanField(default=True)
 
