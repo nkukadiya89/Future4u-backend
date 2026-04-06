@@ -49,7 +49,7 @@
         },
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data\",\n  \"parent_acceptance_level\": 5,\n  \"future_relevance_score\": 95,\n  \"description\": \"High growth domain\",\n  \"is_active\": true\n}"
+          "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data\",\n  \"parent_acceptance_level\": 5,\n  \"future_relevance_score\": 95,\n  \"description\": \"High growth domain\",\n  \"is_active\": true,\n  \"interest_weight\": 0.2,\n  \"aptitude_weight\": 0.5,\n  \"personality_weight\": 0.1,\n  \"work_style_weight\": 0.2\n}"
         }
       },
       "response": []
@@ -69,7 +69,7 @@
         },
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data (updated)\",\n  \"parent_acceptance_level\": 5,\n  \"future_relevance_score\": 95,\n  \"description\": \"High growth domain\",\n  \"is_active\": true\n}"
+          "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data (updated)\",\n  \"parent_acceptance_level\": 5,\n  \"future_relevance_score\": 95,\n  \"description\": \"High growth domain\",\n  \"is_active\": true,\n  \"interest_weight\": 0.2,\n  \"aptitude_weight\": 0.5,\n  \"personality_weight\": 0.1,\n  \"work_style_weight\": 0.2\n}"
         }
       },
       "response": []
@@ -89,7 +89,7 @@
         },
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"domain_name\": \"AI & Data\"\n}"
+          "raw": "{\n  \"domain_name\": \"AI & Data\",\n  \"interest_weight\": 0.2,\n  \"aptitude_weight\": 0.5,\n  \"personality_weight\": 0.1,\n  \"work_style_weight\": 0.2\n}"
         }
       },
       "response": []

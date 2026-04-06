@@ -461,28 +461,6 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
     ordering_fields = ["name", "sequence"]
     search_fields = ["name"]
 
-    # @action(detail=False, methods=["GET"], url_path="get-group-permission-by-user")
-    # def get_group_permission_by_user(self, request, *args, **kwargs):
-    #     login_user = self.request.user
-    #     groups = Group.objects.filter(user=login_user).values_list("id", flat=True)
-    #     user_exclude_groups = []
-
-    #     if login_user.company:
-    #         user_exclude_groups = ["Company Admin"]
-    #     elif:
-    #         user_exclude_groups = ["Partner Company Admin"]
-    #     else:
-    #         user_exclude_groups = ["EndClient Admin"]
-
-    #     custom_group = CustomGroup.objects.filter(
-    #         group_ptr__in=groups
-    #     ).exclude(group_ptr__name__in=user_exclude_groups)
-    #     exclude_group = CustomGroup.objects.filter(group_ptr__name__in=user_exclude_groups)
-
-    #     response = get_group_permission_by_user(custom_group, exclude_group)
-
-    #     return Response({"success": True, "response": response}, status=status.HTTP_200_OK)
-
     @action(detail=False, methods=["GET"], url_path="get-group-permission-by-user")
     def get_group_permission_by_user(self, request, *args, **kwargs):
         login_user = request.user  # Better: use request.user directly

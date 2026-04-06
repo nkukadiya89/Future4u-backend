@@ -1,44 +1,44 @@
-domain_code,domain_name,parent,parent_acceptance_level,future_relevance_score,description,is_active
-ai_data,AI & Data,,5,98,Artificial intelligence machine learning and data science,1
-cybersecurity,Cybersecurity,,5,97,Digital security and threat protection,1
-healthtech,HealthTech,,5,96,Technology in healthcare and medical systems,1
-biotech,Biotechnology,,4,95,Bioengineering genetics and life sciences,1
-fintech,FinTech,,5,94,Financial technology and digital payments,1
-climate_tech,Climate Tech,,4,96,Sustainability climate solutions and carbon reduction,1
-renewable_energy,Renewable Energy,,5,97,Solar wind and alternative energy systems,1
-ev_mobility,EV & Mobility,,5,95,Electric vehicles and future transportation,1
-robotics,Robotics & Automation,,4,96,Industrial and service automation systems,1
-space_tech,Space Technology,,3,94,Satellite systems and space exploration,1
-edtech,EdTech,,5,92,Technology in education and learning systems,1
-agritech,Agritech,,4,93,Technology in agriculture and food systems,1
-iot,IoT & Smart Systems,,4,94,Connected devices and smart infrastructure,1
-blockchain,Blockchain & Web3,,3,91,Decentralized systems and digital assets,1
-cloud_computing,Cloud Computing,,5,96,Cloud infrastructure and distributed systems,1
-devops,DevOps & Platform Engineering,,5,95,CI CD and infrastructure automation,1
-ar_vr,AR VR & Metaverse,,3,89,Immersive technologies and virtual environments,1
-gaming,Game Development,,4,90,Interactive entertainment and game systems,1
-creator_economy,Creator Economy,,5,88,Content creation and digital monetization,1
-digital_marketing,Digital Marketing,,5,91,Online marketing growth and branding,1
-ecommerce,E-Commerce,,5,93,Online commerce and marketplaces,1
-supply_chain,Supply Chain & Logistics,,5,94,Logistics warehousing and distribution tech,1
-manufacturing,Advanced Manufacturing,,5,95,Smart factories and industry 4.0,1
-construction_tech,Construction Tech,,4,92,Smart construction and infrastructure tech,1
-legaltech,LegalTech,,3,88,Technology in legal services and compliance,1
-hrtech,HRTech,,5,90,Human resource and workforce technology,1
-sports_tech,SportsTech,,4,87,Sports analytics and performance tech,1
-traveltech,TravelTech,,4,89,Technology in travel and tourism industry,1
-foodtech,FoodTech,,4,91,Food innovation and delivery ecosystems,1
-fashiontech,FashionTech,,3,86,Technology in fashion and apparel industry,1
-nanotech,Nanotechnology,,3,93,Advanced material science and nano systems,1
-quantum,Quantum Computing,,2,95,Next-gen computing using quantum mechanics,1
-defense_tech,Defense Technology,,3,94,Military systems and defense innovation,1
-energy_storage,Energy Storage,,4,95,Batteries and energy storage solutions,1
-urban_tech,Urban Tech & Smart Cities,,4,93,Smart infrastructure and city systems,1
-water_tech,Water Technology,,4,92,Water purification and management systems,1
-mental_health,Mental Health & Wellness,,5,94,Psychological health and wellbeing solutions,1
-med_devices,Medical Devices,,5,95,Healthcare equipment and diagnostics,1
-pharma,Pharmaceuticals,,5,94,Drug development and medical research,1
-insurance_tech,InsurTech,,5,90,Insurance innovation and risk tech,1
-data_engineering,Data Engineering,,5,96,Data pipelines and infrastructure,1
-ai_ethics,AI Ethics & Governance,,4,93,Responsible AI and policy systems,1
-marketing,Marketing,,5,95,Promotion branding advertising and consumer engagement across digital and offline channels,1
+domain_code,domain_name,parent_acceptance_level,future_relevance_score,description,is_active,interest_weight,aptitude_weight,personality_weight,work_style_weight
+ai_data,AI & Data Science,3,95,Artificial intelligence machine learning and data science,1,0.35,0.35,0.15,0.15
+data_engineering,Data Engineering,3,90,Building data pipelines and infrastructure,1,0.25,0.40,0.15,0.20
+cloud_computing,Cloud Computing,3,92,Cloud platforms infrastructure and services,1,0.25,0.40,0.15,0.20
+devops,DevOps,3,88,Development operations CI/CD and platform engineering,1,0.25,0.40,0.15,0.20
+cybersecurity,Cybersecurity,3,93,Information security ethical hacking and defense,1,0.30,0.40,0.15,0.15
+fintech,Finance & FinTech,3,90,Financial technology banking and investment,1,0.35,0.35,0.15,0.15
+healthtech,Healthcare Tech,3,88,Digital health medical technology and telemedicine,1,0.35,0.30,0.20,0.15
+biotech,Biotechnology,3,85,Biological research genomics and drug discovery,1,0.35,0.40,0.10,0.15
+ev_mobility,EV & Mobility,3,87,Electric vehicles and mobility technology,1,0.30,0.40,0.15,0.15
+manufacturing,Manufacturing & Engineering,3,80,Industrial manufacturing and process engineering,1,0.25,0.40,0.15,0.20
+robotics,Robotics & Automation,3,88,Robotics automation and mechatronics,1,0.30,0.40,0.15,0.15
+iot,IoT & Smart Systems,3,86,Internet of things and connected devices,1,0.30,0.40,0.15,0.15
+digital_marketing,Digital Marketing,3,85,Online marketing SEO social media and growth,1,0.40,0.20,0.25,0.15
+creator_economy,Content & Media,3,82,Content creation media and the creator economy,1,0.45,0.15,0.25,0.15
+legaltech,Law & Legal Tech,3,80,Legal technology and law practice,1,0.30,0.35,0.20,0.15
+edtech,Education Technology,3,83,Educational technology and e-learning,1,0.40,0.25,0.20,0.15
+entrepreneurship,Entrepreneurship,3,88,Startups business building and venture,1,0.40,0.25,0.20,0.15
+mental_health,Psychology & Mental Health,3,85,Mental health counselling and psychology,1,0.40,0.20,0.25,0.15
+defense_tech,Defense & Armed Forces,3,80,Defense technology and armed forces,1,0.30,0.35,0.20,0.15
+space_tech,Aviation & Aerospace,3,85,Space technology aviation and aerospace,1,0.30,0.45,0.10,0.15
+pharma,Pharmaceuticals,3,83,Drug development and pharmaceutical industry,1,0.35,0.40,0.10,0.15
+ecommerce,E-Commerce,3,87,Online retail and e-commerce platforms,1,0.35,0.25,0.20,0.20
+nanotech,Nanotechnology,3,80,Nanoscale science and engineering,1,0.30,0.45,0.10,0.15
+quantum,Quantum Computing,3,82,Quantum computing and quantum information,1,0.25,0.50,0.10,0.15
+agritech,AgriTech,3,84,Agricultural technology and food systems,1,0.40,0.25,0.15,0.20
+traveltech,Travel & Hospitality,3,78,Travel technology and hospitality,1,0.40,0.20,0.25,0.15
+supply_chain,Supply Chain & Ops,3,85,Supply chain management and operations,1,0.25,0.35,0.20,0.20
+hrtech,HR & People Management,3,80,Human resources technology,1,0.35,0.25,0.25,0.15
+insurance_tech,Insurance & Risk,3,79,Insurance technology and risk management,1,0.30,0.35,0.20,0.15
+climate_tech,Climate Tech,3,86,Climate change technology and solutions,1,0.40,0.30,0.15,0.15
+ar_vr,AR/VR & Immersive Tech,3,83,Augmented and virtual reality,1,0.35,0.35,0.15,0.15
+gaming,Gaming,3,82,Game development and gaming industry,1,0.40,0.30,0.15,0.15
+fashiontech,Fashion & Design,3,78,Fashion technology and design,1,0.45,0.20,0.20,0.15
+construction_tech,Construction Tech,3,79,Construction technology and smart buildings,1,0.25,0.40,0.15,0.20
+med_devices,Medical Devices,3,84,Medical device engineering and development,1,0.30,0.45,0.10,0.15
+sports_tech,Sports Science,3,80,Sports science and performance technology,1,0.40,0.25,0.20,0.15
+foodtech,Food Technology,3,81,Food science and food technology,1,0.35,0.30,0.20,0.15
+ai_ethics,AI Ethics & Policy,3,82,AI ethics governance and policy,1,0.35,0.30,0.20,0.15
+marketing,Marketing,3,83,Marketing strategy and brand management,1,0.40,0.20,0.25,0.15
+business_management,Business Management,3,82,Business administration and management,1,0.35,0.25,0.25,0.15
+renewable_energy,Renewable Energy,3,88,Solar wind and clean energy,1,0.30,0.40,0.15,0.15
+urban_tech,Smart Cities,3,83,Urban technology and smart city solutions,1,0.30,0.35,0.20,0.15
+blockchain,Blockchain & Web3,3,80,Blockchain decentralized systems and Web3,1,0.30,0.40,0.15,0.15

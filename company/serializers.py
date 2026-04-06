@@ -9,7 +9,9 @@ from country.models import Country
 from state.models import State
 from user.models import CustomGroup, User
 from utils.datetime_formatter import format_datetime
+from utils.generate_ip_address import get_client_ip
 from utils.generate_random_password import generate_random_password
+from utils.role_permission import create_company_role_family
 
 
 class CreateCompanySerializer(serializers.ModelSerializer):
@@ -65,7 +67,7 @@ class CreateCompanySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         req = self.context.get("request")
-        ip_address = company_serializer.get_client_ip(req)
+        ip_address = get_client_ip(req)
         password = validated_data.pop("password", None)
 
         if not password:
@@ -94,7 +96,7 @@ class CreateCompanySerializer(serializers.ModelSerializer):
         company_instance.save()
         user.company_id = company_instance.id
         company_id = company_instance.id
-        result = company_serializer.create_company_role_family(req, company_id)
+        result = create_company_role_family(req, company_id)
         if result["success"]:
             for group in result["company_group"]:
                 group.user_set.add(user)
@@ -434,7 +436,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         req = self.context.get("request")
-        ip_address = company_serializer.get_client_ip(req)
+        ip_address = get_client_ip(req)
         password = validated_data.pop("password", None)
 
         if not password:
@@ -477,7 +479,7 @@ class CompanySerializer(serializers.ModelSerializer):
         company_instance.save()
         user.company_id = company_instance.id
         company_id = company_instance.id
-        result = company_serializer.create_company_role_family(req, company_id)
+        result = create_company_role_family(req, company_id)
         if result["success"]:
             for group in result["company_group"]:
                 group.user_set.add(user)
@@ -516,7 +518,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         request = self.context.get("request")
-        ip_address = company_serializer.get_client_ip(request)
+        ip_address = get_client_ip(request)
 
         phone = str(validated_data.get("phone", instance.phone or "")).strip()
         if phone and not phone.isdigit():
@@ -890,7 +892,7 @@ class CompanyArchiveSerializer(serializers.ModelSerializer):
         companies = []
         request = self.context.get("request") if hasattr(self, "context") else None
         user = getattr(request, "user", None) if request else None
-        ip_address = company_serializer.get_client_ip(request)
+        ip_address = get_client_ip(request)
 
         for deleted_id in deleted_ids:
             try:
@@ -949,7 +951,7 @@ class CompanyRestoreSerializer(serializers.ModelSerializer):
         deleted_ids = validated_data.pop("deleted", [])
         companies = []
         req = self.context.get("request")
-        ip_address = company_serializer.get_client_ip(req)
+        ip_address = get_client_ip(req)
 
         for deleted_id in deleted_ids:
             try:

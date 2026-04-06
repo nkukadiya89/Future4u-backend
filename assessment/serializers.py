@@ -6,12 +6,13 @@ from assessment.models import Option, Question, UserResponse
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option
-        fields = ["id", "option_text", "score_value"]
+        fields = ["id", "option_text", "score_value", "sequence_order"]
 
 
 class QuestionSerializer(serializers.ModelSerializer):
     options = OptionSerializer(many=True, read_only=True)
     mapped_domains = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    mapped_streams = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Question
@@ -19,8 +20,13 @@ class QuestionSerializer(serializers.ModelSerializer):
             "id",
             "question_text",
             "dimension",
+            "question_type",
+            "sequence_order",
             "signal_strength",
             "mapped_domains",
+            "mapped_streams",
+            "education_level",
+            "target_stream",
             "is_active",
             "options",
         ]

@@ -33,6 +33,10 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
             "future_relevance_score",
             "description",
             "is_active",
+            "interest_weight",
+            "aptitude_weight",
+            "personality_weight",
+            "work_style_weight",
             "is_archived",
             "created_at",
             "created_by",
@@ -73,6 +77,37 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
                 "Domain code must be unique (case-insensitive)."
             )
         return value
+
+    def validate(self, attrs):
+        """
+        Affinity weights validation:
+        - allow all null/omitted (meaning: fallback weights will be used)
+        - if any weight provided, require all 4 and ensure they sum to 1.0
+        """
+        attrs = super().validate(attrs)
+        keys = ("interest_weight", "aptitude_weight", "personality_weight", "work_style_weight")
+
+        # Determine the final values (include instance values on partial update)
+        values = []
+        provided_count = 0
+        for k in keys:
+            if k in attrs:
+                v = attrs.get(k)
+                provided_count += 1 if v is not None else 0
+                values.append(v)
+            else:
+                v = getattr(self.instance, k, None) if self.instance is not None else None
+                values.append(v)
+
+        any_set = any(v is not None for v in values)
+        if not any_set:
+            return attrs
+        if any(v is None for v in values):
+            raise serializers.ValidationError({k: "Provide all 4 weights, or leave all blank." for k in keys})
+        total = float(sum(float(v) for v in values))
+        if abs(total - 1.0) > 0.001:
+            raise serializers.ValidationError({k: "Weights must sum to 1.0." for k in keys})
+        return attrs
 
     def create(self, validated_data):
         validated_data.pop("parent_id", None)

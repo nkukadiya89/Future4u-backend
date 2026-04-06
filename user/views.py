@@ -135,60 +135,6 @@ class ForgetPasswordViewSet(ModelViewSet):
             )
 
 
-# class ResetPasswordViewSet(ModelViewSet):
-#     permission_classes = [AllowAny]
-#     authentication_classes = [JWTAuthentication]
-#     queryset = User.objects.all().order_by("-id")
-
-#     def create(self, request, token, *args, **kwargs):
-#         with transaction.atomic():
-#             try:
-#                 res_data = json.loads(request.body.decode("utf-8"))
-#             except Exception:
-#                 return Response(
-#                     {"success": False, "message": "Service not available"},
-#                     status=status.HTTP_401_UNAUTHORIZED,
-#                 )
-
-#             try:
-#                 payload = decode_token(token)
-#             except Exception:
-#                 return Response(
-#                     {"success": False, "message": "Token Expired"},
-#                     status=status.HTTP_401_UNAUTHORIZED,
-#                 )
-
-#             if "email" not in payload:
-#                 return Response(
-#                     {"success": False, "message": "Invalid Token"},
-#                     status=status.HTTP_401_UNAUTHORIZED,
-#                 )
-
-#             user = User.objects.filter(email=payload["email"]).first()
-#             if user is None:
-#                 return Response(
-#                     {"success": False, "message": "Email is not registered"},
-#                     status=status.HTTP_401_UNAUTHORIZED,
-#                 )
-
-#             password1 = res_data.get("password1", None)
-#             password2 = res_data.get("password2", None)
-#             if password1 and password2 is None:
-#                 return Response(
-#                     {"success": False, "message": "Provide valid Password"},
-#                     status=status.HTTP_401_UNAUTHORIZED,
-#                 )
-
-#             if password1 != password2:
-#                 return Response(
-#                     {"success": False, "message": "Passwords do not match."},
-#                     status=status.HTTP_400_BAD_REQUEST,
-#                 )
-
-
-#             company = Company.objects.filter(user=user).first()
-#             if company:
-#                 company.status = "active"
 class ResetPasswordViewSet(ModelViewSet):
     permission_classes = [AllowAny]
     authentication_classes = [JWTAuthentication]

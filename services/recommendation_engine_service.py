@@ -1,917 +1,377 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any
+from django.db import models
+from django.db.models import Count, F, FloatField, Sum
+from django.db.models.expressions import ExpressionWrapper
 
-from django.contrib.auth import get_user_model
-from django.db.models import Avg, Count
-
-from assessment.models import Question, UserResponse
+from assessment.models import UserResponse
+from assessment.services.counsellor_message_service import build_counsellor_message
+from assessment.services.domain_config import DOMAIN_CONFIG
+from assessment.services.universal_scoring_service import evaluate_domain
+from domain.models import Domain
 from domain_career_mapping.models import DomainCareerMapping
-from domain_skill_mapping.models import DomainSkillMapping
-from stream_domain_mapping.models import StreamDomainMapping
-from user_profile.models import UserProfile
-from user_skill.models import UserSkill
 
 
-DIMENSIONS = ("interest", "aptitude", "personality", "work_style")
+LEVEL_10TH = "secondary"
+LEVEL_12TH = "higher_secondary"
+LEVEL_ITI = "iti"
+LEVEL_DIPLOMA = "diploma"
+LEVEL_GRAD = "graduation"
+LEVEL_PG = "post_graduation"
+LEVEL_PHD = "doctorate"
+LEVEL_PROFESSIONAL = "professional"
 
-# ── Education tiers ────────────────────────────────────────────────────────────
-TIER_10TH = 2
-TIER_12TH = 3
-TIER_DIPLOMA = 5
-TIER_GRADUATE = 6
+STREAM_RECOMMENDATION_LEVELS = {LEVEL_10TH}
+DOMAIN_RECOMMENDATION_LEVELS = {LEVEL_12TH}
+ENTRY_CAREER_LEVELS = {LEVEL_ITI, LEVEL_DIPLOMA}
+FULL_CAREER_LEVELS = {LEVEL_GRAD, LEVEL_PG, LEVEL_PHD, LEVEL_PROFESSIONAL}
 
-# ── Domain dimension affinity matrix ──────────────────────────────────────────
-# Each domain defines how much each dimension contributes to fit.
-# High aptitude user → gets tech/analytical domains
-# High interest/personality → gets creative/people domains
-_DOMAIN_AFFINITY: dict[str, dict[str, float]] = {
-    "ai_data": {
-        "interest": 0.20,
-        "aptitude": 0.50,
-        "personality": 0.10,
-        "work_style": 0.20,
-    },
-    "data_engineering": {
-        "interest": 0.15,
-        "aptitude": 0.55,
-        "personality": 0.10,
-        "work_style": 0.20,
-    },
-    "cybersecurity": {
-        "interest": 0.20,
-        "aptitude": 0.50,
-        "personality": 0.15,
-        "work_style": 0.15,
-    },
-    "cloud_computing": {
-        "interest": 0.15,
-        "aptitude": 0.50,
-        "personality": 0.10,
-        "work_style": 0.25,
-    },
-    "devops": {
-        "interest": 0.15,
-        "aptitude": 0.45,
-        "personality": 0.10,
-        "work_style": 0.30,
-    },
-    "quantum": {
-        "interest": 0.20,
-        "aptitude": 0.60,
-        "personality": 0.10,
-        "work_style": 0.10,
-    },
-    "nanotech": {
-        "interest": 0.25,
-        "aptitude": 0.55,
-        "personality": 0.10,
-        "work_style": 0.10,
-    },
-    "blockchain": {
-        "interest": 0.20,
-        "aptitude": 0.50,
-        "personality": 0.10,
-        "work_style": 0.20,
-    },
-    "robotics": {
-        "interest": 0.25,
-        "aptitude": 0.45,
-        "personality": 0.10,
-        "work_style": 0.20,
-    },
-    "ev_mobility": {
-        "interest": 0.25,
-        "aptitude": 0.40,
-        "personality": 0.10,
-        "work_style": 0.25,
-    },
-    "manufacturing": {
-        "interest": 0.20,
-        "aptitude": 0.35,
-        "personality": 0.15,
-        "work_style": 0.30,
-    },
-    "energy_storage": {
-        "interest": 0.20,
-        "aptitude": 0.45,
-        "personality": 0.10,
-        "work_style": 0.25,
-    },
-    "renewable_energy": {
-        "interest": 0.25,
-        "aptitude": 0.40,
-        "personality": 0.15,
-        "work_style": 0.20,
-    },
-    "space_tech": {
-        "interest": 0.30,
-        "aptitude": 0.50,
-        "personality": 0.10,
-        "work_style": 0.10,
-    },
-    "iot": {
-        "interest": 0.25,
-        "aptitude": 0.45,
-        "personality": 0.10,
-        "work_style": 0.20,
-    },
-    "construction_tech": {
-        "interest": 0.20,
-        "aptitude": 0.35,
-        "personality": 0.15,
-        "work_style": 0.30,
-    },
-    "urban_tech": {
-        "interest": 0.25,
-        "aptitude": 0.40,
-        "personality": 0.15,
-        "work_style": 0.20,
-    },
-    "water_tech": {
-        "interest": 0.25,
-        "aptitude": 0.40,
-        "personality": 0.15,
-        "work_style": 0.20,
-    },
-    "healthtech": {
-        "interest": 0.30,
-        "aptitude": 0.35,
-        "personality": 0.25,
-        "work_style": 0.10,
-    },
-    "biotech": {
-        "interest": 0.25,
-        "aptitude": 0.45,
-        "personality": 0.20,
-        "work_style": 0.10,
-    },
-    "pharma": {
-        "interest": 0.25,
-        "aptitude": 0.45,
-        "personality": 0.20,
-        "work_style": 0.10,
-    },
-    "med_devices": {
-        "interest": 0.25,
-        "aptitude": 0.40,
-        "personality": 0.25,
-        "work_style": 0.10,
-    },
-    "mental_health": {
-        "interest": 0.30,
-        "aptitude": 0.20,
-        "personality": 0.40,
-        "work_style": 0.10,
-    },
-    "fintech": {
-        "interest": 0.25,
-        "aptitude": 0.40,
-        "personality": 0.15,
-        "work_style": 0.20,
-    },
-    "ecommerce": {
-        "interest": 0.30,
-        "aptitude": 0.30,
-        "personality": 0.20,
-        "work_style": 0.20,
-    },
-    "supply_chain": {
-        "interest": 0.20,
-        "aptitude": 0.35,
-        "personality": 0.15,
-        "work_style": 0.30,
-    },
-    "insurance_tech": {
-        "interest": 0.20,
-        "aptitude": 0.40,
-        "personality": 0.20,
-        "work_style": 0.20,
-    },
-    "hrtech": {
-        "interest": 0.25,
-        "aptitude": 0.25,
-        "personality": 0.35,
-        "work_style": 0.15,
-    },
-    "climate_tech": {
-        "interest": 0.35,
-        "aptitude": 0.35,
-        "personality": 0.15,
-        "work_style": 0.15,
-    },
-    "agritech": {
-        "interest": 0.30,
-        "aptitude": 0.35,
-        "personality": 0.15,
-        "work_style": 0.20,
-    },
-    "ar_vr": {
-        "interest": 0.40,
-        "aptitude": 0.30,
-        "personality": 0.20,
-        "work_style": 0.10,
-    },
-    "gaming": {
-        "interest": 0.40,
-        "aptitude": 0.35,
-        "personality": 0.15,
-        "work_style": 0.10,
-    },
-    "creator_economy": {
-        "interest": 0.45,
-        "aptitude": 0.15,
-        "personality": 0.30,
-        "work_style": 0.10,
-    },
-    "digital_marketing": {
-        "interest": 0.40,
-        "aptitude": 0.25,
-        "personality": 0.25,
-        "work_style": 0.10,
-    },
-    "marketing": {
-        "interest": 0.40,
-        "aptitude": 0.20,
-        "personality": 0.30,
-        "work_style": 0.10,
-    },
-    "edtech": {
-        "interest": 0.35,
-        "aptitude": 0.25,
-        "personality": 0.30,
-        "work_style": 0.10,
-    },
-    "legaltech": {
-        "interest": 0.25,
-        "aptitude": 0.40,
-        "personality": 0.25,
-        "work_style": 0.10,
-    },
-    "ai_ethics": {
-        "interest": 0.30,
-        "aptitude": 0.35,
-        "personality": 0.25,
-        "work_style": 0.10,
-    },
-    "traveltech": {
-        "interest": 0.40,
-        "aptitude": 0.20,
-        "personality": 0.30,
-        "work_style": 0.10,
-    },
-    "foodtech": {
-        "interest": 0.35,
-        "aptitude": 0.25,
-        "personality": 0.25,
-        "work_style": 0.15,
-    },
-    "fashiontech": {
-        "interest": 0.45,
-        "aptitude": 0.15,
-        "personality": 0.30,
-        "work_style": 0.10,
-    },
-    "sports_tech": {
-        "interest": 0.40,
-        "aptitude": 0.25,
-        "personality": 0.25,
-        "work_style": 0.10,
-    },
-    "defense_tech": {
-        "interest": 0.25,
-        "aptitude": 0.35,
-        "personality": 0.20,
-        "work_style": 0.20,
-    },
+TENTH_GRADE_STREAM_CODES = {
+    "science", "commerce", "arts", "vocational",
+    "sports", "fine_arts", "agriculture",
 }
 
 
-@dataclass(frozen=True)
-class _UserContext:
-    user_id: int
-    stream_id: Any
-    stream_code: str
-    education_sequence: int
-
-
-def _empty(message: str) -> dict[str, Any]:
-    return {
-        "message": message,
-        "tier": "unknown",
-        "recommended_streams": [],
-        "top_domains": [],
-        "top_careers": [],
-        "skill_gaps": [],
-        "next_step": None,
-    }
-
-
-# ── Scoring helpers ────────────────────────────────────────────────────────────
-
-
-def _score_1_5_to_0_100(value: float) -> float:
-    return max(0.0, min(100.0, ((value - 1.0) / 4.0) * 100.0))
-
-
-def _assessment_dimension_scores(*, user_id: int) -> dict[str, float]:
-    rows = (
-        UserResponse.objects.filter(user_id=user_id, question__is_active=True)
-        .values("question__dimension")
-        .annotate(avg=Avg("score_value"), answered=Count("id"))
-    )
-    totals = {
-        r["dimension"]: r["total"]
-        for r in Question.objects.filter(is_active=True)
-        .values("dimension")
-        .annotate(total=Count("id"))
-    }
-    by_dim: dict[str, float] = {d: 0.0 for d in DIMENSIONS}
-    for r in rows:
-        dim = r.get("question__dimension")
-        if dim not in DIMENSIONS or r.get("avg") is None:
-            continue
-        raw = _score_1_5_to_0_100(float(r["avg"]))
-        answered = int(r.get("answered") or 0)
-        total = int(totals.get(dim) or 1)
-        by_dim[dim] = raw * (answered / total)
-    return by_dim
-
-
-def _top_factor(scores: dict[str, float]) -> tuple[str, float]:
-    best = max(DIMENSIONS, key=lambda d: scores.get(d, 0.0))
-    return best, scores.get(best, 0.0)
-
-
-def _gap_level(gap: int) -> str:
-    if gap > 50:
-        return "HIGH"
-    if gap >= 20:
-        return "MEDIUM"
-    return "LOW"
-
-
-def _estimate_proficiency(*, skill_name: str, dim_scores: dict[str, float]) -> int:
-    name = (skill_name or "").lower()
-    aptitude = dim_scores.get("aptitude", 0.0)
-    interest = dim_scores.get("interest", 0.0)
-    technical = (
-        "python",
-        "sql",
-        "data",
-        "cloud",
-        "network",
-        "program",
-        "coding",
-        "ai",
-        "ml",
-        "devops",
-        "linux",
-        "api",
-    )
-    domain_kw = (
-        "marketing",
-        "finance",
-        "design",
-        "health",
-        "medical",
-        "communication",
-        "writing",
-        "business",
-        "management",
-    )
-    if any(k in name for k in technical):
-        basis = aptitude
-    elif any(k in name for k in domain_kw):
-        basis = interest
-    else:
-        basis = (
-            aptitude * 0.45
-            + interest * 0.45
-            + dim_scores.get("personality", 0.0) * 0.05
-            + dim_scores.get("work_style", 0.0) * 0.05
-        )
-    # If user has no assessment data at all, default to neutral (50) not minimum (40)
-    total_signal = sum(dim_scores.get(d, 0.0) for d in DIMENSIONS)
-    if total_signal == 0.0:
-        return 50
-    return int(round(max(40.0, min(70.0, 40.0 + (basis / 100.0) * 30.0))))
-
-
-def _fetch_context(*, user_id: int) -> _UserContext | None:
-    profile = (
-        UserProfile.objects.select_related("stream", "education_level")
-        .filter(user_id=user_id)
-        .first()
-    )
-    if not profile:
-        return None
-    edu = getattr(profile, "education_level", None)
-    if not edu:
-        return None
-    if getattr(edu, "deleted", False) or not getattr(edu, "is_active", True):
-        return None
-    seq = int(getattr(edu, "sequence_order", 0) or 0)
-
-    stream = getattr(profile, "stream", None)
-    if stream and (
-        getattr(stream, "deleted", False) or not getattr(stream, "is_active", True)
-    ):
-        stream = None
-
-    # seq > TIER_10TH means they've chosen a stream — it's required from 12th onwards
-    if seq > TIER_10TH and not stream:
-        return None
-
-    return _UserContext(
-        user_id=user_id,
-        stream_id=stream.pk if stream else None,
-        stream_code=getattr(stream, "stream_code", "") or "" if stream else "",
-        education_sequence=seq,
-    )
-
-
-# ── Stream scoring for 10th graders ───────────────────────────────────────────
-
-# Streams a 10th grader can actually choose in 12th grade (India education system)
-# College/degree-level streams are excluded — those come after 12th
-_VALID_12TH_STREAMS = {
-    "science",
-    "commerce",
-    "arts",
-    "vocational",
-    "fine_arts",
-    "sports",
-    "agriculture",
-}
-
-_DIM_STREAM_AFFINITY: dict[str, list[str]] = {
-    "aptitude": ["science", "commerce"],
-    "interest": ["arts", "fine_arts", "sports"],
-    "personality": ["arts", "fine_arts"],
-    "work_style": ["vocational", "agriculture"],
-}
-
-
-def _recommend_streams(*, dim_scores: dict[str, float]) -> list[dict[str, Any]]:
-    from stream.models import Stream
-
-    all_streams = {
-        s.stream_code: s
-        for s in Stream.objects.filter(
-            is_active=True, deleted=False, stream_code__in=_VALID_12TH_STREAMS
-        )
-    }
-    stream_scores: dict[str, float] = {}
-    for dim, codes in _DIM_STREAM_AFFINITY.items():
-        dim_val = dim_scores.get(dim, 0.0)
-        for code in codes:
-            if code in _VALID_12TH_STREAMS:
-                stream_scores[code] = stream_scores.get(code, 0.0) + dim_val
-
-    # Ensure all valid streams appear even if score is 0
-    for code in _VALID_12TH_STREAMS:
-        if code not in stream_scores:
-            stream_scores[code] = 0.0
-
-    top_dim = max(DIMENSIONS, key=lambda d: dim_scores.get(d, 0.0))
-    results = []
-    for code, score in sorted(stream_scores.items(), key=lambda x: -x[1]):
-        s = all_streams.get(code)
-        if not s:
-            continue
-        results.append(
-            {
-                "stream_code": code,
-                "stream_name": s.stream_name,
-                "score": round(score, 2),
-                "description": getattr(s, "description", "") or "",
-                "traditional_equivalent": getattr(s, "traditional_equivalent", "")
-                or "",
-                "reason": f"Suits your {top_dim} strength",
-            }
-        )
-    return results[:6]
-
-
-def _score_domains_from_stream_codes(
-    *, stream_codes: list[str], dim_scores: dict[str, float]
-) -> tuple[list[dict], dict, set]:
-    rows = list(
-        StreamDomainMapping.objects.filter(
-            stream__stream_code__in=stream_codes,
-            deleted=False,
-            is_active=True,
-            stream__deleted=False,
-            stream__is_active=True,
-            domain__deleted=False,
-            domain__is_active=True,
-        )
-        .select_related("domain")
-        .only(
-            "weight_score",
-            "domain__id",
-            "domain__domain_name",
-            "domain__domain_code",
-            "domain__future_relevance_score",
-        )
-    )
-    if not rows:
-        return [], {}, set()
-
-    best_stream_weight_by_domain: dict[Any, int] = {}
-    domain_ref: dict[Any, Any] = {}
-    for m in rows:
-        did = m.domain_id
-        w = int(getattr(m, "weight_score", 0) or 0)
-        if w > best_stream_weight_by_domain.get(did, 0):
-            best_stream_weight_by_domain[did] = w
-            domain_ref[did] = m.domain
-
-    items: list[dict] = []
-    top_pk_by_id: dict[str, Any] = {}
-    score_by_id: dict[Any, float] = {}
-    for did, stream_w in best_stream_weight_by_domain.items():
-        d = domain_ref[did]
-        domain_code = getattr(d, "domain_code", "") or ""
-        final = _domain_fit_score(
-            domain_code=domain_code, dim_scores=dim_scores, stream_weight=stream_w
-        )
-        score_by_id[did] = float(final)
-
-        affinity = _DOMAIN_AFFINITY.get(domain_code, {dim: 0.25 for dim in DIMENSIONS})
-        top_dim = max(
-            affinity, key=lambda k: dim_scores.get(k, 0.0) * affinity.get(k, 0.0)
-        )
-        dim_label = {
-            "interest": "interest",
-            "aptitude": "aptitude",
-            "personality": "personality fit",
-            "work_style": "work style",
-        }.get(top_dim, top_dim)
-        reason = f"Strong {dim_label} match for future stream options"
-        items.append(
-            {
-                "id": str(did),
-                "name": getattr(d, "domain_name", "") or "",
-                "score": round(float(final), 2),
-                "reason": reason.capitalize(),
-            }
-        )
-        top_pk_by_id[str(did)] = did
-
-    items.sort(key=lambda x: (-x["score"], x["name"]))
-    top = items[:10]
-    top_domain_pk_set = {top_pk_by_id[x["id"]] for x in top if x["id"] in top_pk_by_id}
-    return top, score_by_id, top_domain_pk_set
-
-
-# ── Domain scoring (shared across tiers) ──────────────────────────────────────
-
-
-def _domain_fit_score(
-    *, domain_code: str, dim_scores: dict[str, float], stream_weight: int
-) -> float:
+class RecommendationEngineService:
     """
-    Score = 70% from how well user's dimension scores match domain's affinity profile
-            30% from stream-domain mapping weight (relevance of stream to domain)
-    This ensures diverse results — a creative user gets creative domains regardless of stream.
+    Education-level aware recommendation engine.
+    - 10th  -> stream recommendations
+    - 12th  -> domain/field recommendations
+    - ITI/Diploma -> entry-level career + domain
+    - Grad/PG/PhD/Professional -> full career + domain
     """
-    affinity = _DOMAIN_AFFINITY.get(domain_code)
-    if affinity:
-        fit = sum(dim_scores.get(d, 0.0) * w for d, w in affinity.items())
-    else:
-        # fallback for domains not in affinity map: use equal weights
-        fit = sum(dim_scores.get(d, 0.0) for d in DIMENSIONS) / len(DIMENSIONS)
-    # Normalise stream weight to 0-100 scale and blend
-    return (fit * 0.70) + (stream_weight * 0.30)
 
+    DOMAIN_DECISION_TOP_N = 3
 
-def _score_domains(
-    *, ctx: _UserContext, dim_scores: dict[str, float]
-) -> tuple[list[dict], dict, set]:
-    rows = list(
-        StreamDomainMapping.objects.filter(
-            stream_id=ctx.stream_id,
-            deleted=False,
-            is_active=True,
-            domain__deleted=False,
-            domain__is_active=True,
+    def recommend(self, *, user_id):
+        level_code = self._get_education_level_code(user_id)
+
+        if level_code in STREAM_RECOMMENDATION_LEVELS:
+            result = self._recommend_streams(user_id=user_id)
+        elif level_code in DOMAIN_RECOMMENDATION_LEVELS:
+            result = self._recommend_domains_for_college(user_id=user_id)
+        else:
+            result = self._recommend_careers(user_id=user_id, level_code=level_code)
+            result["education_level"] = level_code
+            result["is_entry_level"] = level_code in ENTRY_CAREER_LEVELS
+
+        top_domain = result.get("top_domain") or result.get("domain")
+        result["counsellor"] = build_counsellor_message(
+            level_code=result.get("education_level") or level_code,
+            recommendation_type=result.get("recommendation_type"),
+            top_stream=result.get("top_stream"),
+            stream_ranking=result.get("stream_ranking", []),
+            top_domain=top_domain,
+            domain_ranking=result.get("domain_ranking", []),
+            top_career=result.get("top_career"),
+            career_scores=result.get("career_scores", {}),
+            confidence=result.get("confidence", 0),
+            is_entry_level=result.get("is_entry_level", False),
+            override_reason=result.get("override_reason"),
         )
-        .select_related("domain")
-        .only(
-            "id",
-            "weight_score",
-            "domain__id",
-            "domain__domain_name",
-            "domain__domain_code",
-            "domain__future_relevance_score",
+        return result
+
+    def _recommend_streams(self, *, user_id):
+        weighted_expr = ExpressionWrapper(
+            (6.0 - F("score_value")) * F("question__signal_strength"), output_field=FloatField()
         )
-    )
-    if not rows:
-        return [], {}, set()
-
-    items: list[dict] = []
-    score_by_id: dict[Any, float] = {}
-
-    for m in rows:
-        d = m.domain
-        stream_w = int(getattr(m, "weight_score", 0) or 0)
-        domain_code = getattr(d, "domain_code", "") or ""
-        final = _domain_fit_score(
-            domain_code=domain_code, dim_scores=dim_scores, stream_weight=stream_w
+        max_expr = ExpressionWrapper(
+            F("question__signal_strength") * 5.0, output_field=FloatField()
         )
-        score_by_id[d.pk] = float(final)
-
-        # Build human-readable reason from top contributing dimension for this domain
-        affinity = _DOMAIN_AFFINITY.get(domain_code, {d: 0.25 for d in DIMENSIONS})
-        top_dim = max(
-            affinity, key=lambda k: dim_scores.get(k, 0.0) * affinity.get(k, 0.0)
-        )
-        dim_label = {
-            "interest": "interest",
-            "aptitude": "aptitude",
-            "personality": "personality fit",
-            "work_style": "work style",
-        }.get(top_dim, top_dim)
-        rel = getattr(d, "future_relevance_score", None)
-        rel_note = (
-            " · high future relevance"
-            if rel and rel >= 80
-            else " · niche future relevance" if rel and rel <= 40 else ""
-        )
-        reason = f"Strong {dim_label} match{rel_note}".capitalize()
-
-        items.append(
-            {
-                "id": str(d.pk),
-                "name": getattr(d, "domain_name", "") or "",
-                "score": round(float(final), 2),
-                "reason": reason,
-            }
-        )
-
-    items.sort(key=lambda x: (-x["score"], x["name"]))
-    top = items[:10]
-    # Build pk_set from the actual top items — not from stream rows (avoids mismatch after re-sort)
-    top_id_set = {x["id"] for x in top}
-    pk_set = {m.domain.pk for m in rows if str(m.domain.pk) in top_id_set}
-    return top, score_by_id, pk_set
-
-
-# ── Career scoring ─────────────────────────────────────────────────────────────
-
-
-def _score_careers(
-    *,
-    top_domain_pk_set: set,
-    domain_score_by_id: dict,
-    top_dim: str,
-    edu_seq: int,
-    filter_by_edu: bool,
-) -> list[dict]:
-    dim_label = {
-        "interest": "interest",
-        "aptitude": "aptitude",
-        "personality": "personality",
-        "work_style": "work style",
-    }.get(top_dim, top_dim)
-
-    career_filter: dict[str, Any] = dict(
-        domain_id__in=top_domain_pk_set,
-        deleted=False,
-        is_active=True,
-        domain__deleted=False,
-        domain__is_active=True,
-        career__deleted=False,
-        career__is_active=True,
-    )
-    if filter_by_edu:
-        career_filter["career__min_education_level__sequence_order__lte"] = edu_seq
-
-    rows = list(
-        DomainCareerMapping.objects.filter(**career_filter)
-        .select_related("domain", "career", "career__min_education_level")
-        .order_by("-weight_score", "career__career_name")
-    )
-
-    career_map: dict[str, dict] = {}
-    for m in rows:
-        dscore = float(domain_score_by_id.get(m.domain_id, 0.0))
-        mw = int(getattr(m, "weight_score", 0) or 0)
-        cscore = (dscore * mw) / 100.0
-        align = "strong" if mw >= 80 else ("good" if mw >= 60 else "moderate")
-        entry = {
-            "id": str(m.career_id),
-            "name": getattr(m.career, "career_name", "") or "",
-            "score": round(cscore, 2),
-            "reason": f"From {getattr(m.domain, 'domain_name', '') or 'your top domain'}: {align} fit driven by your {dim_label}",
-        }
-        cid = entry["id"]
-        if cid not in career_map or cscore > career_map[cid]["score"]:
-            career_map[cid] = entry
-
-    result = sorted(career_map.values(), key=lambda x: (-x["score"], x["name"]))
-    return result[:20]
-
-
-# ── Skill gap scoring ──────────────────────────────────────────────────────────
-
-
-def _score_skill_gaps(
-    *, top_domain_pk_set: set, user_id: int, dim_scores: dict[str, float]
-) -> list[dict]:
-    skill_rows = list(
-        DomainSkillMapping.objects.filter(
-            domain_id__in=top_domain_pk_set,
-            deleted=False,
-            is_active=True,
-            domain__deleted=False,
-            domain__is_active=True,
-            skill__deleted=False,
-            skill__is_active=True,
-        )
-        .select_related("skill")
-        .only("skill_id", "weight_score", "skill__skill_name")
-    )
-    req: dict[Any, int] = {}
-    names: dict[Any, str] = {}
-    for m in skill_rows:
-        sid = m.skill_id
-        w = int(getattr(m, "weight_score", 0) or 0)
-        if w > req.get(sid, 0):
-            req[sid] = w
-        names[sid] = getattr(m.skill, "skill_name", "") or ""
-
-    user_skills = {
-        r.skill_id: int(r.proficiency_score)
-        for r in UserSkill.objects.filter(
-            user_id=user_id,
-            deleted=False,
-            is_active=True,
-            skill__deleted=False,
-            skill__is_active=True,
-        ).only("skill_id", "proficiency_score")
-    }
-
-    rank = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
-    gaps = []
-    for sid, rw in req.items():
-        prof = user_skills.get(sid) or _estimate_proficiency(
-            skill_name=names.get(sid, ""), dim_scores=dim_scores
-        )
-        level = _gap_level(rw - prof)
-        gaps.append({"skill": names.get(sid, ""), "gap_level": level})
-
-    gaps.sort(key=lambda x: (rank.get(x["gap_level"], 99), x["skill"]))
-    return gaps[:50]
-
-
-# ── Main entry point ───────────────────────────────────────────────────────────
-
-
-def generate_recommendation(user_id: int) -> dict[str, Any]:
-    User = get_user_model()
-    if not User.objects.filter(pk=user_id).exists():
-        return _empty("User not found.")
-
-    ctx = _fetch_context(user_id=user_id)
-    if ctx is None:
-        return _empty(
-            "Complete your profile (education level + stream) to get recommendations."
-        )
-
-    dim_scores = _assessment_dimension_scores(user_id=user_id)
-    top_dim, _ = _top_factor(dim_scores)
-    seq = ctx.education_sequence
-
-    # ── TIER 1: 10th grade ────────────────────────────────────────────────────
-    if seq <= TIER_10TH:
-        recommended_streams = _recommend_streams(dim_scores=dim_scores)
-        stream_codes = [
-            s.get("stream_code") for s in recommended_streams if s.get("stream_code")
-        ]
-        top_domains, domain_score_by_id, top_domain_pk_set = (
-            _score_domains_from_stream_codes(
-                stream_codes=stream_codes,
-                dim_scores=dim_scores,
-            )
-        )
-        top_careers = (
-            _score_careers(
-                top_domain_pk_set=top_domain_pk_set,
-                domain_score_by_id=domain_score_by_id,
-                top_dim=top_dim,
-                edu_seq=seq,
-                filter_by_edu=False,
-            )
-            if top_domain_pk_set
-            else []
-        )
-        skill_gaps = (
-            _score_skill_gaps(
-                top_domain_pk_set=top_domain_pk_set,
+        rows = (
+            UserResponse.objects.filter(
                 user_id=user_id,
-                dim_scores=dim_scores,
+                question__mapped_streams__stream_code__in=TENTH_GRADE_STREAM_CODES,
+                question__mapped_streams__is_active=True,
+                question__mapped_streams__deleted=False,
             )
-            if top_domain_pk_set
-            else []
+            .values(
+                "question__mapped_streams__id",
+                "question__mapped_streams__stream_code",
+                "question__mapped_streams__stream_name",
+            )
+            .annotate(
+                weighted_sum=Sum(weighted_expr, output_field=FloatField()),
+                max_possible=Sum(max_expr, output_field=FloatField()),
+            )
+            .order_by("-weighted_sum")
         )
-        # Keep only stronger signals for cleaner 10th-grade output.
-        strong_top_careers = [
-            c for c in top_careers if float(c.get("score", 0.0)) >= 40.0
-        ]
-        medium_high_skill_gaps = [
-            g for g in skill_gaps if g.get("gap_level") in {"HIGH", "MEDIUM"}
-        ]
-        # Keep 10th-grade response concise but informative.
-        recommended_streams = recommended_streams[:4]
-        top_domains = top_domains[:6]
-        top_careers = (strong_top_careers or top_careers)[:8]
-        skill_gaps = (medium_high_skill_gaps or skill_gaps)[:10]
+
+        stream_ranking = []
+        for row in rows:
+            max_possible = float(row.get("max_possible") or 0.0)
+            weighted_sum = float(row.get("weighted_sum") or 0.0)
+            normalized = (weighted_sum / max_possible * 100.0) if max_possible > 0 else 0.0
+            stream_ranking.append({
+                "stream_id": str(row["question__mapped_streams__id"]),
+                "stream_code": row["question__mapped_streams__stream_code"],
+                "stream_name": row["question__mapped_streams__stream_name"],
+                "score": int(round(max(0.0, min(100.0, normalized)))),
+            })
+
+        if not stream_ranking:
+            return self._fallback_result(education_level=LEVEL_10TH)
+
+        stream_ranking.sort(key=lambda s: -s["score"])
+        confidence = self._calc_confidence(stream_ranking, score_key="score")
+
         return {
-            "tier": "10th",
-            "message": "Based on your assessment, here are the best streams to choose in 12th grade.",
-            "recommended_streams": recommended_streams,
-            "top_domains": top_domains,
-            "top_careers": top_careers,
-            "skill_gaps": skill_gaps,
-            "next_step": "Choose your 12th stream, then retake the assessment for domain and career recommendations.",
+            "education_level": LEVEL_10TH,
+            "recommendation_type": "stream",
+            "top_stream": stream_ranking[0]["stream_code"] if stream_ranking else None,
+            "stream_ranking": stream_ranking,
+            "domain_ranking": [],
+            "career_scores": {},
+            "top_career": None,
+            "confidence": confidence,
         }
 
-    # ── TIER 2: 12th grade ────────────────────────────────────────────────────
-    if seq == TIER_12TH:
-        top_domains, _, _ = _score_domains(ctx=ctx, dim_scores=dim_scores)
-        if not top_domains:
-            return _empty("No domain mappings found for your stream.")
+    def _recommend_domains_for_college(self, *, user_id):
+        domain_ranking = self._rank_domains(user_id=user_id)
+        if not domain_ranking:
+            return self._fallback_result(education_level=LEVEL_12TH)
+
+        confidence = self._calc_confidence(domain_ranking)
         return {
-            "tier": "12th",
-            "message": "Based on your stream and assessment, here are the best domains to pursue in college.",
-            "recommended_streams": [],
-            "top_domains": top_domains,
-            "top_careers": [],
-            "skill_gaps": [],
-            "next_step": "Enroll in a relevant degree program. Complete your graduation to unlock career recommendations.",
+            "education_level": LEVEL_12TH,
+            "recommendation_type": "college_domain",
+            "top_domain": domain_ranking[0]["domain_code"] if domain_ranking else None,
+            "domain_ranking": domain_ranking,
+            "career_scores": {},
+            "top_career": None,
+            "confidence": confidence,
         }
 
-    # ── TIER 3: ITI / Diploma ─────────────────────────────────────────────────
-    if seq <= TIER_DIPLOMA:
-        top_domains, domain_score_by_id, top_domain_pk_set = _score_domains(
-            ctx=ctx, dim_scores=dim_scores
+    def _recommend_careers(self, *, user_id, level_code: str | None = None):
+        domain_ranking = self._rank_domains(user_id=user_id)
+        if not domain_ranking:
+            return self._fallback_result()
+
+        LEVEL_ORDER = {
+            "secondary": 2, "higher_secondary": 3, "iti": 4, "diploma": 5,
+            "graduation": 6, "post_graduation": 7, "doctorate": 8, "professional": 9,
+        }
+        user_level_seq = LEVEL_ORDER.get(level_code or "", 0)
+
+        top_domain = None
+        top_domain_override_reason = None
+        for i, ranked in enumerate(domain_ranking[:5]):
+            candidate = Domain.objects.filter(
+                id=ranked["domain_id"], deleted=False, is_active=True
+            ).first()
+            if candidate is None:
+                continue
+            career_qs = DomainCareerMapping.objects.filter(
+                domain=candidate, deleted=False, is_active=True,
+                career__deleted=False, career__is_active=True,
+            ).select_related("career__min_education_level")
+            eligible = [
+                m for m in career_qs
+                if not m.career.min_education_level or user_level_seq == 0
+                or LEVEL_ORDER.get((m.career.min_education_level.level_code or "").lower(), 0) <= user_level_seq
+            ]
+            if eligible:
+                if i > 0:
+                    top_domain_override_reason = (
+                        f"{domain_ranking[0]['domain_name']} scored highest but has no careers "
+                        f"mapped at your level — showing {ranked['domain_name']} instead."
+                    )
+                top_domain = candidate
+                break
+
+        if top_domain is None:
+            return self._fallback_result()
+
+        generic_result = self._build_generic_result(
+            top_domain=top_domain,
+            domain_ranking=domain_ranking,
+            level_code=level_code,
         )
-        if not top_domains:
-            return _empty("No domain mappings found for your stream.")
-        top_careers = _score_careers(
-            top_domain_pk_set=top_domain_pk_set,
-            domain_score_by_id=domain_score_by_id,
-            top_dim=top_dim,
-            edu_seq=seq,
-            filter_by_edu=True,
+        if top_domain_override_reason:
+            generic_result["override_reason"] = top_domain_override_reason
+
+        decision_results = self._evaluate_top_domain_decisions(
+            user_id=user_id,
+            domain_ranking=domain_ranking,
         )
+
+        top_domain_code = (top_domain.domain_code or "").strip().lower()
+        top_decision = decision_results.get(top_domain_code)
+        if top_decision:
+            merged = dict(generic_result)
+            merged.update(top_decision)
+            merged["domain_ranking"] = domain_ranking
+            merged["domain_decisions"] = decision_results
+            merged["override_reason"] = generic_result.get("override_reason")
+            return merged
+
+        if decision_results:
+            first_decision = next(iter(decision_results.values()))
+            merged = dict(generic_result)
+            merged.update(first_decision)
+            merged["domain_ranking"] = domain_ranking
+            merged["domain_decisions"] = decision_results
+            merged["override_reason"] = generic_result.get("override_reason")
+            return merged
+
+        return generic_result
+
+    def _get_education_level_code(self, user_id) -> str | None:
+        from user_profile.models import UserProfile
+        try:
+            profile = UserProfile.objects.select_related("education_level").get(user_id=user_id)
+            edu = profile.education_level
+            return (edu.level_code or "").lower() if edu else None
+        except UserProfile.DoesNotExist:
+            return None
+
+    def _evaluate_top_domain_decisions(self, *, user_id, domain_ranking: list[dict]) -> dict[str, dict]:
+        decisions: dict[str, dict] = {}
+        for ranked_domain in domain_ranking[:self.DOMAIN_DECISION_TOP_N]:
+            domain_code = (ranked_domain.get("domain_code") or "").strip().lower()
+            if not domain_code or domain_code not in DOMAIN_CONFIG:
+                continue
+            domain_result = evaluate_domain(domain_code=domain_code, user_id=user_id)
+            if domain_result:
+                decisions[domain_code] = domain_result
+        return decisions
+
+    def _rank_domains(self, *, user_id):
+        from user_profile.models import UserProfile
+        weighted_expr = ExpressionWrapper(
+            (6.0 - F("score_value")) * F("question__signal_strength"), output_field=FloatField()
+        )
+        max_expr = ExpressionWrapper(
+            F("question__signal_strength") * 5.0, output_field=FloatField()
+        )
+
+        level_filter = models.Q(question__education_level__isnull=True)
+        try:
+            profile = UserProfile.objects.select_related("education_level").get(user_id=user_id)
+            if profile.education_level:
+                level_filter = (
+                    models.Q(question__education_level=profile.education_level)
+                    | models.Q(question__education_level__isnull=True)
+                )
+        except UserProfile.DoesNotExist:
+            pass
+
+        rows = (
+            UserResponse.objects.filter(
+                level_filter,
+                user_id=user_id,
+                question__mapped_domains__deleted=False,
+                question__mapped_domains__is_active=True,
+            )
+            .values(
+                "question__mapped_domains__id",
+                "question__mapped_domains__domain_code",
+                "question__mapped_domains__domain_name",
+            )
+            .annotate(
+                weighted_sum=Sum(weighted_expr, output_field=FloatField()),
+                max_possible=Sum(max_expr, output_field=FloatField()),
+                question_count=Count("id", distinct=True),
+            )
+            .order_by("-weighted_sum", "-max_possible")
+        )
+
+        total_answered = UserResponse.objects.filter(level_filter, user_id=user_id).count()
+
+        domain_ranking = []
+        for row in rows:
+            max_possible = float(row.get("max_possible") or 0.0)
+            weighted_sum = float(row.get("weighted_sum") or 0.0)
+            q_count = int(row.get("question_count") or 0)
+            if max_possible <= 0:
+                continue
+            raw_score = (weighted_sum / max_possible) * 100.0
+            coverage = min(1.0, q_count / max(1, total_answered * 0.20))
+            adjusted = (raw_score * 0.60) + (raw_score * coverage * 0.40)
+            domain_ranking.append({
+                "domain_id": row["question__mapped_domains__id"],
+                "domain_code": row["question__mapped_domains__domain_code"],
+                "domain_name": row["question__mapped_domains__domain_name"],
+                "score": int(round(max(0.0, min(100.0, adjusted)))),
+                "question_count": q_count,
+                "_raw": raw_score,
+                "_weighted_sum": weighted_sum,
+            })
+
+        domain_ranking.sort(
+            key=lambda d: (-d["score"], -d["question_count"], -d["_raw"], d["domain_code"])
+        )
+        for d in domain_ranking:
+            d.pop("_raw", None)
+            d.pop("_weighted_sum", None)
+
+        return domain_ranking
+
+    def _build_generic_result(self, *, top_domain: Domain, domain_ranking: list[dict], level_code: str | None = None):
+        top_domain_score = domain_ranking[0]["score"] if domain_ranking else 0
+        mappings_qs = DomainCareerMapping.objects.filter(
+            domain=top_domain, deleted=False, is_active=True,
+            career__deleted=False, career__is_active=True,
+        ).select_related("career", "career__min_education_level")
+
+        LEVEL_ORDER = {
+            "secondary": 2, "higher_secondary": 3, "iti": 4, "diploma": 5,
+            "graduation": 6, "post_graduation": 7, "doctorate": 8, "professional": 9,
+        }
+        user_level_seq = LEVEL_ORDER.get(level_code or "", 0)
+
+        career_scores: dict[str, int] = {}
+        for mapping in mappings_qs.order_by("-weight_score", "career__career_name"):
+            career = mapping.career
+            if career.min_education_level:
+                min_seq = LEVEL_ORDER.get((career.min_education_level.level_code or "").lower(), 0)
+                if user_level_seq > 0 and min_seq > user_level_seq:
+                    continue
+            key = career.career_code or str(career.id)
+            score = int(round((mapping.weight_score * top_domain_score) / 100.0))
+            career_scores[key] = max(0, min(100, score))
+
+        top_career = None
+        if career_scores:
+            top_career = max(career_scores.items(), key=lambda item: item[1])[0]
+
+        confidence = self._calc_confidence(domain_ranking)
         return {
-            "tier": "diploma",
-            "message": "Here are domains and entry-level careers suited to your profile.",
-            "recommended_streams": [],
-            "top_domains": top_domains,
-            "top_careers": top_careers,
-            "skill_gaps": [],
-            "next_step": "Consider upgrading to a degree program to unlock more career options and skill gap analysis.",
+            "recommendation_type": "career",
+            "domain": (top_domain.domain_code or "").lower(),
+            "career_scores": career_scores,
+            "top_career": top_career,
+            "domain_ranking": domain_ranking,
+            "confidence": confidence,
         }
 
-    # ── TIER 4: Graduate+ ─────────────────────────────────────────────────────
-    top_domains, domain_score_by_id, top_domain_pk_set = _score_domains(
-        ctx=ctx, dim_scores=dim_scores
-    )
-    if not top_domains:
-        return _empty("No domain mappings found for your stream.")
+    @staticmethod
+    def _calc_confidence(ranking: list[dict], score_key: str = "score") -> int:
+        if not ranking:
+            return 0
+        top_score = ranking[0].get(score_key, 0)
+        q_count = ranking[0].get("question_count", 1)
+        score_component = top_score * 0.70
+        if len(ranking) > 1:
+            gap = top_score - ranking[1].get(score_key, 0)
+            separation = min(20, gap * 0.5)
+        else:
+            separation = 15
+        coverage = min(15, q_count * 2.5)
+        raw = score_component + separation + coverage
+        return int(round(min(88, max(0, raw))))
 
-    top_careers = _score_careers(
-        top_domain_pk_set=top_domain_pk_set,
-        domain_score_by_id=domain_score_by_id,
-        top_dim=top_dim,
-        edu_seq=seq,
-        filter_by_edu=False,
-    )
-    skill_gaps = _score_skill_gaps(
-        top_domain_pk_set=top_domain_pk_set, user_id=user_id, dim_scores=dim_scores
-    )
-
-    has_assessment = UserResponse.objects.filter(
-        user_id=user_id, question__is_active=True
-    ).exists()
-    message = (
-        "ok"
-        if has_assessment
-        else "Complete the assessment for more accurate recommendations."
-    )
-
-    return {
-        "tier": "graduate",
-        "message": message,
-        "recommended_streams": [],
-        "top_domains": top_domains,
-        "top_careers": top_careers,
-        "skill_gaps": skill_gaps,
-        "next_step": None,
-    }
+    @staticmethod
+    def _fallback_result(education_level=None):
+        return {
+            "education_level": education_level,
+            "recommendation_type": None,
+            "domain": None,
+            "top_stream": None,
+            "top_domain": None,
+            "career_scores": {},
+            "top_career": None,
+            "confidence": 0,
+            "domain_ranking": [],
+            "stream_ranking": [],
+        }

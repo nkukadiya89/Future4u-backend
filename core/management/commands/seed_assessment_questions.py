@@ -11,7 +11,7 @@ from assessment.models import Option, Question
 from domain.models import Domain
 
 
-DIMENSIONS = ("interest", "aptitude", "personality", "work_style")
+DIMENSIONS = ("interest", "aptitude", "personality", "work_style", "background")
 
 SAMPLE_HEADERS = (
     "dimension",
@@ -76,16 +76,12 @@ class Command(BaseCommand):
                 raise ValueError("CSV has no header row.")
             has_mapped_domains_column = "mapped_domains" in reader.fieldnames
             has_signal_strength_column = "signal_strength" in reader.fieldnames
-            required_headers = (
-                "dimension",
-                "question_text",
-                "is_active",
-                "option_1",
-                "option_2",
-                "option_3",
-                "option_4",
-                "option_5",
-            )
+            has_question_type_column = "question_type" in reader.fieldnames
+            has_mapped_streams_column = "mapped_streams" in reader.fieldnames
+            has_education_level_column = "education_level" in reader.fieldnames
+            has_target_stream_column = "target_stream" in reader.fieldnames
+            has_sequence_order_column = "sequence_order" in reader.fieldnames
+            required_headers = ("dimension", "question_text", "is_active", "option_1", "option_2", "option_3", "option_4", "option_5")
             missing = [h for h in required_headers if h not in reader.fieldnames]
             if missing:
                 raise ValueError(f"Missing headers: {', '.join(missing)}")
@@ -97,6 +93,12 @@ class Command(BaseCommand):
                 signal_strength_raw = (r.get("signal_strength") or "").strip()
                 active_raw = (r.get("is_active") or "1").strip().lower()
                 is_active = active_raw in ("1", "true", "yes", "y")
+
+                # Skip blank rows and comment lines
+                if not dim or dim.startswith("#"):
+                    continue
+                if not qt or qt.startswith("#"):
+                    continue
 
                 if dim not in DIMENSIONS:
                     raise ValueError(f"Row {idx}: invalid dimension '{dim}'")
@@ -113,11 +115,9 @@ class Command(BaseCommand):
                         f"Row {idx}: signal_strength must be a positive integer"
                     ) from exc
 
-                domain_codes = [
-                    code.strip()
-                    for code in mapped_domains_raw.split(",")
-                    if code.strip()
-                ]
+                # Support both | and , as separators
+                sep = "|" if "|" in mapped_domains_raw else ","
+                domain_codes = [code.strip() for code in mapped_domains_raw.split(sep) if code.strip()]
                 domain_ids = []
                 if domain_codes:
                     domains = []
@@ -132,13 +132,45 @@ class Command(BaseCommand):
                         c for c in domain_codes if c.lower() not in found_codes
                     ]
                     if missing_codes:
-                        # Keep seeding usable even if domain master isn't loaded yet.
                         self.stdout.write(
                             self.style.WARNING(
                                 f"Row {idx}: mapped_domains not found (skipping): {', '.join(missing_codes)}"
                             )
                         )
                     domain_ids = [d.id for d in domains]
+
+                # Parse extra columns
+                question_type = (r.get("question_type") or "scale").strip().lower() if has_question_type_column else "scale"
+                mapped_streams_raw = (r.get("mapped_streams") or "").strip() if has_mapped_streams_column else ""
+                education_level_code = (r.get("education_level") or "").strip() if has_education_level_column else ""
+                target_stream_code = (r.get("target_stream") or "").strip() if has_target_stream_column else ""
+                sequence_order_raw = (r.get("sequence_order") or "0").strip() if has_sequence_order_column else "0"
+                try:
+                    sequence_order = int(sequence_order_raw) if sequence_order_raw else 0
+                except ValueError:
+                    sequence_order = 0
+
+                # Resolve education_level FK
+                education_level_obj = None
+                if education_level_code:
+                    from education_level.models import EducationLevel
+                    education_level_obj = EducationLevel.objects.filter(level_code__iexact=education_level_code).first()
+
+                # Resolve target_stream FK
+                target_stream_obj = None
+                if target_stream_code:
+                    from stream.models import Stream
+                    target_stream_obj = Stream.objects.filter(stream_code__iexact=target_stream_code, deleted=False).first()
+
+                # Resolve mapped_streams M2M
+                stream_codes = [s.strip() for s in mapped_streams_raw.split("|") if s.strip()]
+                stream_ids = []
+                if stream_codes:
+                    from stream.models import Stream
+                    for sc in stream_codes:
+                        s_obj = Stream.objects.filter(stream_code__iexact=sc, deleted=False).first()
+                        if s_obj:
+                            stream_ids.append(s_obj.id)
 
                 if dry_run:
                     self.stdout.write(
@@ -147,15 +179,18 @@ class Command(BaseCommand):
                     )
                     continue
 
+                defaults = {
+                    "is_active": is_active,
+                    "signal_strength": signal_strength if has_signal_strength_column else 1,
+                    "question_type": question_type,
+                    "sequence_order": sequence_order,
+                    "education_level": education_level_obj,
+                    "target_stream": target_stream_obj,
+                }
                 q, q_created = Question.objects.get_or_create(
                     dimension=dim,
                     question_text=qt,
-                    defaults={
-                        "is_active": is_active,
-                        "signal_strength": (
-                            signal_strength if has_signal_strength_column else 1
-                        ),
-                    },
+                    defaults=defaults,
                 )
                 if q_created:
                     created_q += 1
@@ -179,6 +214,12 @@ class Command(BaseCommand):
                         q.mapped_domains.set(domain_ids)
                     else:
                         q.mapped_domains.clear()
+
+                if has_mapped_streams_column:
+                    if stream_ids:
+                        q.mapped_streams.set(stream_ids)
+                    else:
+                        q.mapped_streams.clear()
 
                 for i in range(1, 6):
                     cell = (r.get(f"option_{i}") or "").strip()

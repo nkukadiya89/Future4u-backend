@@ -631,13 +631,6 @@ class AddToCartWithSiteSerializer(serializers.Serializer):
         except Subscription.DoesNotExist:
             raise serializers.ValidationError("Subscription not found.")
 
-        site_ids = data.get("site", [])
-        # if site_ids:
-        #     valid_sites = SiteLocation.objects.filter(id__in=site_ids, company=user_company, deleted=False)
-        #     if valid_sites.count() != len(site_ids):
-        #         raise serializers.ValidationError("One or more sites are invalid or do not belong to your company.")
-        #     data["site_instances"] = list(valid_sites)
-
         return data
 
     def to_representation(self, instance):

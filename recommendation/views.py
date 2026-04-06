@@ -1,4 +1,3 @@
-from django.db.models import Prefetch
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -9,7 +8,7 @@ from career.models import Career
 from domain.models import Domain
 from domain_career_mapping.models import DomainCareerMapping
 from domain_skill_mapping.models import DomainSkillMapping
-from services.recommendation_engine_service import generate_recommendation
+from services.recommendation_engine_service import RecommendationEngineService
 from django.core.cache import cache
 from utils.cache_keys import recommendation_key
 from utils.throttles import RecommendationRateThrottle
@@ -30,62 +29,59 @@ class RecommendationListAPIView(APIView):
 
         if cached is None:
             try:
-                out = generate_recommendation(request.user.id)
+                cached = RecommendationEngineService().recommend(user_id=request.user.id)
             except Exception:
-                out = {
-                    "message": "Unable to generate recommendations right now.",
-                    "tier": "unknown",
-                    "suggestion": [],
-                    "recommended_streams": [],
-                    "top_domains": [],
-                    "top_careers": [],
-                    "skill_gaps": [],
-                    "next_step": None,
+                cached = {
+                    "recommendation_type": None,
+                    "education_level": None,
+                    "confidence": 0,
+                    "counsellor": {
+                        "label": "Let's get a bit more from you first",
+                        "confidence_label": "Not enough data yet",
+                        "insight": "Unable to generate recommendations right now.",
+                        "tradeoff": None,
+                        "action": "Please try again later.",
+                        "tension": None,
+                    },
                 }
-            cached = {
-                "message": out.get("message") or "ok",
-                "tier": out.get("tier") or "unknown",
-                "next_step": out.get("next_step"),
-                "suggestion": out.get("suggestion") or [],
-                "recommended_streams": out.get("recommended_streams") or [],
-                "top_domains": out.get("top_domains") or [],
-                "top_careers": out.get("top_careers") or [],
-                "skill_gaps": out.get("skill_gaps") or [],
-            }
+            # Attach report before caching
+            try:
+                from assessment.services.counsellor_report_service import build_counsellor_report
+                report = build_counsellor_report(cached)
+                if report:
+                    cached["report"] = report
+            except Exception:
+                pass
             try:
                 cache.set(key, cached, 60 * 5)
             except Exception:
                 pass
         else:
-            # Stale-while-revalidate: refresh in background (best-effort).
-            # Does not change response shape or delay the request.
             try:
                 refresh_recommendation_cache_async(request.user.id, ttl_seconds=60 * 5)
             except Exception:
                 pass
 
-        # Always return a non-empty structured payload for UX safety.
-        if not isinstance(cached, dict):
-            cached = {
-                "message": "ok",
-                "tier": "unknown",
-                "next_step": None,
-                "suggestion": [],
-                "recommended_streams": [],
-                "top_domains": [],
-                "top_careers": [],
-                "skill_gaps": [],
-            }
-        cached.setdefault("message", "ok")
-        cached.setdefault("tier", "unknown")
-        cached.setdefault("next_step", None)
-        cached.setdefault("suggestion", [])
-        cached.setdefault("recommended_streams", [])
-        cached.setdefault("top_domains", [])
-        cached.setdefault("top_careers", [])
-        cached.setdefault("skill_gaps", [])
+        data = {
+            "education_level": cached.get("education_level"),
+            "top_domain": cached.get("top_domain") or cached.get("domain"),
+            "top_stream": cached.get("top_stream"),
+            "confidence": cached.get("confidence", 0),
+        }
+        # Clean up nulls — only include top_stream for secondary, top_domain for others
+        if data["education_level"] == "secondary":
+            data.pop("top_domain", None)
+        else:
+            data.pop("top_stream", None)
+        if cached.get("report"):
+            data["report"] = cached["report"]
+        elif not cached.get("recommendation_type"):
+            # No recommendation yet — surface a minimal message
+            counsellor = cached.get("counsellor") or {}
+            data["message"] = counsellor.get("insight") or "Complete the assessment to get your recommendation."
+            data["action"] = counsellor.get("action") or "Answer more questions to get started."
 
-        return Response({"success": True, "data": cached}, status=status.HTTP_200_OK)
+        return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
 
 
 class RecommendationDomainDetailAPIView(APIView):
@@ -112,14 +108,10 @@ class RecommendationDomainDetailAPIView(APIView):
 
         career_rows = (
             DomainCareerMapping.objects.filter(
-                domain_id=domain.id,
-                is_active=True,
-                deleted=False,
-                career__is_active=True,
-                career__deleted=False,
+                domain_id=domain.id, is_active=True, deleted=False,
+                career__is_active=True, career__deleted=False,
             )
             .select_related("career")
-            .only("career__id", "career__career_name")
             .order_by("career__career_name")
         )
         careers = [
@@ -128,32 +120,30 @@ class RecommendationDomainDetailAPIView(APIView):
 
         skill_rows = (
             DomainSkillMapping.objects.filter(
-                domain_id=domain.id,
-                is_active=True,
-                deleted=False,
-                skill__is_active=True,
-                skill__deleted=False,
+                domain_id=domain.id, is_active=True, deleted=False,
+                skill__is_active=True, skill__deleted=False,
             )
             .select_related("skill")
-            .only("skill__id", "skill__skill_name")
             .order_by("skill__skill_name")
         )
         skills = [
             {"id": str(r.skill_id), "name": r.skill.skill_name} for r in skill_rows
         ]
 
-        data = {
-            "domain": {
-                "id": str(domain.id),
-                "code": domain.domain_code,
-                "name": domain.domain_name,
-                "description": domain.description,
-                "future_relevance_score": domain.future_relevance_score,
-            },
-            "related_careers": careers,
-            "required_skills": skills,
-        }
-        return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
+        return Response({
+            "success": True,
+            "data": {
+                "domain": {
+                    "id": str(domain.id),
+                    "code": domain.domain_code,
+                    "name": domain.domain_name,
+                    "description": domain.description,
+                    "future_relevance_score": domain.future_relevance_score,
+                },
+                "related_careers": careers,
+                "required_skills": skills,
+            }
+        }, status=status.HTTP_200_OK)
 
 
 class CareerDetailsAPIView(APIView):
@@ -164,16 +154,6 @@ class CareerDetailsAPIView(APIView):
         career = (
             Career.objects.filter(id=id, is_active=True, deleted=False)
             .select_related("min_education_level", "max_education_level")
-            .only(
-                "id",
-                "career_name",
-                "career_code",
-                "description",
-                "min_education_level__id",
-                "min_education_level__display_name",
-                "max_education_level__id",
-                "max_education_level__display_name",
-            )
             .first()
         )
         if not career:
@@ -184,54 +164,45 @@ class CareerDetailsAPIView(APIView):
 
         domain_ids = list(
             DomainCareerMapping.objects.filter(
-                career_id=career.id,
-                is_active=True,
-                deleted=False,
-                domain__is_active=True,
-                domain__deleted=False,
-            )
-            .values_list("domain_id", flat=True)
-            .distinct()
+                career_id=career.id, is_active=True, deleted=False,
+                domain__is_active=True, domain__deleted=False,
+            ).values_list("domain_id", flat=True).distinct()
         )
 
         skill_rows = (
             DomainSkillMapping.objects.filter(
-                domain_id__in=domain_ids,
-                is_active=True,
-                deleted=False,
-                skill__is_active=True,
-                skill__deleted=False,
+                domain_id__in=domain_ids, is_active=True, deleted=False,
+                skill__is_active=True, skill__deleted=False,
             )
             .select_related("skill")
-            .only("skill__id", "skill__skill_name")
             .order_by("skill__skill_name")
         )
-        # Deduplicate skills across domains
         seen = set()
         skills = []
         for r in skill_rows:
-            if r.skill_id in seen:
-                continue
-            seen.add(r.skill_id)
-            skills.append({"id": str(r.skill_id), "name": r.skill.skill_name})
+            if r.skill_id not in seen:
+                seen.add(r.skill_id)
+                skills.append({"id": str(r.skill_id), "name": r.skill.skill_name})
 
-        min_edu = getattr(career, "min_education_level", None)
-        max_edu = getattr(career, "max_education_level", None)
-        data = {
-            "id": str(career.id),
-            "code": career.career_code,
-            "name": career.career_name,
-            "description": career.description,
-            "required_skills": skills,
-            "eligibility": {
-                "min_education_level": {
-                    "id": str(min_edu.id) if min_edu else None,
-                    "name": getattr(min_edu, "display_name", None) if min_edu else None,
+        min_edu = career.min_education_level
+        max_edu = career.max_education_level
+        return Response({
+            "success": True,
+            "data": {
+                "id": str(career.id),
+                "code": career.career_code,
+                "name": career.career_name,
+                "description": career.description,
+                "required_skills": skills,
+                "eligibility": {
+                    "min_education_level": {
+                        "id": str(min_edu.id) if min_edu else None,
+                        "name": getattr(min_edu, "display_name", None) if min_edu else None,
+                    },
+                    "max_education_level": {
+                        "id": str(max_edu.id) if max_edu else None,
+                        "name": getattr(max_edu, "display_name", None) if max_edu else None,
+                    },
                 },
-                "max_education_level": {
-                    "id": str(max_edu.id) if max_edu else None,
-                    "name": getattr(max_edu, "display_name", None) if max_edu else None,
-                },
-            },
-        }
-        return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
+            }
+        }, status=status.HTTP_200_OK)

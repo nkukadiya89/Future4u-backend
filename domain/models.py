@@ -2,6 +2,8 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 
@@ -23,6 +25,29 @@ class Domain(MasterBaseModel):
     future_relevance_score = models.PositiveSmallIntegerField()
     description = models.TextField(blank=True)
 
+    # How much each assessment dimension contributes to this domain's fit score.
+    # Nullable to allow "use default/fallback" behavior.
+    interest_weight = models.FloatField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+    )
+    aptitude_weight = models.FloatField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+    )
+    personality_weight = models.FloatField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+    )
+    work_style_weight = models.FloatField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+    )
+
     class Meta:
         db_table = "domain"
         constraints = [
@@ -39,6 +64,30 @@ class Domain(MasterBaseModel):
 
     def __str__(self):
         return f"{self.domain_code} - {self.domain_name}"
+
+    def clean(self):
+        """
+        Validation for dimension affinity weights:
+        - either all 4 weights are null (meaning: fallback weights will be used), OR all 4 are provided
+        - each weight must be in [0, 1] (field validators)
+        - sum must be ~1.0 when provided
+        """
+        super().clean()
+        fields = (
+            "interest_weight",
+            "aptitude_weight",
+            "personality_weight",
+            "work_style_weight",
+        )
+        values = [getattr(self, f) for f in fields]
+        provided = [v for v in values if v is not None]
+        if not provided:
+            return
+        if len(provided) != 4:
+            raise ValidationError({f: "Provide all 4 weights, or leave all blank." for f in fields})
+        total = float(sum(provided))
+        if abs(total - 1.0) > 0.001:
+            raise ValidationError({f: "Weights must sum to 1.0." for f in fields})
 
 
 class DomainImportBatch(models.Model):
@@ -75,3 +124,109 @@ class DomainImportError(models.Model):
     class Meta:
         db_table = "domain_import_error"
         ordering = ["batch", "row_number"]
+
+
+class DomainReportMeta(models.Model):
+    """
+    Student-facing report data per domain (degrees, careers, note, how_to_choose_hint).
+    Loaded via: python manage.py init_domain_report_meta
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    domain_code = models.CharField(max_length=64, unique=True, db_index=True)
+    degrees = models.TextField(blank=True, help_text="Pipe-separated degree options")
+    careers = models.TextField(blank=True, help_text="Pipe-separated career titles")
+    note = models.CharField(max_length=512, blank=True)
+    how_to_choose_hint = models.CharField(max_length=512, blank=True)
+    next_step_1 = models.TextField(blank=True)
+    next_step_2 = models.TextField(blank=True)
+    next_step_3 = models.TextField(blank=True)
+
+    class Meta:
+        db_table = "domain_report_meta"
+
+    def __str__(self):
+        return self.domain_code
+
+    def degrees_list(self) -> list:
+        return [d.strip() for d in self.degrees.split("|") if d.strip()]
+
+    def careers_list(self) -> list:
+        return [c.strip() for c in self.careers.split("|") if c.strip()]
+
+    def next_steps(self) -> list:
+        return [s for s in [self.next_step_1, self.next_step_2, self.next_step_3] if s.strip()]
+
+
+class DomainCounsellorKnowledge(models.Model):
+    """
+    Counsellor message content per domain (insight, tradeoff, action, tension).
+    Loaded via: python manage.py init_domain_counsellor_knowledge
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    domain_code = models.CharField(max_length=64, unique=True, db_index=True)
+    insight = models.TextField(blank=True)
+    tradeoff = models.TextField(blank=True)
+    action = models.TextField(blank=True)
+    tension = models.TextField(blank=True)
+
+    class Meta:
+        db_table = "domain_counsellor_knowledge"
+
+    def __str__(self):
+        return self.domain_code
+
+    def as_tuple(self) -> tuple:
+        return (self.insight, self.tradeoff, self.action, self.tension)
+
+
+class StreamCounsellorKnowledge(models.Model):
+    """
+    Counsellor message content per stream (insight, tradeoff, action, tension).
+    Loaded via: python manage.py init_stream_counsellor_knowledge
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    stream_code = models.CharField(max_length=64, unique=True, db_index=True)
+    insight = models.TextField(blank=True)
+    tradeoff = models.TextField(blank=True)
+    action = models.TextField(blank=True)
+    tension = models.TextField(blank=True)
+
+    class Meta:
+        db_table = "stream_counsellor_knowledge"
+
+    def __str__(self):
+        return self.stream_code
+
+    def as_tuple(self) -> tuple:
+        return (self.insight, self.tradeoff, self.action, self.tension)
+
+
+class StreamReportMeta(models.Model):
+    """
+    Student-facing report data per stream (why, subjects, careers, note, next steps).
+    Loaded via: python manage.py init_stream_report_meta
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    stream_code = models.CharField(max_length=64, unique=True, db_index=True)
+    why = models.CharField(max_length=512, blank=True, help_text="One-line direction explanation")
+    subjects = models.TextField(blank=True, help_text="Pipe-separated subject names")
+    careers = models.TextField(blank=True, help_text="Pipe-separated career titles")
+    note = models.CharField(max_length=512, blank=True, help_text="Day-to-day work description")
+    next_step_1 = models.TextField(blank=True)
+    next_step_2 = models.TextField(blank=True)
+    next_step_3 = models.TextField(blank=True)
+
+    class Meta:
+        db_table = "stream_report_meta"
+
+    def __str__(self):
+        return self.stream_code
+
+    def subjects_list(self) -> list:
+        return [s.strip() for s in self.subjects.split("|") if s.strip()]
+
+    def careers_list(self) -> list:
+        return [c.strip() for c in self.careers.split("|") if c.strip()]
+
+    def next_steps(self) -> list:
+        return [s for s in [self.next_step_1, self.next_step_2, self.next_step_3] if s.strip()]
