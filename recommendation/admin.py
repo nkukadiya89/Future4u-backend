@@ -9,7 +9,7 @@ from django.shortcuts import render
 from django.urls import path
 
 from assessment.models import Option, Question, UserResponse
-from services.recommendation_engine_service import RecommendationEngineService
+from services.recommendation_engine_service import RecommendationEngineService, TENTH_GRADE_STREAM_CODES
 from education_level.models import EducationLevel
 from stream.models import Stream
 
@@ -26,12 +26,12 @@ class RecommendationQAForm(forms.Form):
     education_level = forms.ModelChoiceField(
         queryset=EducationLevel.objects.filter(is_active=True, deleted=False).order_by("sequence_order"),
         required=False,
-        help_text="Optional — shown for context only.",
+        help_text="Optional override (not saved).",
     )
     stream = forms.ModelChoiceField(
         queryset=Stream.objects.filter(is_active=True, deleted=False).order_by("stream_name"),
         required=False,
-        help_text="Optional — shown for context only.",
+        help_text="Optional override (not saved).",
     )
 
 
@@ -98,6 +98,8 @@ def _recommendation_qa_view(request):
 
     if form.is_valid():
         user = form.cleaned_data["user"]
+        edu = form.cleaned_data.get("education_level")
+        stream = form.cleaned_data.get("stream")
         try:
             # Load questions for the QA form
             questions = _pick_questions_per_dimension(
@@ -133,7 +135,14 @@ def _recommendation_qa_view(request):
                 saved = True
                 existing_answers = answers
 
-            result = RecommendationEngineService().recommend(user_id=user.id)
+            edu_code = (getattr(edu, "level_code", "") or "").lower() if edu else None
+            stream_code = (getattr(stream, "stream_code", "") or "").lower() if stream else None
+
+            result = RecommendationEngineService().recommend(
+                user_id=user.id,
+                education_level_code=edu_code,
+                stream_code=stream_code,
+            )
 
             # Build diagnostics
             totals = {
@@ -155,6 +164,10 @@ def _recommendation_qa_view(request):
                     }
                     for d in DIMENSIONS
                 ],
+                "override_context": {
+                    "education_level_code": edu_code,
+                    "stream_code": stream_code,
+                },
                 "confidence": result.get("confidence", 0),
                 "recommendation_type": result.get("recommendation_type"),
                 "education_level": result.get("education_level"),
