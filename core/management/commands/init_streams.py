@@ -4,7 +4,11 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from core.management.commands._master_import_utils import RequestUserProxy, load_csv_rows, resolve_import_user
+from core.management.commands._master_import_utils import (
+    RequestUserProxy,
+    load_csv_rows,
+    resolve_import_user,
+)
 from stream.serializers import StreamSerializer
 from stream.services import stream_service
 
@@ -18,7 +22,13 @@ class Command(BaseCommand):
         parser.add_argument(
             "--path",
             dest="load_path",
-            default=str(Path(settings.BASE_DIR) / "core" / "management" / "source" / "stream_master_sample.csv"),
+            default=str(
+                Path(settings.BASE_DIR)
+                / "core"
+                / "management"
+                / "source"
+                / "stream_master_sample.csv"
+            ),
             help="Load streams from CSV at this path.",
         )
         parser.add_argument(
@@ -50,4 +60,8 @@ class Command(BaseCommand):
             logger.warning("row %s: %s", d["row"], d["message"])
             self.stdout.write(self.style.WARNING(f"Row {d['row']}: {d['message']}"))
         if len(result["error_details"]) > 20:
-            self.stdout.write(self.style.WARNING("... additional errors omitted (see logs / import batch)."))
+            self.stdout.write(
+                self.style.WARNING(
+                    "... additional errors omitted (see logs / import batch)."
+                )
+            )

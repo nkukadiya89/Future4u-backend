@@ -36,9 +36,13 @@ def send_device_config_request_email(subject, template, data):
                 reference = site.get("reference", "")
                 address = site.get("address", "")
                 if reference and address:
-                    custom_message_content += f"Site Address: {reference} | {address},\n"
+                    custom_message_content += (
+                        f"Site Address: {reference} | {address},\n"
+                    )
             elif hasattr(site, "reference") and hasattr(site, "address"):
-                custom_message_content += f"Site Address: {site.reference} | {site.address},\n"
+                custom_message_content += (
+                    f"Site Address: {site.reference} | {site.address},\n"
+                )
 
     recipient_email = data["email"]
 
@@ -78,7 +82,9 @@ def send_device_config_request_email(subject, template, data):
             # Log successful emails
             for recipient in recipients:
                 log_email_sent(
-                    msg, email_type=template.replace(".html", ""), custom_message_content=custom_message_content
+                    msg,
+                    email_type=template.replace(".html", ""),
+                    custom_message_content=custom_message_content,
                 )
 
             return HttpResponse("Mail Sent", status=200)
@@ -95,7 +101,9 @@ def send_device_config_request_email(subject, template, data):
                 # Log successful emails
                 for recipient in recipients:
                     log_email_sent(
-                        msg, email_type=template.replace(".html", ""), custom_message_content=custom_message_content
+                        msg,
+                        email_type=template.replace(".html", ""),
+                        custom_message_content=custom_message_content,
                     )
 
                 return HttpResponse("Mail Sent", status=200)
@@ -108,13 +116,17 @@ def send_device_config_request_email(subject, template, data):
                     mail_server.login(config("ADMIN_EMAIL"), config("EMAIL_PASSWORD"))
 
                     recipients = msg["To"].split(", ")
-                    mail_server.sendmail(config("ADMIN_EMAIL"), recipients, msg.as_string())
+                    mail_server.sendmail(
+                        config("ADMIN_EMAIL"), recipients, msg.as_string()
+                    )
                     mail_server.quit()
 
                     # Log successful emails
                     for recipient in recipients:
                         log_email_sent(
-                            msg, email_type=template.replace(".html", ""), custom_message_content=custom_message_content
+                            msg,
+                            email_type=template.replace(".html", ""),
+                            custom_message_content=custom_message_content,
                         )
 
                     return HttpResponse("Mail Sent", status=200)
@@ -125,11 +137,21 @@ def send_device_config_request_email(subject, template, data):
                     )
                     # Log failed email
                     log_email_failed(
-                        msg["To"], subject, error_msg, msg["From"], email_type=template.replace(".html", "")
+                        msg["To"],
+                        subject,
+                        error_msg,
+                        msg["From"],
+                        email_type=template.replace(".html", ""),
                     )
                     raise Exception(error_msg)
     except Exception as e:
         error_msg = f"Email sending failed: {str(e)}"
         # Log failed email
-        log_email_failed(msg["To"], subject, error_msg, msg["From"], email_type=template.replace(".html", ""))
+        log_email_failed(
+            msg["To"],
+            subject,
+            error_msg,
+            msg["From"],
+            email_type=template.replace(".html", ""),
+        )
         return HttpResponse(f"Mail could not be sent: {str(e)}", status=500)

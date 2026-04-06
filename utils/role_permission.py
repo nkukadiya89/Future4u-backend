@@ -9,11 +9,15 @@ from user.models import (
 )
 
 
-def get_permission_by_group_ids(group_ids, user_assigned_groups=None, user_assgined_permissions=None):
+def get_permission_by_group_ids(
+    group_ids, user_assigned_groups=None, user_assgined_permissions=None
+):
     permission_dict = {}
 
     # Fetch all permissions for the assigned user groups
-    all_default_permissions = AuthGroupPermissionsModel.objects.filter(group__name=user_assigned_groups)
+    all_default_permissions = AuthGroupPermissionsModel.objects.filter(
+        group__name=user_assigned_groups
+    )
 
     for default_permission in all_default_permissions:
         permission = Permission.objects.get(id=default_permission.permission.id)
@@ -29,7 +33,9 @@ def get_permission_by_group_ids(group_ids, user_assigned_groups=None, user_assgi
         permission_dict[permission.id] = permission_detail
 
     # Fetch From Given Group ID
-    group_ids_permissions = AuthGroupPermissionsModel.objects.filter(group_id__in=group_ids)
+    group_ids_permissions = AuthGroupPermissionsModel.objects.filter(
+        group_id__in=group_ids
+    )
     for group_permission in group_ids_permissions:
         permission = Permission.objects.get(id=group_permission.permission.id)
         permission_detail = {
@@ -45,8 +51,12 @@ def get_permission_by_group_ids(group_ids, user_assigned_groups=None, user_assgi
 
     # Fetch From Given Employee ID
     if user_assgined_permissions:
-        user_assigned_permission_ids = user_assgined_permissions.values_list("id", flat=True)
-        user_assigned_permission = Permission.objects.filter(id__in=user_assigned_permission_ids)
+        user_assigned_permission_ids = user_assgined_permissions.values_list(
+            "id", flat=True
+        )
+        user_assigned_permission = Permission.objects.filter(
+            id__in=user_assigned_permission_ids
+        )
         for user_permission in user_assigned_permission:
             permission_detail = {
                 "id": None,
@@ -64,7 +74,9 @@ def get_permission_by_group_ids(group_ids, user_assigned_groups=None, user_assgi
     return response
 
 
-def get_purticlare_permission(content_types, model_names, group_id, company_id, partner_company_id, end_client_id):
+def get_purticlare_permission(
+    content_types, model_names, group_id, company_id, partner_company_id, end_client_id
+):
     get_all_groups = None
 
     # partner_company / end_client features removed from the project,
@@ -80,12 +92,18 @@ def get_purticlare_permission(content_types, model_names, group_id, company_id, 
         except Company.DoesNotExist:
             return {"Company Not Found"}
 
-        get_groups = CustomGroup.objects.filter(name__icontains="Company Admin").values_list("name", flat=True)
-        get_company_groups = CustomGroup.objects.filter(company=company_instance).values_list("name", flat=True)
+        get_groups = CustomGroup.objects.filter(
+            name__icontains="Company Admin"
+        ).values_list("name", flat=True)
+        get_company_groups = CustomGroup.objects.filter(
+            company=company_instance
+        ).values_list("name", flat=True)
         get_all_groups = list(get_groups) + list(get_company_groups)
 
     else:
-        get_super_admin_groups = CustomGroup.objects.filter(name__icontains="Super Admin")
+        get_super_admin_groups = CustomGroup.objects.filter(
+            name__icontains="Super Admin"
+        )
         get_all_groups = list(get_super_admin_groups.values_list("name", flat=True))
 
     permission_list = []
@@ -95,7 +113,9 @@ def get_purticlare_permission(content_types, model_names, group_id, company_id, 
         permission__content_type__model=model_names,
         group__name__in=get_all_groups,
     )
-    permissions_qs = Permission.objects.filter(id__in=group_permissions.values_list("permission__id", flat=True))
+    permissions_qs = Permission.objects.filter(
+        id__in=group_permissions.values_list("permission__id", flat=True)
+    )
 
     permission_by_groups = []
     if group_id:
@@ -128,7 +148,8 @@ def get_purticlare_permission(content_types, model_names, group_id, company_id, 
             for permission in permission_list:
                 if (
                     permission["name"] == permission_by_group["name"]
-                    and permission["content_type_id"] == permission_by_group["content_type_id"]
+                    and permission["content_type_id"]
+                    == permission_by_group["content_type_id"]
                 ):
                     permission["is_checked"] = True
 
@@ -152,7 +173,9 @@ def get_group_permission_by_user(custom_group, exclude_group):
             }
 
         # Get only the permissions for this CustomGroup
-        permission_by_group = AuthPermissionModel.objects.filter(authgrouppermissionsmodel__group_id=group_id)
+        permission_by_group = AuthPermissionModel.objects.filter(
+            authgrouppermissionsmodel__group_id=group_id
+        )
 
         for permission_group in permission_by_group:
             group_permission = AuthGroupPermissionsModel.objects.filter(
@@ -172,7 +195,9 @@ def get_group_permission_by_user(custom_group, exclude_group):
             }
             user_group_permissions[group_id]["permissions"].append(permission_entry)
 
-    response = sorted(user_group_permissions.values(), key=lambda x: x["group_id"], reverse=False)
+    response = sorted(
+        user_group_permissions.values(), key=lambda x: x["group_id"], reverse=False
+    )
 
     return {"user_group_permissions": response}
 
@@ -311,7 +336,9 @@ def create_company_role_family(request, company_id):
             for permission in data["permissions"]:
                 app_label, codename = permission.split("|")
                 try:
-                    permission_obj = Permission.objects.get(content_type__app_label=app_label, name=codename)
+                    permission_obj = Permission.objects.get(
+                        content_type__app_label=app_label, name=codename
+                    )
                     company_wise_group.permissions.add(permission_obj)
                 except Permission.DoesNotExist:
                     return {
@@ -463,7 +490,9 @@ def create_partner_company_role_family(request, partner_company_id):
             return {"success": False, "message": "Family Not Found"}
 
         try:
-            partner_company_instance = PartnerCompany.objects.get(id=data["partner_company_id"])
+            partner_company_instance = PartnerCompany.objects.get(
+                id=data["partner_company_id"]
+            )
         except PartnerCompany.DoesNotExist:
             return {"success": False, "message": "Partner Company Not Found"}
 
@@ -478,7 +507,9 @@ def create_partner_company_role_family(request, partner_company_id):
             for permission in data["permissions"]:
                 app_label, codename = permission.split("|")
                 try:
-                    permission_obj = Permission.objects.get(content_type__app_label=app_label, name=codename)
+                    permission_obj = Permission.objects.get(
+                        content_type__app_label=app_label, name=codename
+                    )
                     partner_company_wise_group.permissions.add(permission_obj)
                 except Permission.DoesNotExist:
                     return {
@@ -549,7 +580,9 @@ def create_end_client_role_family(request, end_client_id):
             for permission in data["permissions"]:
                 app_label, codename = permission.split("|")
                 try:
-                    permission_obj = Permission.objects.get(content_type__app_label=app_label, name=codename)
+                    permission_obj = Permission.objects.get(
+                        content_type__app_label=app_label, name=codename
+                    )
                     end_client_wise_group.permissions.add(permission_obj)
                 except Permission.DoesNotExist:
                     return {

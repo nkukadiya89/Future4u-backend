@@ -10,24 +10,43 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('faq', '0001_initial'),
+        ("faq", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='faq',
-            name='created_by',
-            field=models.ForeignKey(editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='faq_created', to=settings.AUTH_USER_MODEL),
+            model_name="faq",
+            name="created_by",
+            field=models.ForeignKey(
+                editable=False,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="faq_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='faq',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='faq_deleted', to=settings.AUTH_USER_MODEL),
+            model_name="faq",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                editable=False,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="faq_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='faq',
-            name='updated_by',
-            field=models.ForeignKey(editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='faq_updated', to=settings.AUTH_USER_MODEL),
+            model_name="faq",
+            name="updated_by",
+            field=models.ForeignKey(
+                editable=False,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="faq_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

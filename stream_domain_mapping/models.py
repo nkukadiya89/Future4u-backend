@@ -23,9 +23,13 @@ class StreamDomainMapping(BaseMappingModel):
     class Meta:
         db_table = "stream_domain_mapping"
         constraints = [
-            models.UniqueConstraint(fields=["stream", "domain"], name="stream_domain_mapping_stream_domain_uniq"),
+            models.UniqueConstraint(
+                fields=["stream", "domain"],
+                name="stream_domain_mapping_stream_domain_uniq",
+            ),
             models.CheckConstraint(
-                condition=models.Q(weight_score__gte=0) & models.Q(weight_score__lte=100),
+                condition=models.Q(weight_score__gte=0)
+                & models.Q(weight_score__lte=100),
                 name="stream_domain_mapping_weight_score_0_100_ck",
             ),
         ]

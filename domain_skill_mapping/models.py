@@ -23,9 +23,13 @@ class DomainSkillMapping(BaseMappingModel):
     class Meta:
         db_table = "domain_skill_mapping"
         constraints = [
-            models.UniqueConstraint(fields=["domain", "skill"], name="domain_skill_mapping_domain_skill_uniq"),
+            models.UniqueConstraint(
+                fields=["domain", "skill"],
+                name="domain_skill_mapping_domain_skill_uniq",
+            ),
             models.CheckConstraint(
-                condition=models.Q(weight_score__gte=0) & models.Q(weight_score__lte=100),
+                condition=models.Q(weight_score__gte=0)
+                & models.Q(weight_score__lte=100),
                 name="domain_skill_mapping_weight_score_0_100_ck",
             ),
         ]
@@ -78,4 +82,3 @@ class DomainSkillMappingImportError(models.Model):
     class Meta:
         db_table = "domain_skill_mapping_import_error"
         ordering = ["batch", "row_number"]
-

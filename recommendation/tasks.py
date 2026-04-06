@@ -25,7 +25,9 @@ def refresh_recommendation_cache(user_id: int, *, ttl_seconds: int = 60 * 5) -> 
     cache.set(recommendation_key(user_id), payload, ttl_seconds)
 
 
-def refresh_recommendation_cache_async(user_id: int, *, ttl_seconds: int = 60 * 5) -> None:
+def refresh_recommendation_cache_async(
+    user_id: int, *, ttl_seconds: int = 60 * 5
+) -> None:
     """
     Best-effort async refresh without requiring Celery.
     Uses a daemon thread and a cache lock to avoid stampedes.
@@ -54,4 +56,3 @@ def refresh_recommendation_cache_async(user_id: int, *, ttl_seconds: int = 60 * 
 
     t = threading.Thread(target=_run, name=f"rec-refresh-{user_id}", daemon=True)
     t.start()
-

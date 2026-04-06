@@ -118,9 +118,10 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="domainskillmapping",
             constraint=models.CheckConstraint(
-                condition=models.Q(("weight_score__gte", 0), ("weight_score__lte", 100)),
+                condition=models.Q(
+                    ("weight_score__gte", 0), ("weight_score__lte", 100)
+                ),
                 name="domain_skill_mapping_weight_score_0_100_ck",
             ),
         ),
     ]
-

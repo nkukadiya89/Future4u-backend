@@ -76,7 +76,9 @@ class EducationLevelViewSet(ModelViewSet):
             UUID(str(pk))
         except (ValueError, TypeError):
             raise NotFound()
-        qs = education_level_service.education_level_base_queryset().filter(deleted=False)
+        qs = education_level_service.education_level_base_queryset().filter(
+            deleted=False
+        )
         try:
             return qs.get(pk=pk)
         except EducationLevel.DoesNotExist:
@@ -91,7 +93,9 @@ class EducationLevelViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.get_serializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -105,10 +109,17 @@ class EducationLevelViewSet(ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response(
-                {"success": True, "message": "Education level created", "data": serializer.data},
+                {
+                    "success": True,
+                    "message": "Education level created",
+                    "data": serializer.data,
+                },
                 status=status.HTTP_201_CREATED,
             )
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -116,7 +127,10 @@ class EducationLevelViewSet(ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response({"success": True, "data": serializer.data})
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -124,15 +138,24 @@ class EducationLevelViewSet(ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response({"success": True, "data": serializer.data})
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         try:
             education_level_service.archive_level(level=instance, user=request.user)
         except ValidationError as e:
-            return Response({"success": False, "message": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"success": True, "message": "Archived Successfully"}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": False, "message": e.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            {"success": True, "message": "Archived Successfully"},
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=False, methods=["get"], url_path="archived")
     def archived(self, request, *args, **kwargs):
@@ -140,12 +163,20 @@ class EducationLevelViewSet(ModelViewSet):
         page = self.paginate_queryset(queryset)
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = EducationLevelSerializer(queryset, many=True, context={"request": request})
+            serializer = EducationLevelSerializer(
+                queryset, many=True, context={"request": request}
+            )
             return Response({"success": True, "data": serializer.data})
         if page is not None:
-            serializer = EducationLevelSerializer(page, many=True, context={"request": request})
-            return self.get_paginated_response({"success": True, "data": serializer.data})
-        serializer = EducationLevelSerializer(queryset, many=True, context={"request": request})
+            serializer = EducationLevelSerializer(
+                page, many=True, context={"request": request}
+            )
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+        serializer = EducationLevelSerializer(
+            queryset, many=True, context={"request": request}
+        )
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
     @action(detail=True, methods=["post"], url_path="change-status")
@@ -153,7 +184,10 @@ class EducationLevelViewSet(ModelViewSet):
         instance = self.get_object()
         ser = EducationLevelChangeStatusSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         education_level_service.set_active_status(
             level=instance,
             user=request.user,
@@ -163,7 +197,9 @@ class EducationLevelViewSet(ModelViewSet):
         return Response(
             {
                 "success": True,
-                "data": EducationLevelSerializer(instance, context={"request": request}).data,
+                "data": EducationLevelSerializer(
+                    instance, context={"request": request}
+                ).data,
             }
         )
 
@@ -190,37 +226,62 @@ class EducationLevelViewSet(ModelViewSet):
     def reorder(self, request, *args, **kwargs):
         ser = EducationLevelReorderSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         count = education_level_service.reorder_levels(
             orders=ser.validated_data["orders"],
             user=request.user,
         )
-        return Response({"success": True, "message": "Reordered successfully", "count": count})
+        return Response(
+            {"success": True, "message": "Reordered successfully", "count": count}
+        )
 
     @action(detail=False, methods=["post"], url_path="bulk-archive")
     def bulk_archive(self, request, *args, **kwargs):
         ser = EducationLevelBulkIdsSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         try:
-            n = education_level_service.bulk_archive(ids=list(ser.validated_data["ids"]), user=request.user)
+            n = education_level_service.bulk_archive(
+                ids=list(ser.validated_data["ids"]), user=request.user
+            )
         except ValidationError as e:
-            return Response({"success": False, "message": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"success": True, "message": "Bulk archived successfully", "count": n})
+            return Response(
+                {"success": False, "message": e.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            {"success": True, "message": "Bulk archived successfully", "count": n}
+        )
 
     @action(detail=False, methods=["post"], url_path="bulk-restore")
     def bulk_restore(self, request, *args, **kwargs):
         ser = EducationLevelBulkIdsSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
-        n = education_level_service.bulk_restore(ids=list(ser.validated_data["ids"]), user=request.user)
-        return Response({"success": True, "message": "Bulk restored successfully", "count": n})
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        n = education_level_service.bulk_restore(
+            ids=list(ser.validated_data["ids"]), user=request.user
+        )
+        return Response(
+            {"success": True, "message": "Bulk restored successfully", "count": n}
+        )
 
     @action(detail=False, methods=["post"], url_path="bulk-import")
     def bulk_import(self, request, *args, **kwargs):
         ser = EducationLevelBulkImportSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         batch = education_level_service.bulk_import_rows(
             user=request.user,
             rows=ser.validated_data["rows"],
@@ -230,7 +291,9 @@ class EducationLevelViewSet(ModelViewSet):
         return Response(
             {
                 "success": True,
-                "data": EducationLevelImportBatchSerializer(batch, context={"request": request}).data,
+                "data": EducationLevelImportBatchSerializer(
+                    batch, context={"request": request}
+                ).data,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -246,7 +309,9 @@ class EducationLevelViewSet(ModelViewSet):
         rows, parse_errors = education_level_service.parse_import_file(upload)
         if not rows:
             msg = parse_errors or ["No data rows in file."]
-            return Response({"success": False, "message": msg}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": msg}, status=status.HTTP_400_BAD_REQUEST
+            )
         result = education_level_service.bulk_import_levels(
             user=request.user,
             rows=rows,
@@ -270,12 +335,20 @@ class EducationLevelViewSet(ModelViewSet):
         page = self.paginate_queryset(qs)
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = EducationLevelImportBatchSerializer(qs, many=True, context={"request": request})
+            serializer = EducationLevelImportBatchSerializer(
+                qs, many=True, context={"request": request}
+            )
             return Response({"success": True, "data": serializer.data})
         if page is not None:
-            serializer = EducationLevelImportBatchSerializer(page, many=True, context={"request": request})
-            return self.get_paginated_response({"success": True, "data": serializer.data})
-        serializer = EducationLevelImportBatchSerializer(qs, many=True, context={"request": request})
+            serializer = EducationLevelImportBatchSerializer(
+                page, many=True, context={"request": request}
+            )
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+        serializer = EducationLevelImportBatchSerializer(
+            qs, many=True, context={"request": request}
+        )
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
     @action(detail=False, methods=["get"], url_path="import-errors")
@@ -286,7 +359,10 @@ class EducationLevelViewSet(ModelViewSet):
             try:
                 bid = UUID(str(batch_id))
             except (ValueError, TypeError):
-                return Response({"success": False, "message": "Invalid batch_id"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"success": False, "message": "Invalid batch_id"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         qs = education_level_service.import_errors_queryset(batch_id=bid)
         page = self.paginate_queryset(qs)
         no_pagination = request.query_params.get("no_pagination")
@@ -295,7 +371,9 @@ class EducationLevelViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = EducationLevelImportErrorSerializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = EducationLevelImportErrorSerializer(qs, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -307,7 +385,10 @@ class EducationLevelViewSet(ModelViewSet):
             try:
                 bid = UUID(str(batch_id))
             except (ValueError, TypeError):
-                return Response({"success": False, "message": "Invalid batch_id"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"success": False, "message": "Invalid batch_id"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         filename, data = education_level_service.error_report_csv_bytes(batch_id=bid)
         resp = HttpResponse(data, content_type="text/csv; charset=utf-8")
         resp["Content-Disposition"] = f'attachment; filename="{filename}"'

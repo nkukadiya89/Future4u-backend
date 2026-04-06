@@ -11,32 +11,115 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('skill', '0002_initial'),
+        ("skill", "0002_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='UserSkill',
+            name="UserSkill",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(blank=True, null=True)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('deleted', models.BooleanField(default=False)),
-                ('is_active', models.BooleanField(default=True)),
-                ('proficiency_score', models.PositiveSmallIntegerField(validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)])),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL)),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('skill', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_skills', to='skill.skill')),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_skills', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(blank=True, null=True)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("deleted", models.BooleanField(default=False)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "proficiency_score",
+                    models.PositiveSmallIntegerField(
+                        validators=[
+                            django.core.validators.MinValueValidator(0),
+                            django.core.validators.MaxValueValidator(100),
+                        ]
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "skill",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_skills",
+                        to="skill.skill",
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_updated",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="user_skills",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'user_skill',
-                'ordering': ['-updated_at', 'id'],
-                'indexes': [models.Index(fields=['user'], name='user_skill_user_id_61d3b4_idx'), models.Index(fields=['skill'], name='user_skill_skill_i_0fdafd_idx'), models.Index(fields=['proficiency_score'], name='user_skill_profici_e40960_idx'), models.Index(fields=['is_active'], name='user_skill_is_acti_3a5b6d_idx'), models.Index(fields=['deleted'], name='user_skill_deleted_5dbb58_idx')],
-                'constraints': [models.UniqueConstraint(fields=('user', 'skill'), name='user_skill_user_skill_uniq'), models.CheckConstraint(condition=models.Q(('proficiency_score__gte', 0), ('proficiency_score__lte', 100)), name='user_skill_proficiency_0_100_ck')],
+                "db_table": "user_skill",
+                "ordering": ["-updated_at", "id"],
+                "indexes": [
+                    models.Index(fields=["user"], name="user_skill_user_id_61d3b4_idx"),
+                    models.Index(
+                        fields=["skill"], name="user_skill_skill_i_0fdafd_idx"
+                    ),
+                    models.Index(
+                        fields=["proficiency_score"],
+                        name="user_skill_profici_e40960_idx",
+                    ),
+                    models.Index(
+                        fields=["is_active"], name="user_skill_is_acti_3a5b6d_idx"
+                    ),
+                    models.Index(
+                        fields=["deleted"], name="user_skill_deleted_5dbb58_idx"
+                    ),
+                ],
+                "constraints": [
+                    models.UniqueConstraint(
+                        fields=("user", "skill"), name="user_skill_user_skill_uniq"
+                    ),
+                    models.CheckConstraint(
+                        condition=models.Q(
+                            ("proficiency_score__gte", 0),
+                            ("proficiency_score__lte", 100),
+                        ),
+                        name="user_skill_proficiency_0_100_ck",
+                    ),
+                ],
             },
         ),
     ]

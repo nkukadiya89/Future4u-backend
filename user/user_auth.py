@@ -16,10 +16,15 @@ from user.models import User
 
 def get_user_permissions(user):
     user_permissions = Permission.objects.filter(user=user)
-    custom_group_permissions = Permission.objects.filter(group__user=user, content_type_id__gt=5)
+    custom_group_permissions = Permission.objects.filter(
+        group__user=user, content_type_id__gt=5
+    )
 
-    all_permissions_set = {f"{perm.content_type.app_label}|{perm.codename}" for perm in user_permissions} | {
-        f"{perm.content_type.app_label}|{perm.codename}" for perm in custom_group_permissions
+    all_permissions_set = {
+        f"{perm.content_type.app_label}|{perm.codename}" for perm in user_permissions
+    } | {
+        f"{perm.content_type.app_label}|{perm.codename}"
+        for perm in custom_group_permissions
     }
 
     all_permissions = sorted(list(all_permissions_set))
@@ -30,9 +35,14 @@ def get_user_permissions(user):
 def get_user_group_permissions(user):
     user_group = Group.objects.filter(user=user).first()
 
-    custom_group_permissions = Permission.objects.filter(group=user_group, content_type_id__gt=5)
+    custom_group_permissions = Permission.objects.filter(
+        group=user_group, content_type_id__gt=5
+    )
 
-    all_permissions_set = {f"{perm.content_type.app_label}|{perm.codename}" for perm in custom_group_permissions}
+    all_permissions_set = {
+        f"{perm.content_type.app_label}|{perm.codename}"
+        for perm in custom_group_permissions
+    }
 
     all_permissions = sorted(list(all_permissions_set))
 
@@ -172,10 +182,14 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Accept a single common field `login` (email or mobile/phone)
         request_data = self.context["request"].data
-        raw_login = request_data.get("username") or attrs.get("username") or attrs.get("email")
+        raw_login = (
+            request_data.get("username") or attrs.get("username") or attrs.get("email")
+        )
 
         if not raw_login:
-            raise AuthenticationFailed({"success": False, "message": "Username and password are required"})
+            raise AuthenticationFailed(
+                {"success": False, "message": "Username and password are required"}
+            )
 
         login_value = str(raw_login).strip()
 
@@ -242,23 +256,23 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 company_users = User.objects.filter(company_id=user.company_id)
 
                 # Get employee IDs from users who have employee relationship
-                company_employee_ids = company_users.filter(employee_id__isnull=False).values_list(
-                    "employee_id", flat=True
-                )
+                company_employee_ids = company_users.filter(
+                    employee_id__isnull=False
+                ).values_list("employee_id", flat=True)
 
                 # Deactivate employees
-                Employee.objects.filter(id__in=company_employee_ids).update(status="inactive")
+                Employee.objects.filter(id__in=company_employee_ids).update(
+                    status="inactive"
+                )
 
                 # Deactivate only employee users, NOT company admin users
-                User.objects.filter(employee_id__in=company_employee_ids).update(is_active=False, status="inactive")
+                User.objects.filter(employee_id__in=company_employee_ids).update(
+                    is_active=False, status="inactive"
+                )
 
         elif user.employee_id:
             employee = user.employee
-            if (
-                not employee
-                or not employee.company
-                or not employee.company.is_active
-            ):
+            if not employee or not employee.company or not employee.company.is_active:
                 raise AuthenticationFailed(
                     {
                         "success": False,
@@ -308,7 +322,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         company_days_to_expire = None
 
         # Check if user is Company Admin
-        is_company_admin = any(group.get("name") == "Company Admin" for group in group_data)
+        is_company_admin = any(
+            group.get("name") == "Company Admin" for group in group_data
+        )
 
         if user.company_id and is_company_admin:
             company_role = Group.objects.get(name="Company Admin").name
@@ -321,7 +337,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 or {}
             )
 
-            company_active_subscription = company_details.get("active_subscription", None)
+            company_active_subscription = company_details.get(
+                "active_subscription", None
+            )
             company_expiry_date = company_details.get("expiry_date", None)
             company_days_to_expire = company_details.get("days_to_expire", None)
 
@@ -334,10 +352,18 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                     "last_name": user.last_name,
                     "phone": user.phone,
                     "company": user.company_id if is_company_admin else None,
-                    "company_name": user.company.name if (user.company and is_company_admin) else None,
-                    "active_subscription": company_active_subscription if is_company_admin else None,
+                    "company_name": (
+                        user.company.name
+                        if (user.company and is_company_admin)
+                        else None
+                    ),
+                    "active_subscription": (
+                        company_active_subscription if is_company_admin else None
+                    ),
                     "expiry_date": company_expiry_date if is_company_admin else None,
-                    "days_to_expire": company_days_to_expire if is_company_admin else None,
+                    "days_to_expire": (
+                        company_days_to_expire if is_company_admin else None
+                    ),
                     "role": group_data,
                     "company_role": company_role,
                     "permission": permission_data,

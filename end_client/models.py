@@ -15,13 +15,25 @@ class EndClient(models.Model):
     deleted = models.BooleanField(default=False)
 
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="end_client_created"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="end_client_created",
     )
     updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="end_client_updated"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="end_client_updated",
     )
     deleted_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="end_client_deleted"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="end_client_deleted",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -33,4 +45,3 @@ class EndClient(models.Model):
 
     def __str__(self):
         return self.name or str(self.id)
-

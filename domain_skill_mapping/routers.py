@@ -8,4 +8,3 @@ domain_skill_mapping_router.register(
     DomainSkillMappingViewSet,
     basename="domain-skill-mapping",
 )
-

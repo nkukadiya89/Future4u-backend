@@ -75,7 +75,9 @@ class DomainCareerMappingViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.get_serializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -88,39 +90,67 @@ class DomainCareerMappingViewSet(ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response(
-                {"success": True, "message": "Domain-career mapping created", "data": serializer.data},
+                {
+                    "success": True,
+                    "message": "Domain-career mapping created",
+                    "data": serializer.data,
+                },
                 status=status.HTTP_201_CREATED,
             )
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def update(self, request, *args, **kwargs):
-        serializer = self.get_serializer(self.get_object(), data=request.data, partial=False)
+        serializer = self.get_serializer(
+            self.get_object(), data=request.data, partial=False
+        )
         if serializer.is_valid():
             serializer.save()
             return Response({"success": True, "data": serializer.data})
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def partial_update(self, request, *args, **kwargs):
-        serializer = self.get_serializer(self.get_object(), data=request.data, partial=True)
+        serializer = self.get_serializer(
+            self.get_object(), data=request.data, partial=True
+        )
         if serializer.is_valid():
             serializer.save()
             return Response({"success": True, "data": serializer.data})
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         try:
-            domain_career_mapping_service.archive_mapping(mapping=instance, user=request.user)
+            domain_career_mapping_service.archive_mapping(
+                mapping=instance, user=request.user
+            )
         except ValidationError as e:
-            return Response({"success": False, "message": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"success": True, "message": "Archived Successfully"}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": False, "message": e.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            {"success": True, "message": "Archived Successfully"},
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=True, methods=["post"], url_path="change-status")
     def change_status(self, request, pk=None, *args, **kwargs):
         instance = self.get_object()
         ser = DomainCareerMappingChangeStatusSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         domain_career_mapping_service.set_active_status(
             mapping=instance,
             user=request.user,
@@ -128,7 +158,13 @@ class DomainCareerMappingViewSet(ModelViewSet):
         )
         instance.refresh_from_db()
         return Response(
-            {"success": True, "message": "Status updated", "data": DomainCareerMappingSerializer(instance, context={"request": request}).data}
+            {
+                "success": True,
+                "message": "Status updated",
+                "data": DomainCareerMappingSerializer(
+                    instance, context={"request": request}
+                ).data,
+            }
         )
 
     @action(detail=False, methods=["get"], url_path="deleted")
@@ -141,7 +177,9 @@ class DomainCareerMappingViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.get_serializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -154,12 +192,22 @@ class DomainCareerMappingViewSet(ModelViewSet):
     def bulk_delete(self, request, *args, **kwargs):
         ser = DomainCareerMappingBulkIdsSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         try:
-            n = domain_career_mapping_service.bulk_archive(ids=list(ser.validated_data["ids"]), user=request.user)
+            n = domain_career_mapping_service.bulk_archive(
+                ids=list(ser.validated_data["ids"]), user=request.user
+            )
         except ValidationError as e:
-            return Response({"success": False, "message": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"success": True, "message": "Bulk deleted successfully", "count": n})
+            return Response(
+                {"success": False, "message": e.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            {"success": True, "message": "Bulk deleted successfully", "count": n}
+        )
 
     @action(detail=False, methods=["post"], url_path="bulk-archive")
     def bulk_archive(self, request, *args, **kwargs):
@@ -170,14 +218,23 @@ class DomainCareerMappingViewSet(ModelViewSet):
     def bulk_restore(self, request, *args, **kwargs):
         ser = DomainCareerMappingBulkIdsSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
-        n = domain_career_mapping_service.bulk_restore(ids=list(ser.validated_data["ids"]), user=request.user)
-        return Response({"success": True, "message": "Bulk restored successfully", "count": n})
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        n = domain_career_mapping_service.bulk_restore(
+            ids=list(ser.validated_data["ids"]), user=request.user
+        )
+        return Response(
+            {"success": True, "message": "Bulk restored successfully", "count": n}
+        )
 
     @action(detail=False, methods=["get"], url_path=r"by-domain/(?P<domain_id>[^/.]+)")
     def by_domain(self, request, domain_id=None, *args, **kwargs):
         education_level = request.query_params.get("education_level")
-        qs = domain_career_mapping_service.by_domain_queryset(domain_id=domain_id, education_level=education_level)
+        qs = domain_career_mapping_service.by_domain_queryset(
+            domain_id=domain_id, education_level=education_level
+        )
         serializer = self.get_serializer(qs, many=True)
         return Response({"success": True, "data": serializer.data})
 
@@ -189,14 +246,18 @@ class DomainCareerMappingViewSet(ModelViewSet):
     )
     def bulk_import(self, request, *args, **kwargs):
         if "file" in request.FILES:
-            rows, parse_errors = domain_career_mapping_service.parse_import_file(request.FILES.get("file"))
+            rows, parse_errors = domain_career_mapping_service.parse_import_file(
+                request.FILES.get("file")
+            )
             if not rows:
                 return Response(
                     {
                         "success": False,
                         "success_count": 0,
                         "error_count": len(parse_errors),
-                        "error_details": [{"row": 0, "message": e} for e in parse_errors],
+                        "error_details": [
+                            {"row": 0, "message": e} for e in parse_errors
+                        ],
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -215,7 +276,10 @@ class DomainCareerMappingViewSet(ModelViewSet):
 
         ser = DomainCareerMappingBulkImportSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         result = domain_career_mapping_service.bulk_import_mappings(
             user=request.user,
             rows=ser.validated_data["rows"],
@@ -223,4 +287,3 @@ class DomainCareerMappingViewSet(ModelViewSet):
             context={"request": request},
         )
         return Response({"success": True, **result}, status=status.HTTP_201_CREATED)
-

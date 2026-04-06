@@ -1,6 +1,7 @@
 from django.utils.timezone import now
 from rest_framework import serializers
 
+import company.serializer as company_serializer
 from activity_log.models import ActivityLog
 from city.models import City
 from company.models import Company, CompanyPhoto, CompanyService, Enquiry
@@ -8,25 +9,34 @@ from country.models import Country
 from state.models import State
 from user.models import CustomGroup, User
 from utils.datetime_formatter import format_datetime
-import company.serializer as company_serializer
 from utils.generate_random_password import generate_random_password
 
 
 class CreateCompanySerializer(serializers.ModelSerializer):
     phone = serializers.IntegerField()
-    business_category_name = serializers.CharField(source="business_category.business_category", required=False)
+    business_category_name = serializers.CharField(
+        source="business_category.business_category", required=False
+    )
     gst_address_country = serializers.PrimaryKeyRelatedField(
         queryset=Country.objects.all(), required=False, allow_null=True
     )
     gst_address_state = serializers.PrimaryKeyRelatedField(
         queryset=State.objects.all(), required=False, allow_null=True
     )
-    gst_address_city = serializers.PrimaryKeyRelatedField(queryset=City.objects.all(), required=False, allow_null=True)
+    gst_address_city = serializers.PrimaryKeyRelatedField(
+        queryset=City.objects.all(), required=False, allow_null=True
+    )
 
     # Read-only fields for names
-    gst_address_country_name = serializers.CharField(source="gst_address_country.name", read_only=True)
-    gst_address_state_name = serializers.CharField(source="gst_address_state.name", read_only=True)
-    gst_address_city_name = serializers.CharField(source="gst_address_city.name", read_only=True)
+    gst_address_country_name = serializers.CharField(
+        source="gst_address_country.name", read_only=True
+    )
+    gst_address_state_name = serializers.CharField(
+        source="gst_address_state.name", read_only=True
+    )
+    gst_address_city_name = serializers.CharField(
+        source="gst_address_city.name", read_only=True
+    )
 
     class Meta:
         model = Company
@@ -89,17 +99,23 @@ class CreateCompanySerializer(serializers.ModelSerializer):
             for group in result["company_group"]:
                 group.user_set.add(user)
         else:
-            raise serializers.ValidationError({"success": False, "message": result["message"]})
+            raise serializers.ValidationError(
+                {"success": False, "message": result["message"]}
+            )
 
         try:
             company_admin_group = CustomGroup.objects.get(name="Company Admin")
             company_admin_group.user_set.add(user)
             user.role = company_admin_group.id
             user.designation = (
-                company_admin_group.group_name if company_admin_group.group_name else company_admin_group.name
+                company_admin_group.group_name
+                if company_admin_group.group_name
+                else company_admin_group.name
             )
         except CustomGroup.DoesNotExist:
-            raise serializers.ValidationError({"success": False, "message": "Company Admin group not found"})
+            raise serializers.ValidationError(
+                {"success": False, "message": "Company Admin group not found"}
+            )
 
         ActivityLog.log.company_create(company_instance, ip_address, user)
         user.save()
@@ -152,16 +168,22 @@ class CompanyPhotoArchiveSerializer(serializers.ModelSerializer):
         for deleted_id in deleted_ids:
             try:
                 if company_id:
-                    company_photo = CompanyPhoto.objects.get(id=deleted_id, company_id=company_id)
+                    company_photo = CompanyPhoto.objects.get(
+                        id=deleted_id, company_id=company_id
+                    )
                 elif request and request.user.company:
-                    company_photo = CompanyPhoto.objects.get(id=deleted_id, company=request.user.company)
+                    company_photo = CompanyPhoto.objects.get(
+                        id=deleted_id, company=request.user.company
+                    )
                 else:
                     raise CompanyPhoto.DoesNotExist()
 
                 company_photo.deleted = True
                 company_photo.save()
             except CompanyPhoto.DoesNotExist:
-                raise serializers.ValidationError("Company Photo does not exist or access denied")
+                raise serializers.ValidationError(
+                    "Company Photo does not exist or access denied"
+                )
 
         return company_photo
 
@@ -182,9 +204,13 @@ class CompanyPhotoRestoreSerializer(serializers.ModelSerializer):
         for deleted_id in deleted_ids:
             try:
                 if company_id:
-                    company_photo = CompanyPhoto.objects.get(id=deleted_id, company_id=company_id)
+                    company_photo = CompanyPhoto.objects.get(
+                        id=deleted_id, company_id=company_id
+                    )
                 elif request and request.user.company:
-                    company_photo = CompanyPhoto.objects.get(id=deleted_id, company=request.user.company)
+                    company_photo = CompanyPhoto.objects.get(
+                        id=deleted_id, company=request.user.company
+                    )
                 else:
                     raise CompanyPhoto.DoesNotExist()
 
@@ -194,7 +220,9 @@ class CompanyPhotoRestoreSerializer(serializers.ModelSerializer):
                 company_photo.updated_at = now()
                 company_photo.save()
             except CompanyPhoto.DoesNotExist:
-                raise serializers.ValidationError("Company Photo does not exist or access denied")
+                raise serializers.ValidationError(
+                    "Company Photo does not exist or access denied"
+                )
 
         return company_photo
 
@@ -209,8 +237,12 @@ class CompanyServiceSerializer(serializers.ModelSerializer):
 class CompanySerializer(serializers.ModelSerializer):
     phone = serializers.IntegerField()
     company_name = serializers.CharField(source="name", read_only=True)
-    business_category_name = serializers.CharField(source="business_category.business_category", required=False)
-    services_list = CompanyServiceSerializer(many=True, source="services", read_only=True)
+    business_category_name = serializers.CharField(
+        source="business_category.business_category", required=False
+    )
+    services_list = CompanyServiceSerializer(
+        many=True, source="services", read_only=True
+    )
     services = serializers.ListField(
         child=serializers.DictField(child=serializers.CharField(allow_blank=True)),
         write_only=True,
@@ -229,7 +261,9 @@ class CompanySerializer(serializers.ModelSerializer):
     gst_address_state = serializers.PrimaryKeyRelatedField(
         queryset=State.objects.all(), required=False, allow_null=True
     )
-    gst_address_city = serializers.PrimaryKeyRelatedField(queryset=City.objects.all(), required=False, allow_null=True)
+    gst_address_city = serializers.PrimaryKeyRelatedField(
+        queryset=City.objects.all(), required=False, allow_null=True
+    )
     communication_address_country = serializers.PrimaryKeyRelatedField(
         queryset=Country.objects.all(), required=False, allow_null=True
     )
@@ -241,14 +275,24 @@ class CompanySerializer(serializers.ModelSerializer):
     )
 
     # Read-only fields for names
-    gst_address_country_name = serializers.CharField(source="gst_address_country.name", read_only=True)
-    gst_address_state_name = serializers.CharField(source="gst_address_state.name", read_only=True)
-    gst_address_city_name = serializers.CharField(source="gst_address_city.name", read_only=True)
+    gst_address_country_name = serializers.CharField(
+        source="gst_address_country.name", read_only=True
+    )
+    gst_address_state_name = serializers.CharField(
+        source="gst_address_state.name", read_only=True
+    )
+    gst_address_city_name = serializers.CharField(
+        source="gst_address_city.name", read_only=True
+    )
     communication_address_country_name = serializers.CharField(
         source="communication_address_country.name", read_only=True
     )
-    communication_address_state_name = serializers.CharField(source="communication_address_state.name", read_only=True)
-    communication_address_city_name = serializers.CharField(source="communication_address_city.name", read_only=True)
+    communication_address_state_name = serializers.CharField(
+        source="communication_address_state.name", read_only=True
+    )
+    communication_address_city_name = serializers.CharField(
+        source="communication_address_city.name", read_only=True
+    )
 
     class Meta:
         model = Company
@@ -341,14 +385,20 @@ class CompanySerializer(serializers.ModelSerializer):
             if self.instance:
                 pc_qs = pc_qs.exclude(pk=self.instance.pk)
             email_changed = not (self.instance and self.instance.email == email)
-            if pc_qs.exists() or (email_changed and User.objects.filter(email=email).exists()):
-                errors["email"] = f"Partner Company with this Email {email} already exists."
+            if pc_qs.exists() or (
+                email_changed and User.objects.filter(email=email).exists()
+            ):
+                errors["email"] = (
+                    f"Partner Company with this Email {email} already exists."
+                )
 
         phone = data.get("phone", None)
         if phone is not None and self.instance is None:
             pc_qs = Company.objects.filter(phone=phone)
             if pc_qs.exists() or User.objects.filter(phone=phone).exists():
-                errors["phone"] = f"Partner Company with this Phone {phone} already exists."
+                errors["phone"] = (
+                    f"Partner Company with this Phone {phone} already exists."
+                )
 
         gst_no = data.get("gst_no")
         if gst_no and self.instance and self.instance.gst_no == gst_no:
@@ -366,13 +416,21 @@ class CompanySerializer(serializers.ModelSerializer):
         return format_datetime(getattr(obj, "created_at", None))
 
     def get_created_by_name(self, obj):
-        return f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else None
+        return (
+            f"{obj.created_by.first_name} {obj.created_by.last_name}"
+            if obj.created_by
+            else None
+        )
 
     def get_updated_at(self, obj):
         return format_datetime(getattr(obj, "updated_at", None))
 
     def get_updated_by_name(self, obj):
-        return f"{obj.updated_by.first_name} {obj.updated_by.last_name}" if obj.updated_by else None
+        return (
+            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
+            if obj.updated_by
+            else None
+        )
 
     def create(self, validated_data):
         req = self.context.get("request")
@@ -405,7 +463,10 @@ class CompanySerializer(serializers.ModelSerializer):
         try:
             user = User.objects.get(email=user_data["email"])
             raise serializers.ValidationError(
-                {"success": False, "message": f"Company with this Email {user_data['email']} already exists."}
+                {
+                    "success": False,
+                    "message": f"Company with this Email {user_data['email']} already exists.",
+                }
             )
         except User.DoesNotExist:
             user = User.objects.create(**user_data)
@@ -421,17 +482,23 @@ class CompanySerializer(serializers.ModelSerializer):
             for group in result["company_group"]:
                 group.user_set.add(user)
         else:
-            raise serializers.ValidationError({"success": False, "message": result["message"]})
+            raise serializers.ValidationError(
+                {"success": False, "message": result["message"]}
+            )
 
         try:
             company_admin_group = CustomGroup.objects.get(name="Company Admin")
             company_admin_group.user_set.add(user)
             user.role = company_admin_group.id
             user.designation = (
-                company_admin_group.group_name if company_admin_group.group_name else company_admin_group.name
+                company_admin_group.group_name
+                if company_admin_group.group_name
+                else company_admin_group.name
             )
         except CustomGroup.DoesNotExist:
-            raise serializers.ValidationError({"success": False, "message": "Company Admin group not found"})
+            raise serializers.ValidationError(
+                {"success": False, "message": "Company Admin group not found"}
+            )
 
         # Create services
         for service_data in services_data:
@@ -447,146 +514,15 @@ class CompanySerializer(serializers.ModelSerializer):
 
         return company_instance
 
-    # def update(self, instance, validated_data):
-    #     req = self.context.get("request")
-    #     ip_address = get_client_ip(req)
-
-    #     phone = str(validated_data.get("phone", "")).strip()
-
-    #     if not phone.isdigit():
-    #         raise serializers.ValidationError({"phone": "Please enter a valid mobile number."})
-
-    #     # Extract nested services data
-    #     services_data = validated_data.pop("services", [])
-
-    #     instance.person_name = validated_data.get("person_name", instance.person_name)
-    #     instance.email = validated_data.get("email", instance.email)
-    #     instance.phone = validated_data.get("phone", instance.phone)
-    #     instance.name = validated_data.get("name", instance.name)
-    #     instance.gst_no = validated_data.get("gst_no", instance.gst_no)
-    #     instance.business_category = validated_data.get("business_category", instance.business_category)
-    #     instance.company_type = validated_data.get("company_type", instance.company_type)
-    #     instance.status = validated_data.get("status", instance.status)
-    #     instance.is_active = validated_data.get("is_active", instance.is_active)
-    #     instance.company_logo = validated_data.get("company_logo", instance.company_logo)
-
-    #     # GST Address fields
-    #     instance.gst_address_country = validated_data.get("gst_address_country", instance.gst_address_country)
-    #     instance.gst_address_state = validated_data.get("gst_address_state", instance.gst_address_state)
-    #     instance.gst_address_city = validated_data.get("gst_address_city", instance.gst_address_city)
-    #     instance.gst_address_building = validated_data.get("gst_address_building", instance.gst_address_building)
-    #     instance.gst_address_area = validated_data.get("gst_address_area", instance.gst_address_area)
-    #     instance.gst_address_landmark = validated_data.get("gst_address_landmark", instance.gst_address_landmark)
-    #     instance.gst_address_pincode = validated_data.get("gst_address_pincode", instance.gst_address_pincode)
-
-    #     # Communication Address fields
-    #     instance.communication_address_country = validated_data.get(
-    #         "communication_address_country", instance.communication_address_country
-    #     )
-    #     instance.communication_address_state = validated_data.get(
-    #         "communication_address_state", instance.communication_address_state
-    #     )
-    #     instance.communication_address_city = validated_data.get(
-    #         "communication_address_city", instance.communication_address_city
-    #     )
-    #     instance.communication_address_building = validated_data.get(
-    #         "communication_address_building", instance.communication_address_building
-    #     )
-    #     instance.communication_address_area = validated_data.get(
-    #         "communication_address_area", instance.communication_address_area
-    #     )
-    #     instance.communication_address_landmark = validated_data.get(
-    #         "communication_address_landmark", instance.communication_address_landmark
-    #     )
-    #     instance.communication_address_pincode = validated_data.get(
-    #         "communication_address_pincode", instance.communication_address_pincode
-    #     )
-
-    #     # Additional fields from image extraction
-    #     instance.secondary_email = validated_data.get("secondary_email", instance.secondary_email)
-    #     instance.secondary_phone = validated_data.get("secondary_phone", instance.secondary_phone)
-    #     instance.facebook_url = validated_data.get("facebook_url", instance.facebook_url)
-    #     instance.twitter_url = validated_data.get("twitter_url", instance.twitter_url)
-    #     instance.linkedin_url = validated_data.get("linkedin_url", instance.linkedin_url)
-    #     instance.instagram_url = validated_data.get("instagram_url", instance.instagram_url)
-    #     instance.youtube_url = validated_data.get("youtube_url", instance.youtube_url)
-    #     instance.pinterest_url = validated_data.get("pinterest_url", instance.pinterest_url)
-    #     instance.year_of_establishment = validated_data.get("year_of_establishment", instance.year_of_establishment)
-    #     instance.number_of_employees = validated_data.get("number_of_employees", instance.number_of_employees)
-    #     instance.monday_friday_hours = validated_data.get("monday_friday_hours", instance.monday_friday_hours)
-    #     instance.saturday_hours = validated_data.get("saturday_hours", instance.saturday_hours)
-    #     instance.sunday_hours = validated_data.get("sunday_hours", instance.sunday_hours)
-
-    #     instance.updated_by = req.user
-    #     instance.updated_at = now()
-
-    #     # Handle services update
-    #     existing_service_ids = set(instance.services.values_list('id', flat=True))
-    #     incoming_service_ids = set()
-
-    #     for service_data in services_data:
-    #         service_id = service_data.get('id')
-    #         service_name = service_data.get('name')
-
-    #         if service_id:
-    #             incoming_service_ids.add(service_id)
-    #             try:
-    #                 service = CompanyService.objects.get(id=service_id)
-    #                 # Only update if name is different
-    #                 if service.name != service_name:
-    #                     # Check if new name already exists
-    #                     if CompanyService.objects.filter(name=service_name).exclude(id=service_id).exists():
-    #                         raise serializers.ValidationError(
-    #                             "services.name: company service with this name already exists."
-    #                         )
-    #                     service.name = service_name
-    #                     service.updated_at = now()
-    #                     service.save()
-    #             except CompanyService.DoesNotExist:
-    #                 # Create new service if ID doesn't exist
-    #                 if CompanyService.objects.filter(name=service_name).exists():
-    #                     raise serializers.ValidationError(
-    #                         "services.name: company service with this name already exists."
-    #                     )
-    #                 service = CompanyService.objects.create(name=service_name)
-    #                 instance.services.add(service)
-    #                 incoming_service_ids.add(service.id)
-    #         else:
-    #             # Create new service if no ID provided
-    #             if CompanyService.objects.filter(name=service_name).exists():
-    #                 raise serializers.ValidationError(
-    #                     "services.name: company service with this name already exists."
-    #                 )
-    #             service = CompanyService.objects.create(name=service_name)
-    #             instance.services.add(service)
-    #             incoming_service_ids.add(service.id)
-
-    #     # Remove services that are no longer in the incoming data
-    #     services_to_remove = existing_service_ids - incoming_service_ids
-    #     if services_to_remove:
-    #         instance.services.remove(*services_to_remove)
-
-    #     users = User.objects.filter(company_id=instance.id)
-    #     for user in users:
-    #         user.first_name = validated_data.get("person_name", user.first_name)
-    #         user.email = validated_data.get("email", user.email)
-    #         user.phone = validated_data.get("phone", user.phone)
-
-    #         user.save()
-
-    #     ActivityLog.log.company_update(instance, ip_address, req.user)
-
-    #     instance.save()
-
-    #     return instance
-
     def update(self, instance, validated_data):
         request = self.context.get("request")
         ip_address = company_serializer.get_client_ip(request)
 
         phone = str(validated_data.get("phone", instance.phone or "")).strip()
         if phone and not phone.isdigit():
-            raise serializers.ValidationError({"phone": "Please enter a valid mobile number."})
+            raise serializers.ValidationError(
+                {"phone": "Please enter a valid mobile number."}
+            )
 
         services_data = validated_data.pop("services", [])
         incoming_service_ids = set()
@@ -599,7 +535,9 @@ class CompanySerializer(serializers.ModelSerializer):
             service_name = service_item.get("name", "").strip()
 
             if not service_name:
-                raise serializers.ValidationError({"services": "Service name cannot be empty."})
+                raise serializers.ValidationError(
+                    {"services": "Service name cannot be empty."}
+                )
 
             if service_id:
                 # Update existing service
@@ -608,24 +546,16 @@ class CompanySerializer(serializers.ModelSerializer):
                     incoming_service_ids.add(service_id)
 
                     if service.name.lower() != service_name.lower():
-                        # Check uniqueness (case-insensitive, excluding current) - DISABLED
-                        # if CompanyService.objects.filter(name__iexact=service_name).exclude(id=service_id).exists():
-                        #     raise serializers.ValidationError(
-                        #         {"services": f"A service with name '{service_name}' already exists."}
-                        #     )
                         service.name = service_name
                         service.updated_at = now()
                         service.save()
 
                 except CompanyService.DoesNotExist:
-                    raise serializers.ValidationError({"services": f"Service with id {service_id} does not exist."})
+                    raise serializers.ValidationError(
+                        {"services": f"Service with id {service_id} does not exist."}
+                    )
 
             else:
-                # Create new service - DISABLED DUPLICATE CHECK
-                # if CompanyService.objects.filter(name__iexact=service_name).exists():
-                #     raise serializers.ValidationError(
-                #         {"services": f"A service with name '{service_name}' already exists."}
-                #     )
                 new_service = CompanyService.objects.create(name=service_name)
                 instance.services.add(new_service)
                 incoming_service_ids.add(new_service.id)
@@ -635,18 +565,38 @@ class CompanySerializer(serializers.ModelSerializer):
         instance.email = validated_data.get("email", instance.email)
         instance.phone = validated_data.get("phone", instance.phone)
         instance.gst_no = validated_data.get("gst_no", instance.gst_no)
-        instance.gst_no_verified = validated_data.get("gst_no_verified", instance.gst_no_verified)
-        instance.business_category = validated_data.get("business_category", instance.business_category)
-        instance.company_type = validated_data.get("company_type", instance.company_type)
+        instance.gst_no_verified = validated_data.get(
+            "gst_no_verified", instance.gst_no_verified
+        )
+        instance.business_category = validated_data.get(
+            "business_category", instance.business_category
+        )
+        instance.company_type = validated_data.get(
+            "company_type", instance.company_type
+        )
         instance.status = validated_data.get("status", instance.status)
         instance.is_active = validated_data.get("is_active", instance.is_active)
-        instance.company_logo = validated_data.get("company_logo", instance.company_logo)
-        instance.gst_address_country = validated_data.get("gst_address_country", instance.gst_address_country)
-        instance.gst_address_state = validated_data.get("gst_address_state", instance.gst_address_state)
-        instance.gst_address_city = validated_data.get("gst_address_city", instance.gst_address_city)
-        instance.gst_address_building = validated_data.get("gst_address_building", instance.gst_address_building)
-        instance.gst_address_landmark = validated_data.get("gst_address_landmark", instance.gst_address_landmark)
-        instance.gst_address_pincode = validated_data.get("gst_address_pincode", instance.gst_address_pincode)
+        instance.company_logo = validated_data.get(
+            "company_logo", instance.company_logo
+        )
+        instance.gst_address_country = validated_data.get(
+            "gst_address_country", instance.gst_address_country
+        )
+        instance.gst_address_state = validated_data.get(
+            "gst_address_state", instance.gst_address_state
+        )
+        instance.gst_address_city = validated_data.get(
+            "gst_address_city", instance.gst_address_city
+        )
+        instance.gst_address_building = validated_data.get(
+            "gst_address_building", instance.gst_address_building
+        )
+        instance.gst_address_landmark = validated_data.get(
+            "gst_address_landmark", instance.gst_address_landmark
+        )
+        instance.gst_address_pincode = validated_data.get(
+            "gst_address_pincode", instance.gst_address_pincode
+        )
         instance.communication_address_country = validated_data.get(
             "communication_address_country", instance.communication_address_country
         )
@@ -667,19 +617,41 @@ class CompanySerializer(serializers.ModelSerializer):
         )
 
         # Social & Other Info
-        instance.secondary_email = validated_data.get("secondary_email", instance.secondary_email)
-        instance.secondary_phone = validated_data.get("secondary_phone", instance.secondary_phone)
-        instance.facebook_url = validated_data.get("facebook_url", instance.facebook_url)
+        instance.secondary_email = validated_data.get(
+            "secondary_email", instance.secondary_email
+        )
+        instance.secondary_phone = validated_data.get(
+            "secondary_phone", instance.secondary_phone
+        )
+        instance.facebook_url = validated_data.get(
+            "facebook_url", instance.facebook_url
+        )
         instance.twitter_url = validated_data.get("twitter_url", instance.twitter_url)
-        instance.linkedin_url = validated_data.get("linkedin_url", instance.linkedin_url)
-        instance.instagram_url = validated_data.get("instagram_url", instance.instagram_url)
+        instance.linkedin_url = validated_data.get(
+            "linkedin_url", instance.linkedin_url
+        )
+        instance.instagram_url = validated_data.get(
+            "instagram_url", instance.instagram_url
+        )
         instance.youtube_url = validated_data.get("youtube_url", instance.youtube_url)
-        instance.pinterest_url = validated_data.get("pinterest_url", instance.pinterest_url)
-        instance.year_of_establishment = validated_data.get("year_of_establishment", instance.year_of_establishment)
-        instance.number_of_employees = validated_data.get("number_of_employees", instance.number_of_employees)
-        instance.monday_friday_hours = validated_data.get("monday_friday_hours", instance.monday_friday_hours)
-        instance.saturday_hours = validated_data.get("saturday_hours", instance.saturday_hours)
-        instance.sunday_hours = validated_data.get("sunday_hours", instance.sunday_hours)
+        instance.pinterest_url = validated_data.get(
+            "pinterest_url", instance.pinterest_url
+        )
+        instance.year_of_establishment = validated_data.get(
+            "year_of_establishment", instance.year_of_establishment
+        )
+        instance.number_of_employees = validated_data.get(
+            "number_of_employees", instance.number_of_employees
+        )
+        instance.monday_friday_hours = validated_data.get(
+            "monday_friday_hours", instance.monday_friday_hours
+        )
+        instance.saturday_hours = validated_data.get(
+            "saturday_hours", instance.saturday_hours
+        )
+        instance.sunday_hours = validated_data.get(
+            "sunday_hours", instance.sunday_hours
+        )
 
         # Audit fields
         instance.updated_by = request.user
@@ -705,7 +677,9 @@ class CompanySerializer(serializers.ModelSerializer):
 
 
 class CompanyInfoSerializer(serializers.ModelSerializer):
-    business_category_name = serializers.CharField(source="business_category.business_category", required=False)
+    business_category_name = serializers.CharField(
+        source="business_category.business_category", required=False
+    )
     company_logo = serializers.CharField(required=False)
     created_by_name = serializers.SerializerMethodField(read_only=True)
     updated_by_name = serializers.SerializerMethodField(read_only=True)
@@ -715,14 +689,24 @@ class CompanyInfoSerializer(serializers.ModelSerializer):
     company_photos = serializers.SerializerMethodField()
 
     # Read-only fields for names
-    gst_address_country_name = serializers.CharField(source="gst_address_country.name", read_only=True)
-    gst_address_state_name = serializers.CharField(source="gst_address_state.name", read_only=True)
-    gst_address_city_name = serializers.CharField(source="gst_address_city.name", read_only=True)
+    gst_address_country_name = serializers.CharField(
+        source="gst_address_country.name", read_only=True
+    )
+    gst_address_state_name = serializers.CharField(
+        source="gst_address_state.name", read_only=True
+    )
+    gst_address_city_name = serializers.CharField(
+        source="gst_address_city.name", read_only=True
+    )
     communication_address_country_name = serializers.CharField(
         source="communication_address_country.name", read_only=True
     )
-    communication_address_state_name = serializers.CharField(source="communication_address_state.name", read_only=True)
-    communication_address_city_name = serializers.CharField(source="communication_address_city.name", read_only=True)
+    communication_address_state_name = serializers.CharField(
+        source="communication_address_state.name", read_only=True
+    )
+    communication_address_city_name = serializers.CharField(
+        source="communication_address_city.name", read_only=True
+    )
 
     class Meta:
         model = Company
@@ -792,13 +776,21 @@ class CompanyInfoSerializer(serializers.ModelSerializer):
         return CompanyPhotoListSerializer(photos, many=True).data
 
     def get_created_by_name(self, obj):
-        return f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else None
+        return (
+            f"{obj.created_by.first_name} {obj.created_by.last_name}"
+            if obj.created_by
+            else None
+        )
 
     def get_updated_at(self, obj):
         return format_datetime(getattr(obj, "updated_at", None))
 
     def get_updated_by_name(self, obj):
-        return f"{obj.updated_by.first_name} {obj.updated_by.last_name}" if obj.updated_by else None
+        return (
+            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
+            if obj.updated_by
+            else None
+        )
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -807,7 +799,9 @@ class CompanyInfoSerializer(serializers.ModelSerializer):
 
 
 class CompanyArchiveListSerializer(serializers.ModelSerializer):
-    business_category_name = serializers.CharField(source="business_category.business_category", required=False)
+    business_category_name = serializers.CharField(
+        source="business_category.business_category", required=False
+    )
     company_logo = serializers.CharField(required=False)
     created_by_name = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)
@@ -856,19 +850,31 @@ class CompanyArchiveListSerializer(serializers.ModelSerializer):
         return format_datetime(getattr(obj, "created_at", None))
 
     def get_created_by_name(self, obj):
-        return f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else None
+        return (
+            f"{obj.created_by.first_name} {obj.created_by.last_name}"
+            if obj.created_by
+            else None
+        )
 
     def get_updated_at(self, obj):
         return format_datetime(getattr(obj, "updated_at", None))
 
     def get_updated_by_name(self, obj):
-        return f"{obj.updated_by.first_name} {obj.updated_by.last_name}" if obj.updated_by else None
+        return (
+            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
+            if obj.updated_by
+            else None
+        )
 
     def get_deleted_at(self, obj):
         return format_datetime(getattr(obj, "deleted_at", None))
 
     def get_deleted_by_name(self, obj):
-        return f"{obj.deleted_by.first_name} {obj.deleted_by.last_name}" if obj.deleted_by else None
+        return (
+            f"{obj.deleted_by.first_name} {obj.deleted_by.last_name}"
+            if obj.deleted_by
+            else None
+        )
 
 
 # Company Multiple Deleted
@@ -990,8 +996,12 @@ class CompanyRestoreSerializer(serializers.ModelSerializer):
 
 
 class EnquirySerializer(serializers.ModelSerializer):
-    user_name = serializers.CharField(source="user.get_full_name", read_only=True, allow_null=True)
-    send_enquiry_to_name = serializers.CharField(source="send_enquiry_to.name", read_only=True, allow_null=True)
+    user_name = serializers.CharField(
+        source="user.get_full_name", read_only=True, allow_null=True
+    )
+    send_enquiry_to_name = serializers.CharField(
+        source="send_enquiry_to.name", read_only=True, allow_null=True
+    )
 
     class Meta:
         model = Enquiry
@@ -1007,4 +1017,10 @@ class EnquirySerializer(serializers.ModelSerializer):
             "send_enquiry_to_name",
             "created_at",
         ]
-        read_only_fields = ["id", "user", "user_name", "send_enquiry_to_name", "created_at"]
+        read_only_fields = [
+            "id",
+            "user",
+            "user_name",
+            "send_enquiry_to_name",
+            "created_at",
+        ]

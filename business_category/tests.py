@@ -12,7 +12,9 @@ User = get_user_model()
 
 class BusinessCategoryAPITestCase(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(email="testuser@example.com", username="testuser", password="testpass")
+        self.user = User.objects.create_user(
+            email="testuser@example.com", username="testuser", password="testpass"
+        )
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
@@ -25,13 +27,19 @@ class BusinessCategoryAPITestCase(APITestCase):
         url = reverse("business_category-list")
         data = {"business_category": "Retail"}
 
-        with patch("business_category.views.ActivityLog.log.business_category_create") as mock_log:
+        with patch(
+            "business_category.views.ActivityLog.log.business_category_create"
+        ) as mock_log:
             response = self.client.post(url, data, format="json")
 
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
             self.assertTrue(response.data["success"])
-            self.assertEqual(response.data["message"], "Business category added successfully")
-            self.assertTrue(BusinessCategory.objects.filter(business_category="Retail").exists())
+            self.assertEqual(
+                response.data["message"], "Business category added successfully"
+            )
+            self.assertTrue(
+                BusinessCategory.objects.filter(business_category="Retail").exists()
+            )
             mock_log.assert_called_once()
 
     def test_create_business_category_invalid_data(self):
@@ -83,7 +91,9 @@ class BusinessCategoryAPITestCase(APITestCase):
     def test_search_business_categories(self):
         """Test searching business categories"""
         url = reverse("business_category-list")
-        BusinessCategory.objects.create(business_category="Healthcare", created_by=self.user)
+        BusinessCategory.objects.create(
+            business_category="Healthcare", created_by=self.user
+        )
 
         response = self.client.get(url, {"search": "Technology"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -95,14 +105,20 @@ class BusinessCategoryAPITestCase(APITestCase):
     def test_ordering_business_categories(self):
         """Test ordering business categories"""
         url = reverse("business_category-list")
-        BusinessCategory.objects.create(business_category="Agriculture", created_by=self.user)
+        BusinessCategory.objects.create(
+            business_category="Agriculture", created_by=self.user
+        )
 
-        response = self.client.get(url, {"ordering": "business_category"}, format="json")
+        response = self.client.get(
+            url, {"ordering": "business_category"}, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results_data = response.data["results"]
         self.assertEqual(results_data["data"][0]["business_category"], "Agriculture")
 
-        response = self.client.get(url, {"ordering": "-business_category"}, format="json")
+        response = self.client.get(
+            url, {"ordering": "-business_category"}, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results_data = response.data["results"]
         self.assertEqual(results_data["data"][0]["business_category"], "Technology")
@@ -121,12 +137,16 @@ class BusinessCategoryAPITestCase(APITestCase):
         url = reverse("business_category-detail", args=[self.category.id])
         data = {"business_category": "Information Technology"}
 
-        with patch("business_category.views.ActivityLog.log.business_category_update") as mock_log:
+        with patch(
+            "business_category.views.ActivityLog.log.business_category_update"
+        ) as mock_log:
             response = self.client.patch(url, data, format="json")
 
             self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
             self.assertTrue(response.data["success"])
-            self.assertEqual(response.data["message"], "Business category updated successfully")
+            self.assertEqual(
+                response.data["message"], "Business category updated successfully"
+            )
 
             self.category.refresh_from_db()
             self.assertEqual(self.category.business_category, "Information Technology")
@@ -145,7 +165,9 @@ class BusinessCategoryAPITestCase(APITestCase):
         """Test soft deleting a business category"""
         url = reverse("business_category-detail", args=[self.category.id])
 
-        with patch("business_category.views.ActivityLog.log.business_category_archive") as mock_log:
+        with patch(
+            "business_category.views.ActivityLog.log.business_category_archive"
+        ) as mock_log:
             response = self.client.delete(url, format="json")
 
             self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -164,17 +186,23 @@ class BusinessCategoryAPITestCase(APITestCase):
 
     def test_bulk_delete_business_categories(self):
         """Test bulk deleting business categories"""
-        category2 = BusinessCategory.objects.create(business_category="Healthcare", created_by=self.user)
+        category2 = BusinessCategory.objects.create(
+            business_category="Healthcare", created_by=self.user
+        )
 
         url = reverse("business_category_archive-list")
         data = {"deleted": [self.category.id, category2.id]}
 
-        with patch("business_category.views.ActivityLog.log.business_category_archive") as mock_log:
+        with patch(
+            "business_category.views.ActivityLog.log.business_category_archive"
+        ) as mock_log:
             response = self.client.post(url, data, format="json")
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertTrue(response.data["success"])
-            self.assertEqual(response.data["message"], "Business categories archived successfully")
+            self.assertEqual(
+                response.data["message"], "Business categories archived successfully"
+            )
 
             self.category.refresh_from_db()
             category2.refresh_from_db()
@@ -232,12 +260,16 @@ class BusinessCategoryAPITestCase(APITestCase):
         url = reverse("business_category_restore-list")
         data = {"deleted": [self.category.id]}
 
-        with patch("business_category.views.ActivityLog.log.business_category_restore") as mock_log:
+        with patch(
+            "business_category.views.ActivityLog.log.business_category_restore"
+        ) as mock_log:
             response = self.client.post(url, data, format="json")
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertTrue(response.data["success"])
-            self.assertEqual(response.data["message"], "Business category restored successfully")
+            self.assertEqual(
+                response.data["message"], "Business category restored successfully"
+            )
 
             self.category.refresh_from_db()
             self.assertEqual(self.category.deleted, 0)
@@ -276,10 +308,14 @@ class BusinessCategoryAPITestCase(APITestCase):
 
     def test_model_foreign_key_on_delete(self):
         """Test that deleting user sets foreign key to null"""
-        test_user = User.objects.create_user(email="testuser2@example.com", username="testuser2", password="testpass")
+        test_user = User.objects.create_user(
+            email="testuser2@example.com", username="testuser2", password="testpass"
+        )
 
         category = BusinessCategory.objects.create(
-            business_category="Test Category", created_by=test_user, updated_by=test_user
+            business_category="Test Category",
+            created_by=test_user,
+            updated_by=test_user,
         )
 
         try:
@@ -290,7 +326,9 @@ class BusinessCategoryAPITestCase(APITestCase):
             self.assertIsNone(category.updated_by)
         except Exception as e:
             if "city" in str(e).lower():
-                self.skipTest("Skipping due to city table migration conflict: {}".format(str(e)))
+                self.skipTest(
+                    "Skipping due to city table migration conflict: {}".format(str(e))
+                )
             else:
                 raise e
 
@@ -308,7 +346,9 @@ class BusinessCategoryAPITestCase(APITestCase):
     def test_pagination(self):
         """Test pagination functionality"""
         for i in range(5):
-            BusinessCategory.objects.create(business_category=f"Category {i}", created_by=self.user)
+            BusinessCategory.objects.create(
+                business_category=f"Category {i}", created_by=self.user
+            )
 
         url = reverse("business_category-list")
         response = self.client.get(url, {"page": 1, "page_size": 2}, format="json")

@@ -40,18 +40,25 @@ def send_device_offline_notification(device, hours_offline=2):
                             site_location.site_address_building,
                             site_location.site_address_landmark,
                             (
-                                getattr(site_location.site_address_area, "city_area_name", None)
-                                if hasattr(site_location, "site_address_area") and site_location.site_address_area
+                                getattr(
+                                    site_location.site_address_area,
+                                    "city_area_name",
+                                    None,
+                                )
+                                if hasattr(site_location, "site_address_area")
+                                and site_location.site_address_area
                                 else None
                             ),
                             (
                                 getattr(site_location.site_address_city, "name", None)
-                                if hasattr(site_location, "site_address_city") and site_location.site_address_city
+                                if hasattr(site_location, "site_address_city")
+                                and site_location.site_address_city
                                 else None
                             ),
                             (
                                 getattr(site_location.site_address_state, "name", None)
-                                if hasattr(site_location, "site_address_state") and site_location.site_address_state
+                                if hasattr(site_location, "site_address_state")
+                                and site_location.site_address_state
                                 else None
                             ),
                             site_location.site_address_pincode,
@@ -68,8 +75,16 @@ def send_device_offline_notification(device, hours_offline=2):
             "mac_address": device.mac_address or "N/A",
             "imei_number": device.imei_number or "N/A",
             "hours_offline": hours_offline,
-            "last_seen": device.updated_at.strftime("%Y-%m-%d %H:%M:%S") if device.updated_at else "N/A",
-            "device_status": device.get_status_display() if hasattr(device, "get_status_display") else device.status,
+            "last_seen": (
+                device.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+                if device.updated_at
+                else "N/A"
+            ),
+            "device_status": (
+                device.get_status_display()
+                if hasattr(device, "get_status_display")
+                else device.status
+            ),
             "admin_url": getattr(settings, "ADMIN_URL", ""),
             "superadmin_name": "Super Administrator",
             "partner_company_name": (
@@ -84,9 +99,7 @@ def send_device_offline_notification(device, hours_offline=2):
         device_name = device.device_code or device.mac_address
         custom_message_content = "Device offline notification.\n"
         custom_message_content += f"Device: {device_name},\n"
-        custom_message_content += (
-            f"Status: {device.get_status_display() if hasattr(device, 'get_status_display') else device.status},\n"
-        )
+        custom_message_content += f"Status: {device.get_status_display() if hasattr(device, 'get_status_display') else device.status},\n"
         custom_message_content += f"Hours Offline: {int(hours_offline)},\n"
         if site_details and site_details != "N/A":
             site_ref_id = site_details.get("site_reference_id", "N/A")
@@ -104,7 +117,9 @@ def send_device_offline_notification(device, hours_offline=2):
         superadmin_context["recipient_name"] = "Super Administrator"
         superadmin_context["recipient_type"] = "superadmin"
 
-        superadmin_html = render_to_string("device_offline_notification.html", superadmin_context)
+        superadmin_html = render_to_string(
+            "device_offline_notification.html", superadmin_context
+        )
         superadmin_text = strip_tags(superadmin_html)
 
         superadmin_email = EmailMultiAlternatives(
@@ -118,7 +133,9 @@ def send_device_offline_notification(device, hours_offline=2):
         superadmin_email.attach_alternative(superadmin_html, "text/html")
 
         # Attach logo image
-        logo_path = os.path.join(settings.BASE_DIR, "static", "images", "e-switch-h-final.png")
+        logo_path = os.path.join(
+            settings.BASE_DIR, "static", "images", "e-switch-h-final.png"
+        )
         if os.path.exists(logo_path):
             with open(logo_path, "rb") as image_file:
                 img_data = image_file.read()
@@ -158,7 +175,9 @@ def send_device_offline_notification(device, hours_offline=2):
             )
             partner_context["recipient_type"] = "partner"
 
-            partner_html = render_to_string("device_offline_notification.html", partner_context)
+            partner_html = render_to_string(
+                "device_offline_notification.html", partner_context
+            )
             partner_text = strip_tags(partner_html)
 
             partner_email_msg = EmailMultiAlternatives(
@@ -172,7 +191,9 @@ def send_device_offline_notification(device, hours_offline=2):
             partner_email_msg.attach_alternative(partner_html, "text/html")
 
             # Attach logo image
-            logo_path = os.path.join(settings.BASE_DIR, "static", "images", "e-switch-h-final.png")
+            logo_path = os.path.join(
+                settings.BASE_DIR, "static", "images", "e-switch-h-final.png"
+            )
             if os.path.exists(logo_path):
                 with open(logo_path, "rb") as image_file:
                     img_data = image_file.read()
@@ -205,7 +226,9 @@ def send_device_offline_notification(device, hours_offline=2):
         return emails_sent > 0
 
     except Exception as e:
-        logger.error(f"Error sending offline notification for device {device_identifier}: {str(e)}")
+        logger.error(
+            f"Error sending offline notification for device {device_identifier}: {str(e)}"
+        )
         return False
 
 
@@ -229,8 +252,13 @@ def check_offline_devices():
             # Only send notification if it's been more than 2 hours
             if hours_offline >= 2:
                 # Check if we've already sent a notification in the last 2 hours
-                last_notification_sent = getattr(device, "last_offline_notification", None)
-                if last_notification_sent and (timezone.now() - last_notification_sent).total_seconds() < 7200:
+                last_notification_sent = getattr(
+                    device, "last_offline_notification", None
+                )
+                if (
+                    last_notification_sent
+                    and (timezone.now() - last_notification_sent).total_seconds() < 7200
+                ):
                     continue  # Skip if we've already sent a notification in the last 2 hours
 
                 # Send notification

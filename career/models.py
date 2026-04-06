@@ -80,4 +80,3 @@ class CareerImportError(models.Model):
     class Meta:
         db_table = "career_import_error"
         ordering = ["batch", "row_number"]
-

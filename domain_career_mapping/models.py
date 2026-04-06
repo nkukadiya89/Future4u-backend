@@ -22,9 +22,13 @@ class DomainCareerMapping(BaseMappingModel):
     class Meta:
         db_table = "domain_career_mapping"
         constraints = [
-            models.UniqueConstraint(fields=["domain", "career"], name="domain_career_mapping_domain_career_uniq"),
+            models.UniqueConstraint(
+                fields=["domain", "career"],
+                name="domain_career_mapping_domain_career_uniq",
+            ),
             models.CheckConstraint(
-                condition=models.Q(weight_score__gte=0) & models.Q(weight_score__lte=100),
+                condition=models.Q(weight_score__gte=0)
+                & models.Q(weight_score__lte=100),
                 name="domain_career_mapping_weight_score_0_100_ck",
             ),
         ]
@@ -77,4 +81,3 @@ class DomainCareerMappingImportError(models.Model):
     class Meta:
         db_table = "domain_career_mapping_import_error"
         ordering = ["batch", "row_number"]
-

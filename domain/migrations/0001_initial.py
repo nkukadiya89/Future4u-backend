@@ -8,55 +8,78 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Domain',
+            name="Domain",
             fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(blank=True, null=True)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('deleted', models.BooleanField(default=False)),
-                ('is_active', models.BooleanField(default=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('domain_code', models.CharField(max_length=64)),
-                ('domain_name', models.CharField(max_length=255)),
-                ('parent_acceptance_level', models.PositiveSmallIntegerField()),
-                ('future_relevance_score', models.PositiveSmallIntegerField()),
-                ('description', models.TextField(blank=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(blank=True, null=True)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("deleted", models.BooleanField(default=False)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("domain_code", models.CharField(max_length=64)),
+                ("domain_name", models.CharField(max_length=255)),
+                ("parent_acceptance_level", models.PositiveSmallIntegerField()),
+                ("future_relevance_score", models.PositiveSmallIntegerField()),
+                ("description", models.TextField(blank=True)),
             ],
             options={
-                'db_table': 'domain',
+                "db_table": "domain",
             },
         ),
         migrations.CreateModel(
-            name='DomainImportBatch',
+            name="DomainImportBatch",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('total_rows', models.PositiveIntegerField(default=0)),
-                ('imported_count', models.PositiveIntegerField(default=0)),
-                ('failed_count', models.PositiveIntegerField(default=0)),
-                ('completed_at', models.DateTimeField(blank=True, null=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("total_rows", models.PositiveIntegerField(default=0)),
+                ("imported_count", models.PositiveIntegerField(default=0)),
+                ("failed_count", models.PositiveIntegerField(default=0)),
+                ("completed_at", models.DateTimeField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'domain_import_batch',
-                'ordering': ['-created_at'],
+                "db_table": "domain_import_batch",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='DomainImportError',
+            name="DomainImportError",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('row_number', models.PositiveIntegerField()),
-                ('message', models.CharField(max_length=500)),
-                ('row_data', models.JSONField(default=dict)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("row_number", models.PositiveIntegerField()),
+                ("message", models.CharField(max_length=500)),
+                ("row_data", models.JSONField(default=dict)),
             ],
             options={
-                'db_table': 'domain_import_error',
-                'ordering': ['batch', 'row_number'],
+                "db_table": "domain_import_error",
+                "ordering": ["batch", "row_number"],
             },
         ),
     ]

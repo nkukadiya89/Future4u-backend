@@ -38,7 +38,9 @@ DOMAIN_CONFIG = {
                     "dimension": "aptitude",
                     "operator": "lt",
                     "value": 45,
-                    "actions": [{"type": "multiply", "career": "athlete", "value": 0.75}],
+                    "actions": [
+                        {"type": "multiply", "career": "athlete", "value": 0.75}
+                    ],
                 }
             ],
             "suppressions": [
@@ -61,4 +63,3 @@ DOMAIN_CONFIG = {
         },
     }
 }
-

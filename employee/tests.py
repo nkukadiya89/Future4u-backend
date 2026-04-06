@@ -28,11 +28,16 @@ class EmployeeModelTest(TestCase):
     def setUp(self):
         """Set up test data"""
         self.user = User.objects.create_user(
-            email="creator@example.com", password="testpass123", first_name="Creator", last_name="User"
+            email="creator@example.com",
+            password="testpass123",
+            first_name="Creator",
+            last_name="User",
         )
         self.country = Country.objects.create(name="India")
         self.state = State.objects.create(name="Karnataka", country=self.country)
-        self.city = City.objects.create(name="Bangalore", state=self.state, country=self.country)
+        self.city = City.objects.create(
+            name="Bangalore", state=self.state, country=self.country
+        )
 
     def test_create_employee(self):
         """Test creating an Employee"""
@@ -60,13 +65,19 @@ class EmployeeModelTest(TestCase):
     def test_employee_str_method(self):
         """Test string representation of Employee"""
         employee = Employee.objects.create(
-            email="test@example.com", phone="9876543210", first_name="Test", last_name="Employee", created_by=self.user
+            email="test@example.com",
+            phone="9876543210",
+            first_name="Test",
+            last_name="Employee",
+            created_by=self.user,
         )
         self.assertEqual(str(employee), "Test")
 
     def test_employee_default_values(self):
         """Test default values for Employee"""
-        employee = Employee.objects.create(email="test@example.com", phone="9876543210", first_name="Test")
+        employee = Employee.objects.create(
+            email="test@example.com", phone="9876543210", first_name="Test"
+        )
         self.assertEqual(employee.status, "pending")
         self.assertEqual(employee.deleted, 0)
         self.assertIsNone(employee.created_by)
@@ -78,7 +89,10 @@ class EmployeeModelTest(TestCase):
     def test_employee_soft_delete(self):
         """Test soft delete functionality"""
         employee = Employee.objects.create(
-            email="test@example.com", phone="9876543210", first_name="Test", created_by=self.user
+            email="test@example.com",
+            phone="9876543210",
+            first_name="Test",
+            created_by=self.user,
         )
         employee.deleted = 1
         employee.deleted_by = self.user
@@ -92,7 +106,10 @@ class EmployeeModelTest(TestCase):
     def test_employee_profile_photo_upload(self):
         """Test profile photo upload"""
         employee = Employee.objects.create(
-            email="test@example.com", phone="9876543210", first_name="Test", created_by=self.user
+            email="test@example.com",
+            phone="9876543210",
+            first_name="Test",
+            created_by=self.user,
         )
         employee.profile_photo = "old_photo.jpg"
         employee.save()
@@ -112,17 +129,28 @@ class EmployeeSerializerTest(TestCase):
     def setUp(self):
         """Set up test data"""
         self.user = User.objects.create_user(
-            email="creator@example.com", password="testpass123", first_name="Creator", last_name="User"
+            email="creator@example.com",
+            password="testpass123",
+            first_name="Creator",
+            last_name="User",
         )
         self.country = Country.objects.create(name="India")
         self.state = State.objects.create(name="Karnataka", country=self.country)
-        self.city = City.objects.create(name="Bangalore", state=self.state, country=self.country)
+        self.city = City.objects.create(
+            name="Bangalore", state=self.state, country=self.country
+        )
         # Create an Employee and a linked User
         self.employee = Employee.objects.create(
-            email="test@example.com", phone="9876543210", first_name="Test", created_by=self.user
+            email="test@example.com",
+            phone="9876543210",
+            first_name="Test",
+            created_by=self.user,
         )
         self.test_user = User.objects.create_user(
-            email="test@example.com", password="testpass123", phone="9876543210", employee=self.employee
+            email="test@example.com",
+            password="testpass123",
+            phone="9876543210",
+            employee=self.employee,
         )
         self.employee_data = {
             "email": "test@example.com",
@@ -151,7 +179,9 @@ class EmployeeSerializerTest(TestCase):
         }
         with patch("employee.serializers.get_client_ip") as mock_get_ip, patch(
             "employee.serializers.generate_random_password"
-        ) as mock_generate_pass, patch("employee.serializers.ActivityLog") as mock_activity_log, patch(
+        ) as mock_generate_pass, patch(
+            "employee.serializers.ActivityLog"
+        ) as mock_activity_log, patch(
             "django.contrib.auth.models.Group"
         ) as mock_group:
             mock_get_ip.return_value = "127.0.0.1"
@@ -159,7 +189,9 @@ class EmployeeSerializerTest(TestCase):
             mock_activity_log.log.employee_create = MagicMock()
             mock_group.objects.get.return_value = MagicMock()
             request_mock = MagicMock(user=self.user)
-            serializer = AddEmployeeSerializer(data=serializer_data, context={"request": request_mock})
+            serializer = AddEmployeeSerializer(
+                data=serializer_data, context={"request": request_mock}
+            )
             self.assertTrue(serializer.is_valid(), serializer.errors)
             employee = serializer.save()
             self.assertEqual(employee.email, "newemployee@example.com")
@@ -180,7 +212,9 @@ class EmployeeSerializerTest(TestCase):
             "permission": [],
             "role": [],
         }
-        serializer = AddEmployeeSerializer(data=serializer_data, context={"request": MagicMock(user=self.user)})
+        serializer = AddEmployeeSerializer(
+            data=serializer_data, context={"request": MagicMock(user=self.user)}
+        )
         self.assertFalse(serializer.is_valid())
         self.assertIn("email", serializer.errors)
 
@@ -193,22 +227,32 @@ class EmployeeSerializerTest(TestCase):
             "permission": [],
             "role": [],
         }
-        serializer = AddEmployeeSerializer(data=serializer_data, context={"request": MagicMock(user=self.user)})
+        serializer = AddEmployeeSerializer(
+            data=serializer_data, context={"request": MagicMock(user=self.user)}
+        )
         self.assertFalse(serializer.is_valid())
         self.assertIn("non_field_errors", serializer.errors)
 
     def test_employee_archive_serializer(self):
         """Test EmployeeArchiveSerializer"""
         employee1 = Employee.objects.create(
-            email="test1@example.com", phone="9876543210", first_name="Test1", created_by=self.user
+            email="test1@example.com",
+            phone="9876543210",
+            first_name="Test1",
+            created_by=self.user,
         )
         employee2 = Employee.objects.create(
-            email="test2@example.com", phone="9876543211", first_name="Test2", created_by=self.user
+            email="test2@example.com",
+            phone="9876543211",
+            first_name="Test2",
+            created_by=self.user,
         )
         delete_data = {"deleted": [employee1.id, employee2.id]}
         with patch("employee.serializers.ActivityLog") as mock_activity_log:
             mock_activity_log.log.employee_archive = MagicMock()
-            serializer = EmployeeArchiveSerializer(data=delete_data, context={"request": MagicMock(user=self.user)})
+            serializer = EmployeeArchiveSerializer(
+                data=delete_data, context={"request": MagicMock(user=self.user)}
+            )
             self.assertTrue(serializer.is_valid())
             serializer.save()
             employee1.refresh_from_db()
@@ -222,15 +266,25 @@ class EmployeeSerializerTest(TestCase):
     def test_employee_restore_serializer(self):
         """Test EmployeeRestoreSerializer"""
         employee1 = Employee.objects.create(
-            email="test1@example.com", phone="9876543210", first_name="Test1", created_by=self.user, deleted=True
+            email="test1@example.com",
+            phone="9876543210",
+            first_name="Test1",
+            created_by=self.user,
+            deleted=True,
         )
         employee2 = Employee.objects.create(
-            email="test2@example.com", phone="9876543211", first_name="Test2", created_by=self.user, deleted=True
+            email="test2@example.com",
+            phone="9876543211",
+            first_name="Test2",
+            created_by=self.user,
+            deleted=True,
         )
         restore_data = {"deleted": [employee1.id, employee2.id]}
         with patch("employee.serializers.ActivityLog") as mock_activity_log:
             mock_activity_log.log.employee_restore = MagicMock()
-            serializer = EmployeeRestoreSerializer(data=restore_data, context={"request": MagicMock(user=self.user)})
+            serializer = EmployeeRestoreSerializer(
+                data=restore_data, context={"request": MagicMock(user=self.user)}
+            )
             self.assertTrue(serializer.is_valid())
             serializer.save()
             employee1.refresh_from_db()
@@ -249,7 +303,10 @@ class BaseAPITestCase(APITestCase):
         """Set up test data and authentication"""
         self.client = APIClient()
         self.user = User.objects.create_user(
-            email="creator@example.com", password="testpass123", first_name="Creator", last_name="User"
+            email="creator@example.com",
+            password="testpass123",
+            first_name="Creator",
+            last_name="User",
         )
         self.user.is_active = True
         self.user.save()
@@ -258,7 +315,9 @@ class BaseAPITestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access_token}")
         self.country = Country.objects.create(name="India")
         self.state = State.objects.create(name="Karnataka", country=self.country)
-        self.city = City.objects.create(name="Bangalore", state=self.state, country=self.country)
+        self.city = City.objects.create(
+            name="Bangalore", state=self.state, country=self.country
+        )
         self.employee1 = Employee.objects.create(
             email="test1@example.com",
             phone="9876543210",
@@ -284,10 +343,16 @@ class BaseAPITestCase(APITestCase):
         )
         # Link Users to Employees for password tests
         self.user1 = User.objects.create_user(
-            email="test1@example.com", password="oldpass123", phone="9876543210", employee=self.employee1
+            email="test1@example.com",
+            password="oldpass123",
+            phone="9876543210",
+            employee=self.employee1,
         )
         self.user2 = User.objects.create_user(
-            email="test2@example.com", password="oldpass123", phone="9876543211", employee=self.employee2
+            email="test2@example.com",
+            password="oldpass123",
+            phone="9876543211",
+            employee=self.employee2,
         )
 
 
@@ -333,7 +398,10 @@ class AddEmployeeViewSetTest(BaseAPITestCase):
         self.assertTrue(response.data["results"]["success"])
         self.assertIn("data", response.data["results"])
         self.assertGreaterEqual(len(response.data["results"]["data"]), 1)
-        found = any("Test1" in result["first_name"] for result in response.data["results"]["data"])
+        found = any(
+            "Test1" in result["first_name"]
+            for result in response.data["results"]["data"]
+        )
         self.assertTrue(found)
 
     def test_ordering_employees(self):
@@ -352,7 +420,9 @@ class AddEmployeeViewSetTest(BaseAPITestCase):
     @patch("employee.serializers.get_client_ip")
     @patch("employee.serializers.ActivityLog")  # Changed from views to serializers
     @patch("employee.views.send_mail")
-    def test_create_employee(self, mock_send_mail, mock_activity_log, mock_get_ip, mock_upload_file):
+    def test_create_employee(
+        self, mock_send_mail, mock_activity_log, mock_get_ip, mock_upload_file
+    ):
         """Test creating a new employee"""
         mock_get_ip.return_value = "127.0.0.1"
         mock_upload_file.return_value = ("path/to/photo.jpg", "presigned_url")
@@ -377,7 +447,10 @@ class AddEmployeeViewSetTest(BaseAPITestCase):
         response = self.client.post(self.list_url, data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(response.data["success"])
-        self.assertEqual(response.data["message"], "Reset Password Mail has been sent to registed email")
+        self.assertEqual(
+            response.data["message"],
+            "Reset Password Mail has been sent to registed email",
+        )
         employee = Employee.objects.get(email="new@example.com")
         self.assertEqual(employee.phone, "9876543213")
         self.assertEqual(employee.profile_photo, "path/to/photo.jpg")
@@ -424,7 +497,9 @@ class AddEmployeeViewSetTest(BaseAPITestCase):
             ),
             "profile_photo": MagicMock(name="new_photo.jpg"),
         }
-        response = self.client.put(self.detail_url(self.employee1.id), data, format="multipart")
+        response = self.client.put(
+            self.detail_url(self.employee1.id), data, format="multipart"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data["success"])
         self.employee1.refresh_from_db()
@@ -440,7 +515,9 @@ class AddEmployeeViewSetTest(BaseAPITestCase):
         """Test deleting profile photo"""
         self.employee1.profile_photo = "path/to/photo.jpg"
         self.employee1.save()
-        response = self.client.patch(self.detail_url(self.employee1.id) + "profile-photo-delete/")
+        response = self.client.patch(
+            self.detail_url(self.employee1.id) + "profile-photo-delete/"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data["success"])
         self.employee1.refresh_from_db()
@@ -449,15 +526,23 @@ class AddEmployeeViewSetTest(BaseAPITestCase):
 
     def test_get_employee_basic_info(self):
         """Test getting employee basic info"""
-        response = self.client.get(self.detail_url(self.employee1.id) + "employee-basic-info/")
+        response = self.client.get(
+            self.detail_url(self.employee1.id) + "employee-basic-info/"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["first_name"], "Test1")
         self.assertEqual(response.data["email"], "test1@example.com")
 
     def test_update_employee_details(self):
         """Test updating employee details"""
-        data = {"form_data": json.dumps({"first_name": "Updated", "last_name": "NewLast", "phone": 9876543214})}
-        response = self.client.patch(self.detail_url(self.employee1.id) + "update-employee-details/", data)
+        data = {
+            "form_data": json.dumps(
+                {"first_name": "Updated", "last_name": "NewLast", "phone": 9876543214}
+            )
+        }
+        response = self.client.patch(
+            self.detail_url(self.employee1.id) + "update-employee-details/", data
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.employee1.refresh_from_db()
         self.assertEqual(self.employee1.first_name, "Updated")
@@ -469,8 +554,14 @@ class AddEmployeeViewSetTest(BaseAPITestCase):
     def test_change_employee_password(self):
         """Test changing employee password"""
         # Use existing self.user1 instead of creating a new user
-        data = {"old_password": "oldpass123", "new_password": "newpass123", "re_enter_password": "newpass123"}
-        response = self.client.patch(self.detail_url(self.employee1.id) + "change-employee-password/", data)
+        data = {
+            "old_password": "oldpass123",
+            "new_password": "newpass123",
+            "re_enter_password": "newpass123",
+        }
+        response = self.client.patch(
+            self.detail_url(self.employee1.id) + "change-employee-password/", data
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.user1.refresh_from_db()
         self.assertTrue(self.user1.check_password("newpass123"))

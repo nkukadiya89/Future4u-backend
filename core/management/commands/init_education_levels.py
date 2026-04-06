@@ -4,7 +4,11 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from core.management.commands._master_import_utils import RequestUserProxy, load_csv_rows, resolve_import_user
+from core.management.commands._master_import_utils import (
+    RequestUserProxy,
+    load_csv_rows,
+    resolve_import_user,
+)
 from education_level.serializers import EducationLevelSerializer
 from education_level.services import education_level_service
 
@@ -19,7 +23,11 @@ class Command(BaseCommand):
             "--path",
             dest="load_path",
             default=str(
-                Path(settings.BASE_DIR) / "core" / "management" / "source" / "education_level_master_sample.csv"
+                Path(settings.BASE_DIR)
+                / "core"
+                / "management"
+                / "source"
+                / "education_level_master_sample.csv"
             ),
             help="Load education levels from CSV at this path.",
         )
@@ -36,7 +44,9 @@ class Command(BaseCommand):
 
         user = resolve_import_user(username=options.get("username"))
         rows = load_csv_rows(load_path)
-        logger.info("init_education_levels loading %s rows from %s", len(rows), load_path)
+        logger.info(
+            "init_education_levels loading %s rows from %s", len(rows), load_path
+        )
         result = education_level_service.bulk_import_levels(
             user=user,
             rows=rows,
@@ -52,5 +62,8 @@ class Command(BaseCommand):
             logger.warning("row %s: %s", d["row"], d["message"])
             self.stdout.write(self.style.WARNING(f"Row {d['row']}: {d['message']}"))
         if len(result["error_details"]) > 20:
-            self.stdout.write(self.style.WARNING("... additional errors omitted (see logs / import batch)."))
-
+            self.stdout.write(
+                self.style.WARNING(
+                    "... additional errors omitted (see logs / import batch)."
+                )
+            )

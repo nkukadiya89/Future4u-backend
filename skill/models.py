@@ -75,4 +75,3 @@ class SkillImportError(models.Model):
     class Meta:
         db_table = "skill_import_error"
         ordering = ["batch", "row_number"]
-

@@ -70,14 +70,22 @@ class StreamAPITests(TestCase):
 
     def test_stream_code_case_insensitive_unique(self):
         url = reverse("stream-list")
-        self.client.post(url, self._payload(code="SCI", sequence_order=1), format="json")
-        r = self.client.post(url, self._payload(code="sci", sequence_order=2), format="json")
+        self.client.post(
+            url, self._payload(code="SCI", sequence_order=1), format="json"
+        )
+        r = self.client.post(
+            url, self._payload(code="sci", sequence_order=2), format="json"
+        )
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_sequence_order_unique(self):
         url = reverse("stream-list")
-        self.client.post(url, self._payload(code="sc1", sequence_order=1), format="json")
-        r = self.client.post(url, self._payload(code="sc2", sequence_order=1), format="json")
+        self.client.post(
+            url, self._payload(code="sc1", sequence_order=1), format="json"
+        )
+        r = self.client.post(
+            url, self._payload(code="sc2", sequence_order=1), format="json"
+        )
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_change_status(self):
@@ -106,7 +114,11 @@ class StreamAPITests(TestCase):
         self.assertNotIn(pk, ids)
 
     def test_filter_by_education_level(self):
-        self.client.post(reverse("stream-list"), self._payload(code="f1", sequence_order=31), format="json")
+        self.client.post(
+            reverse("stream-list"),
+            self._payload(code="f1", sequence_order=31),
+            format="json",
+        )
         edu2 = EducationLevel.objects.create(
             level_code="high",
             display_name="Higher",
@@ -121,15 +133,23 @@ class StreamAPITests(TestCase):
             self._payload(code="f2", sequence_order=32, education_level=str(edu2.pk)),
             format="json",
         )
-        r = self.client.get(reverse("stream-list"), {"education_level": str(self.edu.pk)})
+        r = self.client.get(
+            reverse("stream-list"), {"education_level": str(self.edu.pk)}
+        )
         payload = r.data.get("results", r.data)
         rows = payload.get("data", r.data.get("data", []))
-        self.assertTrue(all(row["education_level_id"] == str(self.edu.pk) for row in rows))
+        self.assertTrue(
+            all(row["education_level_id"] == str(self.edu.pk) for row in rows)
+        )
 
     def test_bulk_archive_restore(self):
         url = reverse("stream-list")
-        p1 = self.client.post(url, self._payload(code="bulk_1", sequence_order=40), format="json").data["data"]["id"]
-        p2 = self.client.post(url, self._payload(code="bulk_2", sequence_order=41), format="json").data["data"]["id"]
+        p1 = self.client.post(
+            url, self._payload(code="bulk_1", sequence_order=40), format="json"
+        ).data["data"]["id"]
+        p2 = self.client.post(
+            url, self._payload(code="bulk_2", sequence_order=41), format="json"
+        ).data["data"]["id"]
         r = self.client.post(
             reverse("stream-bulk-archive"),
             {"ids": [p1, p2]},
@@ -150,8 +170,12 @@ class StreamAPITests(TestCase):
             "st_csv_1,CSV One,101,1,Legacy,Desc,sec\n"
             "st_csv_1,CSV Dup,102,1,Legacy,Desc,sec\n"
         )
-        f = SimpleUploadedFile("stream.csv", csv_body.encode("utf-8"), content_type="text/csv")
-        r = self.client.post(reverse("stream-bulk-upload"), {"file": f}, format="multipart")
+        f = SimpleUploadedFile(
+            "stream.csv", csv_body.encode("utf-8"), content_type="text/csv"
+        )
+        r = self.client.post(
+            reverse("stream-bulk-upload"), {"file": f}, format="multipart"
+        )
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         self.assertEqual(r.data["success_count"], 2)
         self.assertEqual(r.data["error_count"], 0)
@@ -173,7 +197,9 @@ class StreamAPITests(TestCase):
                 "education_level": "sec",
             },
         ]
-        r = self.client.post(reverse("stream-bulk-import"), {"rows": rows}, format="json")
+        r = self.client.post(
+            reverse("stream-bulk-import"), {"rows": rows}, format="json"
+        )
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         self.assertEqual(r.data["data"]["imported_count"], 2)
         self.assertEqual(r.data["data"]["failed_count"], 0)
@@ -200,7 +226,9 @@ class StreamAPITests(TestCase):
     def test_list_query_budget(self):
         url = reverse("stream-list")
         for i in range(5):
-            self.client.post(url, self._payload(code=f"q_{i}", sequence_order=300 + i), format="json")
+            self.client.post(
+                url, self._payload(code=f"q_{i}", sequence_order=300 + i), format="json"
+            )
         connection.force_debug_cursor = True
         connection.queries_log.clear()
         self.client.get(url)
@@ -209,7 +237,9 @@ class StreamAPITests(TestCase):
     def test_list_response_time_budget(self):
         url = reverse("stream-list")
         for i in range(8):
-            self.client.post(url, self._payload(code=f"t_{i}", sequence_order=400 + i), format="json")
+            self.client.post(
+                url, self._payload(code=f"t_{i}", sequence_order=400 + i), format="json"
+            )
         t0 = time.perf_counter()
         self.client.get(url)
         self.assertLess(time.perf_counter() - t0, 2.0)

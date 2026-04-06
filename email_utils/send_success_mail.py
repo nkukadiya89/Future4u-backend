@@ -60,7 +60,11 @@ def send_success_mail(subject, template, data):
     user = User.objects.filter(email=email).first()
 
     # Remove employee reference since User model doesn't have employee field
-    created_by_company = user.company.created_by.email if user.company and user.company.created_by else None
+    created_by_company = (
+        user.company.created_by.email
+        if user.company and user.company.created_by
+        else None
+    )
 
     context = {
         "name": name,
@@ -109,7 +113,9 @@ def send_success_mail(subject, template, data):
         mail_server.ehlo()
         mail_server.login(config("ADMIN_EMAIL"), config("EMAIL_PASSWORD"))
 
-        mail_server.sendmail(config("ADMIN_EMAIL"), msg["To"].split(", "), msg.as_string())
+        mail_server.sendmail(
+            config("ADMIN_EMAIL"), msg["To"].split(", "), msg.as_string()
+        )
 
         mail_server.quit()
 

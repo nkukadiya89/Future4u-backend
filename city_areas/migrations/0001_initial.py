@@ -9,24 +9,35 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('city', '0001_initial'),
+        ("city", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CityArea',
+            name="CityArea",
             fields=[
-                ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('city_area_name', models.CharField(blank=True, max_length=255, null=True)),
-                ('zipcode', models.CharField(blank=True, max_length=20, null=True)),
-                ('deleted', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(blank=True, null=True)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('city', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='city.city')),
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
+                (
+                    "city_area_name",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("zipcode", models.CharField(blank=True, max_length=20, null=True)),
+                ("deleted", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(blank=True, null=True)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "city",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="city.city",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'city_area',
+                "db_table": "city_area",
             },
         ),
     ]

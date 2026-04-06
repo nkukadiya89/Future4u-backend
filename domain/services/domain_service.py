@@ -69,9 +69,13 @@ def assert_no_circular_parent(*, domain: Domain | None, parent: Domain | None):
     seen = set()
     while current is not None:
         if domain and current.pk == domain.pk:
-            raise ValidationError({"parent_id": "Circular parent chain is not allowed."})
+            raise ValidationError(
+                {"parent_id": "Circular parent chain is not allowed."}
+            )
         if current.pk in seen:
-            raise ValidationError({"parent_id": "Circular parent chain is not allowed."})
+            raise ValidationError(
+                {"parent_id": "Circular parent chain is not allowed."}
+            )
         seen.add(current.pk)
         current = current.parent
 
@@ -128,7 +132,9 @@ def validate_domain_data(
         raise ValidationError({"future_relevance_score": "Must be between 1 and 100."})
     exclude_pk = instance.pk if instance and instance.pk else None
     if case_insensitive_code_exists(code=code, exclude_pk=exclude_pk):
-        raise ValidationError({"domain_code": "Domain code must be unique (case-insensitive)."})
+        raise ValidationError(
+            {"domain_code": "Domain code must be unique (case-insensitive)."}
+        )
     if update_parent or instance is None:
         assert_no_circular_parent(domain=instance, parent=parent)
     return {
@@ -327,7 +333,9 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
             try:
                 from openpyxl import load_workbook
             except ImportError:
-                return [], ["Excel support requires openpyxl. Install openpyxl or upload CSV."]
+                return [], [
+                    "Excel support requires openpyxl. Install openpyxl or upload CSV."
+                ]
             wb = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
             ws = wb.active
             rows_iter = ws.iter_rows(values_only=True)
@@ -362,7 +370,9 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
         return [], [str(e)]
 
 
-def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict) -> DomainImportBatch:
+def bulk_import_rows(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> DomainImportBatch:
     batch = DomainImportBatch.objects.create(
         created_by=user,
         total_rows=len(rows),
@@ -412,7 +422,9 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
         domain_code = (row.get("domain_code") or "").strip()
         if domain_code:
             existing = Domain.objects.filter(domain_code__iexact=domain_code).first()
-        ser = serializer_class(instance=existing, data=row, partial=bool(existing), context=context)
+        ser = serializer_class(
+            instance=existing, data=row, partial=bool(existing), context=context
+        )
         if not ser.is_valid():
             msg = json.dumps(ser.errors)[:500]
             errors.append(
@@ -434,7 +446,15 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
                     obj.deleted_by = None
                     obj.updated_by = user
                     obj.updated_at = timezone.now()
-                    obj.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_by", "updated_at"])
+                    obj.save(
+                        update_fields=[
+                            "deleted",
+                            "deleted_at",
+                            "deleted_by",
+                            "updated_by",
+                            "updated_at",
+                        ]
+                    )
                 imported += 1
         except ValidationError as e:
             detail = e.detail
@@ -471,7 +491,9 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
     return batch
 
 
-def bulk_import_domains(*, user, rows: list[dict], serializer_class, context: dict) -> dict[str, Any]:
+def bulk_import_domains(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> dict[str, Any]:
     batch = bulk_import_rows(
         user=user,
         rows=rows,
@@ -492,11 +514,15 @@ def bulk_import_domains(*, user, rows: list[dict], serializer_class, context: di
 
 
 def import_batches_queryset():
-    return DomainImportBatch.objects.select_related("created_by").order_by("-created_at")
+    return DomainImportBatch.objects.select_related("created_by").order_by(
+        "-created_at"
+    )
 
 
 def import_errors_queryset(*, batch_id: UUID | None = None):
-    qs = DomainImportError.objects.select_related("batch").order_by("-batch__created_at", "row_number")
+    qs = DomainImportError.objects.select_related("batch").order_by(
+        "-batch__created_at", "row_number"
+    )
     if batch_id:
         qs = qs.filter(batch_id=batch_id)
     return qs

@@ -28,8 +28,12 @@ class GovernmentDocVerification:
                 return {
                     "company": data.get("business_name", ""),
                     "legal_name": data.get("legal_name", ""),
-                    "building_name": data.get("address_details", {}).get("building_name", ""),
-                    "floor_number": data.get("address_details", {}).get("floor_number", ""),
+                    "building_name": data.get("address_details", {}).get(
+                        "building_name", ""
+                    ),
+                    "floor_number": data.get("address_details", {}).get(
+                        "floor_number", ""
+                    ),
                     "door_name": data.get("address_details", {}).get("door_number", ""),
                     "city": data.get("address_details", {}).get("city", ""),
                     "pincode": data.get("address_details", {}).get("pincode", ""),

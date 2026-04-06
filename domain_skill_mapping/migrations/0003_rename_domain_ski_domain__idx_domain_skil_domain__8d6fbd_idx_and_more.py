@@ -6,33 +6,33 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('domain_skill_mapping', '0002_initial'),
+        ("domain_skill_mapping", "0002_initial"),
     ]
 
     operations = [
         migrations.RenameIndex(
-            model_name='domainskillmapping',
-            new_name='domain_skil_domain__8d6fbd_idx',
-            old_name='domain_ski_domain__idx',
+            model_name="domainskillmapping",
+            new_name="domain_skil_domain__8d6fbd_idx",
+            old_name="domain_ski_domain__idx",
         ),
         migrations.RenameIndex(
-            model_name='domainskillmapping',
-            new_name='domain_skil_skill_i_86e68a_idx',
-            old_name='domain_ski_skill__idx',
+            model_name="domainskillmapping",
+            new_name="domain_skil_skill_i_86e68a_idx",
+            old_name="domain_ski_skill__idx",
         ),
         migrations.RenameIndex(
-            model_name='domainskillmapping',
-            new_name='domain_skil_weight__90d27b_idx',
-            old_name='domain_ski_weight__idx',
+            model_name="domainskillmapping",
+            new_name="domain_skil_weight__90d27b_idx",
+            old_name="domain_ski_weight__idx",
         ),
         migrations.RenameIndex(
-            model_name='domainskillmapping',
-            new_name='domain_skil_is_acti_927e6f_idx',
-            old_name='domain_ski_is_act_idx',
+            model_name="domainskillmapping",
+            new_name="domain_skil_is_acti_927e6f_idx",
+            old_name="domain_ski_is_act_idx",
         ),
         migrations.RenameIndex(
-            model_name='domainskillmapping',
-            new_name='domain_skil_deleted_465dd2_idx',
-            old_name='domain_ski_deleted_idx',
+            model_name="domainskillmapping",
+            new_name="domain_skil_deleted_465dd2_idx",
+            old_name="domain_ski_deleted_idx",
         ),
     ]

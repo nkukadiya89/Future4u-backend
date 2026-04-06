@@ -37,7 +37,9 @@ class BusinessSettingViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = BusinessSetting.objects.filter(Q(user_id=user) | Q(company=user.company)).order_by("-id")
+        queryset = BusinessSetting.objects.filter(
+            Q(user_id=user) | Q(company=user.company)
+        ).order_by("-id")
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -49,7 +51,9 @@ class BusinessSettingViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.serializer_class(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -82,11 +86,17 @@ class BusinessSettingViewSet(ModelViewSet):
                     "city_name": payload.get("city_name"),
                     "currency": payload.get("currency"),
                 }
-                return Response({"success": True, "data": filtered}, status=status.HTTP_201_CREATED)
+                return Response(
+                    {"success": True, "data": filtered}, status=status.HTTP_201_CREATED
+                )
 
-            return Response({"success": True, "data": payload}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"success": True, "data": payload}, status=status.HTTP_201_CREATED
+            )
         else:
-            error_messages = " ".join([", ".join(value) for value in serializer.errors.values()])
+            error_messages = " ".join(
+                [", ".join(value) for value in serializer.errors.values()]
+            )
             return Response(
                 {"success": False, "message": error_messages},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -104,7 +114,9 @@ class BusinessSettingViewSet(ModelViewSet):
                 business_setting = BusinessSetting.objects.get(id=pk)
 
             serializer = self.serializer_class(business_setting)
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
         except BusinessSetting.DoesNotExist:
             return Response(
                 {"success": False, "message": "Business Setting does not exist"},
@@ -127,7 +139,9 @@ class BusinessSettingViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        serializer = BusinessSettingSerializer(business_setting, data=request.data, partial=True)
+        serializer = BusinessSettingSerializer(
+            business_setting, data=request.data, partial=True
+        )
         if serializer.is_valid():
             instance = serializer.save()
             response_serializer = BusinessSettingInfoSerializer(instance)
@@ -158,11 +172,17 @@ class BusinessSettingViewSet(ModelViewSet):
                     "city_name": payload.get("city_name"),
                     "currency": payload.get("currency"),
                 }
-                return Response({"success": True, "data": filtered}, status=status.HTTP_200_OK)
+                return Response(
+                    {"success": True, "data": filtered}, status=status.HTTP_200_OK
+                )
 
-            return Response({"success": True, "data": payload}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": True, "data": payload}, status=status.HTTP_200_OK
+            )
         else:
-            error_messages = " ".join([", ".join(value) for value in serializer.errors.values()])
+            error_messages = " ".join(
+                [", ".join(value) for value in serializer.errors.values()]
+            )
             return Response(
                 {"success": False, "message": error_messages},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -172,7 +192,10 @@ class BusinessSettingViewSet(ModelViewSet):
     def business_setting_data(self, request, *args, **kwargs):
         try:
             business_setting = (
-                self.get_queryset().select_related("country", "state", "city").filter(user_id=request.user).first()
+                self.get_queryset()
+                .select_related("country", "state", "city")
+                .filter(user_id=request.user)
+                .first()
             )
 
             # If no business setting found, return null data
@@ -214,17 +237,41 @@ class BusinessSettingViewSet(ModelViewSet):
             )
 
         # If location data is not configured, return null for location fields
-        if not all([business_setting.country, business_setting.state, business_setting.city]):
+        if not all(
+            [business_setting.country, business_setting.state, business_setting.city]
+        ):
             return Response(
                 {
                     "success": True,
                     "data": {
-                        "country_id": business_setting.country.id if business_setting.country else None,
-                        "country_name": business_setting.country.name if business_setting.country else None,
-                        "state_id": business_setting.state.id if business_setting.state else None,
-                        "state_name": business_setting.state.name if business_setting.state else None,
-                        "city_id": business_setting.city.id if business_setting.city else None,
-                        "city_name": business_setting.city.name if business_setting.city else None,
+                        "country_id": (
+                            business_setting.country.id
+                            if business_setting.country
+                            else None
+                        ),
+                        "country_name": (
+                            business_setting.country.name
+                            if business_setting.country
+                            else None
+                        ),
+                        "state_id": (
+                            business_setting.state.id
+                            if business_setting.state
+                            else None
+                        ),
+                        "state_name": (
+                            business_setting.state.name
+                            if business_setting.state
+                            else None
+                        ),
+                        "city_id": (
+                            business_setting.city.id if business_setting.city else None
+                        ),
+                        "city_name": (
+                            business_setting.city.name
+                            if business_setting.city
+                            else None
+                        ),
                         "sgst": business_setting.sgst,
                         "cgst": business_setting.cgst,
                         "igst": business_setting.igst,
@@ -237,12 +284,28 @@ class BusinessSettingViewSet(ModelViewSet):
             {
                 "success": True,
                 "data": {
-                    "country_id": business_setting.country.id if business_setting.country else None,
-                    "country_name": business_setting.country.name if business_setting.country else None,
-                    "state_id": business_setting.state.id if business_setting.state else None,
-                    "state_name": business_setting.state.name if business_setting.state else None,
-                    "city_id": business_setting.city.id if business_setting.city else None,
-                    "city_name": business_setting.city.name if business_setting.city else None,
+                    "country_id": (
+                        business_setting.country.id
+                        if business_setting.country
+                        else None
+                    ),
+                    "country_name": (
+                        business_setting.country.name
+                        if business_setting.country
+                        else None
+                    ),
+                    "state_id": (
+                        business_setting.state.id if business_setting.state else None
+                    ),
+                    "state_name": (
+                        business_setting.state.name if business_setting.state else None
+                    ),
+                    "city_id": (
+                        business_setting.city.id if business_setting.city else None
+                    ),
+                    "city_name": (
+                        business_setting.city.name if business_setting.city else None
+                    ),
                     "sgst": business_setting.sgst,
                     "cgst": business_setting.cgst,
                     "igst": business_setting.igst,
@@ -264,17 +327,24 @@ class UserProfileViewSet(ModelViewSet):
     authentication_classes = [JWTAuthentication]
     http_method_names = ["get", "post", "patch", "head", "options"]
     # Rate limiting (view-level, safe)
-    from utils.throttles import PerUserBurstRateThrottle  # local import avoids broad dependency at module import time
+    from utils.throttles import (
+        PerUserBurstRateThrottle,
+    )  # local import avoids broad dependency at module import time
 
     throttle_classes = [PerUserBurstRateThrottle]
 
     def get_queryset(self):
-        return UserProfile.objects.filter(user=self.request.user).select_related("education_level", "stream")
+        return UserProfile.objects.filter(user=self.request.user).select_related(
+            "education_level", "stream"
+        )
 
     def list(self, request, *args, **kwargs):
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
         data = UserProfileSerializer(profile).data
-        return Response({"success": True, "status": True, "message": "", "data": data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "status": True, "message": "", "data": data},
+            status=status.HTTP_200_OK,
+        )
 
     def create(self, request, *args, **kwargs):
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -310,6 +380,11 @@ class UserProfileViewSet(ModelViewSet):
             pass
         out = UserProfileSerializer(profile).data
         return Response(
-            {"success": True, "status": True, "message": "Profile updated", "data": out},
+            {
+                "success": True,
+                "status": True,
+                "message": "Profile updated",
+                "data": out,
+            },
             status=status.HTTP_200_OK,
         )

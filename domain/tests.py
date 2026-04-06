@@ -79,7 +79,9 @@ class DomainAPITests(TestCase):
 
     def test_circular_parent_rejected(self):
         url = reverse("domain-list")
-        a = self.client.post(url, self._payload(code="p_a"), format="json").data["data"]["id"]
+        a = self.client.post(url, self._payload(code="p_a"), format="json").data[
+            "data"
+        ]["id"]
         b = self.client.post(
             url,
             self._payload(code="p_b", parent_id=a),
@@ -94,7 +96,9 @@ class DomainAPITests(TestCase):
 
     def test_archive_blocked_with_active_child(self):
         url = reverse("domain-list")
-        a = self.client.post(url, self._payload(code="root_z"), format="json").data["data"]["id"]
+        a = self.client.post(url, self._payload(code="root_z"), format="json").data[
+            "data"
+        ]["id"]
         self.client.post(
             url,
             self._payload(code="child_z", parent_id=a),
@@ -104,7 +108,9 @@ class DomainAPITests(TestCase):
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_change_status(self):
-        pk = self.client.post(reverse("domain-list"), self._payload(), format="json").data["data"]["id"]
+        pk = self.client.post(
+            reverse("domain-list"), self._payload(), format="json"
+        ).data["data"]["id"]
         r = self.client.post(
             reverse("domain-change-status", args=[pk]),
             {"is_active": False},
@@ -114,7 +120,9 @@ class DomainAPITests(TestCase):
         self.assertFalse(r.data["data"]["is_active"])
 
     def test_dropdown_excludes_archived(self):
-        pk = self.client.post(reverse("domain-list"), self._payload(), format="json").data["data"]["id"]
+        pk = self.client.post(
+            reverse("domain-list"), self._payload(), format="json"
+        ).data["data"]["id"]
         self.client.delete(reverse("domain-detail", args=[pk]))
         r = self.client.get(reverse("domain-dropdown"))
         ids = [row["id"] for row in r.data["data"]]
@@ -122,7 +130,9 @@ class DomainAPITests(TestCase):
 
     def test_tree_shape(self):
         url = reverse("domain-list")
-        root = self.client.post(url, self._payload(code="tree_r"), format="json").data["data"]["id"]
+        root = self.client.post(url, self._payload(code="tree_r"), format="json").data[
+            "data"
+        ]["id"]
         self.client.post(
             url,
             self._payload(code="tree_c", parent_id=root),
@@ -136,8 +146,12 @@ class DomainAPITests(TestCase):
 
     def test_bulk_archive_restore(self):
         url = reverse("domain-list")
-        p1 = self.client.post(url, self._payload(code="bulk_1"), format="json").data["data"]["id"]
-        p2 = self.client.post(url, self._payload(code="bulk_2"), format="json").data["data"]["id"]
+        p1 = self.client.post(url, self._payload(code="bulk_1"), format="json").data[
+            "data"
+        ]["id"]
+        p2 = self.client.post(url, self._payload(code="bulk_2"), format="json").data[
+            "data"
+        ]["id"]
         r = self.client.post(
             reverse("domain-bulk-archive"),
             {"ids": [p1, p2]},
@@ -158,8 +172,12 @@ class DomainAPITests(TestCase):
             "csv_up_1,One,,2,40,x\n"
             "csv_up_1,Duplicate,,2,40,y\n"
         )
-        f = SimpleUploadedFile("d.csv", csv_body.encode("utf-8"), content_type="text/csv")
-        r = self.client.post(reverse("domain-bulk-upload"), {"file": f}, format="multipart")
+        f = SimpleUploadedFile(
+            "d.csv", csv_body.encode("utf-8"), content_type="text/csv"
+        )
+        r = self.client.post(
+            reverse("domain-bulk-upload"), {"file": f}, format="multipart"
+        )
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         self.assertEqual(r.data["success_count"], 1)
         self.assertEqual(r.data["error_count"], 1)
@@ -187,7 +205,9 @@ class DomainAPITests(TestCase):
         self.assertEqual(r.data["data"]["failed_count"], 1)
 
     def test_archived_list(self):
-        pk = self.client.post(reverse("domain-list"), self._payload(), format="json").data["data"]["id"]
+        pk = self.client.post(
+            reverse("domain-list"), self._payload(), format="json"
+        ).data["data"]["id"]
         self.client.delete(reverse("domain-detail", args=[pk]))
         r = self.client.get(reverse("domain-archived"))
         self.assertEqual(r.status_code, status.HTTP_200_OK)

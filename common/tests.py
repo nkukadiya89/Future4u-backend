@@ -68,7 +68,14 @@ class RecommendationEngineServiceTests(TestCase):
             deleted=False,
         )
 
-    def _make_career(self, *, code="software_engineer", name="Software Engineer", min_edu=None, max_edu=None):
+    def _make_career(
+        self,
+        *,
+        code="software_engineer",
+        name="Software Engineer",
+        min_edu=None,
+        max_edu=None,
+    ):
         from career.models import Career
 
         return Career.objects.create(
@@ -95,9 +102,13 @@ class RecommendationEngineServiceTests(TestCase):
 
         dims = ["interest", "aptitude", "personality", "work_style"]
         for d in dims:
-            q = Question.objects.create(question_text=f"{d} q1", dimension=d, is_active=True)
+            q = Question.objects.create(
+                question_text=f"{d} q1", dimension=d, is_active=True
+            )
             o1 = Option.objects.create(question=q, option_text="opt", score_value=5)
-            UserResponse.objects.create(user=user, question=q, selected_option=o1, score_value=5)
+            UserResponse.objects.create(
+                user=user, question=q, selected_option=o1, score_value=5
+            )
 
     def test_user_with_full_data(self):
         from services.recommendation_engine_service import generate_recommendation
@@ -115,12 +126,30 @@ class RecommendationEngineServiceTests(TestCase):
         skill = self._make_skill(code="python", name="Python")
         career = self._make_career(min_edu=edu)
 
-        StreamDomainMapping.objects.create(stream=stream, domain=domain, weight_score=90, is_primary=True, is_active=True, deleted=False)
-        DomainSkillMapping.objects.create(domain=domain, skill=skill, weight_score=80, is_core=True, is_active=True, deleted=False)
-        DomainCareerMapping.objects.create(domain=domain, career=career, weight_score=70, is_active=True, deleted=False)
+        StreamDomainMapping.objects.create(
+            stream=stream,
+            domain=domain,
+            weight_score=90,
+            is_primary=True,
+            is_active=True,
+            deleted=False,
+        )
+        DomainSkillMapping.objects.create(
+            domain=domain,
+            skill=skill,
+            weight_score=80,
+            is_core=True,
+            is_active=True,
+            deleted=False,
+        )
+        DomainCareerMapping.objects.create(
+            domain=domain, career=career, weight_score=70, is_active=True, deleted=False
+        )
 
         self._make_assessment(user=user)
-        UserSkill.objects.create(user=user, skill=skill, proficiency_score=10, is_active=True, deleted=False)
+        UserSkill.objects.create(
+            user=user, skill=skill, proficiency_score=10, is_active=True, deleted=False
+        )
 
         out = generate_recommendation(user.id)
         self.assertIn("top_domains", out)
@@ -140,7 +169,14 @@ class RecommendationEngineServiceTests(TestCase):
         self._make_profile(user=user, edu=edu, stream=stream)
 
         domain = self._make_domain(code="business", name="Business", frs=60)
-        StreamDomainMapping.objects.create(stream=stream, domain=domain, weight_score=50, is_primary=True, is_active=True, deleted=False)
+        StreamDomainMapping.objects.create(
+            stream=stream,
+            domain=domain,
+            weight_score=50,
+            is_primary=True,
+            is_active=True,
+            deleted=False,
+        )
 
         out = generate_recommendation(user.id)
         self.assertEqual(out.get("message"), "ok")
@@ -159,8 +195,22 @@ class RecommendationEngineServiceTests(TestCase):
         domain = self._make_domain(code="design", name="Design", frs=75)
         skill = self._make_skill(code="communication", name="Communication")
 
-        StreamDomainMapping.objects.create(stream=stream, domain=domain, weight_score=80, is_primary=True, is_active=True, deleted=False)
-        DomainSkillMapping.objects.create(domain=domain, skill=skill, weight_score=60, is_core=True, is_active=True, deleted=False)
+        StreamDomainMapping.objects.create(
+            stream=stream,
+            domain=domain,
+            weight_score=80,
+            is_primary=True,
+            is_active=True,
+            deleted=False,
+        )
+        DomainSkillMapping.objects.create(
+            domain=domain,
+            skill=skill,
+            weight_score=60,
+            is_core=True,
+            is_active=True,
+            deleted=False,
+        )
 
         out = generate_recommendation(user.id)
         self.assertTrue(any(x["gap_level"] == "UNKNOWN" for x in out["skill_gaps"]))

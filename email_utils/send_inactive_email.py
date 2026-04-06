@@ -25,7 +25,9 @@ def send_inactive_email(subject, template, data):
         employee_name=employee.first_name,
         employee_last_name=employee.last_name,
         email=employee.email,
-        deactivated_by_first_name=updated_by_employee.first_name if updated_by_employee else "System",
+        deactivated_by_first_name=(
+            updated_by_employee.first_name if updated_by_employee else "System"
+        ),
         updated_at=employee.updated_at,
     )
 
@@ -60,6 +62,8 @@ def send_inactive_email(subject, template, data):
         mail_server.quit()
 
     except Exception as e:
-        return HttpResponse(f"An error occurred while sending the email {e}", status=500)
+        return HttpResponse(
+            f"An error occurred while sending the email {e}", status=500
+        )
 
     return HttpResponse("Mail Send", status=200)

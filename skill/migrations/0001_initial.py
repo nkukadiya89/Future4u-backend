@@ -8,54 +8,88 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Skill',
+            name="Skill",
             fields=[
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(blank=True, null=True)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('deleted', models.BooleanField(default=False)),
-                ('is_active', models.BooleanField(default=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('skill_code', models.CharField(max_length=64)),
-                ('skill_name', models.CharField(max_length=255)),
-                ('skill_type', models.CharField(choices=[('technical', 'Technical'), ('soft', 'Soft'), ('analytical', 'Analytical'), ('creative', 'Creative')], max_length=32)),
-                ('description', models.TextField(blank=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(blank=True, null=True)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("deleted", models.BooleanField(default=False)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("skill_code", models.CharField(max_length=64)),
+                ("skill_name", models.CharField(max_length=255)),
+                (
+                    "skill_type",
+                    models.CharField(
+                        choices=[
+                            ("technical", "Technical"),
+                            ("soft", "Soft"),
+                            ("analytical", "Analytical"),
+                            ("creative", "Creative"),
+                        ],
+                        max_length=32,
+                    ),
+                ),
+                ("description", models.TextField(blank=True)),
             ],
             options={
-                'db_table': 'skill',
+                "db_table": "skill",
             },
         ),
         migrations.CreateModel(
-            name='SkillImportBatch',
+            name="SkillImportBatch",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('total_rows', models.PositiveIntegerField(default=0)),
-                ('imported_count', models.PositiveIntegerField(default=0)),
-                ('failed_count', models.PositiveIntegerField(default=0)),
-                ('completed_at', models.DateTimeField(blank=True, null=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("total_rows", models.PositiveIntegerField(default=0)),
+                ("imported_count", models.PositiveIntegerField(default=0)),
+                ("failed_count", models.PositiveIntegerField(default=0)),
+                ("completed_at", models.DateTimeField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'skill_import_batch',
-                'ordering': ['-created_at'],
+                "db_table": "skill_import_batch",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='SkillImportError',
+            name="SkillImportError",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('row_number', models.PositiveIntegerField()),
-                ('message', models.CharField(max_length=500)),
-                ('row_data', models.JSONField(default=dict)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("row_number", models.PositiveIntegerField()),
+                ("message", models.CharField(max_length=500)),
+                ("row_data", models.JSONField(default=dict)),
             ],
             options={
-                'db_table': 'skill_import_error',
-                'ordering': ['batch', 'row_number'],
+                "db_table": "skill_import_error",
+                "ordering": ["batch", "row_number"],
             },
         ),
     ]

@@ -3,4 +3,4 @@ from django.apps import AppConfig
 
 class BussinessCategoryConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = 'business_category'
+    name = "business_category"

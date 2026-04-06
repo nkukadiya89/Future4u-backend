@@ -18,7 +18,13 @@ from domain_skill_mapping.models import (
 
 logger = logging.getLogger(__name__)
 
-SAMPLE_CSV_HEADERS = ("domain_code", "skill_code", "weight_score", "is_core", "is_active")
+SAMPLE_CSV_HEADERS = (
+    "domain_code",
+    "skill_code",
+    "weight_score",
+    "is_core",
+    "is_active",
+)
 REQUIRED_IMPORT_HEADERS = {"domain_code", "skill_code", "weight_score"}
 HEADER_ALIASES = {
     "domain": "domain_code",
@@ -30,7 +36,9 @@ HEADER_ALIASES = {
 
 
 def mapping_base_queryset():
-    return DomainSkillMapping.objects.select_related("domain", "skill", "created_by", "updated_by")
+    return DomainSkillMapping.objects.select_related(
+        "domain", "skill", "created_by", "updated_by"
+    )
 
 
 def _to_bool(value, *, default=False):
@@ -44,7 +52,9 @@ def _resolve_domain(domain_code):
         return None
     from domain.models import Domain
 
-    return Domain.objects.filter(domain_code__iexact=str(domain_code).strip(), deleted=False).first()
+    return Domain.objects.filter(
+        domain_code__iexact=str(domain_code).strip(), deleted=False
+    ).first()
 
 
 def _resolve_skill(skill_code):
@@ -52,7 +62,9 @@ def _resolve_skill(skill_code):
         return None
     from skill.models import Skill
 
-    return Skill.objects.filter(skill_code__iexact=str(skill_code).strip(), deleted=False).first()
+    return Skill.objects.filter(
+        skill_code__iexact=str(skill_code).strip(), deleted=False
+    ).first()
 
 
 def pair_exists(*, domain_id, skill_id, exclude_pk: UUID | None = None) -> bool:
@@ -91,7 +103,9 @@ def create_mapping(*, user, validated_data: dict) -> DomainSkillMapping:
 
 
 @transaction.atomic
-def update_mapping(*, mapping: DomainSkillMapping, user, validated_data: dict) -> DomainSkillMapping:
+def update_mapping(
+    *, mapping: DomainSkillMapping, user, validated_data: dict
+) -> DomainSkillMapping:
     for k, v in validated_data.items():
         setattr(mapping, k, v)
     mapping.save(user=user)
@@ -138,7 +152,9 @@ def bulk_restore(*, ids: list, user) -> int:
 
 
 @transaction.atomic
-def set_active_status(*, mapping: DomainSkillMapping, user, is_active: bool) -> DomainSkillMapping:
+def set_active_status(
+    *, mapping: DomainSkillMapping, user, is_active: bool
+) -> DomainSkillMapping:
     mapping.is_active = is_active
     mapping.save(user=user)
     return mapping
@@ -157,7 +173,9 @@ def bulk_set_active(*, ids: list, user, is_active: bool) -> int:
 
 def by_domain_queryset(*, domain_id):
     return (
-        DomainSkillMapping.objects.filter(domain_id=domain_id, deleted=False, is_active=True)
+        DomainSkillMapping.objects.filter(
+            domain_id=domain_id, deleted=False, is_active=True
+        )
         .select_related("domain", "skill")
         .order_by("-weight_score", "skill__skill_name")
     )
@@ -195,7 +213,9 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
             try:
                 from openpyxl import load_workbook
             except ImportError:
-                return [], ["Excel support requires openpyxl. Install openpyxl or upload CSV."]
+                return [], [
+                    "Excel support requires openpyxl. Install openpyxl or upload CSV."
+                ]
             wb = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
             ws = wb.active
             rows_iter = ws.iter_rows(values_only=True)
@@ -230,10 +250,15 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
         if not reader.fieldnames:
             return [], ["CSV has no header row."]
         normalized_headers = [
-            HEADER_ALIASES.get((str(h).strip().lower() if h else ""), (str(h).strip().lower() if h else ""))
+            HEADER_ALIASES.get(
+                (str(h).strip().lower() if h else ""),
+                (str(h).strip().lower() if h else ""),
+            )
             for h in reader.fieldnames
         ]
-        missing = sorted(REQUIRED_IMPORT_HEADERS - set([h for h in normalized_headers if h]))
+        missing = sorted(
+            REQUIRED_IMPORT_HEADERS - set([h for h in normalized_headers if h])
+        )
         if missing:
             return [], [f"Missing required headers: {', '.join(missing)}"]
         out_rows = []
@@ -248,8 +273,12 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
 
 
 @transaction.atomic
-def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict) -> DomainSkillMappingImportBatch:
-    batch = DomainSkillMappingImportBatch.objects.create(created_by=user, total_rows=len(rows))
+def bulk_import_rows(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> DomainSkillMappingImportBatch:
+    batch = DomainSkillMappingImportBatch.objects.create(
+        created_by=user, total_rows=len(rows)
+    )
     imported = 0
     errors: list[DomainSkillMappingImportError] = []
     for idx, raw_row in enumerate(rows, start=1):
@@ -299,7 +328,9 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
             "is_active": row.get("is_active", True),
         }
         existing = DomainSkillMapping.objects.filter(domain=domain, skill=skill).first()
-        ser = serializer_class(instance=existing, data=payload, partial=bool(existing), context=context)
+        ser = serializer_class(
+            instance=existing, data=payload, partial=bool(existing), context=context
+        )
         if not ser.is_valid():
             msg = json.dumps(ser.errors)[:500]
             errors.append(
@@ -320,11 +351,23 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
                     obj.deleted_by = None
                     obj.updated_by = user
                     obj.updated_at = timezone.now()
-                    obj.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_by", "updated_at"])
+                    obj.save(
+                        update_fields=[
+                            "deleted",
+                            "deleted_at",
+                            "deleted_by",
+                            "updated_by",
+                            "updated_at",
+                        ]
+                    )
                 imported += 1
         except ValidationError as e:
             detail = e.detail
-            msg = json.dumps(detail)[:500] if isinstance(detail, (dict, list)) else str(detail)[:500]
+            msg = (
+                json.dumps(detail)[:500]
+                if isinstance(detail, (dict, list))
+                else str(detail)[:500]
+            )
             errors.append(
                 DomainSkillMappingImportError(
                     batch=batch,
@@ -352,10 +395,19 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
     return batch
 
 
-def bulk_import_mappings(*, user, rows: list[dict], serializer_class, context: dict) -> dict[str, Any]:
-    batch = bulk_import_rows(user=user, rows=rows, serializer_class=serializer_class, context=context)
-    err_qs = DomainSkillMappingImportError.objects.filter(batch=batch).order_by("row_number")
-    error_details = [{"row": e.row_number, "message": e.message, "row_data": e.row_data} for e in err_qs]
+def bulk_import_mappings(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> dict[str, Any]:
+    batch = bulk_import_rows(
+        user=user, rows=rows, serializer_class=serializer_class, context=context
+    )
+    err_qs = DomainSkillMappingImportError.objects.filter(batch=batch).order_by(
+        "row_number"
+    )
+    error_details = [
+        {"row": e.row_number, "message": e.message, "row_data": e.row_data}
+        for e in err_qs
+    ]
     return {
         "success_count": batch.imported_count,
         "error_count": batch.failed_count,
@@ -371,4 +423,3 @@ def sample_csv_bytes() -> bytes:
     w.writerow(["engineering", "python", "95", "1", "1"])
     w.writerow(["business", "excel", "90", "0", "1"])
     return buf.getvalue().encode("utf-8")
-

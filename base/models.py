@@ -40,7 +40,16 @@ class BaseModel(BaseModule):
         self.updated_at = timezone.now()
         if user is not None:
             self.updated_by = user
-        self.save(user=user, update_fields=["deleted", "deleted_at", "deleted_by", "updated_at", "updated_by"])
+        self.save(
+            user=user,
+            update_fields=[
+                "deleted",
+                "deleted_at",
+                "deleted_by",
+                "updated_at",
+                "updated_by",
+            ],
+        )
         return self
 
 
@@ -53,4 +62,3 @@ class BaseMappingModel(BaseModel):
 
     class Meta:
         abstract = True
-

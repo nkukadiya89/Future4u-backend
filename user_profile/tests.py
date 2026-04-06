@@ -13,7 +13,10 @@ from country.models import Country
 from state.models import State
 from user.models import User
 from user_profile.models import BusinessSetting
-from user_profile.serializers import BusinessSettingInfoSerializer, BusinessSettingSerializer
+from user_profile.serializers import (
+    BusinessSettingInfoSerializer,
+    BusinessSettingSerializer,
+)
 
 try:
     from partner_company.models import PartnerCompany  # type: ignore
@@ -25,13 +28,19 @@ class BusinessSettingTests(APITestCase):
     def setUp(self):
         # Create test user
         self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="testpass123", is_active=True
+            username="testuser",
+            email="test@example.com",
+            password="testpass123",
+            is_active=True,
         )
 
         # Set up the client with JWT authentication and JSON content type
         self.client = APIClient()
         refresh = RefreshToken.for_user(self.user)
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {refresh.access_token}", HTTP_ACCEPT="application/json")
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f"Bearer {refresh.access_token}",
+            HTTP_ACCEPT="application/json",
+        )
 
         # Create a business category
         self.business_category = BusinessCategory.objects.create(
@@ -47,7 +56,10 @@ class BusinessSettingTests(APITestCase):
             updated_by=self.user,
         )
         self.state = State.objects.create(
-            name="Gujarat", country=self.country, created_by=self.user, updated_by=self.user
+            name="Gujarat",
+            country=self.country,
+            created_by=self.user,
+            updated_by=self.user,
         )
         self.city = City.objects.create(
             name="Ahmedabad",
@@ -158,7 +170,9 @@ class BusinessSettingTests(APITestCase):
         self.assertEqual(float(response.data["data"]["cgst"]), 9.0)
 
     def test_retrieve_business_setting_by_partner_company(self):
-        self.skipTest("partner_company business setting support removed from BusinessSetting model")
+        self.skipTest(
+            "partner_company business setting support removed from BusinessSetting model"
+        )
 
         business_setting = BusinessSetting.objects.create(
             partner_company=self.partner_company,
@@ -181,7 +195,9 @@ class BusinessSettingTests(APITestCase):
         # Check response structure
         self.assertIn("data", response.data)
         self.assertEqual(response.data["data"]["id"], business_setting.id)
-        self.assertEqual(response.data["data"]["partner_company"], self.partner_company.id)
+        self.assertEqual(
+            response.data["data"]["partner_company"], self.partner_company.id
+        )
         self.assertEqual(float(response.data["data"]["sgst"]), 9.0)
         self.assertEqual(float(response.data["data"]["cgst"]), 9.0)
 
@@ -203,10 +219,22 @@ class BusinessSettingTests(APITestCase):
         )
 
         # Create new geo data for update
-        usa = Country.objects.create(name="USA", code="US", phone_code="1", created_by=self.user, updated_by=self.user)
-        california = State.objects.create(name="California", country=usa, created_by=self.user, updated_by=self.user)
+        usa = Country.objects.create(
+            name="USA",
+            code="US",
+            phone_code="1",
+            created_by=self.user,
+            updated_by=self.user,
+        )
+        california = State.objects.create(
+            name="California", country=usa, created_by=self.user, updated_by=self.user
+        )
         san_francisco = City.objects.create(
-            name="San Francisco", country=usa, state=california, created_by=self.user, updated_by=self.user
+            name="San Francisco",
+            country=usa,
+            state=california,
+            created_by=self.user,
+            updated_by=self.user,
         )
 
         update_data = {
@@ -288,10 +316,22 @@ class BusinessSettingTests(APITestCase):
             currency="INR",
             created_by=self.user,
         )
-        usa = Country.objects.create(name="USA", code="US", phone_code="1", created_by=self.user, updated_by=self.user)
-        california = State.objects.create(name="California", country=usa, created_by=self.user, updated_by=self.user)
+        usa = Country.objects.create(
+            name="USA",
+            code="US",
+            phone_code="1",
+            created_by=self.user,
+            updated_by=self.user,
+        )
+        california = State.objects.create(
+            name="California", country=usa, created_by=self.user, updated_by=self.user
+        )
         san_francisco = City.objects.create(
-            name="San Francisco", country=usa, state=california, created_by=self.user, updated_by=self.user
+            name="San Francisco",
+            country=usa,
+            state=california,
+            created_by=self.user,
+            updated_by=self.user,
         )
         # Create a second company-based business setting
         BusinessSetting.objects.create(
@@ -326,7 +366,9 @@ class BusinessSettingTests(APITestCase):
         }
 
         url = reverse("business_settings-list")
-        response = self.client.post(url, data=json.dumps(invalid_data), content_type="application/json")
+        response = self.client.post(
+            url, data=json.dumps(invalid_data), content_type="application/json"
+        )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("message", response.data)
@@ -334,7 +376,10 @@ class BusinessSettingTests(APITestCase):
     def test_unauthorized_access(self):
         # Create a different user
         other_user = User.objects.create_user(
-            username="otheruser", email="other@example.com", password="otherpass123", is_active=True
+            username="otheruser",
+            email="other@example.com",
+            password="otherpass123",
+            is_active=True,
         )
 
         # Create a business setting with the test user

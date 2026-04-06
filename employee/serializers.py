@@ -68,8 +68,13 @@ class AddEmployeeSerializer(serializers.ModelSerializer):
         email = data.get("email")
         if self.instance and self.instance.email == email:
             return data
-        if email and (User.objects.filter(email=email).exists() or Employee.objects.filter(email=email).exists()):
-            raise serializers.ValidationError({"email": ["Employee with this email already exists."]})
+        if email and (
+            User.objects.filter(email=email).exists()
+            or Employee.objects.filter(email=email).exists()
+        ):
+            raise serializers.ValidationError(
+                {"email": ["Employee with this email already exists."]}
+            )
         phone = data.get("phone")
         if self.instance and self.instance.phone == phone:
             return data
@@ -80,22 +85,37 @@ class AddEmployeeSerializer(serializers.ModelSerializer):
         elif normalized.startswith("91") and len(normalized) > 10:
             normalized = normalized[2:]
         if not normalized.isdigit() or len(normalized) != 10:
-            raise serializers.ValidationError({"non_field_errors": ["Please enter a valid 10-digit mobile number."]})
-        if Employee.objects.filter(phone=normalized).exists() or User.objects.filter(phone=normalized).exists():
-            raise serializers.ValidationError({"phone": ["Employee with this phone already exists."]})
+            raise serializers.ValidationError(
+                {"non_field_errors": ["Please enter a valid 10-digit mobile number."]}
+            )
+        if (
+            Employee.objects.filter(phone=normalized).exists()
+            or User.objects.filter(phone=normalized).exists()
+        ):
+            raise serializers.ValidationError(
+                {"phone": ["Employee with this phone already exists."]}
+            )
         return data
 
     def get_created_at(self, obj):
         return format_datetime(getattr(obj, "created_at", None))
 
     def get_created_by_name(self, obj):
-        return f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else None
+        return (
+            f"{obj.created_by.first_name} {obj.created_by.last_name}"
+            if obj.created_by
+            else None
+        )
 
     def get_updated_at(self, obj):
         return format_datetime(getattr(obj, "updated_at", None))
 
     def get_updated_by_name(self, obj):
-        return f"{obj.updated_by.first_name} {obj.updated_by.last_name}" if obj.updated_by else None
+        return (
+            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
+            if obj.updated_by
+            else None
+        )
 
     def create(self, validated_data):
         request = self.context.get("request")
@@ -114,7 +134,10 @@ class AddEmployeeSerializer(serializers.ModelSerializer):
             phone = phone[2:]
         if not phone.isdigit() or len(phone) != 10:
             raise serializers.ValidationError(
-                {"success": False, "message": "Please enter a valid 10-digit mobile number."}
+                {
+                    "success": False,
+                    "message": "Please enter a valid 10-digit mobile number.",
+                }
             )
 
         validated_data["phone"] = phone
@@ -140,11 +163,9 @@ class AddEmployeeSerializer(serializers.ModelSerializer):
                     group = CustomGroup.objects.get(id=role)
                     group.user_set.add(user)
                 except Group.DoesNotExist:
-                    raise serializers.ValidationError({"success": False, "message": "Group Not Found"})
-
-        # for permission_id in permission_ids:
-        #     permission = Permission.objects.get(id=permission_id)
-        #     user.user_permissions.add(permission)
+                    raise serializers.ValidationError(
+                        {"success": False, "message": "Group Not Found"}
+                    )
 
         # Replace the existing permission assignment code (around line 145-147) with:
         if permission_ids:
@@ -199,7 +220,10 @@ class AddEmployeeSerializer(serializers.ModelSerializer):
             phone = phone[2:]
         if not phone.isdigit() or len(phone) != 10:
             raise serializers.ValidationError(
-                {"success": False, "message": "Please enter a valid 10-digit mobile number."}
+                {
+                    "success": False,
+                    "message": "Please enter a valid 10-digit mobile number.",
+                }
             )
 
         instance.first_name = validated_data.get("first_name", instance.first_name)
@@ -207,19 +231,29 @@ class AddEmployeeSerializer(serializers.ModelSerializer):
         instance.last_name = validated_data.get("last_name", instance.last_name)
         instance.email = validated_data.get("email", instance.email)
         instance.phone = validated_data.get("phone", instance.phone)
-        instance.date_of_birth = validated_data.get("date_of_birth", instance.date_of_birth)
-        instance.date_of_joining = validated_data.get("date_of_joining", instance.date_of_joining)
-        instance.alternate_mobile = validated_data.get("alternate_mobile", instance.alternate_mobile)
+        instance.date_of_birth = validated_data.get(
+            "date_of_birth", instance.date_of_birth
+        )
+        instance.date_of_joining = validated_data.get(
+            "date_of_joining", instance.date_of_joining
+        )
+        instance.alternate_mobile = validated_data.get(
+            "alternate_mobile", instance.alternate_mobile
+        )
         instance.aadhar_card = validated_data.get("aadhar_card", instance.aadhar_card)
         instance.pan_card = validated_data.get("pan_card", instance.pan_card)
         instance.role = validated_data.get("role", instance.role)
         instance.status = validated_data.get("status", instance.status)
-        instance.profile_photo = validated_data.get("profile_photo", instance.profile_photo)
+        instance.profile_photo = validated_data.get(
+            "profile_photo", instance.profile_photo
+        )
         # Permanent address
         instance.permanent_address_building = validated_data.get(
             "permanent_address_building", instance.permanent_address_building
         )
-        instance.permanent_address_area = validated_data.get("permanent_address_area", instance.permanent_address_area)
+        instance.permanent_address_area = validated_data.get(
+            "permanent_address_area", instance.permanent_address_area
+        )
         instance.permanent_address_landmark = validated_data.get(
             "permanent_address_landmark", instance.permanent_address_landmark
         )
@@ -232,12 +266,16 @@ class AddEmployeeSerializer(serializers.ModelSerializer):
         instance.permanent_address_state = validated_data.get(
             "permanent_address_state", instance.permanent_address_state
         )
-        instance.permanent_address_city = validated_data.get("permanent_address_city", instance.permanent_address_city)
+        instance.permanent_address_city = validated_data.get(
+            "permanent_address_city", instance.permanent_address_city
+        )
         # Current address
         instance.current_address_building = validated_data.get(
             "current_address_building", instance.current_address_building
         )
-        instance.current_address_area = validated_data.get("current_address_area", instance.current_address_area)
+        instance.current_address_area = validated_data.get(
+            "current_address_area", instance.current_address_area
+        )
         instance.current_address_landmark = validated_data.get(
             "current_address_landmark", instance.current_address_landmark
         )
@@ -247,8 +285,12 @@ class AddEmployeeSerializer(serializers.ModelSerializer):
         instance.current_address_country = validated_data.get(
             "current_address_country", instance.current_address_country
         )
-        instance.current_address_state = validated_data.get("current_address_state", instance.current_address_state)
-        instance.current_address_city = validated_data.get("current_address_city", instance.current_address_city)
+        instance.current_address_state = validated_data.get(
+            "current_address_state", instance.current_address_state
+        )
+        instance.current_address_city = validated_data.get(
+            "current_address_city", instance.current_address_city
+        )
         # Set updated_by and updated_at
         instance.updated_by = request.user
         instance.updated_at = now()
@@ -268,7 +310,9 @@ class AddEmployeeSerializer(serializers.ModelSerializer):
                     group = Group.objects.get(id=role)
                     group.user_set.add(user)
                 except Group.DoesNotExist:
-                    raise serializers.ValidationError({"success": False, "message": "Group Not Found"})
+                    raise serializers.ValidationError(
+                        {"success": False, "message": "Group Not Found"}
+                    )
 
         user.user_permissions.clear()
         if permission_ids:
@@ -296,7 +340,12 @@ class AddEmployeeSerializer(serializers.ModelSerializer):
 
         user.save()
 
-        ActivityLog.log.employee_modify(instance, user, request.user.company, getattr(request.user, "partner_company", None))
+        ActivityLog.log.employee_modify(
+            instance,
+            user,
+            request.user.company,
+            getattr(request.user, "partner_company", None),
+        )
 
         instance.save()
         return instance
@@ -444,7 +493,9 @@ class EmployeeArchiveSerializer(serializers.ModelSerializer):
                     archiving_user = users.first()
                     company = getattr(archiving_user, "company", None)
                     partner_company = getattr(archiving_user, "partner_company", None)
-                    ActivityLog.log.employee_archive(employee, ip_address, archiving_user, company, partner_company)
+                    ActivityLog.log.employee_archive(
+                        employee, ip_address, archiving_user, company, partner_company
+                    )
                 employees.append(employee)
 
             except Employee.DoesNotExist:
@@ -500,7 +551,11 @@ class EmployeeRestoreSerializer(serializers.ModelSerializer):
                     company = getattr(restoring_user, "company", None)
                     partner_company = getattr(restoring_user, "partner_company", None)
                     ActivityLog.log.employee_restore(
-                        employee_instance, ip_address, restoring_user, company, partner_company
+                        employee_instance,
+                        ip_address,
+                        restoring_user,
+                        company,
+                        partner_company,
                     )
                 employees.append(employee_instance)
             except Employee.DoesNotExist:
@@ -570,16 +625,28 @@ class EmployeeArchiveListSerializer(serializers.ModelSerializer):
         return format_datetime(getattr(obj, "created_at", None))
 
     def get_created_by_name(self, obj):
-        return f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else None
+        return (
+            f"{obj.created_by.first_name} {obj.created_by.last_name}"
+            if obj.created_by
+            else None
+        )
 
     def get_updated_at(self, obj):
         return format_datetime(getattr(obj, "updated_at", None))
 
     def get_updated_by_name(self, obj):
-        return f"{obj.updated_by.first_name} {obj.updated_by.last_name}" if obj.updated_by else None
+        return (
+            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
+            if obj.updated_by
+            else None
+        )
 
     def get_deleted_at(self, obj):
         return format_datetime(getattr(obj, "deleted_at", None))
 
     def get_deleted_by_name(self, obj):
-        return f"{obj.deleted_by.first_name} {obj.deleted_by.last_name}" if obj.deleted_by else None
+        return (
+            f"{obj.deleted_by.first_name} {obj.deleted_by.last_name}"
+            if obj.deleted_by
+            else None
+        )

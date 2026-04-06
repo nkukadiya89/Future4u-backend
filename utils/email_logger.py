@@ -15,16 +15,22 @@ def clean_html_content(html_content):
         return ""
 
     # Remove CSS styles within <style> tags
-    html_content = re.sub(r"<style[^>]*>.*?</style>", "", html_content, flags=re.DOTALL | re.IGNORECASE)
+    html_content = re.sub(
+        r"<style[^>]*>.*?</style>", "", html_content, flags=re.DOTALL | re.IGNORECASE
+    )
 
     # Remove scripts
-    html_content = re.sub(r"<script[^>]*>.*?</script>", "", html_content, flags=re.DOTALL | re.IGNORECASE)
+    html_content = re.sub(
+        r"<script[^>]*>.*?</script>", "", html_content, flags=re.DOTALL | re.IGNORECASE
+    )
 
     # Remove HTML comments
     html_content = re.sub(r"<!--.*?-->", "", html_content, flags=re.DOTALL)
 
     # Remove common structural elements that don't contain meaningful data
-    html_content = re.sub(r"<head[^>]*>.*?</head>", "", html_content, flags=re.DOTALL | re.IGNORECASE)
+    html_content = re.sub(
+        r"<head[^>]*>.*?</head>", "", html_content, flags=re.DOTALL | re.IGNORECASE
+    )
     html_content = re.sub(r"<meta[^>]*>", "", html_content, flags=re.IGNORECASE)
     html_content = re.sub(r"<link[^>]*>", "", html_content, flags=re.IGNORECASE)
     html_content = re.sub(r"<!DOCTYPE[^>]*>", "", html_content, flags=re.IGNORECASE)
@@ -192,7 +198,9 @@ def log_email_sent(
             recipients = email_obj.to
             subject = getattr(email_obj, "subject", "No Subject")
             from_email = getattr(
-                email_obj, "from_email", email_obj.from_email if hasattr(email_obj, "from_email") else "Unknown"
+                email_obj,
+                "from_email",
+                email_obj.from_email if hasattr(email_obj, "from_email") else "Unknown",
             )
             # EmailMultiAlternatives has alternatives - try to get HTML content first
             body = getattr(email_obj, "body", "No Body")
@@ -215,9 +223,13 @@ def log_email_sent(
 
             for part in email_obj.walk():
                 if part.get_content_type() == "text/html":
-                    html_content = part.get_payload(decode=True).decode("utf-8", errors="ignore")
+                    html_content = part.get_payload(decode=True).decode(
+                        "utf-8", errors="ignore"
+                    )
                 elif part.get_content_type() == "text/plain":
-                    text_content = part.get_payload(decode=True).decode("utf-8", errors="ignore")
+                    text_content = part.get_payload(decode=True).decode(
+                        "utf-8", errors="ignore"
+                    )
 
             # Use HTML content if available, otherwise use text content
             body = html_content if html_content else (text_content or "No Body")
@@ -225,12 +237,16 @@ def log_email_sent(
         if recipients:
             for recipient in recipients:
                 # If related objects are not provided, try to find them from email
-                if not any([related_company, related_partner_company, related_end_client]):
+                if not any(
+                    [related_company, related_partner_company, related_end_client]
+                ):
                     found_objects = find_related_objects_from_email(recipient)
 
                     # Use found objects if not explicitly provided
                     final_company = related_company or found_objects["company"]
-                    final_partner_company = related_partner_company or found_objects["partner_company"]
+                    final_partner_company = (
+                        related_partner_company or found_objects["partner_company"]
+                    )
                     final_end_client = related_end_client or found_objects["end_client"]
 
                     # Auto-populate recipient_id if not provided
@@ -298,7 +314,9 @@ def log_email_failed(
 
         # Use found objects if not explicitly provided
         final_company = related_company or found_objects["company"]
-        final_partner_company = related_partner_company or found_objects["partner_company"]
+        final_partner_company = (
+            related_partner_company or found_objects["partner_company"]
+        )
         final_end_client = related_end_client or found_objects["end_client"]
 
         # Auto-populate recipient_id if not provided

@@ -17,7 +17,13 @@ class Command(BaseCommand):
         parser.add_argument(
             "--load",
             dest="load_path",
-            default=str(Path(settings.BASE_DIR) / "core" / "management" / "source" / "business_categorys.csv"),
+            default=str(
+                Path(settings.BASE_DIR)
+                / "core"
+                / "management"
+                / "source"
+                / "business_categorys.csv"
+            ),
             help="Load business categories from CSV at this path.",
         )
 
@@ -40,9 +46,14 @@ class Command(BaseCommand):
 
         created = 0
         for name in rows:
-            _, was_created = BusinessCategory.objects.get_or_create(business_category=name)
+            _, was_created = BusinessCategory.objects.get_or_create(
+                business_category=name
+            )
             if was_created:
                 created += 1
 
-        self.stdout.write(self.style.SUCCESS(f"Loaded business categories: total={len(rows)} created={created}"))
-
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Loaded business categories: total={len(rows)} created={created}"
+            )
+        )

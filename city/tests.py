@@ -15,7 +15,9 @@ User = get_user_model()
 class CityModelTestCase(TestCase):
     def setUp(self):
         """Set up test data"""
-        self.user = User.objects.create_user(email="test@example.com", username="testuser", password="testpass")
+        self.user = User.objects.create_user(
+            email="test@example.com", username="testuser", password="testpass"
+        )
         self.country = Country.objects.create(
             name="India",
             code="IN",
@@ -24,11 +26,15 @@ class CityModelTestCase(TestCase):
             phone_code="+91",
             created_by=self.user,
         )
-        self.state = State.objects.create(name="Maharashtra", country=self.country, created_by=self.user)
+        self.state = State.objects.create(
+            name="Maharashtra", country=self.country, created_by=self.user
+        )
 
     def test_city_creation(self):
         """Test basic city creation"""
-        city = City.objects.create(name="Mumbai", country=self.country, state=self.state, created_by=self.user)
+        city = City.objects.create(
+            name="Mumbai", country=self.country, state=self.state, created_by=self.user
+        )
         self.assertEqual(city.name, "Mumbai")
         self.assertEqual(city.country, self.country)
         self.assertEqual(city.state, self.state)
@@ -40,7 +46,9 @@ class CityModelTestCase(TestCase):
 
     def test_city_update(self):
         """Test updating a city"""
-        city = City.objects.create(name="Mumbai", country=self.country, state=self.state, created_by=self.user)
+        city = City.objects.create(
+            name="Mumbai", country=self.country, state=self.state, created_by=self.user
+        )
         original_created_at = city.created_at
         original_created_by = city.created_by
 
@@ -58,7 +66,9 @@ class CityModelTestCase(TestCase):
 
     def test_city_str_representation(self):
         """Test city string representation"""
-        city = City.objects.create(name="Mumbai", country=self.country, state=self.state)
+        city = City.objects.create(
+            name="Mumbai", country=self.country, state=self.state
+        )
         self.assertEqual(str(city), "Mumbai(India)(Maharashtra)")
 
     def test_city_db_table(self):
@@ -106,7 +116,9 @@ class CityModelTestCase(TestCase):
 class CityAPITestCase(APITestCase):
     def setUp(self):
         """Set up test data"""
-        self.user = User.objects.create_user(email="test@example.com", username="testuser", password="testpass")
+        self.user = User.objects.create_user(
+            email="test@example.com", username="testuser", password="testpass"
+        )
         self.country = Country.objects.create(
             name="India",
             code="IN",
@@ -115,8 +127,12 @@ class CityAPITestCase(APITestCase):
             phone_code="+91",
             created_by=self.user,
         )
-        self.state = State.objects.create(name="Maharashtra", country=self.country, created_by=self.user)
-        self.city = City.objects.create(name="Mumbai", country=self.country, state=self.state, created_by=self.user)
+        self.state = State.objects.create(
+            name="Maharashtra", country=self.country, created_by=self.user
+        )
+        self.city = City.objects.create(
+            name="Mumbai", country=self.country, state=self.state, created_by=self.user
+        )
         self.client.force_authenticate(user=self.user)
 
     def test_create_city(self):
@@ -155,9 +171,13 @@ class CityAPITestCase(APITestCase):
             self.city.refresh_from_db()
             self.assertEqual(self.city.name, "Mumbai Updated")
             self.assertIsNotNone(self.city.updated_at)  # Verify updated_at is set
-            self.assertEqual(self.city.updated_by, self.user)  # Verify updated_by is set
+            self.assertEqual(
+                self.city.updated_by, self.user
+            )  # Verify updated_by is set
             self.assertIsNotNone(self.city.created_at)  # Verify created_at remains
-            self.assertEqual(self.city.created_by, self.user)  # Verify created_by remains
+            self.assertEqual(
+                self.city.created_by, self.user
+            )  # Verify created_by remains
             mock_log.assert_called_once()
 
     def test_create_city_invalid_data(self):
@@ -231,7 +251,9 @@ class CityAPITestCase(APITestCase):
 
     def test_update_to_duplicate_city(self):
         """Test updating city to create duplicate"""
-        City.objects.create(name="Pune", country=self.country, state=self.state, created_by=self.user)
+        City.objects.create(
+            name="Pune", country=self.country, state=self.state, created_by=self.user
+        )
 
         url = reverse("city-detail", args=[self.city.id])
         data = {"name": "Pune", "country": self.country.id, "state": self.state.id}
@@ -262,7 +284,9 @@ class CityAPITestCase(APITestCase):
 
     def test_bulk_delete_cities(self):
         """Test bulk deleting cities"""
-        city2 = City.objects.create(name="Pune", country=self.country, state=self.state, created_by=self.user)
+        city2 = City.objects.create(
+            name="Pune", country=self.country, state=self.state, created_by=self.user
+        )
 
         url = reverse("city_archive-list")
         data = {"deleted": [self.city.id, city2.id]}
@@ -380,10 +404,14 @@ class CityAPITestCase(APITestCase):
 
     def test_ordering_cities(self):
         """Test ordering cities"""
-        City.objects.create(name="Pune", country=self.country, state=self.state, created_by=self.user)
+        City.objects.create(
+            name="Pune", country=self.country, state=self.state, created_by=self.user
+        )
 
         url = reverse("city-list")
-        response = self.client.get(url, {"ordering": "name", "no_pagination": "1"}, format="json")
+        response = self.client.get(
+            url, {"ordering": "name", "no_pagination": "1"}, format="json"
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data["success"])
@@ -402,7 +430,12 @@ class CityAPITestCase(APITestCase):
     def test_pagination(self):
         """Test pagination functionality"""
         for i in range(5):
-            City.objects.create(name=f"City {i}", country=self.country, state=self.state, created_by=self.user)
+            City.objects.create(
+                name=f"City {i}",
+                country=self.country,
+                state=self.state,
+                created_by=self.user,
+            )
 
         url = reverse("city-list")
         response = self.client.get(url, {"page": 1, "page_size": 2}, format="json")
@@ -429,7 +462,9 @@ class CityAPITestCase(APITestCase):
 
     def test_city_with_different_states(self):
         """Test creating cities with same name in different states"""
-        state2 = State.objects.create(name="Gujarat", country=self.country, created_by=self.user)
+        state2 = State.objects.create(
+            name="Gujarat", country=self.country, created_by=self.user
+        )
         url = reverse("city-list")
         data = {"name": "Mumbai", "country": self.country.id, "state": state2.id}
 

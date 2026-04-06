@@ -32,7 +32,16 @@ class RecommendationListAPIView(APIView):
             try:
                 out = generate_recommendation(request.user.id)
             except Exception:
-                out = {"message": "Unable to generate recommendations right now.", "tier": "unknown", "suggestion": [], "recommended_streams": [], "top_domains": [], "top_careers": [], "skill_gaps": [], "next_step": None}
+                out = {
+                    "message": "Unable to generate recommendations right now.",
+                    "tier": "unknown",
+                    "suggestion": [],
+                    "recommended_streams": [],
+                    "top_domains": [],
+                    "top_careers": [],
+                    "skill_gaps": [],
+                    "next_step": None,
+                }
             cached = {
                 "message": out.get("message") or "ok",
                 "tier": out.get("tier") or "unknown",
@@ -57,8 +66,16 @@ class RecommendationListAPIView(APIView):
 
         # Always return a non-empty structured payload for UX safety.
         if not isinstance(cached, dict):
-            cached = {"message": "ok", "tier": "unknown", "next_step": None, "suggestion": [],
-                      "recommended_streams": [], "top_domains": [], "top_careers": [], "skill_gaps": []}
+            cached = {
+                "message": "ok",
+                "tier": "unknown",
+                "next_step": None,
+                "suggestion": [],
+                "recommended_streams": [],
+                "top_domains": [],
+                "top_careers": [],
+                "skill_gaps": [],
+            }
         cached.setdefault("message", "ok")
         cached.setdefault("tier", "unknown")
         cached.setdefault("next_step", None)
@@ -78,7 +95,13 @@ class RecommendationDomainDetailAPIView(APIView):
     def get(self, request, id, *args, **kwargs):
         domain = (
             Domain.objects.filter(id=id, is_active=True, deleted=False)
-            .only("id", "domain_name", "domain_code", "description", "future_relevance_score")
+            .only(
+                "id",
+                "domain_name",
+                "domain_code",
+                "description",
+                "future_relevance_score",
+            )
             .first()
         )
         if not domain:
@@ -99,7 +122,9 @@ class RecommendationDomainDetailAPIView(APIView):
             .only("career__id", "career__career_name")
             .order_by("career__career_name")
         )
-        careers = [{"id": str(r.career_id), "name": r.career.career_name} for r in career_rows]
+        careers = [
+            {"id": str(r.career_id), "name": r.career.career_name} for r in career_rows
+        ]
 
         skill_rows = (
             DomainSkillMapping.objects.filter(
@@ -113,7 +138,9 @@ class RecommendationDomainDetailAPIView(APIView):
             .only("skill__id", "skill__skill_name")
             .order_by("skill__skill_name")
         )
-        skills = [{"id": str(r.skill_id), "name": r.skill.skill_name} for r in skill_rows]
+        skills = [
+            {"id": str(r.skill_id), "name": r.skill.skill_name} for r in skill_rows
+        ]
 
         data = {
             "domain": {
@@ -208,4 +235,3 @@ class CareerDetailsAPIView(APIView):
             },
         }
         return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
-

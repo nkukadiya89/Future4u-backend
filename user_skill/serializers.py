@@ -29,7 +29,9 @@ class UserSkillSerializer(serializers.ModelSerializer):
                 exists = exists.exclude(pk=self.instance.pk)
             if exists.exists():
                 raise serializers.ValidationError(
-                    {"skill": "This user already has a proficiency entry for this skill."}
+                    {
+                        "skill": "This user already has a proficiency entry for this skill."
+                    }
                 )
         return attrs
 

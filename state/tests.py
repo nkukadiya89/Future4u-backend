@@ -15,7 +15,9 @@ User = get_user_model()
 class StateModelTestCase(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(email="test@example.com", username="testuser", password="testpass")
+        self.user = User.objects.create_user(
+            email="test@example.com", username="testuser", password="testpass"
+        )
 
         self.country = Country.objects.create(
             name="India",
@@ -28,7 +30,9 @@ class StateModelTestCase(TestCase):
 
     def test_state_creation(self):
         """Test basic state creation"""
-        state = State.objects.create(name="Maharashtra", country=self.country, created_by=self.user)
+        state = State.objects.create(
+            name="Maharashtra", country=self.country, created_by=self.user
+        )
 
         self.assertEqual(state.name, "Maharashtra")
         self.assertEqual(state.country, self.country)
@@ -40,7 +44,9 @@ class StateModelTestCase(TestCase):
 
     def test_state_str_representation(self):
         """Test state string representation"""
-        state = State.objects.create(name="Maharashtra", country=self.country, created_by=self.user)
+        state = State.objects.create(
+            name="Maharashtra", country=self.country, created_by=self.user
+        )
 
         self.assertEqual(str(state), "Maharashtra(India)")
 
@@ -50,7 +56,9 @@ class StateModelTestCase(TestCase):
 
     def test_state_field_constraints(self):
         """Test state field constraints"""
-        state = State.objects.create(name="Test State", country=self.country, created_by=self.user)
+        state = State.objects.create(
+            name="Test State", country=self.country, created_by=self.user
+        )
 
         name_field = State._meta.get_field("name")
         self.assertEqual(name_field.max_length, 200)
@@ -81,7 +89,9 @@ class StateAPITestCase(APITestCase):
 
     def setUp(self):
         """Set up test data"""
-        self.user = User.objects.create_user(email="test@example.com", username="testuser", password="testpass")
+        self.user = User.objects.create_user(
+            email="test@example.com", username="testuser", password="testpass"
+        )
 
         self.country = Country.objects.create(
             name="India",
@@ -92,7 +102,9 @@ class StateAPITestCase(APITestCase):
             created_by=self.user,
         )
 
-        self.state = State.objects.create(name="Maharashtra", country=self.country, created_by=self.user)
+        self.state = State.objects.create(
+            name="Maharashtra", country=self.country, created_by=self.user
+        )
 
         # Authenticate the test client
         self.client.force_authenticate(user=self.user)
@@ -241,7 +253,9 @@ class StateAPITestCase(APITestCase):
     def test_bulk_delete_states(self):
         """Test bulk deleting states"""
         # Create another state
-        state2 = State.objects.create(name="Gujarat", country=self.country, created_by=self.user)
+        state2 = State.objects.create(
+            name="Gujarat", country=self.country, created_by=self.user
+        )
 
         url = reverse("state_archive-list")
         data = {"deleted": [self.state.id, state2.id]}
@@ -370,10 +384,14 @@ class StateAPITestCase(APITestCase):
     def test_ordering_states(self):
         """Test ordering states"""
         # Create another state for ordering test
-        State.objects.create(name="Andhra Pradesh", country=self.country, created_by=self.user)
+        State.objects.create(
+            name="Andhra Pradesh", country=self.country, created_by=self.user
+        )
 
         url = reverse("state-list")
-        response = self.client.get(url, {"ordering": "name", "no_pagination": "1"}, format="json")
+        response = self.client.get(
+            url, {"ordering": "name", "no_pagination": "1"}, format="json"
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data["success"])
@@ -393,7 +411,9 @@ class StateAPITestCase(APITestCase):
         """Test pagination functionality"""
         # Create multiple states
         for i in range(5):
-            State.objects.create(name=f"State {i}", country=self.country, created_by=self.user)
+            State.objects.create(
+                name=f"State {i}", country=self.country, created_by=self.user
+            )
 
         url = reverse("state-list")
         response = self.client.get(url, {"page": 1, "page_size": 2}, format="json")

@@ -7,7 +7,9 @@ from country.models import Country
 # Create your models here.
 class State(models.Model):
     name = models.CharField(max_length=200)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name="states")
+    country = models.ForeignKey(
+        Country, on_delete=models.CASCADE, related_name="states"
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

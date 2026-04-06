@@ -8,7 +8,12 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from activity_log.models import ActivityLog
 from city.models import City
-from city.serializers import CityArchiveListSerializer, CityArchiveSerializer, CityRestoreSerializer, CitySerializer
+from city.serializers import (
+    CityArchiveListSerializer,
+    CityArchiveSerializer,
+    CityRestoreSerializer,
+    CitySerializer,
+)
 from utils.generate_ip_address import get_client_ip
 from utils.pagination import Pagination
 
@@ -24,7 +29,15 @@ class CityViewSet(ModelViewSet):
 
     search_fields = ["id", "name", "country__name", "state__name"]
 
-    ordering_fields = ["id", "name", "country__name", "state__id", "state__name", "created_at", "updated_at"]
+    ordering_fields = [
+        "id",
+        "name",
+        "country__name",
+        "state__id",
+        "state__name",
+        "created_at",
+        "updated_at",
+    ]
 
     def get_queryset(self):
         queryset = City.objects.filter(deleted=False).select_related("country", "state")
@@ -56,7 +69,9 @@ class CityViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.serializer_class(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -68,12 +83,19 @@ class CityViewSet(ModelViewSet):
                 ip_address = get_client_ip(request)
                 ActivityLog.log.city_create(instance, ip_address, request.user)
                 return Response(
-                    {"success": True, "message": "City added successfully", "data": serializer.data},
+                    {
+                        "success": True,
+                        "message": "City added successfully",
+                        "data": serializer.data,
+                    },
                     status=status.HTTP_201_CREATED,
                 )
             else:
                 error_message = serializer.errors
-                if isinstance(error_message, dict) and "non_field_errors" in error_message:
+                if (
+                    isinstance(error_message, dict)
+                    and "non_field_errors" in error_message
+                ):
                     error_message = error_message["non_field_errors"][0]
                 return Response(
                     {"success": False, "message": error_message},
@@ -81,14 +103,19 @@ class CityViewSet(ModelViewSet):
                 )
         except Exception:
             return Response(
-                {"success": False, "message": "City name already exists or database error occurred"},
+                {
+                    "success": False,
+                    "message": "City name already exists or database error occurred",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -99,12 +126,19 @@ class CityViewSet(ModelViewSet):
                 ip_address = get_client_ip(request)
                 ActivityLog.log.city_update(instance, ip_address, request.user)
                 return Response(
-                    {"success": True, "message": "City updated successfully", "data": serializer.data},
+                    {
+                        "success": True,
+                        "message": "City updated successfully",
+                        "data": serializer.data,
+                    },
                     status=status.HTTP_202_ACCEPTED,
                 )
             else:
                 error_message = serializer.errors
-                if isinstance(error_message, dict) and "non_field_errors" in error_message:
+                if (
+                    isinstance(error_message, dict)
+                    and "non_field_errors" in error_message
+                ):
                     error_message = error_message["non_field_errors"][0]
                 return Response(
                     {"success": False, "message": error_message},
@@ -112,7 +146,10 @@ class CityViewSet(ModelViewSet):
                 )
         except Exception:
             return Response(
-                {"success": False, "message": "City name already exists or database error occurred"},
+                {
+                    "success": False,
+                    "message": "City name already exists or database error occurred",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -127,7 +164,13 @@ class CityViewSet(ModelViewSet):
             status=status.HTTP_204_NO_CONTENT,
         )
 
-    @action(detail=False, methods=["GET"], url_path="city-list", permission_classes=[], authentication_classes=[])
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path="city-list",
+        permission_classes=[],
+        authentication_classes=[],
+    )
     def city_list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset()).order_by("name")
         page = self.paginate_queryset(queryset)
@@ -137,7 +180,9 @@ class CityViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.serializer_class(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -193,12 +238,16 @@ class CityArchiveViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = CityArchiveListSerializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = CityArchiveListSerializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
     def create(self, request, *args, **kwargs):
-        serializer = CityArchiveSerializer(data=request.data, context={"request": request})
+        serializer = CityArchiveSerializer(
+            data=request.data, context={"request": request}
+        )
         if serializer.is_valid():
             # Determine count for pluralized message
             deleted_ids = (
@@ -209,10 +258,18 @@ class CityArchiveViewSet(ModelViewSet):
             count = len(deleted_ids) if isinstance(deleted_ids, list) else 1
             instance = serializer.save()
             ip_address = get_client_ip(request)
-            ActivityLog.log.city_archive(instance, ip_address=ip_address, user=request.user)
+            ActivityLog.log.city_archive(
+                instance, ip_address=ip_address, user=request.user
+            )
 
-            message = "City archived successfully" if count == 1 else "Cities archived successfully"
-            return Response({"success": True, "message": message}, status=status.HTTP_200_OK)
+            message = (
+                "City archived successfully"
+                if count == 1
+                else "Cities archived successfully"
+            )
+            return Response(
+                {"success": True, "message": message}, status=status.HTTP_200_OK
+            )
 
         else:
             return Response(
@@ -241,9 +298,17 @@ class CityRestoreViewSet(ModelViewSet):
             count = len(deleted_ids) if isinstance(deleted_ids, list) else 1
             instance = serializer.save()
             ip_address = get_client_ip(request)
-            ActivityLog.log.city_restore(instance, ip_address=ip_address, user=request.user)
-            message = "City restored successfully" if count == 1 else "Cities restored successfully"
-            return Response({"success": True, "message": message}, status=status.HTTP_200_OK)
+            ActivityLog.log.city_restore(
+                instance, ip_address=ip_address, user=request.user
+            )
+            message = (
+                "City restored successfully"
+                if count == 1
+                else "Cities restored successfully"
+            )
+            return Response(
+                {"success": True, "message": message}, status=status.HTTP_200_OK
+            )
 
         else:
             return Response(

@@ -15,7 +15,9 @@ class FAQAPITestCase(APITestCase):
     def setUp(self):
         """Set up test data"""
         # Create test user
-        self.user = User.objects.create_user(email="testuser@example.com", username="testuser", password="testpass")
+        self.user = User.objects.create_user(
+            email="testuser@example.com", username="testuser", password="testpass"
+        )
 
         # Create test FAQ
         self.faq = FAQ.objects.create(
@@ -47,7 +49,9 @@ class FAQAPITestCase(APITestCase):
             self.assertEqual(response.data["data"]["question"], "What is Python?")
 
             # Verify the FAQ was created in the database
-            faq_exists = FAQ.objects.filter(question="What is Python?", deleted=False).exists()
+            faq_exists = FAQ.objects.filter(
+                question="What is Python?", deleted=False
+            ).exists()
             self.assertTrue(faq_exists)
 
             # Verify activity log was called
@@ -151,7 +155,10 @@ class FAQAPITestCase(APITestCase):
     def test_update_faq(self):
         """Test updating a FAQ"""
         url = reverse("faq-detail", args=[self.faq.id])
-        data = {"question": "What is Django Framework?", "answer": "Updated answer about Django."}
+        data = {
+            "question": "What is Django Framework?",
+            "answer": "Updated answer about Django.",
+        }
 
         with patch("faq.views.ActivityLog.log.faq_update") as mock_log:
             response = self.client.patch(url, data, format="json")
@@ -309,7 +316,9 @@ class FAQModelTestCase(TestCase):
 
     def setUp(self):
         """Set up test data"""
-        self.user = User.objects.create_user(email="testuser@example.com", username="testuser", password="testpass")
+        self.user = User.objects.create_user(
+            email="testuser@example.com", username="testuser", password="testpass"
+        )
 
     def test_faq_creation(self):
         """Test basic FAQ creation"""
@@ -329,7 +338,9 @@ class FAQModelTestCase(TestCase):
 
     def test_faq_str_representation(self):
         """Test FAQ string representation"""
-        faq = FAQ.objects.create(question="What is Django?", answer="Django is a web framework.")
+        faq = FAQ.objects.create(
+            question="What is Django?", answer="Django is a web framework."
+        )
 
         self.assertEqual(str(faq), "What is Django?")
 

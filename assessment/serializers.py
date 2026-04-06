@@ -42,7 +42,11 @@ class UserResponseSerializer(serializers.ModelSerializer):
                 {"selected_option": "Selected option does not belong to this question."}
             )
 
-        if selected_option and score_value is not None and score_value != selected_option.score_value:
+        if (
+            selected_option
+            and score_value is not None
+            and score_value != selected_option.score_value
+        ):
             raise serializers.ValidationError(
                 {"score_value": "score_value must match selected_option score."}
             )

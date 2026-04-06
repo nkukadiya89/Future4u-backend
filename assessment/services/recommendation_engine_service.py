@@ -24,11 +24,15 @@ class RecommendationEngineService:
             return self._fallback_result()
 
         top_domain_id = domain_ranking[0]["domain_id"]
-        top_domain = Domain.objects.filter(id=top_domain_id, deleted=False, is_active=True).first()
+        top_domain = Domain.objects.filter(
+            id=top_domain_id, deleted=False, is_active=True
+        ).first()
         if top_domain is None:
             return self._fallback_result()
 
-        generic_result = self._build_generic_result(top_domain=top_domain, domain_ranking=domain_ranking)
+        generic_result = self._build_generic_result(
+            top_domain=top_domain, domain_ranking=domain_ranking
+        )
 
         # Domain decision layer integration:
         # evaluate configured top-ranked domains and override when a domain-specific score exists.
@@ -56,7 +60,9 @@ class RecommendationEngineService:
 
         return generic_result
 
-    def _evaluate_top_domain_decisions(self, *, user_id, domain_ranking: list[dict]) -> dict[str, dict]:
+    def _evaluate_top_domain_decisions(
+        self, *, user_id, domain_ranking: list[dict]
+    ) -> dict[str, dict]:
         decisions: dict[str, dict] = {}
         for ranked_domain in domain_ranking[: self.DOMAIN_DECISION_TOP_N]:
             domain_code = (ranked_domain.get("domain_code") or "").strip().lower()
@@ -68,8 +74,12 @@ class RecommendationEngineService:
         return decisions
 
     def _rank_domains(self, *, user_id):
-        weighted_expr = ExpressionWrapper(F("score_value") * F("question__signal_strength"), output_field=FloatField())
-        max_expr = ExpressionWrapper(F("question__signal_strength") * 5.0, output_field=FloatField())
+        weighted_expr = ExpressionWrapper(
+            F("score_value") * F("question__signal_strength"), output_field=FloatField()
+        )
+        max_expr = ExpressionWrapper(
+            F("question__signal_strength") * 5.0, output_field=FloatField()
+        )
         rows = (
             UserResponse.objects.filter(
                 user_id=user_id,
@@ -92,7 +102,9 @@ class RecommendationEngineService:
         for row in rows:
             max_possible = float(row.get("max_possible") or 0.0)
             weighted_sum = float(row.get("weighted_sum") or 0.0)
-            normalized = (weighted_sum / max_possible * 100.0) if max_possible > 0 else 0.0
+            normalized = (
+                (weighted_sum / max_possible * 100.0) if max_possible > 0 else 0.0
+            )
             domain_ranking.append(
                 {
                     "domain_id": row["question__mapped_domains__id"],

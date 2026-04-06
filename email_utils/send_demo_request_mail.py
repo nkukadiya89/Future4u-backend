@@ -57,7 +57,9 @@ def send_demo_request_mail(subject, template, data):
         mail_server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
         mail_server.ehlo()
         mail_server.login(config("ADMIN_EMAIL"), config("EMAIL_PASSWORD"))
-        mail_server.sendmail(config("ADMIN_EMAIL"), msg["To"].split(", "), msg.as_string())
+        mail_server.sendmail(
+            config("ADMIN_EMAIL"), msg["To"].split(", "), msg.as_string()
+        )
         mail_server.quit()
         return HttpResponse("Mail Sent", status=200)
 

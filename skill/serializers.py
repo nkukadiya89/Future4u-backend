@@ -48,14 +48,18 @@ class SkillSerializer(AuditFieldsMixin, serializers.ModelSerializer):
             raise serializers.ValidationError("This field may not be blank.")
         exclude = self.instance.pk if getattr(self.instance, "pk", None) else None
         if skill_service.case_insensitive_code_exists(code=value, exclude_pk=exclude):
-            raise serializers.ValidationError("Skill code must be unique (case-insensitive).")
+            raise serializers.ValidationError(
+                "Skill code must be unique (case-insensitive)."
+            )
         return value
 
     def validate_skill_type(self, value):
         value = (value or "").strip().lower()
         allowed = {c for c, _ in SkillType.choices}
         if value not in allowed:
-            raise serializers.ValidationError(f"Invalid skill_type. Allowed: {', '.join(sorted(allowed))}.")
+            raise serializers.ValidationError(
+                f"Invalid skill_type. Allowed: {', '.join(sorted(allowed))}."
+            )
         return value
 
     def create(self, validated_data):
@@ -126,4 +130,3 @@ class SkillBulkImportSerializer(serializers.Serializer):
         child=serializers.DictField(),
         allow_empty=False,
     )
-

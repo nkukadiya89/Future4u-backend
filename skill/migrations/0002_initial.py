@@ -11,54 +11,85 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('skill', '0001_initial'),
+        ("skill", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='skill',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
+            model_name="skill",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='skill',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
+            model_name="skill",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='skill',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
+            model_name="skill",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='skillimportbatch',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='skill_import_batches', to=settings.AUTH_USER_MODEL),
+            model_name="skillimportbatch",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="skill_import_batches",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='skillimporterror',
-            name='batch',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='error_rows', to='skill.skillimportbatch'),
+            model_name="skillimporterror",
+            name="batch",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="error_rows",
+                to="skill.skillimportbatch",
+            ),
         ),
         migrations.AddIndex(
-            model_name='skill',
-            index=models.Index(fields=['skill_code'], name='skill_skill_c_c0a293_idx'),
+            model_name="skill",
+            index=models.Index(fields=["skill_code"], name="skill_skill_c_c0a293_idx"),
         ),
         migrations.AddIndex(
-            model_name='skill',
-            index=models.Index(fields=['skill_type'], name='skill_skill_t_1e67f7_idx'),
+            model_name="skill",
+            index=models.Index(fields=["skill_type"], name="skill_skill_t_1e67f7_idx"),
         ),
         migrations.AddIndex(
-            model_name='skill',
-            index=models.Index(fields=['is_active'], name='skill_is_acti_b57a95_idx'),
+            model_name="skill",
+            index=models.Index(fields=["is_active"], name="skill_is_acti_b57a95_idx"),
         ),
         migrations.AddIndex(
-            model_name='skill',
-            index=models.Index(fields=['deleted'], name='skill_deleted_853b46_idx'),
+            model_name="skill",
+            index=models.Index(fields=["deleted"], name="skill_deleted_853b46_idx"),
         ),
         migrations.AddConstraint(
-            model_name='skill',
-            constraint=models.UniqueConstraint(django.db.models.functions.text.Lower('skill_code'), name='skill_skill_code_ci_uniq'),
+            model_name="skill",
+            constraint=models.UniqueConstraint(
+                django.db.models.functions.text.Lower("skill_code"),
+                name="skill_skill_code_ci_uniq",
+            ),
         ),
     ]

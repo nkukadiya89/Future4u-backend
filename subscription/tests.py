@@ -19,7 +19,9 @@ class SubscriptionCartAndPaymentTests(APITestCase):
         )
         self.client.force_authenticate(user=self.user)
 
-        self.bc = BusinessCategory.objects.create(business_category="IT", created_by=self.user, updated_by=self.user)
+        self.bc = BusinessCategory.objects.create(
+            business_category="IT", created_by=self.user, updated_by=self.user
+        )
 
         self.company = Company.objects.create(
             name="Acme Corp",
@@ -36,9 +38,6 @@ class SubscriptionCartAndPaymentTests(APITestCase):
         self.sub = Subscription.objects.create(
             package_name="Pro Plan",
             subscription_type="subscription",
-            device_price=1000,
-            device_discount=0,
-            device_sell_price=1000,
             subscription_price=1000,
             subscription_discount=0,
             subscription_sell_price=2000,
@@ -64,8 +63,9 @@ class SubscriptionCartAndPaymentTests(APITestCase):
         self.assertEqual(resp.status_code, 200)
         items = resp.data["data"]
         self.assertGreaterEqual(len(items), 1)
-        self.assertEqual(items[0]["device_quantity"], 2)
-        self.assertEqual(items[0]["subscription_price"], self.sub.subscription_sell_price)
+        self.assertEqual(
+            items[0]["subscription_price"], self.sub.subscription_sell_price
+        )
 
     def test_cart_increment_decrement_set_quantity_and_remove(self):
         # Seed one item with quantity 1
@@ -85,7 +85,6 @@ class SubscriptionCartAndPaymentTests(APITestCase):
         # verify via items
         resp_items = self.client.get("/subscription-cart/items/")
         self.assertEqual(resp_items.status_code, 200)
-        self.assertEqual(resp_items.data["data"][0]["device_quantity"], 2)
 
         # Decrement
         resp = self.client.patch(
@@ -96,7 +95,6 @@ class SubscriptionCartAndPaymentTests(APITestCase):
         self.assertEqual(resp.status_code, 200)
         resp_items = self.client.get("/subscription-cart/items/")
         self.assertEqual(resp_items.status_code, 200)
-        self.assertEqual(resp_items.data["data"][0]["device_quantity"], 1)
 
         # Set exact quantity to 5
         # No set-quantity endpoint; simulate by incrementing to reach 5
@@ -107,7 +105,6 @@ class SubscriptionCartAndPaymentTests(APITestCase):
                 format="json",
             )
         resp_items = self.client.get("/subscription-cart/items/")
-        self.assertEqual(resp_items.data["data"][0]["device_quantity"], 5)
 
         # Remove item
         # remove requires item id in URL
@@ -117,7 +114,9 @@ class SubscriptionCartAndPaymentTests(APITestCase):
         self.assertEqual(resp.status_code, 200)
 
     @patch("subscription.views.client.payment_link.create")
-    def test_checkout_creates_payment_link_and_payment_subscription(self, mock_payment_link_create):
+    def test_checkout_creates_payment_link_and_payment_subscription(
+        self, mock_payment_link_create
+    ):
         # Seed cart and BusinessSetting
         from user_profile.models import BusinessSetting
 
@@ -147,9 +146,8 @@ class SubscriptionCartAndPaymentTests(APITestCase):
                 "subscription": self.sub.id,
                 "quantity": 1,
                 "subscription_type": "1 year",
-                "device_price": self.sub.device_sell_price,
                 "subscription_price": self.sub.subscription_sell_price,
-                "plan_total": self.sub.device_sell_price * 1 + self.sub.subscription_sell_price,
+                "plan_total": self.sub.subscription_sell_price,
             }
         ]
         checkout_payload = {
@@ -160,7 +158,9 @@ class SubscriptionCartAndPaymentTests(APITestCase):
             "sgst": round(items[0]["plan_total"] * 0.09, 2),
             "total_amount": round(items[0]["plan_total"] * 1.18, 2),
         }
-        resp = self.client.post("/subscription-cart/checkout/", checkout_payload, format="json")
+        resp = self.client.post(
+            "/subscription-cart/checkout/", checkout_payload, format="json"
+        )
         self.assertEqual(resp.status_code, 201)
         self.assertTrue(resp.data["success"])
         self.assertIn("payment_link", resp.data["data"])
@@ -171,7 +171,9 @@ class SubscriptionCartAndPaymentTests(APITestCase):
         self.assertGreater(ps.total_amount, 0)
 
     @patch("subscription.views.client.payment.fetch")
-    def test_update_payment_data_sets_active_and_invoice_and_duration(self, mock_payment_fetch):
+    def test_update_payment_data_sets_active_and_invoice_and_duration(
+        self, mock_payment_fetch
+    ):
         # Create a pending PaymentSubscription via direct API (single subscription flow)
         with patch("subscription.views.client.payment_link.create") as mock_link_create:
             from user_profile.models import BusinessSetting
@@ -186,15 +188,17 @@ class SubscriptionCartAndPaymentTests(APITestCase):
                 created_by=self.user,
                 updated_by=self.user,
             )
-            mock_link_create.return_value = {"id": "plink_abc", "short_url": "https://rzp.io/i/abc"}
+            mock_link_create.return_value = {
+                "id": "plink_abc",
+                "short_url": "https://rzp.io/i/abc",
+            }
             items = [
                 {
                     "subscription": self.sub.id,
                     "quantity": 1,
                     "subscription_type": "1 year",
-                    "device_price": self.sub.device_sell_price,
                     "subscription_price": self.sub.subscription_sell_price,
-                    "plan_total": self.sub.device_sell_price + self.sub.subscription_sell_price,
+                    "plan_total": self.sub.subscription_sell_price,
                 }
             ]
             checkout_payload = {
@@ -205,7 +209,9 @@ class SubscriptionCartAndPaymentTests(APITestCase):
                 "sgst": round(items[0]["plan_total"] * 0.09, 2),
                 "total_amount": round(items[0]["plan_total"] * 1.18, 2),
             }
-            self.client.post("/subscription-cart/checkout/", checkout_payload, format="json")
+            self.client.post(
+                "/subscription-cart/checkout/", checkout_payload, format="json"
+            )
 
         mock_payment_fetch.return_value = {"amount": int(2360 * 100)}
 
@@ -244,10 +250,16 @@ class SubscriptionCartAndPaymentTests(APITestCase):
             updated_by=self.user,
         )
 
-        PaymentSubscription.objects.create(company=self.company, invoice_no="0", currency="INR")
-        PaymentSubscription.objects.create(company=other_company, invoice_no="0", currency="INR")
+        PaymentSubscription.objects.create(
+            company=self.company, invoice_no="0", currency="INR"
+        )
+        PaymentSubscription.objects.create(
+            company=other_company, invoice_no="0", currency="INR"
+        )
 
-        resp = self.client.get(f"/payment-subscription/?company_id={self.company.id}&ordering=-id")
+        resp = self.client.get(
+            f"/payment-subscription/?company_id={self.company.id}&ordering=-id"
+        )
         self.assertEqual(resp.status_code, 200)
         data = resp.data
         items = data.get("results") or data.get("data") or []
@@ -265,7 +277,11 @@ class SubscriptionCartAndPaymentTests(APITestCase):
 
     def test_checkout_empty_cart_returns_400(self):
         # Missing items/company_id should 400
-        resp = self.client.post("/subscription-cart/checkout/", {"company_id": self.company.id}, format="json")
+        resp = self.client.post(
+            "/subscription-cart/checkout/",
+            {"company_id": self.company.id},
+            format="json",
+        )
         self.assertEqual(resp.status_code, 400)
         self.assertIn("items", resp.data.get("message", ""))
 
@@ -313,7 +329,9 @@ class SubscriptionCartAndPaymentTests(APITestCase):
         )
         # login as another user and increment same item
         User = get_user_model()
-        user2 = User.objects.create_user(email="u2@example.com", password="pass1234", first_name="U2")
+        user2 = User.objects.create_user(
+            email="u2@example.com", password="pass1234", first_name="U2"
+        )
         user2.company = self.company
         user2.save()
         self.client.force_authenticate(user=user2)
@@ -323,8 +341,6 @@ class SubscriptionCartAndPaymentTests(APITestCase):
             format="json",
         )
         self.assertEqual(resp.status_code, 200)
-        resp_items = self.client.get("/subscription-cart/items/")
-        self.assertEqual(resp_items.data["data"][0]["device_quantity"], 2)
 
     def test_update_payment_data_missing_link_id(self):
         resp = self.client.patch(
@@ -349,15 +365,17 @@ class SubscriptionCartAndPaymentTests(APITestCase):
                 created_by=self.user,
                 updated_by=self.user,
             )
-            mock_link_create.return_value = {"id": "plink_np", "short_url": "https://rzp.io/i/np"}
+            mock_link_create.return_value = {
+                "id": "plink_np",
+                "short_url": "https://rzp.io/i/np",
+            }
             items = [
                 {
                     "subscription": self.sub.id,
                     "quantity": 1,
                     "subscription_type": "1 year",
-                    "device_price": self.sub.device_sell_price,
                     "subscription_price": self.sub.subscription_sell_price,
-                    "plan_total": self.sub.device_sell_price + self.sub.subscription_sell_price,
+                    "plan_total": self.sub.subscription_sell_price,
                 }
             ]
             self.client.post(
@@ -396,15 +414,17 @@ class SubscriptionCartAndPaymentTests(APITestCase):
             created_by=self.user,
             updated_by=self.user,
         )
-        mock_link_create.return_value = {"id": "plink_calc", "short_url": "https://rzp.io/i/calc"}
+        mock_link_create.return_value = {
+            "id": "plink_calc",
+            "short_url": "https://rzp.io/i/calc",
+        }
         items = [
             {
                 "subscription": self.sub.id,
                 "quantity": 2,
                 "subscription_type": "1 year",
-                "device_price": self.sub.device_sell_price,
                 "subscription_price": self.sub.subscription_sell_price,
-                "plan_total": (self.sub.device_sell_price + self.sub.subscription_sell_price) * 2,
+                "plan_total": self.sub.subscription_sell_price * 2,
             }
         ]
         subtotal = items[0]["plan_total"]
@@ -438,7 +458,10 @@ class SubscriptionCartAndPaymentTests(APITestCase):
             {"company": self.company.id, "subscription": self.sub.id, "quantity": 3},
             format="json",
         )
-        mock_link_create.return_value = {"id": "plink_total", "short_url": "https://rzp.io/i/total"}
+        mock_link_create.return_value = {
+            "id": "plink_total",
+            "short_url": "https://rzp.io/i/total",
+        }
         from user_profile.models import BusinessSetting
 
         BusinessSetting.objects.create(
@@ -451,7 +474,7 @@ class SubscriptionCartAndPaymentTests(APITestCase):
             created_by=self.user,
             updated_by=self.user,
         )
-        plan_total = self.sub.device_sell_price * 3 + self.sub.subscription_sell_price
+        plan_total = self.sub.subscription_sell_price * 3
         subtotal = plan_total
         cgst = round(subtotal * 0.09, 2)
         sgst = round(subtotal * 0.09, 2)
@@ -461,7 +484,6 @@ class SubscriptionCartAndPaymentTests(APITestCase):
                 "subscription": self.sub.id,
                 "quantity": 3,
                 "subscription_type": "1 year",
-                "device_price": self.sub.device_sell_price,
                 "subscription_price": self.sub.subscription_sell_price,
                 "plan_total": plan_total,
             }
@@ -487,19 +509,20 @@ class SubscriptionMasterTests(APITestCase):
     def setUp(self):
         self.client = APIClient()
         User = get_user_model()
-        self.user = User.objects.create_user(email="mastertester@example.com", password="pass1234", first_name="Master")
+        self.user = User.objects.create_user(
+            email="mastertester@example.com", password="pass1234", first_name="Master"
+        )
         self.client.force_authenticate(user=self.user)
 
         # Category optional; keep available if needed
-        self.bc = BusinessCategory.objects.create(business_category="IT", created_by=self.user, updated_by=self.user)
+        self.bc = BusinessCategory.objects.create(
+            business_category="IT", created_by=self.user, updated_by=self.user
+        )
 
     def _create_subscription_payload(self):
         return {
             "package_name": "Starter",
             "subscription_type": "subscription",
-            "device_price": 500,
-            "device_discount": 0,
-            "device_sell_price": 500,
             "subscription_price": 500,
             "subscription_discount": 0,
             "subscription_sell_price": 1000,
@@ -509,13 +532,17 @@ class SubscriptionMasterTests(APITestCase):
         }
 
     def test_subscription_create(self):
-        resp = self.client.post("/subscription/", self._create_subscription_payload(), format="json")
+        resp = self.client.post(
+            "/subscription/", self._create_subscription_payload(), format="json"
+        )
         self.assertEqual(resp.status_code, 201)
         self.assertTrue(resp.data.get("success"))
 
     def test_subscription_retrieve_update_delete(self):
         # create
-        create = self.client.post("/subscription/", self._create_subscription_payload(), format="json")
+        create = self.client.post(
+            "/subscription/", self._create_subscription_payload(), format="json"
+        )
         sub_id = create.data["data"]["id"]
 
         # retrieve
@@ -524,7 +551,9 @@ class SubscriptionMasterTests(APITestCase):
         self.assertEqual(resp.data["data"]["id"], sub_id)
 
         # update
-        resp = self.client.patch(f"/subscription/{sub_id}/", {"package_name": "Starter Plus"}, format="json")
+        resp = self.client.patch(
+            f"/subscription/{sub_id}/", {"package_name": "Starter Plus"}, format="json"
+        )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data["data"]["package_name"], "Starter Plus")
 
@@ -536,13 +565,23 @@ class SubscriptionMasterTests(APITestCase):
         self.assertEqual(resp.status_code, 200)
 
     def test_subscription_status_update(self):
-        create = self.client.post("/subscription/", self._create_subscription_payload(), format="json")
+        create = self.client.post(
+            "/subscription/", self._create_subscription_payload(), format="json"
+        )
         sub_id = create.data["data"]["id"]
 
         # set active
-        resp = self.client.patch(f"/subscription/{sub_id}/subscription-status/", {"status": "active"}, format="json")
+        resp = self.client.patch(
+            f"/subscription/{sub_id}/subscription-status/",
+            {"status": "active"},
+            format="json",
+        )
         self.assertEqual(resp.status_code, 200)
 
         # set inactive
-        resp = self.client.patch(f"/subscription/{sub_id}/subscription-status/", {"status": "in_active"}, format="json")
+        resp = self.client.patch(
+            f"/subscription/{sub_id}/subscription-status/",
+            {"status": "in_active"},
+            format="json",
+        )
         self.assertEqual(resp.status_code, 200)

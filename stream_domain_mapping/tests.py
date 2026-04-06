@@ -73,7 +73,9 @@ class StreamDomainMappingAPITests(TestCase):
         self.assertIn("SDM Stream", str(obj))
 
     def test_crud_and_soft_delete(self):
-        r = self.client.post(reverse("stream-domain-mapping-list"), self._payload(), format="json")
+        r = self.client.post(
+            reverse("stream-domain-mapping-list"), self._payload(), format="json"
+        )
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         pk = r.data["data"]["id"]
 
@@ -107,7 +109,11 @@ class StreamDomainMappingAPITests(TestCase):
             is_active=True,
             created_by=self.user,
         )
-        self.client.post(reverse("stream-domain-mapping-list"), self._payload(weight_score=20), format="json")
+        self.client.post(
+            reverse("stream-domain-mapping-list"),
+            self._payload(weight_score=20),
+            format="json",
+        )
         self.client.post(
             reverse("stream-domain-mapping-list"),
             self._payload(domain=str(d2.pk), weight_score=99),
@@ -115,7 +121,11 @@ class StreamDomainMappingAPITests(TestCase):
         )
         r = self.client.get(
             reverse("stream-domain-mapping-list"),
-            {"stream": str(self.stream.pk), "search": "Robotics", "ordering": "-weight_score"},
+            {
+                "stream": str(self.stream.pk),
+                "search": "Robotics",
+                "ordering": "-weight_score",
+            },
         )
         payload = r.data.get("results", r.data)
         rows = payload.get("data", r.data.get("data", []))
@@ -131,15 +141,26 @@ class StreamDomainMappingAPITests(TestCase):
             is_active=True,
             created_by=self.user,
         )
-        self.client.post(reverse("stream-domain-mapping-list"), self._payload(weight_score=25), format="json")
+        self.client.post(
+            reverse("stream-domain-mapping-list"),
+            self._payload(weight_score=25),
+            format="json",
+        )
         self.client.post(
             reverse("stream-domain-mapping-list"),
             self._payload(domain=str(d2.pk), weight_score=88),
             format="json",
         )
-        r = self.client.get(reverse("stream-domain-mapping-by-stream", kwargs={"stream_id": str(self.stream.pk)}))
+        r = self.client.get(
+            reverse(
+                "stream-domain-mapping-by-stream",
+                kwargs={"stream_id": str(self.stream.pk)},
+            )
+        )
         self.assertEqual(r.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(r.data["data"][0]["weight_score"], r.data["data"][1]["weight_score"])
+        self.assertGreaterEqual(
+            r.data["data"][0]["weight_score"], r.data["data"][1]["weight_score"]
+        )
 
     def test_bulk_upload(self):
         d2 = Domain.objects.create(
@@ -155,8 +176,14 @@ class StreamDomainMappingAPITests(TestCase):
             f"{self.stream.stream_code},{self.domain.domain_code},80,1,1\n"
             f"{self.stream.stream_code},{d2.domain_code},not_a_number,0,1\n"
         )
-        f = SimpleUploadedFile("sdm.csv", csv_body.encode("utf-8"), content_type="text/csv")
-        r = self.client.post(reverse("stream-domain-mapping-bulk-import"), {"file": f}, format="multipart")
+        f = SimpleUploadedFile(
+            "sdm.csv", csv_body.encode("utf-8"), content_type="text/csv"
+        )
+        r = self.client.post(
+            reverse("stream-domain-mapping-bulk-import"),
+            {"file": f},
+            format="multipart",
+        )
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         self.assertIn("success_count", r.data)
         self.assertIn("error_count", r.data)
@@ -176,19 +203,26 @@ class StreamDomainMappingAPITests(TestCase):
             is_active=True,
             created_by=self.user,
         )
-        p1 = self.client.post(reverse("stream-domain-mapping-list"), self._payload(weight_score=45), format="json").data[
-            "data"
-        ]["id"]
+        p1 = self.client.post(
+            reverse("stream-domain-mapping-list"),
+            self._payload(weight_score=45),
+            format="json",
+        ).data["data"]["id"]
         p2 = self.client.post(
             reverse("stream-domain-mapping-list"),
             self._payload(domain=str(d2.pk), weight_score=55),
             format="json",
         ).data["data"]["id"]
 
-        r = self.client.post(reverse("stream-domain-mapping-bulk-archive"), {"ids": [p1, p2]}, format="json")
+        r = self.client.post(
+            reverse("stream-domain-mapping-bulk-archive"),
+            {"ids": [p1, p2]},
+            format="json",
+        )
         self.assertEqual(r.status_code, status.HTTP_200_OK)
         r = self.client.get(reverse("stream-domain-mapping-archived"))
         self.assertEqual(r.status_code, status.HTTP_200_OK)
-        r = self.client.post(reverse("stream-domain-mapping-bulk-restore"), {"ids": [p1]}, format="json")
+        r = self.client.post(
+            reverse("stream-domain-mapping-bulk-restore"), {"ids": [p1]}, format="json"
+        )
         self.assertEqual(r.status_code, status.HTTP_200_OK)
-

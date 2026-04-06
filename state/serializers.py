@@ -36,13 +36,21 @@ class StateSerializer(serializers.ModelSerializer):
         return format_datetime(getattr(obj, "created_at", None))
 
     def get_created_by_name(self, obj):
-        return f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else None
+        return (
+            f"{obj.created_by.first_name} {obj.created_by.last_name}"
+            if obj.created_by
+            else None
+        )
 
     def get_updated_at(self, obj):
         return format_datetime(getattr(obj, "updated_at", None))
 
     def get_updated_by_name(self, obj):
-        return f"{obj.updated_by.first_name} {obj.updated_by.last_name}" if obj.updated_by else None
+        return (
+            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
+            if obj.updated_by
+            else None
+        )
 
     def validate(self, attrs):
         name = attrs.get("name")
@@ -52,7 +60,9 @@ class StateSerializer(serializers.ModelSerializer):
         if instance:
             existing_query = existing_query.exclude(pk=instance.pk)
         if existing_query.exists():
-            raise serializers.ValidationError(f"{name} already exists in {country.name}")
+            raise serializers.ValidationError(
+                f"{name} already exists in {country.name}"
+            )
         return attrs
 
     def create(self, validated_data):
@@ -154,16 +164,28 @@ class StateArchiveListSerializer(serializers.ModelSerializer):
         return format_datetime(getattr(obj, "created_at", None))
 
     def get_created_by_name(self, obj):
-        return f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else None
+        return (
+            f"{obj.created_by.first_name} {obj.created_by.last_name}"
+            if obj.created_by
+            else None
+        )
 
     def get_updated_at(self, obj):
         return format_datetime(getattr(obj, "updated_at", None))
 
     def get_updated_by_name(self, obj):
-        return f"{obj.updated_by.first_name} {obj.updated_by.last_name}" if obj.updated_by else None
+        return (
+            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
+            if obj.updated_by
+            else None
+        )
 
     def get_deleted_at(self, obj):
         return format_datetime(getattr(obj, "deleted_at", None))
 
     def get_deleted_by_name(self, obj):
-        return f"{obj.deleted_by.first_name} {obj.deleted_by.last_name}" if obj.deleted_by else None
+        return (
+            f"{obj.deleted_by.first_name} {obj.deleted_by.last_name}"
+            if obj.deleted_by
+            else None
+        )

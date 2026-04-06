@@ -193,7 +193,9 @@ class DomainAdmin(BaseAdmin):
                         domain_service.archive_domain(domain=obj, user=request.user)
                         self.message_user(request, "Archived.")
                     except DRFValidationError as exc:
-                        self.message_user(request, str(exc.detail), level=messages.ERROR)
+                        self.message_user(
+                            request, str(exc.detail), level=messages.ERROR
+                        )
                 return HttpResponseRedirect(request.get_full_path())
             if request.POST.get("domain_admin_restore_one"):
                 pk = request.POST["domain_admin_restore_one"]

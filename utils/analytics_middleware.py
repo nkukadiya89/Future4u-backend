@@ -30,7 +30,11 @@ class ApiAnalyticsMiddleware:
                 "method": getattr(request, "method", None),
                 "status_code": getattr(response, "status_code", None),
                 "duration_ms": duration_ms,
-                "user_id": getattr(user, "id", None) if getattr(user, "is_authenticated", False) else None,
+                "user_id": (
+                    getattr(user, "id", None)
+                    if getattr(user, "is_authenticated", False)
+                    else None
+                ),
                 "ip": request.META.get("REMOTE_ADDR"),
                 "ua": request.META.get("HTTP_USER_AGENT"),
             }
@@ -38,4 +42,3 @@ class ApiAnalyticsMiddleware:
         except Exception:
             pass
         return response
-

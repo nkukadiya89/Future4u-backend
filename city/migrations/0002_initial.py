@@ -9,14 +9,18 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('city', '0001_initial'),
-        ('country', '0001_initial'),
+        ("city", "0001_initial"),
+        ("country", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='city',
-            name='country',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='city_set', to='country.country'),
+            model_name="city",
+            name="country",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="city_set",
+                to="country.country",
+            ),
         ),
     ]

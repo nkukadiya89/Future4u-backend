@@ -69,7 +69,9 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
             raise serializers.ValidationError("This field may not be blank.")
         exclude = self.instance.pk if getattr(self.instance, "pk", None) else None
         if domain_service.case_insensitive_code_exists(code=value, exclude_pk=exclude):
-            raise serializers.ValidationError("Domain code must be unique (case-insensitive).")
+            raise serializers.ValidationError(
+                "Domain code must be unique (case-insensitive)."
+            )
         return value
 
     def create(self, validated_data):

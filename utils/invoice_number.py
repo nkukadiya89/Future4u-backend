@@ -37,7 +37,9 @@ def generate_subscription_invoice_number(company):
 
     with transaction.atomic():
         last_invoice = (
-            PaymentSubscription.objects.filter(company=company, invoice_no__startswith=prefix)
+            PaymentSubscription.objects.filter(
+                company=company, invoice_no__startswith=prefix
+            )
             .select_for_update()
             .order_by("-invoice_no")
             .first()
@@ -61,7 +63,9 @@ def generate_device_transfer_invoice_number(company):
 
     with transaction.atomic():
         last_invoice = (
-            PaymentDeviceTransfer.objects.filter(company=company, invoice_no__startswith=prefix)
+            PaymentDeviceTransfer.objects.filter(
+                company=company, invoice_no__startswith=prefix
+            )
             .select_for_update()
             .order_by("-invoice_no")
             .first()

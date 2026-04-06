@@ -15,6 +15,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from activity_log.models import ActivityLog
+
 # from bulk_upload.bulk_upload import Employee_BulkUpload
 from email_utils.send_email import generate_forget_pass_token, send_mail
 from email_utils.send_inactive_email import send_inactive_email
@@ -92,7 +93,9 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         else:
             serializer = self.serializer_class(queryset, many=True)
             return Response({"success": True, "data": serializer.data})
@@ -127,20 +130,6 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
                 phonenumber = str(user_phone)
                 if phonenumber.startswith("91"):
                     phonenumber = phonenumber[2:]
-                # whatsapp_messages = WhatsappMessages("reset_password", phonenumber)
-
-                # company_instance = Company.objects.filter(email=email).first()
-                # employee_instance = Employee.objects.filter(email=email).first()
-
-                # whatsapp_messages.send_reset_password(
-                #     phonenumber,
-                #     name,
-                #     password_link,
-                #     company_instance,
-                #     vendor_instance,
-                #     employee_instance,
-                # )
-
                 context = {"name": name, "token": token, "email": email}
                 email_thread = threading.Thread(
                     target=self.send_email,
@@ -158,7 +147,9 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
                     status=status.HTTP_201_CREATED,
                 )
         else:
-            error_messages = " ".join([", ".join(value) for value in serializer.errors.values()])
+            error_messages = " ".join(
+                [", ".join(value) for value in serializer.errors.values()]
+            )
             return Response(
                 {"success": False, "message": error_messages},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -167,7 +158,9 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.serializer_class(instance)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -180,7 +173,9 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
         data = json.loads(form_data)
         data["updated_by"] = request.user.id
         profile_photo = request.data.get("profile_photo")
-        serializer = self.serializer_class(instance, data=data, partial=True, context={"request": request})
+        serializer = self.serializer_class(
+            instance, data=data, partial=True, context={"request": request}
+        )
 
         if serializer.is_valid():
             instance = serializer.save()
@@ -190,9 +185,13 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
 
             instance.save()
 
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
         else:
-            errors_message = " ".join([", ".join(value) for value in serializer.errors.values()])
+            errors_message = " ".join(
+                [", ".join(value) for value in serializer.errors.values()]
+            )
             return Response(
                 {"success": False, "message": errors_message},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -206,7 +205,9 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
         instance.deleted_by = request.user
         instance.deleted_at = now()
         instance.save()
-        return Response({"success": True, "message": "Employee Deleted"}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "message": "Employee Deleted"}, status=status.HTTP_200_OK
+        )
 
     @action(detail=True, methods=["patch"], url_path="profile-photo-delete")
     def profile_photo_delete(self, request, *args, **kwargs):
@@ -236,11 +237,15 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
         employee_list = None
         if user.company:
             company_instance = user.company
-            employee_list = Employee.objects.filter(created_by__company=company_instance, deleted=False).order_by("-id")
+            employee_list = Employee.objects.filter(
+                created_by__company=company_instance, deleted=False
+            ).order_by("-id")
 
         else:
             super_user_instance = user
-            employee_list = Employee.objects.filter(created_by=super_user_instance, deleted=False).order_by("-id")
+            employee_list = Employee.objects.filter(
+                created_by=super_user_instance, deleted=False
+            ).order_by("-id")
 
         result_page = None
         if employee_list is not None:
@@ -248,11 +253,17 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
             pagination = Pagination()
             result_page = pagination.paginate_queryset(employee, request)
 
-            serializer = AddEmployeeSerializer(result_page, many=True, context={"request": request})
-            return pagination.get_paginated_response({"success": True, "data": serializer.data})
+            serializer = AddEmployeeSerializer(
+                result_page, many=True, context={"request": request}
+            )
+            return pagination.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
 
         else:
-            serializer = AddEmployeeSerializer(result_page, many=True, context={"request": request})
+            serializer = AddEmployeeSerializer(
+                result_page, many=True, context={"request": request}
+            )
             return Response({"success": True, "data": serializer.data})
 
     @action(detail=False, methods=["get"], url_path="employees-by-company")
@@ -270,7 +281,9 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
         else:
             super_user_instance = user
             users = User.objects.filter(
-                employee__in=Employee.objects.filter(created_by=super_user_instance, status="active", deleted=False)
+                employee__in=Employee.objects.filter(
+                    created_by=super_user_instance, status="active", deleted=False
+                )
             )
 
         pagination = Pagination()
@@ -287,7 +300,9 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
             for user in result_page
         ]
 
-        return pagination.get_paginated_response({"success": True, "data": employee_data})
+        return pagination.get_paginated_response(
+            {"success": True, "data": employee_data}
+        )
 
     @action(detail=False, methods=["get"], url_path="employees-by-partner-company")
     def employees_by_partner_company(self, request, *args, **kwargs):
@@ -295,7 +310,10 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
 
         if not partner_company_id:
             return Response(
-                {"success": False, "message": "partner_company_id query parameter is required"},
+                {
+                    "success": False,
+                    "message": "partner_company_id query parameter is required",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -303,7 +321,10 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
             partner_company_id = int(partner_company_id)
         except ValueError:
             return Response(
-                {"success": False, "message": "partner_company_id must be a valid integer"},
+                {
+                    "success": False,
+                    "message": "partner_company_id must be a valid integer",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -328,7 +349,11 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
 
         if not employee_list.exists():
             return Response(
-                {"success": True, "data": [], "message": "No employees found for this partner company"},
+                {
+                    "success": True,
+                    "data": [],
+                    "message": "No employees found for this partner company",
+                },
                 status=status.HTTP_200_OK,
             )
 
@@ -337,14 +362,20 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
         pagination = Pagination()
         result_page = pagination.paginate_queryset(employee_list, request)
 
-        serializer = AddEmployeeSerializer(result_page, many=True, context={"request": request})
-        return pagination.get_paginated_response({"success": True, "data": serializer.data})
+        serializer = AddEmployeeSerializer(
+            result_page, many=True, context={"request": request}
+        )
+        return pagination.get_paginated_response(
+            {"success": True, "data": serializer.data}
+        )
 
     @action(detail=False, methods=["get"], url_path="employees-list")
     def employees_list(self, request, *args, **kwargs):
         user = self.request.user
 
-        queryset = Employee.objects.filter(created_by=user, status="active", deleted=False).order_by("-id")
+        queryset = Employee.objects.filter(
+            created_by=user, status="active", deleted=False
+        ).order_by("-id")
 
         queryset = self.filter_queryset(queryset)
 
@@ -394,7 +425,9 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
             for user in result_page
         ]
 
-        return pagination.get_paginated_response({"success": True, "data": employee_data})
+        return pagination.get_paginated_response(
+            {"success": True, "data": employee_data}
+        )
 
     @action(detail=True, methods=["GET"], url_path="employee-basic-info")
     def get_employee_basic_info(self, request, pk=None):
@@ -464,7 +497,9 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
             )
 
         except Employee.DoesNotExist:
-            return Response({"error": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Employee not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
     @action(detail=True, methods=["PATCH"], url_path="change-employee-password")
     def change_employee_password(self, request, pk=None):
@@ -486,7 +521,9 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
             user = User.objects.filter(employee=employee).first()
 
             if not user:
-                return Response({"error": "Admin user not found for this employee."}, status=404)
+                return Response(
+                    {"error": "Admin user not found for this employee."}, status=404
+                )
 
             if not check_password(old_password, user.password):
                 return Response({"error": "Old password is incorrect."}, status=400)
@@ -523,7 +560,9 @@ class EmployeeStatusViewSet(EmployeeSearchOrdering, ModelViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         data = request.data
-        serializer = self.serializer_class(instance, data=data, partial=True, context={"request": request})
+        serializer = self.serializer_class(
+            instance, data=data, partial=True, context={"request": request}
+        )
         if serializer.is_valid():
             with transaction.atomic():
                 user = User.objects.get(employee=instance)
@@ -653,12 +692,16 @@ class EmployeeArchiveViewSet(ModelViewSet):
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = EmployeeArchiveListSerializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = EmployeeArchiveListSerializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
     def create(self, request, *args, **kwargs):
-        serializer = EmployeeArchiveSerializer(data=request.data, context={"request": request})
+        serializer = EmployeeArchiveSerializer(
+            data=request.data, context={"request": request}
+        )
         if serializer.is_valid():
             deleted_ids = (
                 serializer.validated_data.get("deleted", [])
@@ -668,7 +711,11 @@ class EmployeeArchiveViewSet(ModelViewSet):
             count = len(deleted_ids) if isinstance(deleted_ids, list) else 1
             serializer.save()
 
-            message = "User archived successfully" if count == 1 else "Users archived successfully"
+            message = (
+                "User archived successfully"
+                if count == 1
+                else "Users archived successfully"
+            )
             return Response(
                 {"success": True, "message": message},
                 status=status.HTTP_200_OK,
@@ -686,18 +733,24 @@ class EmployeeArchiveViewSet(ModelViewSet):
         employee_list = None
         if user.company:
             company_instance = user.company
-            employee_list = Employee.objects.filter(created_by__company=company_instance, deleted=True).order_by("-id")
+            employee_list = Employee.objects.filter(
+                created_by__company=company_instance, deleted=True
+            ).order_by("-id")
 
         else:
             super_user_instance = user
-            employee_list = Employee.objects.filter(created_by=super_user_instance, deleted=True).order_by("-id")
+            employee_list = Employee.objects.filter(
+                created_by=super_user_instance, deleted=True
+            ).order_by("-id")
 
         employee = self.filter_queryset(employee_list)
         pagination = Pagination()
         result_page = pagination.paginate_queryset(employee, request)
 
         serializer = AddEmployeeSerializer(result_page, many=True)
-        return pagination.get_paginated_response({"success": True, "data": serializer.data})
+        return pagination.get_paginated_response(
+            {"success": True, "data": serializer.data}
+        )
 
 
 class EmployeeRestoreViewSet(ModelViewSet):
@@ -709,7 +762,9 @@ class EmployeeRestoreViewSet(ModelViewSet):
     authentication_classes = [JWTAuthentication]
 
     def create(self, request, *args, **kwargs):
-        serializer = EmployeeRestoreSerializer(data=request.data, context={"request": request})
+        serializer = EmployeeRestoreSerializer(
+            data=request.data, context={"request": request}
+        )
 
         if serializer.is_valid():
             deleted_ids = serializer.validated_data.get("deleted", [])
@@ -725,7 +780,10 @@ class EmployeeRestoreViewSet(ModelViewSet):
                 flat_ids = [int(x) for x in flat_ids]
             except (TypeError, ValueError):
                 return Response(
-                    {"success": False, "message": "'deleted' must be a list of integer IDs"},
+                    {
+                        "success": False,
+                        "message": "'deleted' must be a list of integer IDs",
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -741,12 +799,22 @@ class EmployeeRestoreViewSet(ModelViewSet):
                 # Log employee restore activity
                 ip_address = get_client_ip(request)
                 company = getattr(user, "company", None) if user else None
-                partner_company = getattr(user, "partner_company", None) if user else None
-                ActivityLog.log.employee_restore(employee, ip_address, user, company, partner_company)
+                partner_company = (
+                    getattr(user, "partner_company", None) if user else None
+                )
+                ActivityLog.log.employee_restore(
+                    employee, ip_address, user, company, partner_company
+                )
 
             count = len(flat_ids)
-            message = "User restored successfully" if count == 1 else "Users restored successfully"
-            return Response({"success": True, "message": message}, status=status.HTTP_200_OK)
+            message = (
+                "User restored successfully"
+                if count == 1
+                else "Users restored successfully"
+            )
+            return Response(
+                {"success": True, "message": message}, status=status.HTTP_200_OK
+            )
 
         else:
             return Response(

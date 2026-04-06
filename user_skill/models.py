@@ -28,7 +28,8 @@ class UserSkill(BaseModel):
                 name="user_skill_user_skill_uniq",
             ),
             models.CheckConstraint(
-                condition=models.Q(proficiency_score__gte=0) & models.Q(proficiency_score__lte=100),
+                condition=models.Q(proficiency_score__gte=0)
+                & models.Q(proficiency_score__lte=100),
                 name="user_skill_proficiency_0_100_ck",
             ),
         ]

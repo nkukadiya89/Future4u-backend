@@ -74,25 +74,41 @@ class PartnerCompany(models.Model):
         blank=True,
         related_name="partner_company_comm_area",
     )
-    communication_address_building = models.CharField(max_length=150, null=True, blank=True)
-    communication_address_landmark = models.CharField(max_length=100, null=True, blank=True)
+    communication_address_building = models.CharField(
+        max_length=150, null=True, blank=True
+    )
+    communication_address_landmark = models.CharField(
+        max_length=100, null=True, blank=True
+    )
     communication_address_pincode = models.IntegerField(null=True, blank=True)
 
     status = models.CharField(max_length=25, null=True, blank=True)
     is_active = models.BooleanField(default=False)
 
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="partner_company_created"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="partner_company_created",
     )
     updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="partner_company_updated"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="partner_company_updated",
     )
     deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
     deleted_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="partner_company_deleted"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="partner_company_deleted",
     )
 
     class Meta:
@@ -107,23 +123,37 @@ class PartnerCompanyDocument(models.Model):
     id = models.BigAutoField(primary_key=True)
 
     partner_company = models.ForeignKey(
-        PartnerCompany, on_delete=models.CASCADE, related_name="partner_company_documents"
+        PartnerCompany,
+        on_delete=models.CASCADE,
+        related_name="partner_company_documents",
     )
     document_title = models.CharField(max_length=50, null=True, blank=True)
     document_file = models.CharField(max_length=250, null=True, blank=True)
 
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="partner_company_document_created"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="partner_company_document_created",
     )
     updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="partner_company_document_updated"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="partner_company_document_updated",
     )
     deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
     deleted_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="partner_company_document_deleted"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="partner_company_document_deleted",
     )
 
     class Meta:
@@ -131,4 +161,3 @@ class PartnerCompanyDocument(models.Model):
 
     def __str__(self):
         return f"{self.id} - {self.document_title}"
-

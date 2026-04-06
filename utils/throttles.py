@@ -27,4 +27,3 @@ class PerUserSustainedRateThrottle(PerUserBurstRateThrottle):
 class RecommendationRateThrottle(PerUserBurstRateThrottle):
     scope = "recommendation"
     rate = "10/min"
-

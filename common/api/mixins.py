@@ -44,7 +44,9 @@ class ArchiveMixin(ModelViewSet):
 
     @action(methods=["get"], detail=False, url_path="archive-list")
     def archive_list(self, request):
-        queryset = self.filter_queryset(self.get_queryset().filter(deleted=True).order_by("-deleted_at"))
+        queryset = self.filter_queryset(
+            self.get_queryset().filter(deleted=True).order_by("-deleted_at")
+        )
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -90,7 +92,9 @@ class ArchiveMixin(ModelViewSet):
         ids = request.data.get("ids", [])
 
         if not ids:
-            return Response({"message": "Ids are Required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Ids are Required"}, status=status.HTTP_400_BAD_REQUEST
+            )
         queryset = self.get_queryset().filter(id__in=ids, deleted=False)
 
         with transaction.atomic():
@@ -109,7 +113,9 @@ class ArchiveMixin(ModelViewSet):
     def bulk_restore(self, request):
         ids = request.data.get("ids", [])
         if not ids:
-            return Response({"message": "IDs are Requires"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "IDs are Requires"}, status=status.HTTP_400_BAD_REQUEST
+            )
         queryset = self.get_queryset().filter(id__in=ids, deleted=True)
         with transaction.atomic():
             queryset.update(deleted=False, deleted_at=None)
@@ -122,4 +128,3 @@ class ArchiveMixin(ModelViewSet):
                 {"success": True, "message": "Bulk Restore Successfully"},
                 status=status.HTTP_200_OK,
             )
-

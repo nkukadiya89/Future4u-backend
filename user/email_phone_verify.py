@@ -44,7 +44,9 @@ class VerifiedOTPViewSet(ModelViewSet):
                 email_verify.created_by = request.user
                 email_verify.save()
             except EmailPhoneVerify.DoesNotExist:
-                EmailPhoneVerify.objects.create(email=email, email_otp=email_otp, created_by=request.user)
+                EmailPhoneVerify.objects.create(
+                    email=email, email_otp=email_otp, created_by=request.user
+                )
 
             email_thread = threading.Thread(
                 target=send_otp_email,
@@ -97,7 +99,9 @@ class VerifiedOTPViewSet(ModelViewSet):
         phone_number = request.data.get("phone_number")
         if phone_number:
             try:
-                EmailPhoneVerify.objects.get(phone_number=phone_number, phone_verified=True)
+                EmailPhoneVerify.objects.get(
+                    phone_number=phone_number, phone_verified=True
+                )
                 return Response(
                     {
                         "success": True,
@@ -197,7 +201,9 @@ class VerifiedOTPViewSet(ModelViewSet):
             context = {"email": email, "otp": email_otp}
 
             try:
-                email_verify = EmailPhoneVerify.objects.get(email=email, email_verified=False)
+                email_verify = EmailPhoneVerify.objects.get(
+                    email=email, email_verified=False
+                )
                 email_verify.email_otp = email_otp
                 email_verify.save()
 
@@ -224,7 +230,9 @@ class VerifiedOTPViewSet(ModelViewSet):
         elif phone_number:
             try:
                 phone_number_otp = generate_otp()
-                email_verify = EmailPhoneVerify.objects.get(phone_number=phone_number, phone_verified=False)
+                email_verify = EmailPhoneVerify.objects.get(
+                    phone_number=phone_number, phone_verified=False
+                )
                 email_verify.phone_number_otp = phone_number_otp
                 email_verify.save()
 

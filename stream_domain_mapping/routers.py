@@ -8,4 +8,3 @@ stream_domain_mapping_router.register(
     StreamDomainMappingViewSet,
     basename="stream-domain-mapping",
 )
-
