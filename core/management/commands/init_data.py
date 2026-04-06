@@ -95,6 +95,10 @@ class Command(BaseCommand):
             self.load_domain_skill_mappings()
             self.load_domain_career_mappings()
             self.load_assessment_questions()
+            self.load_domain_report_meta()
+            self.load_stream_report_meta()
+            self.load_domain_counsellor_knowledge()
+            self.load_stream_counsellor_knowledge()
             self.load_subscription()
 
     # Super User Create
@@ -827,8 +831,93 @@ class Command(BaseCommand):
 
     def load_assessment_questions(self):
         self.stdout.write("Seeding Assessment Questions...")
-        # Idempotent; safe to run multiple times.
         call_command("seed_assessment_questions")
+
+    def load_domain_report_meta(self):
+        self.stdout.write("Loading Domain Report Meta...")
+        from domain.models import DomainReportMeta
+        from core.management.commands._master_import_utils import load_csv_rows
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "domain_report_meta.csv")
+        rows = load_csv_rows(file_path)
+        for row in rows:
+            code = (row.get("domain_code") or "").strip().lower()
+            if not code:
+                continue
+            DomainReportMeta.objects.update_or_create(
+                domain_code=code,
+                defaults={
+                    "degrees": (row.get("degrees") or "").strip(),
+                    "careers": (row.get("careers") or "").strip(),
+                    "note": (row.get("note") or "").strip(),
+                    "how_to_choose_hint": (row.get("how_to_choose_hint") or "").strip(),
+                    "next_step_1": (row.get("next_step_1") or "").strip(),
+                    "next_step_2": (row.get("next_step_2") or "").strip(),
+                    "next_step_3": (row.get("next_step_3") or "").strip(),
+                },
+            )
+
+    def load_stream_report_meta(self):
+        self.stdout.write("Loading Stream Report Meta...")
+        from domain.models import StreamReportMeta
+        from core.management.commands._master_import_utils import load_csv_rows
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "stream_report_meta.csv")
+        rows = load_csv_rows(file_path)
+        for row in rows:
+            code = (row.get("stream_code") or "").strip().lower()
+            if not code:
+                continue
+            StreamReportMeta.objects.update_or_create(
+                stream_code=code,
+                defaults={
+                    "why": (row.get("why") or "").strip(),
+                    "subjects": (row.get("subjects") or "").strip(),
+                    "careers": (row.get("careers") or "").strip(),
+                    "note": (row.get("note") or "").strip(),
+                    "next_step_1": (row.get("next_step_1") or "").strip(),
+                    "next_step_2": (row.get("next_step_2") or "").strip(),
+                    "next_step_3": (row.get("next_step_3") or "").strip(),
+                },
+            )
+
+    def load_domain_counsellor_knowledge(self):
+        self.stdout.write("Loading Domain Counsellor Knowledge...")
+        from domain.models import DomainCounsellorKnowledge
+        from core.management.commands._master_import_utils import load_csv_rows
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "domain_counsellor_knowledge.csv")
+        rows = load_csv_rows(file_path)
+        for row in rows:
+            code = (row.get("domain_code") or "").strip().lower()
+            if not code:
+                continue
+            DomainCounsellorKnowledge.objects.update_or_create(
+                domain_code=code,
+                defaults={
+                    "insight": (row.get("insight") or "").strip(),
+                    "tradeoff": (row.get("tradeoff") or "").strip(),
+                    "action": (row.get("action") or "").strip(),
+                    "tension": (row.get("tension") or "").strip(),
+                },
+            )
+
+    def load_stream_counsellor_knowledge(self):
+        self.stdout.write("Loading Stream Counsellor Knowledge...")
+        from domain.models import StreamCounsellorKnowledge
+        from core.management.commands._master_import_utils import load_csv_rows
+        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "stream_counsellor_knowledge.csv")
+        rows = load_csv_rows(file_path)
+        for row in rows:
+            code = (row.get("stream_code") or "").strip().lower()
+            if not code:
+                continue
+            StreamCounsellorKnowledge.objects.update_or_create(
+                stream_code=code,
+                defaults={
+                    "insight": (row.get("insight") or "").strip(),
+                    "tradeoff": (row.get("tradeoff") or "").strip(),
+                    "action": (row.get("action") or "").strip(),
+                    "tension": (row.get("tension") or "").strip(),
+                },
+            )
 
     # Subscription Create
     subscription_data = [

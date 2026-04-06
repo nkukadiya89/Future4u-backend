@@ -7,19 +7,12 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
 
-from assessment.models import Option, Question, UserResponse
-from assessment.services.recommendation_engine_service import (
-    RecommendationEngineService,
-)
+from assessment.models import Option,Question, UserResponse
 from assessment.serializers import (
     AssessmentSubmitSerializer,
     QuestionSerializer,
     UserResponseSerializer,
 )
-from assessment.services.recommendation_engine_service import (
-    RecommendationEngineService,
-)
-from assessment.serializers import QuestionSerializer, UserResponseSerializer
 
 
 class QuestionViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -35,10 +28,6 @@ class UserResponseViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    @action(detail=False, methods=["get"], url_path="recommendation")
-    def recommendation(self, request, *args, **kwargs):
-        result = RecommendationEngineService().recommend(user_id=request.user.id)
-        return Response({"success": True, "data": result}, status=status.HTTP_200_OK)
 
 
 class ApiAssessmentQuestionsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -272,8 +261,3 @@ class ApiAssessmentSummaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet
         )
         data = {r["question__dimension"]: (r["score"] or 0) for r in rows}
         return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
-
-    @action(detail=False, methods=["get"], url_path="recommendation")
-    def recommendation(self, request, *args, **kwargs):
-        result = RecommendationEngineService().recommend(user_id=request.user.id)
-        return Response({"success": True, "data": result}, status=status.HTTP_200_OK)

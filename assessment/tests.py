@@ -24,7 +24,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from assessment.models import Option, Question, UserResponse
-from assessment.services.recommendation_engine_service import RecommendationEngineService
+from services.recommendation_engine_service import RecommendationEngineService
 from domain.models import Domain
 from education_level.models import EducationLevel
 from stream.models import Stream

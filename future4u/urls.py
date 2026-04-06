@@ -16,9 +16,8 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from user.user_auth import CustomTokenObtainPairView
-from django.urls import include
 from future4u.routers import future4u_router
 from user_profile.views import UserProfileViewSet
 from recommendation.views import (

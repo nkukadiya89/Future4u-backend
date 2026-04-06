@@ -124,3 +124,109 @@ class DomainImportError(models.Model):
     class Meta:
         db_table = "domain_import_error"
         ordering = ["batch", "row_number"]
+
+
+class DomainReportMeta(models.Model):
+    """
+    Student-facing report data per domain (degrees, careers, note, how_to_choose_hint).
+    Loaded via: python manage.py init_domain_report_meta
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    domain_code = models.CharField(max_length=64, unique=True, db_index=True)
+    degrees = models.TextField(blank=True, help_text="Pipe-separated degree options")
+    careers = models.TextField(blank=True, help_text="Pipe-separated career titles")
+    note = models.CharField(max_length=512, blank=True)
+    how_to_choose_hint = models.CharField(max_length=512, blank=True)
+    next_step_1 = models.TextField(blank=True)
+    next_step_2 = models.TextField(blank=True)
+    next_step_3 = models.TextField(blank=True)
+
+    class Meta:
+        db_table = "domain_report_meta"
+
+    def __str__(self):
+        return self.domain_code
+
+    def degrees_list(self) -> list:
+        return [d.strip() for d in self.degrees.split("|") if d.strip()]
+
+    def careers_list(self) -> list:
+        return [c.strip() for c in self.careers.split("|") if c.strip()]
+
+    def next_steps(self) -> list:
+        return [s for s in [self.next_step_1, self.next_step_2, self.next_step_3] if s.strip()]
+
+
+class DomainCounsellorKnowledge(models.Model):
+    """
+    Counsellor message content per domain (insight, tradeoff, action, tension).
+    Loaded via: python manage.py init_domain_counsellor_knowledge
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    domain_code = models.CharField(max_length=64, unique=True, db_index=True)
+    insight = models.TextField(blank=True)
+    tradeoff = models.TextField(blank=True)
+    action = models.TextField(blank=True)
+    tension = models.TextField(blank=True)
+
+    class Meta:
+        db_table = "domain_counsellor_knowledge"
+
+    def __str__(self):
+        return self.domain_code
+
+    def as_tuple(self) -> tuple:
+        return (self.insight, self.tradeoff, self.action, self.tension)
+
+
+class StreamCounsellorKnowledge(models.Model):
+    """
+    Counsellor message content per stream (insight, tradeoff, action, tension).
+    Loaded via: python manage.py init_stream_counsellor_knowledge
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    stream_code = models.CharField(max_length=64, unique=True, db_index=True)
+    insight = models.TextField(blank=True)
+    tradeoff = models.TextField(blank=True)
+    action = models.TextField(blank=True)
+    tension = models.TextField(blank=True)
+
+    class Meta:
+        db_table = "stream_counsellor_knowledge"
+
+    def __str__(self):
+        return self.stream_code
+
+    def as_tuple(self) -> tuple:
+        return (self.insight, self.tradeoff, self.action, self.tension)
+
+
+class StreamReportMeta(models.Model):
+    """
+    Student-facing report data per stream (why, subjects, careers, note, next steps).
+    Loaded via: python manage.py init_stream_report_meta
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    stream_code = models.CharField(max_length=64, unique=True, db_index=True)
+    why = models.CharField(max_length=512, blank=True, help_text="One-line direction explanation")
+    subjects = models.TextField(blank=True, help_text="Pipe-separated subject names")
+    careers = models.TextField(blank=True, help_text="Pipe-separated career titles")
+    note = models.CharField(max_length=512, blank=True, help_text="Day-to-day work description")
+    next_step_1 = models.TextField(blank=True)
+    next_step_2 = models.TextField(blank=True)
+    next_step_3 = models.TextField(blank=True)
+
+    class Meta:
+        db_table = "stream_report_meta"
+
+    def __str__(self):
+        return self.stream_code
+
+    def subjects_list(self) -> list:
+        return [s.strip() for s in self.subjects.split("|") if s.strip()]
+
+    def careers_list(self) -> list:
+        return [c.strip() for c in self.careers.split("|") if c.strip()]
+
+    def next_steps(self) -> list:
+        return [s for s in [self.next_step_1, self.next_step_2, self.next_step_3] if s.strip()]

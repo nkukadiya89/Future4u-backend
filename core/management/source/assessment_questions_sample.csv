@@ -3,83 +3,65 @@ dimension,question_text,question_type,mapped_domains,mapped_streams,signal_stren
 # ==============================================================
 # SECONDARY — 10th Grade
 # Goal: Recommend which stream to pick for 11th/12th
-# Tone: Curious, exploratory, age-appropriate
-# Question types: mix of scale + mcq + yesno
 # ==============================================================
 
-# --- Science signals ---
 interest,"When you have free time, do you find yourself reading about science, technology, or how things work?",scale,,science,4,1,secondary,,10,Definitely yes,Usually yes,Sometimes,Rarely,Not really
 interest,"Do you enjoy solving maths problems or puzzles even when they are not part of homework?",scale,,science,5,1,secondary,,11,Definitely yes,Usually yes,Sometimes,Rarely,Not really
 interest,"Have you ever taken apart a gadget or tried to understand how a machine works?",yesno,,science,4,1,secondary,,12,Yes definitely,Yes a few times,Not really,No never,,
 aptitude,"How comfortable are you with numbers graphs and data?",scale,,science|commerce,4,1,secondary,,13,Very comfortable,Comfortable,Okay,A bit difficult,Very difficult
 aptitude,"If given a science experiment to do on your own, how confident would you feel?",scale,,science,4,1,secondary,,14,Very confident,Confident,Somewhat confident,Not very confident,Not confident at all
 interest,"Do you enjoy learning about the human body animals or plants?",scale,,science,4,1,secondary,,15,Very much,Quite a bit,Somewhat,Not really,Not at all
-
-# --- Commerce signals ---
 interest,"Do you enjoy activities like managing money budgets or organising events?",scale,,commerce,4,1,secondary,,20,Very much,Quite a bit,Somewhat,Not really,Not at all
 interest,"Have you ever thought about starting your own business or selling something?",yesno,,commerce,4,1,secondary,,21,Yes definitely,Yes I have thought about it,Maybe someday,Not really,No never
 aptitude,"How easy do you find it to understand profit loss and basic accounting?",scale,,commerce,4,1,secondary,,22,Very easy,Easy,Okay,A bit hard,Very hard
 personality,"Do you enjoy discussing news about business markets or the economy?",scale,,commerce,3,1,secondary,,23,Very much,Quite a bit,Sometimes,Rarely,Not at all
-
-# --- Arts / Humanities signals ---
 interest,"Do you enjoy reading about history, politics, or how society works?",scale,,arts,4,1,secondary,,30,Very much,Quite a bit,Sometimes,Rarely,Not at all
 interest,"Do you like writing stories, essays, or expressing your thoughts in words?",scale,,arts,4,1,secondary,,31,Very much,Quite a bit,Sometimes,Rarely,Not at all
 aptitude,"How comfortable are you with debating or presenting your opinions in front of others?",scale,,arts,4,1,secondary,,32,Very comfortable,Comfortable,Okay,A bit uncomfortable,Very uncomfortable
 personality,"Do you care deeply about social issues like equality, environment, or justice?",scale,,arts,3,1,secondary,,33,Very much,Quite a bit,Somewhat,Not really,Not at all
-
-# --- Fine Arts signals ---
 interest,"Do you enjoy drawing, painting, sketching, or any form of visual art?",scale,,fine_arts,5,1,secondary,,40,Very much,Quite a bit,Sometimes,Rarely,Not at all
 interest,"Are you involved in music, dance, theatre, or any performing art?",yesno,,fine_arts,4,1,secondary,,41,Yes actively,Yes occasionally,I want to be,Not currently,No
 aptitude,"Can you express your feelings or ideas through creative work like art or music?",scale,,fine_arts,4,1,secondary,,42,Very easily,Easily,Somewhat,With difficulty,Not really
-
-# --- Sports signals ---
 interest,"How important is physical activity and sports in your daily life?",scale,,sports,5,1,secondary,,50,Extremely important,Very important,Somewhat important,Not very important,Not important
 aptitude,"Are you good at a specific sport or physical activity?",mcq,,sports,5,1,secondary,,51,Yes I compete at school or district level,Yes I play regularly,I am learning,I play casually,Not really
 personality,"Do you enjoy the challenge of competing and pushing your physical limits?",scale,,sports,4,1,secondary,,52,Very much,Quite a bit,Sometimes,Rarely,Not at all
-
-# --- Vocational signals ---
 interest,"Do you enjoy working with tools, machines, or fixing things with your hands?",scale,,vocational,4,1,secondary,,60,Very much,Quite a bit,Sometimes,Rarely,Not at all
 aptitude,"Do you prefer practical hands-on work over sitting and reading theory?",scale,,vocational,4,1,secondary,,61,Strongly prefer hands-on,Prefer hands-on,No strong preference,Prefer theory,Strongly prefer theory
 work_style,"Would you rather learn a skill and start earning early than study for many more years?",scale,,vocational,3,1,secondary,,62,Strongly agree,Agree,Neutral,Disagree,Strongly disagree
-
-# --- Agriculture signals ---
 interest,"Do you enjoy farming, gardening, or working with nature and plants?",scale,,agriculture,4,1,secondary,,70,Very much,Quite a bit,Sometimes,Rarely,Not at all
 aptitude,"Do you understand how seasons, weather, and soil affect crops or plants?",scale,,agriculture,3,1,secondary,,71,Very well,Fairly well,Somewhat,Not really,Not at all
 work_style,"Would you prefer working outdoors in fields over sitting in an office?",scale,,agriculture,3,1,secondary,,72,Strongly prefer outdoors,Prefer outdoors,No preference,Prefer indoors,Strongly prefer indoors
 
 # ==============================================================
 # HIGHER SECONDARY — 12th Grade
-# Goal: Recommend college degree domain / field of study
-# Questions are stream-specific
-# Tone: Thoughtful, forward-looking
 # ==============================================================
 
 # --- Science stream ---
-interest,"After 12th, are you more drawn towards engineering and technology or medicine and biology?",mcq,ai_data|robotics|cloud_computing|healthtech|biotech,,4,1,higher_secondary,science,10,Engineering and technology,Medicine and biology,Both equally,Not sure yet,,
-aptitude,"How comfortable are you with programming or writing code?",scale,ai_data|cloud_computing|devops,,5,1,higher_secondary,science,11,Very comfortable,Comfortable,Somewhat,Not very,Not at all
+interest,"After 12th, are you more drawn towards engineering and technology or medicine and biology?",mcq,robotics|healthtech|biotech,,4,1,higher_secondary,science,10,Engineering and technology,Medicine and biology,Both equally,Not sure yet,,
+aptitude,"How comfortable are you with programming or writing code?",scale,cloud_computing|devops,,5,1,higher_secondary,science,11,Very comfortable,Comfortable,Somewhat,Not very,Not at all
 aptitude,"Do you enjoy physics and mechanics more than chemistry and biology?",mcq,robotics|ev_mobility|renewable_energy,,4,1,higher_secondary,science,12,Yes much more,Slightly more,About equal,Slightly less,No much less
 aptitude,"Do you enjoy chemistry experiments and lab work?",scale,biotech|pharma,,4,1,higher_secondary,science,13,Very much,Quite a bit,Somewhat,Not really,Not at all
-personality,"Do you enjoy researching and discovering new things rather than applying known solutions?",scale,biotech|ai_data|nanotech,,3,1,higher_secondary,science,14,Very much,Quite a bit,Somewhat,Not really,Not at all
-work_style,"Do you prefer solving well-defined technical problems with clear answers?",scale,ai_data|cloud_computing|cybersecurity,,3,1,higher_secondary,science,15,Strongly prefer,Prefer,No preference,Prefer open-ended,Strongly prefer open-ended
+personality,"Do you enjoy researching and discovering new things rather than applying known solutions?",scale,biotech|nanotech,,3,1,higher_secondary,science,14,Very much,Quite a bit,Somewhat,Not really,Not at all
+work_style,"Do you prefer solving well-defined technical problems with clear answers?",scale,cloud_computing|cybersecurity,,3,1,higher_secondary,science,15,Strongly prefer,Prefer,No preference,Prefer open-ended,Strongly prefer open-ended
 interest,"Are you interested in cybersecurity, ethical hacking, or protecting digital systems?",scale,cybersecurity,,4,1,higher_secondary,science,16,Very interested,Interested,Somewhat,Not really,Not at all
 
 # --- Commerce stream ---
-interest,"Are you more interested in finance and investment or in building and running a business?",mcq,fintech|insurance_tech|entrepreneurship|ecommerce,,4,1,higher_secondary,commerce,10,Finance and investment,Building a business,Both equally,Not sure yet,,
-aptitude,"How comfortable are you with analysing financial data and making business decisions?",scale,fintech|ecommerce|supply_chain,,4,1,higher_secondary,commerce,11,Very comfortable,Comfortable,Somewhat,Not very,Not at all
+interest,"Are you more interested in finance and investment or in building and running a business?",mcq,fintech|entrepreneurship,,4,1,higher_secondary,commerce,10,Finance and investment,Building a business,Both equally,Not sure yet,,
+aptitude,"How comfortable are you with analysing financial data and making business decisions?",scale,fintech|supply_chain,,4,1,higher_secondary,commerce,11,Very comfortable,Comfortable,Somewhat,Not very,Not at all
 aptitude,"Do you find it easy to understand profit, loss, and financial statements?",scale,fintech|insurance_tech,,4,1,higher_secondary,commerce,12,Very easy,Easy,Okay,A bit hard,Very hard
 personality,"Do you enjoy convincing people, negotiating, or selling ideas?",scale,digital_marketing|ecommerce,,3,1,higher_secondary,commerce,13,Very much,Quite a bit,Sometimes,Rarely,Not at all
-work_style,"Do you see yourself working in a corporate environment or running your own venture?",mcq,business_management|hrtech|entrepreneurship,,3,1,higher_secondary,commerce,14,Corporate environment,My own venture,Either works,Not sure yet,,
+work_style,"Do you see yourself working in a corporate environment or running your own venture?",mcq,hrtech|entrepreneurship,,3,1,higher_secondary,commerce,14,Corporate environment,My own venture,Either works,Not sure yet,,
 interest,"Are you interested in digital marketing, social media, or brand building?",scale,digital_marketing|marketing,,4,1,higher_secondary,commerce,15,Very interested,Interested,Somewhat,Not really,Not at all
 
 # --- Arts / Humanities stream ---
-interest,"Which area interests you most for your college degree?",mcq,legaltech|creator_economy|edtech|ai_ethics,,5,1,higher_secondary,arts,10,Law and justice,Journalism and media,Teaching and education,Social work and policy,Not sure yet
-aptitude,"How strong are your writing and communication skills?",scale,creator_economy|legaltech|edtech,,4,1,higher_secondary,arts,11,Very strong,Strong,Average,Below average,Weak
+interest,"Which area interests you most for your college degree?",mcq,legaltech|creator_economy|edtech,,5,1,higher_secondary,arts,10,Law and justice,Journalism and media,Teaching and education,Social work and policy,Not sure yet
+aptitude,"How strong are your writing and communication skills?",scale,creator_economy|legaltech,,4,1,higher_secondary,arts,11,Very strong,Strong,Average,Below average,Weak
 personality,"Do you care deeply about social issues and want to create change through your career?",scale,ai_ethics|legaltech,,3,1,higher_secondary,arts,12,Very much,Quite a bit,Somewhat,Not really,Not at all
 work_style,"Do you prefer roles that involve research, writing, and communication over technical work?",scale,creator_economy|edtech,,3,1,higher_secondary,arts,13,Strongly prefer,Prefer,No preference,Prefer technical,Strongly prefer technical
 interest,"Are you interested in psychology, counselling, or understanding human behaviour?",scale,mental_health,,4,1,higher_secondary,arts,14,Very interested,Interested,Somewhat,Not really,Not at all
 
 # --- Vocational stream ---
-interest,"Which trade or skill area are you most interested in pursuing further?",mcq,manufacturing|renewable_energy|iot|cloud_computing,,5,1,higher_secondary,vocational,10,Electrical or mechanical trades,IT and computer hardware,Construction and civil work,Not sure yet,,
+interest,"Which trade or skill area are you most interested in pursuing further?",mcq,manufacturing|renewable_energy|iot,,5,1,higher_secondary,vocational,10,Electrical or mechanical trades,IT and computer hardware,Construction and civil work,Not sure yet,,
 aptitude,"How good are you at reading technical diagrams and following step-by-step instructions?",scale,manufacturing|robotics,,4,1,higher_secondary,vocational,11,Very good,Good,Okay,Not very good,Not good
 work_style,"Do you prefer getting certified and starting work quickly over spending years in college?",scale,manufacturing|iot,,3,1,higher_secondary,vocational,12,Strongly prefer,Prefer,No preference,Prefer college,Strongly prefer college
 
@@ -94,109 +76,104 @@ aptitude,"How consistently can you produce original creative work?",scale,ar_vr|
 work_style,"Do you prefer creative freedom over structured corporate environments?",scale,creator_economy|ar_vr,,3,1,higher_secondary,fine_arts,12,Strongly prefer creative freedom,Prefer creative freedom,No preference,Prefer structure,Strongly prefer structure
 
 # ==============================================================
-# ITI / VOCATIONAL
-# Goal: Entry-level career + domain recommendations
-# Tone: Practical, grounded, encouraging
+# ITI / VOCATIONAL — Entry-level career
+# Top domains: manufacturing, renewable_energy, iot, construction_tech
 # ==============================================================
 
-background,"Which trade or course are you currently enrolled in or have completed?",mcq,manufacturing|renewable_energy|iot|cloud_computing,,3,1,iti,,5,Electrical,Mechanical,IT and computer,Civil and construction,Other
-interest,"How much do you enjoy the hands-on practical work in your trade?",scale,manufacturing|renewable_energy,,4,1,iti,,10,Very much,Quite a bit,Somewhat,Not really,Not at all
-interest,"Are you interested in working with electrical systems, circuits, or power?",scale,renewable_energy|iot,,4,1,iti,,11,Very interested,Interested,Somewhat,Not really,Not at all
-interest,"Do you enjoy repairing and maintaining mechanical equipment?",scale,manufacturing|ev_mobility,,4,1,iti,,12,Very much,Quite a bit,Somewhat,Not really,Not at all
+background,"Which trade or course are you currently enrolled in or have completed?",mcq,manufacturing|renewable_energy|iot|construction_tech,,3,1,iti,,5,Electrical,Mechanical,IT and computer,Civil and construction,Other
+interest,"How much do you enjoy the hands-on practical work in your trade?",scale,manufacturing|renewable_energy,,5,1,iti,,10,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in working with electrical systems, circuits, or power?",scale,renewable_energy|iot,,5,1,iti,,11,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you enjoy repairing and maintaining mechanical equipment?",scale,manufacturing|ev_mobility,,5,1,iti,,12,Very much,Quite a bit,Somewhat,Not really,Not at all
 aptitude,"How good are you at reading technical diagrams and following instructions precisely?",scale,manufacturing|robotics,,4,1,iti,,13,Very good,Good,Okay,Not very good,Not good
 aptitude,"Can you identify faults in equipment and fix them without much guidance?",scale,manufacturing|iot,,4,1,iti,,14,Yes easily,Usually yes,Sometimes,Rarely,Not yet
-personality,"Do you prefer working with your hands over sitting at a desk?",scale,manufacturing|renewable_energy,,3,1,iti,,15,Strongly prefer hands-on,Prefer hands-on,No preference,Prefer desk,Strongly prefer desk
-work_style,"Do you prefer working on-site in workshops or factories over office environments?",scale,manufacturing|construction_tech,,3,1,iti,,16,Strongly prefer on-site,Prefer on-site,No preference,Prefer office,Strongly prefer office
-interest,"Are you interested in computers, networking, or IT support?",scale,cloud_computing|iot,,4,1,iti,,17,Very interested,Interested,Somewhat,Not really,Not at all
-aptitude,"Can you set up, troubleshoot, or repair computers and networks?",scale,cloud_computing|cybersecurity,,4,1,iti,,18,Yes easily,Usually yes,Sometimes,Rarely,Not yet
+personality,"Do you prefer working with your hands over sitting at a desk?",scale,manufacturing|renewable_energy,,4,1,iti,,15,Strongly prefer hands-on,Prefer hands-on,No preference,Prefer desk,Strongly prefer desk
+work_style,"Do you prefer working on-site in workshops or factories over office environments?",scale,manufacturing|construction_tech,,4,1,iti,,16,Strongly prefer on-site,Prefer on-site,No preference,Prefer office,Strongly prefer office
+interest,"Are you interested in computers, networking, or IT support?",scale,iot|cloud_computing,,3,1,iti,,17,Very interested,Interested,Somewhat,Not really,Not at all
+aptitude,"Can you set up, troubleshoot, or repair computers and networks?",scale,iot|cybersecurity,,3,1,iti,,18,Yes easily,Usually yes,Sometimes,Rarely,Not yet
 
 # ==============================================================
-# DIPLOMA
-# Goal: Entry-to-mid career + domain recommendations
-# Tone: Practical, growth-oriented
+# DIPLOMA — Entry-to-mid career
+# Top domains: robotics, iot, manufacturing, traveltech, fashiontech
 # ==============================================================
 
 background,"What is your diploma specialisation?",mcq,manufacturing|iot|traveltech|fashiontech,,3,1,diploma,,5,Mechanical or Civil Engineering,Electronics or Electrical,Computer Science or IT,Hotel Management or Hospitality,Design or Fashion
-interest,"How much do you enjoy the technical or practical aspects of your diploma course?",scale,manufacturing|iot|robotics,,4,1,diploma,,10,Very much,Quite a bit,Somewhat,Not really,Not at all
-interest,"Are you interested in electronics, embedded systems, or IoT?",scale,iot|robotics,,4,1,diploma,,11,Very interested,Interested,Somewhat,Not really,Not at all
-aptitude,"Can you apply engineering concepts to solve real-world problems?",scale,robotics|manufacturing|ev_mobility,,4,1,diploma,,12,Very confidently,Confidently,Somewhat,Not very,Not yet
+interest,"How much do you enjoy the technical or practical aspects of your diploma course?",scale,manufacturing|iot|robotics,,5,1,diploma,,10,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in electronics, embedded systems, or IoT?",scale,iot|robotics,,5,1,diploma,,11,Very interested,Interested,Somewhat,Not really,Not at all
+aptitude,"Can you apply engineering concepts to solve real-world problems?",scale,robotics|manufacturing|ev_mobility,,5,1,diploma,,12,Very confidently,Confidently,Somewhat,Not very,Not yet
 aptitude,"Are you comfortable writing code or automation scripts?",scale,iot|devops,,4,1,diploma,,13,Very comfortable,Comfortable,Somewhat,Not very,Not at all
 interest,"Are you interested in hospitality, tourism, or food and beverage management?",scale,traveltech|foodtech,,4,1,diploma,,14,Very interested,Interested,Somewhat,Not really,Not at all
 interest,"Do you enjoy fashion design, interior design, or visual styling?",scale,fashiontech|ar_vr,,4,1,diploma,,15,Very much,Quite a bit,Somewhat,Not really,Not at all
 personality,"Do you enjoy coordinating teams and managing projects?",scale,supply_chain|hrtech,,3,1,diploma,,16,Very much,Quite a bit,Somewhat,Not really,Not at all
-work_style,"Do you prefer applied technical work over pure academic theory?",scale,manufacturing|iot|robotics,,3,1,diploma,,17,Strongly prefer applied,Prefer applied,No preference,Prefer theory,Strongly prefer theory
+work_style,"Do you prefer applied technical work over pure academic theory?",scale,manufacturing|iot|robotics,,4,1,diploma,,17,Strongly prefer applied,Prefer applied,No preference,Prefer theory,Strongly prefer theory
 
 # ==============================================================
-# GRADUATION
-# Goal: Full career + domain recommendations
-# Tone: Exploratory, ambitious, forward-looking
+# GRADUATION — Full career recommendations
+# Top domains vary by answers: fintech, healthtech, digital_marketing, entrepreneurship etc.
+# ai_data is one option, not the default
 # ==============================================================
 
-background,"What is your current or completed degree field?",mcq,ai_data|fintech|healthtech|legaltech|edtech,,3,1,graduation,,5,Engineering or Technology,Business or Commerce,Science,Arts or Humanities,Other
-interest,"How passionate are you about building software or working with technology?",scale,ai_data|cloud_computing|devops,,5,1,graduation,,10,Extremely passionate,Very passionate,Somewhat,Not very,Not at all
-interest,"Are you drawn to data, analytics, or artificial intelligence?",scale,ai_data|data_engineering,,5,1,graduation,,11,Very much,Quite a bit,Somewhat,Not really,Not at all
-interest,"How interested are you in cybersecurity and protecting digital systems?",scale,cybersecurity,,5,1,graduation,,12,Very interested,Interested,Somewhat,Not really,Not at all
-aptitude,"How confident are you in analysing large datasets and drawing insights?",scale,ai_data|data_engineering|fintech,,4,1,graduation,,13,Very confident,Confident,Somewhat,Not very,Not at all
+background,"What is your current or completed degree field?",mcq,fintech|healthtech|legaltech|edtech|entrepreneurship,,3,1,graduation,,5,Engineering or Technology,Business or Commerce,Science,Arts or Humanities,Other
+interest,"How passionate are you about building software or working with technology?",scale,cloud_computing|devops,,4,1,graduation,,10,Extremely passionate,Very passionate,Somewhat,Not very,Not at all
+interest,"Are you drawn to data, analytics, or artificial intelligence?",scale,ai_data|data_engineering,,4,1,graduation,,11,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"How interested are you in cybersecurity and protecting digital systems?",scale,cybersecurity,,4,1,graduation,,12,Very interested,Interested,Somewhat,Not really,Not at all
+aptitude,"How confident are you in analysing large datasets and drawing insights?",scale,data_engineering|fintech,,4,1,graduation,,13,Very confident,Confident,Somewhat,Not very,Not at all
 aptitude,"Are you good at designing user experiences or visual interfaces?",scale,ar_vr|ecommerce,,4,1,graduation,,14,Very good,Good,Okay,Not very good,Not good
-interest,"How interested are you in financial markets, investment, or fintech?",scale,fintech|insurance_tech,,4,1,graduation,,15,Very interested,Interested,Somewhat,Not really,Not at all
-interest,"Do you enjoy digital marketing, content creation, or growing audiences online?",scale,digital_marketing|creator_economy|marketing,,4,1,graduation,,16,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"How interested are you in financial markets, investment, or fintech?",scale,fintech|insurance_tech,,5,1,graduation,,15,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you enjoy digital marketing, content creation, or growing audiences online?",scale,digital_marketing|creator_economy,,5,1,graduation,,16,Very much,Quite a bit,Somewhat,Not really,Not at all
 aptitude,"How comfortable are you managing products, teams, or business strategy?",scale,ecommerce|hrtech|supply_chain,,4,1,graduation,,17,Very comfortable,Comfortable,Somewhat,Not very,Not at all
-interest,"Are you interested in healthcare, medical devices, or pharmaceuticals?",scale,healthtech|med_devices|pharma,,4,1,graduation,,18,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Are you interested in healthcare, medical devices, or pharmaceuticals?",scale,healthtech|med_devices|pharma,,5,1,graduation,,18,Very interested,Interested,Somewhat,Not really,Not at all
 interest,"Do you enjoy robotics, automation, or manufacturing technology?",scale,robotics|manufacturing|ev_mobility,,4,1,graduation,,19,Very much,Quite a bit,Somewhat,Not really,Not at all
-personality,"Do you prefer working independently and owning projects end-to-end?",scale,entrepreneurship|ecommerce,,3,1,graduation,,20,Strongly prefer,Prefer,No preference,Prefer collaboration,Strongly prefer collaboration
-work_style,"Do you thrive in fast-paced startup environments more than large corporations?",scale,entrepreneurship|creator_economy,,3,1,graduation,,21,Strongly agree,Agree,Neutral,Disagree,Strongly disagree
+personality,"Do you prefer working independently and owning projects end-to-end?",scale,entrepreneurship|ecommerce,,4,1,graduation,,20,Strongly prefer,Prefer,No preference,Prefer collaboration,Strongly prefer collaboration
+work_style,"Do you thrive in fast-paced startup environments more than large corporations?",scale,entrepreneurship|creator_economy,,4,1,graduation,,21,Strongly agree,Agree,Neutral,Disagree,Strongly disagree
 interest,"Are you interested in law, policy, or legal technology?",scale,legaltech|ai_ethics,,4,1,graduation,,22,Very interested,Interested,Somewhat,Not really,Not at all
 interest,"Do you enjoy teaching, mentoring, or building educational products?",scale,edtech,,4,1,graduation,,23,Very much,Quite a bit,Somewhat,Not really,Not at all
 interest,"Are you interested in agriculture, food technology, or agritech?",scale,agritech|foodtech,,4,1,graduation,,24,Very interested,Interested,Somewhat,Not really,Not at all
-interest,"Do you want to serve in the defense forces or work in defense technology?",scale,defense_tech,,5,1,graduation,,25,Very much,Quite a bit,Somewhat,Not really,Not at all
-interest,"Are you interested in aviation, aerospace, or pilot training?",scale,space_tech,,5,1,graduation,,26,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to serve in the defense forces or work in defense technology?",scale,defense_tech,,4,1,graduation,,25,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in aviation, aerospace, or pilot training?",scale,space_tech,,4,1,graduation,,26,Very interested,Interested,Somewhat,Not really,Not at all
 interest,"How passionate are you about climate change, sustainability, or renewable energy?",scale,climate_tech|renewable_energy,,4,1,graduation,,27,Extremely passionate,Very passionate,Somewhat,Not very,Not at all
 interest,"Are you interested in mental health, wellness, or psychology?",scale,mental_health,,4,1,graduation,,28,Very interested,Interested,Somewhat,Not really,Not at all
 
 # ==============================================================
-# POST GRADUATION
-# Goal: Advanced / specialist career recommendations
-# Tone: Strategic, leadership-oriented
+# POST GRADUATION — Advanced / specialist career
+# Top domains: biotech, quantum, ai_ethics, fintech, edtech
 # ==============================================================
 
-background,"What was your graduation specialisation?",mcq,ai_data|fintech|healthtech|legaltech|edtech,,3,1,post_graduation,,5,Engineering or Computer Science,Business or Management,Life Sciences or Medicine,Social Sciences or Law,Other
-interest,"Do you want to lead research or go deep into a specialist domain?",scale,ai_data|biotech|quantum,,5,1,post_graduation,,10,Definitely lead research,Lean towards research,Open to both,Lean towards industry,Definitely industry roles
-interest,"Are you interested in AI, machine learning, or advanced data science?",scale,ai_data|data_engineering,,5,1,post_graduation,,11,Very interested,Interested,Somewhat,Not really,Not at all
-interest,"Are you drawn to advanced cybersecurity, ethical hacking, or security research?",scale,cybersecurity,,5,1,post_graduation,,12,Very interested,Interested,Somewhat,Not really,Not at all
+background,"What was your graduation specialisation?",mcq,biotech|fintech|legaltech|edtech|quantum,,3,1,post_graduation,,5,Engineering or Computer Science,Business or Management,Life Sciences or Medicine,Social Sciences or Law,Other
+interest,"Do you want to lead research or go deep into a specialist domain?",scale,biotech|quantum|nanotech,,5,1,post_graduation,,10,Definitely lead research,Lean towards research,Open to both,Lean towards industry,Definitely industry roles
+interest,"Are you interested in AI, machine learning, or advanced data science?",scale,ai_data|data_engineering,,4,1,post_graduation,,11,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Are you drawn to advanced cybersecurity, ethical hacking, or security research?",scale,cybersecurity,,4,1,post_graduation,,12,Very interested,Interested,Somewhat,Not really,Not at all
 interest,"Do you want to specialise in biotech, genomics, or pharmaceutical research?",scale,biotech|pharma,,5,1,post_graduation,,13,Very interested,Interested,Somewhat,Not really,Not at all
-aptitude,"Do you enjoy publishing research, writing papers, or contributing to academic knowledge?",scale,biotech|ai_data|nanotech|quantum,,4,1,post_graduation,,14,Very much,Quite a bit,Somewhat,Not really,Not at all
-interest,"Are you interested in AI ethics, policy making, or technology governance?",scale,ai_ethics|legaltech,,4,1,post_graduation,,15,Very interested,Interested,Somewhat,Not really,Not at all
+aptitude,"Do you enjoy publishing research, writing papers, or contributing to academic knowledge?",scale,biotech|nanotech|quantum,,5,1,post_graduation,,14,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in AI ethics, policy making, or technology governance?",scale,ai_ethics|legaltech,,5,1,post_graduation,,15,Very interested,Interested,Somewhat,Not really,Not at all
 interest,"Are you drawn to quantum computing or nanotechnology?",scale,quantum|nanotech,,5,1,post_graduation,,16,Very interested,Interested,Somewhat,Not really,Not at all
-interest,"Do you want to move into senior product strategy or business leadership?",scale,ecommerce|fintech|hrtech,,4,1,post_graduation,,17,Very much,Quite a bit,Somewhat,Not really,Not at all
-personality,"Do you enjoy mentoring junior professionals and building high-performing teams?",scale,edtech|hrtech,,3,1,post_graduation,,18,Very much,Quite a bit,Somewhat,Not really,Not at all
-work_style,"Do you prefer deep specialisation over being a broad generalist?",scale,ai_data|biotech|quantum,,3,1,post_graduation,,19,Strongly prefer specialisation,Prefer specialisation,No preference,Prefer generalist,Strongly prefer generalist
+interest,"Do you want to move into senior product strategy or business leadership?",scale,fintech|hrtech,,4,1,post_graduation,,17,Very much,Quite a bit,Somewhat,Not really,Not at all
+personality,"Do you enjoy mentoring junior professionals and building high-performing teams?",scale,edtech|hrtech,,4,1,post_graduation,,18,Very much,Quite a bit,Somewhat,Not really,Not at all
+work_style,"Do you prefer deep specialisation over being a broad generalist?",scale,biotech|quantum,,4,1,post_graduation,,19,Strongly prefer specialisation,Prefer specialisation,No preference,Prefer generalist,Strongly prefer generalist
 
 # ==============================================================
 # DOCTORATE (PhD)
-# Goal: Research / expert / industry transition recommendations
-# Tone: Peer-level, strategic
+# Top domains: biotech, nanotech, quantum, ai_data, edtech
 # ==============================================================
 
-background,"What is your PhD research area?",mcq,ai_data|biotech|quantum|legaltech|edtech,,3,1,doctorate,,5,Computer Science or AI,Life Sciences or Medicine,Physical Sciences or Engineering,Social Sciences or Humanities,Other
-interest,"Is your primary goal to stay in academia or transition to industry?",mcq,ai_data|fintech|ecommerce,,5,1,doctorate,,10,Stay in academia,Transition to industry,Consulting or advisory,Start my own venture,Still deciding
-interest,"Do you want to lead R&D at a company or research institution?",scale,ai_data|biotech|nanotech,,5,1,doctorate,,11,Very much,Quite a bit,Somewhat,Not really,Not at all
-aptitude,"How strong is your ability to translate complex research into practical applications?",scale,ai_data|biotech|edtech,,4,1,doctorate,,12,Very strong,Strong,Moderate,Developing,Early stage
-interest,"Are you interested in working with startups or corporates to commercialise your research?",scale,entrepreneurship|ecommerce|fintech,,4,1,doctorate,,13,Very interested,Interested,Somewhat,Not really,Not at all
-work_style,"Do you prefer working in research labs or R&D departments over client-facing roles?",scale,biotech|nanotech|quantum,,3,1,doctorate,,14,Strongly prefer research,Prefer research,No preference,Prefer client-facing,Strongly prefer client-facing
+background,"What is your PhD research area?",mcq,biotech|quantum|nanotech|legaltech|edtech,,3,1,doctorate,,5,Computer Science or AI,Life Sciences or Medicine,Physical Sciences or Engineering,Social Sciences or Humanities,Other
+interest,"Is your primary goal to stay in academia or transition to industry?",mcq,edtech|entrepreneurship|fintech,,4,1,doctorate,,10,Stay in academia,Transition to industry,Consulting or advisory,Start my own venture,Still deciding
+interest,"Do you want to lead R&D at a company or research institution?",scale,biotech|nanotech,,5,1,doctorate,,11,Very much,Quite a bit,Somewhat,Not really,Not at all
+aptitude,"How strong is your ability to translate complex research into practical applications?",scale,biotech|edtech,,4,1,doctorate,,12,Very strong,Strong,Moderate,Developing,Early stage
+interest,"Are you interested in working with startups or corporates to commercialise your research?",scale,entrepreneurship|fintech,,4,1,doctorate,,13,Very interested,Interested,Somewhat,Not really,Not at all
+work_style,"Do you prefer working in research labs or R&D departments over client-facing roles?",scale,biotech|nanotech|quantum,,5,1,doctorate,,14,Strongly prefer research,Prefer research,No preference,Prefer client-facing,Strongly prefer client-facing
 
 # ==============================================================
-# PROFESSIONAL CERTIFICATION
-# Goal: Upskilling / career pivot recommendations
-# Tone: Direct, practical, results-focused
+# PROFESSIONAL CERTIFICATION — Upskilling / career pivot
+# Top domains: cloud_computing, digital_marketing, devops, cybersecurity
 # ==============================================================
 
-background,"What is your current professional background?",mcq,ai_data|fintech|digital_marketing|cloud_computing|hrtech,,3,1,professional,,5,Technology or Engineering,Finance or Business,Marketing or Sales,Operations or Supply Chain,Other
-interest,"What is your primary goal right now?",mcq,ai_data|cloud_computing|digital_marketing|entrepreneurship|cybersecurity,,5,1,professional,,10,Upskill in my current domain,Pivot to a completely new field,Move into leadership or management,Start my own business,Improve my earning potential
-interest,"Are you looking to move into data science, AI, or analytics?",scale,ai_data|data_engineering,,5,1,professional,,11,Very interested,Interested,Somewhat,Not really,Not at all
+background,"What is your current professional background?",mcq,cloud_computing|digital_marketing|fintech|hrtech|supply_chain,,3,1,professional,,5,Technology or Engineering,Finance or Business,Marketing or Sales,Operations or Supply Chain,Other
+interest,"What is your primary goal right now?",mcq,cloud_computing|digital_marketing|entrepreneurship|cybersecurity,,5,1,professional,,10,Upskill in my current domain,Pivot to a completely new field,Move into leadership or management,Start my own business,Improve my earning potential
+interest,"Are you looking to move into data science, AI, or analytics?",scale,ai_data|data_engineering,,4,1,professional,,11,Very interested,Interested,Somewhat,Not really,Not at all
 interest,"Are you interested in cloud computing, DevOps, or infrastructure?",scale,cloud_computing|devops,,5,1,professional,,12,Very interested,Interested,Somewhat,Not really,Not at all
-interest,"Do you want to build skills in digital marketing or growth hacking?",scale,digital_marketing|marketing|creator_economy,,4,1,professional,,13,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to build skills in digital marketing or growth hacking?",scale,digital_marketing|marketing,,5,1,professional,,13,Very interested,Interested,Somewhat,Not really,Not at all
 interest,"Are you interested in product management or entrepreneurship?",scale,ecommerce|entrepreneurship,,4,1,professional,,14,Very interested,Interested,Somewhat,Not really,Not at all
 interest,"Do you want to pivot into cybersecurity or information security?",scale,cybersecurity,,5,1,professional,,15,Very interested,Interested,Somewhat,Not really,Not at all
-aptitude,"How quickly can you learn and apply new tools or technologies in your work?",scale,cloud_computing|devops|ai_data,,4,1,professional,,16,Very quickly,Quickly,At a moderate pace,Slowly,Very slowly
+aptitude,"How quickly can you learn and apply new tools or technologies in your work?",scale,cloud_computing|devops,,4,1,professional,,16,Very quickly,Quickly,At a moderate pace,Slowly,Very slowly
 work_style,"Do you prefer self-paced online learning over attending full-time courses?",scale,edtech|creator_economy,,3,1,professional,,17,Strongly prefer self-paced,Prefer self-paced,No preference,Prefer structured,Strongly prefer structured
 personality,"How important is building a professional network in your career growth?",scale,hrtech|marketing|entrepreneurship,,3,1,professional,,18,Extremely important,Very important,Somewhat important,Not very important,Not important

@@ -116,6 +116,55 @@ def extract_recipients_from_email_field(email_field):
     return emails
 
 
+
+def find_related_objects_from_email(email_address):
+
+    result = {
+        "user": None,
+        "user_id": None,
+        "company": None,
+        "company_id": None,
+        "partner_company": None,
+        "partner_company_id": None,
+        "end_client": None,
+        "end_client_id": None,
+    }
+
+    # Find user by email
+    user = User.objects.filter(email=email_address).first()
+    result["user"] = user
+    result["user_id"] = str(user.id) if user else None
+
+    # Find company by email
+    company = Company.objects.filter(email=email_address).first()
+    result["company"] = company
+    result["company_id"] = str(company.id) if company else None
+
+    # partner_company / end_client removed from the project.
+    # Keep the keys for backwards compatibility with callers.
+    result["partner_company"] = None
+    result["partner_company_id"] = None
+    result["end_client"] = None
+    result["end_client_id"] = None
+
+    return result
+
+
+def extract_recipients_from_email_field(email_field):
+
+    if not email_field:
+        return []
+
+    # Split by comma and clean up
+    emails = []
+    for email in email_field.split(","):
+        email = email.strip()
+        if email:
+            emails.append(email)
+
+    return emails
+
+
 # def log_email_notification(
 #     recipient_email,
 #     subject,
@@ -275,24 +324,8 @@ def log_email_sent(
                         or sender_objects["end_client_id"]
                     )
 
-                # log_email_notification(
-                #     recipient_email=recipient,
-                #     subject=subject,
-                #     message_content=custom_message_content if custom_message_content else clean_html_content(body),
-                #     sender_email=from_email,
-                #     email_type=email_type,
-                #     status="sent",
-                #     recipient_id=final_recipient_id,
-                #     sender_id=final_sender_id,
-                #     related_partner_company=final_partner_company,
-                #     related_company=final_company,
-                #     related_end_client=final_end_client,
-                # )
     except Exception as e:
         logger.error(f"Failed to log sent email: {str(e)}")
-        import traceback
-
-        traceback.print_exc()
 
 
 def log_email_failed(
@@ -345,17 +378,3 @@ def log_email_failed(
             or sender_objects["end_client_id"]
         )
 
-    # log_email_notification(
-    #     recipient_email=recipient_email,
-    #     subject=subject,
-    #     message_content=f"Email failed to send. Error: {error_message}",
-    #     sender_email=sender_email,
-    #     email_type=email_type,
-    #     status="failed",
-    #     error_message=error_message,
-    #     recipient_id=final_recipient_id,
-    #     sender_id=final_sender_id,
-    #     related_partner_company=final_partner_company,
-    #     related_company=final_company,
-    #     related_end_client=final_end_client,
-    # )

@@ -90,10 +90,7 @@ class CompanySerializerValidationTests(BaseAPITest):
 
 
 class CompanyViewSetCRUDTests(BaseAPITest):
-    @patch(
-        "company.serializer.create_company_role_family",
-        return_value={"success": True, "company_group": []},
-    )
+    @patch("company.serializers.create_company_role_family", return_value={"success": True, "company_group": []})
     @patch("company.views.send_mail")
     def test_create_company_success(self, _mail, _role):
         url = reverse("company-list")
@@ -269,10 +266,8 @@ class CompanyArchiveRestoreTests(BaseAPITest):
         c2.refresh_from_db()
         self.assertTrue(c1.deleted and c2.deleted)
         rest_url = reverse("company_restore-list")
-        with patch("company.serializer.get_client_ip", return_value="127.0.0.1"):
-            res2 = self.client.post(
-                rest_url, {"deleted": [c1.id, c2.id]}, format="json"
-            )
+        with patch("company.serializers.get_client_ip", return_value="127.0.0.1"):
+            res2 = self.client.post(rest_url, {"deleted": [c1.id, c2.id]}, format="json")
         self.assertEqual(res2.status_code, 200)
         c1.refresh_from_db()
         c2.refresh_from_db()
@@ -285,10 +280,7 @@ class CompanyArchiveRestoreTests(BaseAPITest):
 
 
 class CreateCompanyAccountTests(BaseAPITest):
-    @patch(
-        "company.serializer.create_company_role_family",
-        return_value={"success": True, "company_group": []},
-    )
+    @patch("company.serializers.create_company_role_family", return_value={"success": True, "company_group": []})
     @patch("email_utils.send_email.send_mail")
     def test_public_create_company_account(self, _mail, _role):
         self.client.force_authenticate(user=None)
