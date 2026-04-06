@@ -42,12 +42,24 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser) -> None:
         parser.add_argument("--country", type=bool, help="Country data to be uploaded")
-        parser.add_argument("--zone_name", type=bool, help="ZoneName data to be uploaded")
-        parser.add_argument("--domain", type=bool, help="Domain master data to be uploaded")
-        parser.add_argument("--education_level", type=bool, help="Education level data to be uploaded")
-        parser.add_argument("--skill", type=bool, help="Skill master data to be uploaded")
-        parser.add_argument("--career", type=bool, help="Career master data to be uploaded")
-        parser.add_argument("--assessment", type=bool, help="Assessment questions/options to be seeded")
+        parser.add_argument(
+            "--zone_name", type=bool, help="ZoneName data to be uploaded"
+        )
+        parser.add_argument(
+            "--domain", type=bool, help="Domain master data to be uploaded"
+        )
+        parser.add_argument(
+            "--education_level", type=bool, help="Education level data to be uploaded"
+        )
+        parser.add_argument(
+            "--skill", type=bool, help="Skill master data to be uploaded"
+        )
+        parser.add_argument(
+            "--career", type=bool, help="Career master data to be uploaded"
+        )
+        parser.add_argument(
+            "--assessment", type=bool, help="Assessment questions/options to be seeded"
+        )
 
         parser.add_argument("--groups", type=bool, help="Create Groups")
         parser.add_argument("--user", type=bool, help="Create Super User")
@@ -153,9 +165,15 @@ class Command(BaseCommand):
 
     def create_role_family(self, admin_user=None):
         self.stdout.write("Creating Role Family...........")
-        created_by_user = admin_user or User.objects.filter(is_superuser=True).first() or User.objects.first()
+        created_by_user = (
+            admin_user
+            or User.objects.filter(is_superuser=True).first()
+            or User.objects.first()
+        )
         if not created_by_user:
-            self.stdout.write(self.style.WARNING("Skipping role family creation: no user found"))
+            self.stdout.write(
+                self.style.WARNING("Skipping role family creation: no user found")
+            )
             return []
         role_family = []
 
@@ -172,9 +190,15 @@ class Command(BaseCommand):
 
     def create_custom_groups(self, admin_user=None):
         self.stdout.write("Creating Groups.......")
-        user = admin_user or User.objects.filter(is_superuser=True).first() or User.objects.first()
+        user = (
+            admin_user
+            or User.objects.filter(is_superuser=True).first()
+            or User.objects.first()
+        )
         if not user:
-            self.stdout.write(self.style.WARNING("Skipping group creation: no user found"))
+            self.stdout.write(
+                self.style.WARNING("Skipping group creation: no user found")
+            )
             return
 
         super_admin_group, _ = CustomGroup.objects.update_or_create(
@@ -441,10 +465,15 @@ class Command(BaseCommand):
                     name=codename,
                 )
                 group.permissions.add(permission_obj)
-                self.stdout.write(f"Assigned {app_label and codename} permission to {group.name} group")
+                self.stdout.write(
+                    f"Assigned {app_label and codename} permission to {group.name} group"
+                )
             except Permission.DoesNotExist:
                 self.stdout.write(
-                    (f"Permission {permission_name} does not exist. " f"Skipping assignment to {group.name} group")
+                    (
+                        f"Permission {permission_name} does not exist. "
+                        f"Skipping assignment to {group.name} group"
+                    )
                 )
             except Permission.MultipleObjectsReturned:
                 self.stdout.write(
@@ -456,11 +485,16 @@ class Command(BaseCommand):
 
     def load_business_category(self):
         self.stdout.write("Loading Business Category...")
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "business_categorys.csv")
+        file_path = path.join(
+            settings.BASE_DIR, "core", "management", "source", "business_categorys.csv"
+        )
         with open(file_path, "r", encoding="utf-8") as csv_file:
             reader = csv.DictReader(csv_file, delimiter=",")
             BusinessCategory.objects.bulk_create(
-                [BusinessCategory(business_category=row["business_category"]) for row in reader],
+                [
+                    BusinessCategory(business_category=row["business_category"])
+                    for row in reader
+                ],
                 ignore_conflicts=True,
             )
         self.stdout.write("Business Category data uploaded.")
@@ -468,7 +502,9 @@ class Command(BaseCommand):
     # Country Upload CSV
     def load_country(self):
         self.stdout.write("Loading Country...")
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "countrie.csv")
+        file_path = path.join(
+            settings.BASE_DIR, "core", "management", "source", "countrie.csv"
+        )
         with open(file_path, "r", encoding="utf-8") as csv_file:
             reader = csv.DictReader(csv_file, delimiter=",")
             Country.objects.bulk_create(
@@ -490,7 +526,9 @@ class Command(BaseCommand):
     # State Upload CSV
     def load_state(self):
         self.stdout.write("Loading State...")
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "state.csv")
+        file_path = path.join(
+            settings.BASE_DIR, "core", "management", "source", "state.csv"
+        )
         with open(file_path, "r", encoding="utf-8") as csv_file:
             reader = csv.DictReader(csv_file, delimiter=",")
             states_to_create = []
@@ -506,10 +544,16 @@ class Command(BaseCommand):
                         )
                     )
                 except Country.DoesNotExist:
-                    self.stdout.write(self.style.ERROR(f"Country not found: {row['country_name']}"))
+                    self.stdout.write(
+                        self.style.ERROR(f"Country not found: {row['country_name']}")
+                    )
                     continue
                 except Exception as e:
-                    self.stdout.write(self.style.ERROR(f"Error processing state {row['name']}: {str(e)}"))
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"Error processing state {row['name']}: {str(e)}"
+                        )
+                    )
                     continue
 
             if states_to_create:
@@ -519,7 +563,9 @@ class Command(BaseCommand):
     # City Upload CSV
     def load_city(self):
         self.stdout.write("Loading City....")
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "city.csv")
+        file_path = path.join(
+            settings.BASE_DIR, "core", "management", "source", "city.csv"
+        )
 
         states = {}
         for state in State.objects.select_related("country").all():
@@ -553,7 +599,9 @@ class Command(BaseCommand):
 
                 except Exception as e:
                     self.stdout.write(
-                        self.style.ERROR(f"Error processing city '{row.get('name', 'Unknown')}': {str(e)}")
+                        self.style.ERROR(
+                            f"Error processing city '{row.get('name', 'Unknown')}': {str(e)}"
+                        )
                     )
                     continue
 
@@ -565,10 +613,14 @@ class Command(BaseCommand):
     # City Area Upload CSV
     def load_city_area(self):
         if CityArea is None:
-            self.stdout.write(self.style.WARNING("Skipping city area load: 'city_areas' app removed"))
+            self.stdout.write(
+                self.style.WARNING("Skipping city area load: 'city_areas' app removed")
+            )
             return
         self.stdout.write("Loading City Area....")
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "city_area.csv")
+        file_path = path.join(
+            settings.BASE_DIR, "core", "management", "source", "city_area.csv"
+        )
 
         cities = {}
         for city in City.objects.select_related("state", "state__country").all():
@@ -605,7 +657,9 @@ class Command(BaseCommand):
 
                 except Exception as e:
                     self.stdout.write(
-                        self.style.ERROR(f"Error processing city area '{row.get('city_area', 'Unknown')}': {str(e)}")
+                        self.style.ERROR(
+                            f"Error processing city area '{row.get('city_area', 'Unknown')}': {str(e)}"
+                        )
                     )
                     continue
 
@@ -631,9 +685,16 @@ class Command(BaseCommand):
         if not rows:
             self.stdout.write(self.style.WARNING(f"No rows found in {file_path}"))
             return
-        user = User.objects.filter(is_superuser=True).first() or User.objects.order_by("pk").first()
+        user = (
+            User.objects.filter(is_superuser=True).first()
+            or User.objects.order_by("pk").first()
+        )
         if not user:
-            self.stdout.write(self.style.WARNING("Skipping import: no user available for audit fields"))
+            self.stdout.write(
+                self.style.WARNING(
+                    "Skipping import: no user available for audit fields"
+                )
+            )
             return
         result = importer(
             user=user,
@@ -650,7 +711,13 @@ class Command(BaseCommand):
 
     def load_domain_master(self):
         self.stdout.write("Loading Domain Master...")
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "domain_master_sample.csv")
+        file_path = path.join(
+            settings.BASE_DIR,
+            "core",
+            "management",
+            "source",
+            "domain_master_sample.csv",
+        )
         self._bulk_import_from_csv(
             file_path=file_path,
             serializer_class=DomainSerializer,
@@ -659,7 +726,13 @@ class Command(BaseCommand):
 
     def load_education_levels(self):
         self.stdout.write("Loading Education Levels...")
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "education_level_master_sample.csv")
+        file_path = path.join(
+            settings.BASE_DIR,
+            "core",
+            "management",
+            "source",
+            "education_level_master_sample.csv",
+        )
         self._bulk_import_from_csv(
             file_path=file_path,
             serializer_class=EducationLevelSerializer,
@@ -668,7 +741,13 @@ class Command(BaseCommand):
 
     def load_streams(self):
         self.stdout.write("Loading Streams...")
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "stream_master_sample.csv")
+        file_path = path.join(
+            settings.BASE_DIR,
+            "core",
+            "management",
+            "source",
+            "stream_master_sample.csv",
+        )
         self._bulk_import_from_csv(
             file_path=file_path,
             serializer_class=StreamSerializer,
@@ -677,7 +756,9 @@ class Command(BaseCommand):
 
     def load_skills(self):
         self.stdout.write("Loading Skills...")
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "skill_master_sample.csv")
+        file_path = path.join(
+            settings.BASE_DIR, "core", "management", "source", "skill_master_sample.csv"
+        )
         self._bulk_import_from_csv(
             file_path=file_path,
             serializer_class=SkillSerializer,
@@ -686,7 +767,13 @@ class Command(BaseCommand):
 
     def load_careers(self):
         self.stdout.write("Loading Careers...")
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "career_master_sample.csv")
+        file_path = path.join(
+            settings.BASE_DIR,
+            "core",
+            "management",
+            "source",
+            "career_master_sample.csv",
+        )
         self._bulk_import_from_csv(
             file_path=file_path,
             serializer_class=CareerSerializer,
@@ -695,7 +782,13 @@ class Command(BaseCommand):
 
     def load_stream_domain_mappings(self):
         self.stdout.write("Loading Stream Domain Mappings...")
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "stream_domain_mapping_sample.csv")
+        file_path = path.join(
+            settings.BASE_DIR,
+            "core",
+            "management",
+            "source",
+            "stream_domain_mapping_sample.csv",
+        )
         self._bulk_import_from_csv(
             file_path=file_path,
             serializer_class=StreamDomainMappingSerializer,
@@ -704,7 +797,13 @@ class Command(BaseCommand):
 
     def load_domain_skill_mappings(self):
         self.stdout.write("Loading Domain Skill Mappings...")
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "domain_skill_mapping_sample.csv")
+        file_path = path.join(
+            settings.BASE_DIR,
+            "core",
+            "management",
+            "source",
+            "domain_skill_mapping_sample.csv",
+        )
         self._bulk_import_from_csv(
             file_path=file_path,
             serializer_class=DomainSkillMappingSerializer,
@@ -713,7 +812,13 @@ class Command(BaseCommand):
 
     def load_domain_career_mappings(self):
         self.stdout.write("Loading Domain Career Mappings...")
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "domain_career_mapping_sample.csv")
+        file_path = path.join(
+            settings.BASE_DIR,
+            "core",
+            "management",
+            "source",
+            "domain_career_mapping_sample.csv",
+        )
         self._bulk_import_from_csv(
             file_path=file_path,
             serializer_class=DomainCareerMappingSerializer,
@@ -760,7 +865,10 @@ class Command(BaseCommand):
                 {"feature_name": "photo_video_with_gps", "feature_status": False},
             ],
             "subscription_feature": [
-                {"feature_name": "Smart Light Control (on/off)", "feature_status": True},
+                {
+                    "feature_name": "Smart Light Control (on/off)",
+                    "feature_status": True,
+                },
                 {"feature_name": "Automated Scheduling", "feature_status": True},
                 {"feature_name": "Energy Consumption Reports", "feature_status": True},
                 {"feature_name": "Power & Usage Report", "feature_status": True},
@@ -800,13 +908,22 @@ class Command(BaseCommand):
                 {"feature_name": "photo_video_with_gps", "feature_status": False},
             ],
             "subscription_feature": [
-                {"feature_name": "Smart Light Control (on/off)", "feature_status": True},
+                {
+                    "feature_name": "Smart Light Control (on/off)",
+                    "feature_status": True,
+                },
                 {"feature_name": "Automated Scheduling", "feature_status": True},
                 {"feature_name": "Energy Consumption Reports", "feature_status": True},
                 {"feature_name": "Power & Usage Report", "feature_status": True},
                 {"feature_name": "Real-Time Issue Alerts", "feature_status": True},
-                {"feature_name": "Advanced Campaign Scheduling", "feature_status": True},
-                {"feature_name": "Auto Light-Off for Vacant Sites", "feature_status": True},
+                {
+                    "feature_name": "Advanced Campaign Scheduling",
+                    "feature_status": True,
+                },
+                {
+                    "feature_name": "Auto Light-Off for Vacant Sites",
+                    "feature_status": True,
+                },
             ],
         },
         {
@@ -842,15 +959,27 @@ class Command(BaseCommand):
                 {"feature_name": "photo_video_with_gps", "feature_status": False},
             ],
             "subscription_feature": [
-                {"feature_name": "Smart Light Control (on/off)", "feature_status": True},
+                {
+                    "feature_name": "Smart Light Control (on/off)",
+                    "feature_status": True,
+                },
                 {"feature_name": "Automated Scheduling", "feature_status": True},
                 {"feature_name": "Energy Consumption Reports", "feature_status": True},
                 {"feature_name": "Power & Usage Report", "feature_status": True},
                 {"feature_name": "Real-Time Issue Alerts", "feature_status": True},
-                {"feature_name": "Advanced Campaign Scheduling", "feature_status": True},
-                {"feature_name": "Auto Light-Off for Vacant Sites", "feature_status": True},
+                {
+                    "feature_name": "Advanced Campaign Scheduling",
+                    "feature_status": True,
+                },
+                {
+                    "feature_name": "Auto Light-Off for Vacant Sites",
+                    "feature_status": True,
+                },
                 {"feature_name": "Client Campaign Tracking", "feature_status": True},
-                {"feature_name": "Voice-Activated Light Control", "feature_status": True},
+                {
+                    "feature_name": "Voice-Activated Light Control",
+                    "feature_status": True,
+                },
                 {"feature_name": "Live Camera Monitoring", "feature_status": True},
                 {"feature_name": "Smart Photo & Video Capture", "feature_status": True},
             ],
@@ -897,7 +1026,9 @@ class Command(BaseCommand):
                         created_by=created_by_user,
                         created_at=now(),
                     )
-                    self.stdout.write(f"  - Added core feature: {feature['feature_name']}")
+                    self.stdout.write(
+                        f"  - Added core feature: {feature['feature_name']}"
+                    )
 
                 for feature in data["subscription_feature"]:
                     SubscriptionFeature.objects.create(
@@ -908,8 +1039,8 @@ class Command(BaseCommand):
                         created_by=created_by_user,
                         created_at=now(),
                     )
-                    self.stdout.write(f"  - Added subscription feature: {feature['feature_name']}")
+                    self.stdout.write(
+                        f"  - Added subscription feature: {feature['feature_name']}"
+                    )
 
         self.stdout.write("Subscription data uploaded.")
-
-    

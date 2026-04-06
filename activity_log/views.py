@@ -36,12 +36,16 @@ class ActivityLogViewSet(ModelViewSet):
         page = self.paginate_queryset(queryset)
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = self.serializer_class(queryset, many=True, context={"request": request})
+            serializer = self.serializer_class(
+                queryset, many=True, context={"request": request}
+            )
             return Response({"success": True, "data": serializer.data})
 
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.serializer_class(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -52,7 +56,9 @@ class ActivityLogViewSet(ModelViewSet):
         activity_log_list = None
         if user.company:
             company_instance = user.company
-            activity_log_list = ActivityLog.objects.filter(company=company_instance).order_by("-id")
+            activity_log_list = ActivityLog.objects.filter(
+                company=company_instance
+            ).order_by("-id")
 
         else:
             activity_log_list = ActivityLog.objects.all().order_by("-id")
@@ -62,7 +68,9 @@ class ActivityLogViewSet(ModelViewSet):
             result_page = pagination.paginate_queryset(activity_log_list, request)
 
             serializer = ActivityLogSerializer(result_page, many=True)
-            return pagination.get_paginated_response({"success": True, "data": serializer.data})
+            return pagination.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         else:
             serializer = ActivityLogSerializer(activity_log_list, many=True)
             return Response({"success": True, "data": serializer.data})

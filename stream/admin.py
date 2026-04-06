@@ -37,7 +37,14 @@ class StreamAdmin(admin.ModelAdmin):
     list_filter = ("is_active", "deleted", "education_level")
     ordering = ("sequence_order", "stream_name")
     raw_id_fields = ("created_by", "updated_by")
-    readonly_fields = ("created_by", "created_at", "updated_by", "updated_at", "deleted_at", "deleted_by")
+    readonly_fields = (
+        "created_by",
+        "created_at",
+        "updated_by",
+        "updated_at",
+        "deleted_at",
+        "deleted_by",
+    )
     actions = (
         "activate_selected",
         "deactivate_selected",
@@ -168,7 +175,9 @@ class StreamAdmin(admin.ModelAdmin):
                         stream_service.archive_stream(stream=obj, user=request.user)
                         self.message_user(request, "Archived.")
                     except DRFValidationError as exc:
-                        self.message_user(request, str(exc.detail), level=messages.ERROR)
+                        self.message_user(
+                            request, str(exc.detail), level=messages.ERROR
+                        )
                 return HttpResponseRedirect(request.get_full_path())
             if request.POST.get("stream_admin_restore_one"):
                 pk = request.POST["stream_admin_restore_one"]

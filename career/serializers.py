@@ -12,12 +12,24 @@ class CareerSerializer(AuditFieldsMixin, serializers.ModelSerializer):
     created_by = UserQuickSerializer(read_only=True)
     updated_by = UserQuickSerializer(read_only=True)
     is_archived = serializers.SerializerMethodField(read_only=True)
-    min_education_level_id = serializers.UUIDField(source="min_education_level.id", read_only=True)
-    min_education_level_code = serializers.CharField(source="min_education_level.level_code", read_only=True)
-    min_education_level_name = serializers.CharField(source="min_education_level.display_name", read_only=True)
-    max_education_level_id = serializers.UUIDField(source="max_education_level.id", read_only=True)
-    max_education_level_code = serializers.CharField(source="max_education_level.level_code", read_only=True)
-    max_education_level_name = serializers.CharField(source="max_education_level.display_name", read_only=True)
+    min_education_level_id = serializers.UUIDField(
+        source="min_education_level.id", read_only=True
+    )
+    min_education_level_code = serializers.CharField(
+        source="min_education_level.level_code", read_only=True
+    )
+    min_education_level_name = serializers.CharField(
+        source="min_education_level.display_name", read_only=True
+    )
+    max_education_level_id = serializers.UUIDField(
+        source="max_education_level.id", read_only=True
+    )
+    max_education_level_code = serializers.CharField(
+        source="max_education_level.level_code", read_only=True
+    )
+    max_education_level_name = serializers.CharField(
+        source="max_education_level.display_name", read_only=True
+    )
 
     class Meta:
         model = Career
@@ -61,17 +73,29 @@ class CareerSerializer(AuditFieldsMixin, serializers.ModelSerializer):
             raise serializers.ValidationError("This field may not be blank.")
         exclude = self.instance.pk if getattr(self.instance, "pk", None) else None
         if career_service.case_insensitive_code_exists(code=value, exclude_pk=exclude):
-            raise serializers.ValidationError("Career code must be unique (case-insensitive).")
+            raise serializers.ValidationError(
+                "Career code must be unique (case-insensitive)."
+            )
         return value
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
-        min_edu = attrs.get("min_education_level", getattr(self.instance, "min_education_level", None))
-        max_edu = attrs.get("max_education_level", getattr(self.instance, "max_education_level", None))
+        min_edu = attrs.get(
+            "min_education_level", getattr(self.instance, "min_education_level", None)
+        )
+        max_edu = attrs.get(
+            "max_education_level", getattr(self.instance, "max_education_level", None)
+        )
         if min_edu is None:
-            raise serializers.ValidationError({"min_education_level": "This field is required."})
+            raise serializers.ValidationError(
+                {"min_education_level": "This field is required."}
+            )
         if max_edu and max_edu.sequence_order < min_edu.sequence_order:
-            raise serializers.ValidationError({"max_education_level": "Max education level cannot be below min education level."})
+            raise serializers.ValidationError(
+                {
+                    "max_education_level": "Max education level cannot be below min education level."
+                }
+            )
         return attrs
 
     def validate_min_education_level(self, value):
@@ -103,12 +127,24 @@ class CareerSerializer(AuditFieldsMixin, serializers.ModelSerializer):
 
 
 class CareerDropdownSerializer(serializers.ModelSerializer):
-    min_education_level_id = serializers.UUIDField(source="min_education_level.id", read_only=True)
-    min_education_level_code = serializers.CharField(source="min_education_level.level_code", read_only=True)
-    min_education_level_name = serializers.CharField(source="min_education_level.display_name", read_only=True)
-    max_education_level_id = serializers.UUIDField(source="max_education_level.id", read_only=True)
-    max_education_level_code = serializers.CharField(source="max_education_level.level_code", read_only=True)
-    max_education_level_name = serializers.CharField(source="max_education_level.display_name", read_only=True)
+    min_education_level_id = serializers.UUIDField(
+        source="min_education_level.id", read_only=True
+    )
+    min_education_level_code = serializers.CharField(
+        source="min_education_level.level_code", read_only=True
+    )
+    min_education_level_name = serializers.CharField(
+        source="min_education_level.display_name", read_only=True
+    )
+    max_education_level_id = serializers.UUIDField(
+        source="max_education_level.id", read_only=True
+    )
+    max_education_level_code = serializers.CharField(
+        source="max_education_level.level_code", read_only=True
+    )
+    max_education_level_name = serializers.CharField(
+        source="max_education_level.display_name", read_only=True
+    )
 
     class Meta:
         model = Career
@@ -171,4 +207,3 @@ class CareerBulkImportSerializer(serializers.Serializer):
         child=serializers.DictField(),
         allow_empty=False,
     )
-

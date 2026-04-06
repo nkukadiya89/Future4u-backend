@@ -38,7 +38,13 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--sample-path",
-            default=str(Path(settings.BASE_DIR) / "core" / "management" / "source" / "assessment_questions_sample.csv"),
+            default=str(
+                Path(settings.BASE_DIR)
+                / "core"
+                / "management"
+                / "source"
+                / "assessment_questions_sample.csv"
+            ),
             help="Where to write/read the sample CSV.",
         )
         parser.add_argument(
@@ -70,7 +76,16 @@ class Command(BaseCommand):
                 raise ValueError("CSV has no header row.")
             has_mapped_domains_column = "mapped_domains" in reader.fieldnames
             has_signal_strength_column = "signal_strength" in reader.fieldnames
-            required_headers = ("dimension", "question_text", "is_active", "option_1", "option_2", "option_3", "option_4", "option_5")
+            required_headers = (
+                "dimension",
+                "question_text",
+                "is_active",
+                "option_1",
+                "option_2",
+                "option_3",
+                "option_4",
+                "option_5",
+            )
             missing = [h for h in required_headers if h not in reader.fieldnames]
             if missing:
                 raise ValueError(f"Missing headers: {', '.join(missing)}")
@@ -88,20 +103,34 @@ class Command(BaseCommand):
                 if not qt:
                     raise ValueError(f"Row {idx}: question_text is required")
                 try:
-                    signal_strength = max(1, int(signal_strength_raw)) if has_signal_strength_column else 1
+                    signal_strength = (
+                        max(1, int(signal_strength_raw))
+                        if has_signal_strength_column
+                        else 1
+                    )
                 except ValueError as exc:
-                    raise ValueError(f"Row {idx}: signal_strength must be a positive integer") from exc
+                    raise ValueError(
+                        f"Row {idx}: signal_strength must be a positive integer"
+                    ) from exc
 
-                domain_codes = [code.strip() for code in mapped_domains_raw.split(",") if code.strip()]
+                domain_codes = [
+                    code.strip()
+                    for code in mapped_domains_raw.split(",")
+                    if code.strip()
+                ]
                 domain_ids = []
                 if domain_codes:
                     domains = []
                     for code in domain_codes:
-                        obj = Domain.objects.filter(domain_code__iexact=code, deleted=False, is_active=True).first()
+                        obj = Domain.objects.filter(
+                            domain_code__iexact=code, deleted=False, is_active=True
+                        ).first()
                         if obj:
                             domains.append(obj)
                     found_codes = {d.domain_code.lower() for d in domains}
-                    missing_codes = [c for c in domain_codes if c.lower() not in found_codes]
+                    missing_codes = [
+                        c for c in domain_codes if c.lower() not in found_codes
+                    ]
                     if missing_codes:
                         # Keep seeding usable even if domain master isn't loaded yet.
                         self.stdout.write(
@@ -121,7 +150,12 @@ class Command(BaseCommand):
                 q, q_created = Question.objects.get_or_create(
                     dimension=dim,
                     question_text=qt,
-                    defaults={"is_active": is_active, "signal_strength": signal_strength if has_signal_strength_column else 1},
+                    defaults={
+                        "is_active": is_active,
+                        "signal_strength": (
+                            signal_strength if has_signal_strength_column else 1
+                        ),
+                    },
                 )
                 if q_created:
                     created_q += 1
@@ -130,7 +164,10 @@ class Command(BaseCommand):
                     if q.is_active != is_active:
                         q.is_active = is_active
                         changed_fields.append("is_active")
-                    if has_signal_strength_column and q.signal_strength != signal_strength:
+                    if (
+                        has_signal_strength_column
+                        and q.signal_strength != signal_strength
+                    ):
                         q.signal_strength = signal_strength
                         changed_fields.append("signal_strength")
                     if changed_fields:
@@ -183,14 +220,18 @@ class Command(BaseCommand):
         sample_path = Path(options["sample_path"])
         if options.get("write_sample"):
             self._write_sample_csv(sample_path=sample_path)
-            self.stdout.write(self.style.SUCCESS(f"Sample CSV written: {sample_path.resolve()}"))
+            self.stdout.write(
+                self.style.SUCCESS(f"Sample CSV written: {sample_path.resolve()}")
+            )
             return
 
         load_path_raw = options.get("load_path")
         load_path = Path(load_path_raw) if load_path_raw else sample_path
         result = self._load_from_csv(load_path=load_path, dry_run=dry_run)
         if dry_run:
-            self.stdout.write(self.style.SUCCESS("Dry run complete. No changes written."))
+            self.stdout.write(
+                self.style.SUCCESS("Dry run complete. No changes written.")
+            )
             return
         created_q, updated_q, created_o, updated_o = result
         self.stdout.write(
@@ -200,4 +241,3 @@ class Command(BaseCommand):
                 f"options(created={created_o}, updated={updated_o})"
             )
         )
-

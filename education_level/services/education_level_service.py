@@ -9,7 +9,11 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
-from education_level.models import EducationLevel, EducationLevelImportBatch, EducationLevelImportError
+from education_level.models import (
+    EducationLevel,
+    EducationLevelImportBatch,
+    EducationLevelImportError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +25,13 @@ SAMPLE_CSV_HEADERS = (
     "max_age",
     "is_active",
 )
-REQUIRED_IMPORT_HEADERS = {"level_code", "display_name", "sequence_order", "min_age", "max_age"}
+REQUIRED_IMPORT_HEADERS = {
+    "level_code",
+    "display_name",
+    "sequence_order",
+    "min_age",
+    "max_age",
+}
 HEADER_ALIASES = {
     "code": "level_code",
     "education_level_code": "level_code",
@@ -84,7 +94,9 @@ def blocking_foreign_key_usage(level: EducationLevel) -> str | None:
     return None
 
 
-def validate_level_data(*, data: dict[str, Any], instance: EducationLevel | None = None) -> dict[str, Any]:
+def validate_level_data(
+    *, data: dict[str, Any], instance: EducationLevel | None = None
+) -> dict[str, Any]:
     code = (data.get("level_code") or "").strip().lower()
     if not code:
         raise ValidationError({"level_code": "This field may not be blank."})
@@ -115,11 +127,15 @@ def validate_level_data(*, data: dict[str, Any], instance: EducationLevel | None
         raise ValidationError({"max_age": "A valid integer is required."})
 
     if min_age > max_age:
-        raise ValidationError({"max_age": "max_age must be greater than or equal to min_age."})
+        raise ValidationError(
+            {"max_age": "max_age must be greater than or equal to min_age."}
+        )
 
     exclude_pk = instance.pk if instance and instance.pk else None
     if case_insensitive_code_exists(code=code, exclude_pk=exclude_pk):
-        raise ValidationError({"level_code": "Level code must be unique (case-insensitive)."})
+        raise ValidationError(
+            {"level_code": "Level code must be unique (case-insensitive)."}
+        )
     if sequence_exists(sequence_order=sequence_order, exclude_pk=exclude_pk):
         raise ValidationError({"sequence_order": "Sequence order must be unique."})
 
@@ -141,7 +157,9 @@ def create_level(*, user, validated_data: dict) -> EducationLevel:
 
 
 @transaction.atomic
-def update_level(*, level: EducationLevel, user, validated_data: dict) -> EducationLevel:
+def update_level(
+    *, level: EducationLevel, user, validated_data: dict
+) -> EducationLevel:
     for k, v in validated_data.items():
         setattr(level, k, v)
     level.save(user=user)
@@ -168,7 +186,15 @@ def restore_level(*, level: EducationLevel, user) -> EducationLevel:
     level.deleted_by = None
     level.updated_at = timezone.now()
     level.updated_by = user
-    level.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_at", "updated_by"])
+    level.save(
+        update_fields=[
+            "deleted",
+            "deleted_at",
+            "deleted_by",
+            "updated_at",
+            "updated_by",
+        ]
+    )
     return level
 
 
@@ -199,7 +225,9 @@ def bulk_restore(*, ids: list, user) -> int:
 
 
 @transaction.atomic
-def set_active_status(*, level: EducationLevel, user, is_active: bool) -> EducationLevel:
+def set_active_status(
+    *, level: EducationLevel, user, is_active: bool
+) -> EducationLevel:
     level.is_active = is_active
     level.save(user=user)
     return level
@@ -240,15 +268,23 @@ def reorder_levels(*, orders: list[dict], user) -> int:
     if len(set(seq_list)) != len(seq_list):
         raise ValidationError({"orders": "Duplicate sequence_order values provided."})
 
-    existing = EducationLevel.objects.filter(id__in=id_list, deleted=False).only("id", "sequence_order")
+    existing = EducationLevel.objects.filter(id__in=id_list, deleted=False).only(
+        "id", "sequence_order"
+    )
     if existing.count() != len(id_list):
         raise ValidationError({"orders": "Some ids are invalid or archived."})
 
-    unaffected = EducationLevel.objects.filter(deleted=False).exclude(id__in=id_list).values_list("sequence_order", flat=True)
+    unaffected = (
+        EducationLevel.objects.filter(deleted=False)
+        .exclude(id__in=id_list)
+        .values_list("sequence_order", flat=True)
+    )
     unaffected_set = set(unaffected)
     conflict = [v for v in seq_list if v in unaffected_set]
     if conflict:
-        raise ValidationError({"orders": f"Sequence order already exists: {sorted(set(conflict))}"})
+        raise ValidationError(
+            {"orders": f"Sequence order already exists: {sorted(set(conflict))}"}
+        )
 
     by_id = {str(obj.id): obj for obj in existing}
     updated = 0
@@ -297,7 +333,9 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
             try:
                 from openpyxl import load_workbook
             except ImportError:
-                return [], ["Excel support requires openpyxl. Install openpyxl or upload CSV."]
+                return [], [
+                    "Excel support requires openpyxl. Install openpyxl or upload CSV."
+                ]
             wb = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
             ws = wb.active
             rows_iter = ws.iter_rows(values_only=True)
@@ -331,10 +369,15 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
         if not reader.fieldnames:
             return [], ["CSV has no header row."]
         normalized_headers = [
-            HEADER_ALIASES.get((str(h).strip().lower() if h else ""), (str(h).strip().lower() if h else ""))
+            HEADER_ALIASES.get(
+                (str(h).strip().lower() if h else ""),
+                (str(h).strip().lower() if h else ""),
+            )
             for h in reader.fieldnames
         ]
-        missing = sorted(REQUIRED_IMPORT_HEADERS - set([h for h in normalized_headers if h]))
+        missing = sorted(
+            REQUIRED_IMPORT_HEADERS - set([h for h in normalized_headers if h])
+        )
         if missing:
             return [], [f"Missing required headers: {', '.join(missing)}"]
         out_rows = []
@@ -348,7 +391,9 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
         return [], [str(e)]
 
 
-def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict) -> EducationLevelImportBatch:
+def bulk_import_rows(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> EducationLevelImportBatch:
     batch = EducationLevelImportBatch.objects.create(
         created_by=user,
         total_rows=len(rows),
@@ -385,8 +430,12 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
                 continue
             seen_codes.add(level_code)
         if level_code:
-            existing = EducationLevel.objects.filter(level_code__iexact=level_code).first()
-        ser = serializer_class(instance=existing, data=row, partial=bool(existing), context=context)
+            existing = EducationLevel.objects.filter(
+                level_code__iexact=level_code
+            ).first()
+        ser = serializer_class(
+            instance=existing, data=row, partial=bool(existing), context=context
+        )
         if not ser.is_valid():
             msg = json.dumps(ser.errors)[:500]
             errors.append(
@@ -408,7 +457,15 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
                     obj.deleted_by = None
                     obj.updated_by = user
                     obj.updated_at = timezone.now()
-                    obj.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_by", "updated_at"])
+                    obj.save(
+                        update_fields=[
+                            "deleted",
+                            "deleted_at",
+                            "deleted_by",
+                            "updated_by",
+                            "updated_at",
+                        ]
+                    )
                 imported += 1
         except ValidationError as e:
             detail = e.detail
@@ -443,14 +500,18 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
     return batch
 
 
-def bulk_import_levels(*, user, rows: list[dict], serializer_class, context: dict) -> dict[str, Any]:
+def bulk_import_levels(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> dict[str, Any]:
     batch = bulk_import_rows(
         user=user,
         rows=rows,
         serializer_class=serializer_class,
         context=context,
     )
-    err_qs = EducationLevelImportError.objects.filter(batch=batch).order_by("row_number")
+    err_qs = EducationLevelImportError.objects.filter(batch=batch).order_by(
+        "row_number"
+    )
     error_details = [
         {"row": e.row_number, "message": e.message, "row_data": e.row_data}
         for e in err_qs.iterator(chunk_size=200)
@@ -464,11 +525,15 @@ def bulk_import_levels(*, user, rows: list[dict], serializer_class, context: dic
 
 
 def import_batches_queryset():
-    return EducationLevelImportBatch.objects.select_related("created_by").order_by("-created_at")
+    return EducationLevelImportBatch.objects.select_related("created_by").order_by(
+        "-created_at"
+    )
 
 
 def import_errors_queryset(*, batch_id: UUID | None = None):
-    qs = EducationLevelImportError.objects.select_related("batch").order_by("-batch__created_at", "row_number")
+    qs = EducationLevelImportError.objects.select_related("batch").order_by(
+        "-batch__created_at", "row_number"
+    )
     if batch_id:
         qs = qs.filter(batch_id=batch_id)
     return qs

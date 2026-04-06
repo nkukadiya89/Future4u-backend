@@ -24,4 +24,3 @@ class SoftDeleteMixin:
     @classmethod
     def non_archived_queryset(cls, queryset):
         return queryset.filter(**{cls.archive_field: False})
-

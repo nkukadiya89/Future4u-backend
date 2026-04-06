@@ -7,14 +7,18 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
 
-from assessment.models import Option,Question, UserResponse
-from assessment.services.recommendation_engine_service import RecommendationEngineService
+from assessment.models import Option, Question, UserResponse
+from assessment.services.recommendation_engine_service import (
+    RecommendationEngineService,
+)
 from assessment.serializers import (
     AssessmentSubmitSerializer,
     QuestionSerializer,
     UserResponseSerializer,
 )
-from assessment.services.recommendation_engine_service import RecommendationEngineService
+from assessment.services.recommendation_engine_service import (
+    RecommendationEngineService,
+)
 from assessment.serializers import QuestionSerializer, UserResponseSerializer
 
 
@@ -35,6 +39,7 @@ class UserResponseViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     def recommendation(self, request, *args, **kwargs):
         result = RecommendationEngineService().recommend(user_id=request.user.id)
         return Response({"success": True, "data": result}, status=status.HTTP_200_OK)
+
 
 class ApiAssessmentQuestionsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
@@ -60,7 +65,10 @@ class ApiAssessmentQuestionsViewSet(mixins.ListModelMixin, viewsets.GenericViewS
         grouped = {}
         for q in qs:
             grouped.setdefault(q.dimension, []).append(q)
-        data = {dim: self.get_serializer(items, many=True).data for dim, items in grouped.items()}
+        data = {
+            dim: self.get_serializer(items, many=True).data
+            for dim, items in grouped.items()
+        }
         return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
 
 
@@ -86,33 +94,56 @@ class ApiAssessmentSubmitViewSet(viewsets.GenericViewSet):
     def create(self, request, *args, **kwargs):
         ser = self.get_serializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors, "data": {}}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": ser.errors, "data": {}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         responses = ser.validated_data.get("responses") or []
         if not responses:
             return Response(
-                {"success": False, "message": {"responses": ["This field is required."]}, "data": {}},
+                {
+                    "success": False,
+                    "message": {"responses": ["This field is required."]},
+                    "data": {},
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         question_ids = [r["question_id"] for r in responses]
         option_ids = [r["option_id"] for r in responses]
 
-        questions = Question.objects.filter(id__in=question_ids).only("id", "dimension", "is_active")
+        questions = Question.objects.filter(id__in=question_ids).only(
+            "id", "dimension", "is_active"
+        )
         q_by_id = {q.id: q for q in questions}
         missing_questions = sorted({qid for qid in question_ids if qid not in q_by_id})
         if missing_questions:
             return Response(
-                {"success": False, "message": {"question_id": f"Invalid question_id(s): {missing_questions}"}, "data": {}},
+                {
+                    "success": False,
+                    "message": {
+                        "question_id": f"Invalid question_id(s): {missing_questions}"
+                    },
+                    "data": {},
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        options = Option.objects.filter(id__in=option_ids).only("id", "question_id", "score_value")
+        options = Option.objects.filter(id__in=option_ids).only(
+            "id", "question_id", "score_value"
+        )
         opt_by_id = {o.id: o for o in options}
         missing_options = sorted({oid for oid in option_ids if oid not in opt_by_id})
         if missing_options:
             return Response(
-                {"success": False, "message": {"option_id": f"Invalid option_id(s): {missing_options}"}, "data": {}},
+                {
+                    "success": False,
+                    "message": {
+                        "option_id": f"Invalid option_id(s): {missing_options}"
+                    },
+                    "data": {},
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -128,14 +159,19 @@ class ApiAssessmentSubmitViewSet(viewsets.GenericViewSet):
             return Response(
                 {
                     "success": False,
-                    "message": {"responses": "Option does not belong to the question.", "invalid": invalid_pairs},
+                    "message": {
+                        "responses": "Option does not belong to the question.",
+                        "invalid": invalid_pairs,
+                    },
                     "data": {},
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Existing responses for this user/questions
-        existing = UserResponse.objects.filter(user=request.user, question_id__in=question_ids).only(
+        existing = UserResponse.objects.filter(
+            user=request.user, question_id__in=question_ids
+        ).only(
             "id",
             "question_id",
             "selected_option_id",
@@ -167,7 +203,9 @@ class ApiAssessmentSubmitViewSet(viewsets.GenericViewSet):
         if to_create:
             UserResponse.objects.bulk_create(to_create, ignore_conflicts=True)
         if to_update:
-            UserResponse.objects.bulk_update(to_update, ["selected_option", "score_value"])
+            UserResponse.objects.bulk_update(
+                to_update, ["selected_option", "score_value"]
+            )
 
         # Invalidate per-user recommendations cache (safe, no-op if cache backend unavailable)
         try:
@@ -178,7 +216,11 @@ class ApiAssessmentSubmitViewSet(viewsets.GenericViewSet):
             pass
 
         return Response(
-            {"success": True, "message": "Responses saved", "data": {"submitted": len(responses)}},
+            {
+                "success": True,
+                "message": "Responses saved",
+                "data": {"submitted": len(responses)},
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -201,6 +243,7 @@ class ApiAssessmentSummaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet
         )
         data = {r["question__dimension"]: (r["score"] or 0) for r in rows}
         return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
+
     @action(detail=False, methods=["get"], url_path="recommendation")
     def recommendation(self, request, *args, **kwargs):
         result = RecommendationEngineService().recommend(user_id=request.user.id)

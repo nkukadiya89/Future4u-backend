@@ -27,7 +27,9 @@ class DeviceMonitor:
             return
 
         self._running = True
-        self._monitor_thread = threading.Thread(target=self._monitor_loop, args=(check_interval_minutes,), daemon=True)
+        self._monitor_thread = threading.Thread(
+            target=self._monitor_loop, args=(check_interval_minutes,), daemon=True
+        )
         self._monitor_thread.start()
 
     def stop_monitoring(self):
@@ -55,7 +57,9 @@ class DeviceMonitor:
     def _check_all_devices(self):
         try:
             # Get all devices
-            all_devices = DeviceConfiguration.objects.filter(deleted=False).select_related("partner_company")
+            all_devices = DeviceConfiguration.objects.filter(
+                deleted=False
+            ).select_related("partner_company")
 
             online_count = 0
             offline_count = 0
@@ -87,7 +91,9 @@ class DeviceMonitor:
         # Check if notification was sent in last 2 hours
         last_notification = device.last_offline_notification
         if last_notification:
-            hours_since_notification = (timezone.now() - last_notification).total_seconds() / 3600
+            hours_since_notification = (
+                timezone.now() - last_notification
+            ).total_seconds() / 3600
             if hours_since_notification < 2:
                 return False
 

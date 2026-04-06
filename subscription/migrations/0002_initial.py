@@ -10,90 +10,157 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('company', '0004_initial'),
-        ('subscription', '0001_initial'),
+        ("company", "0004_initial"),
+        ("subscription", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='subscription',
-            name='created_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='subcription_created', to=settings.AUTH_USER_MODEL),
+            model_name="subscription",
+            name="created_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="subcription_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='subscription',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='subcription_deleted', to=settings.AUTH_USER_MODEL),
+            model_name="subscription",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="subcription_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='subscription',
-            name='updated_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='subcription_updated', to=settings.AUTH_USER_MODEL),
+            model_name="subscription",
+            name="updated_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="subcription_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='renewalcart',
-            name='subscription',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='subscription.subscription'),
+            model_name="renewalcart",
+            name="subscription",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="subscription.subscription",
+            ),
         ),
         migrations.AddField(
-            model_name='paymentsubscriptionitem',
-            name='subscription',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='subscription.subscription'),
+            model_name="paymentsubscriptionitem",
+            name="subscription",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="subscription.subscription",
+            ),
         ),
         migrations.AddField(
-            model_name='subscriptioncart',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='company.company'),
+            model_name="subscriptioncart",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="company.company"
+            ),
         ),
         migrations.AddField(
-            model_name='subscriptioncart',
-            name='subscription',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='subscription.subscription'),
+            model_name="subscriptioncart",
+            name="subscription",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="subscription.subscription",
+            ),
         ),
         migrations.AddField(
-            model_name='subscriptioncartwithsite',
-            name='company',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='subscription_carts_with_site', to='company.company'),
+            model_name="subscriptioncartwithsite",
+            name="company",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="subscription_carts_with_site",
+                to="company.company",
+            ),
         ),
         migrations.AddField(
-            model_name='subscriptioncartwithsite',
-            name='subscription',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='subscription_carts_with_site', to='subscription.subscription'),
+            model_name="subscriptioncartwithsite",
+            name="subscription",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="subscription_carts_with_site",
+                to="subscription.subscription",
+            ),
         ),
         migrations.AddField(
-            model_name='subscriptionfeature',
-            name='created_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='subcription_feature_created', to=settings.AUTH_USER_MODEL),
+            model_name="subscriptionfeature",
+            name="created_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="subcription_feature_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='subscriptionfeature',
-            name='subscription',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='subscription.subscription'),
+            model_name="subscriptionfeature",
+            name="subscription",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="subscription.subscription",
+            ),
         ),
         migrations.AddField(
-            model_name='subscriptionfeature',
-            name='updated_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='subcription_feature_updated', to=settings.AUTH_USER_MODEL),
+            model_name="subscriptionfeature",
+            name="updated_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="subcription_feature_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='subscriptioninvoice',
-            name='company',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='company.company'),
+            model_name="subscriptioninvoice",
+            name="company",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                to="company.company",
+            ),
         ),
         migrations.AddField(
-            model_name='subscriptioninvoice',
-            name='created_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='subcription_invoice_created', to=settings.AUTH_USER_MODEL),
+            model_name="subscriptioninvoice",
+            name="created_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="subcription_invoice_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='subscriptioninvoice',
-            name='subscription',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='subscription.subscription'),
+            model_name="subscriptioninvoice",
+            name="subscription",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                to="subscription.subscription",
+            ),
         ),
         migrations.AddField(
-            model_name='subscriptioninvoice',
-            name='updated_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='subcription_invoice_updated', to=settings.AUTH_USER_MODEL),
+            model_name="subscriptioninvoice",
+            name="updated_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="subcription_invoice_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

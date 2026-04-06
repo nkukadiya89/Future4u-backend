@@ -22,6 +22,7 @@ class Domain(MasterBaseModel):
     parent_acceptance_level = models.PositiveSmallIntegerField()
     future_relevance_score = models.PositiveSmallIntegerField()
     description = models.TextField(blank=True)
+
     class Meta:
         db_table = "domain"
         constraints = [

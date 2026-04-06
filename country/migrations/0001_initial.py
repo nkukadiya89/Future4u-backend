@@ -7,26 +7,33 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Country',
+            name="Country",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, unique=True)),
-                ('code', models.CharField(max_length=50, unique=True)),
-                ('unicode', models.CharField(blank=True, max_length=80, null=True)),
-                ('country_flag', models.URLField(blank=True, null=True)),
-                ('phone_code', models.CharField(max_length=5, null=True)),
-                ('deleted', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(blank=True, null=True)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50, unique=True)),
+                ("code", models.CharField(max_length=50, unique=True)),
+                ("unicode", models.CharField(blank=True, max_length=80, null=True)),
+                ("country_flag", models.URLField(blank=True, null=True)),
+                ("phone_code", models.CharField(max_length=5, null=True)),
+                ("deleted", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(blank=True, null=True)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'country',
+                "db_table": "country",
             },
         ),
     ]

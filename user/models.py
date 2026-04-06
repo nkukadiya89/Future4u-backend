@@ -74,7 +74,9 @@ class User(AbstractUser):
     email_verified = models.BooleanField(default=False)
     phone_verified = models.BooleanField(default=False)
     company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, null=True)
-    employee = models.ForeignKey("employee.Employee", on_delete=models.DO_NOTHING, null=True)
+    employee = models.ForeignKey(
+        "employee.Employee", on_delete=models.DO_NOTHING, null=True
+    )
     password_last_changed = models.DateTimeField(null=True)
     keep_me_logged_in = models.BooleanField(default=False)
     full_name = models.CharField(max_length=201, null=True, blank=True, db_index=True)
@@ -87,7 +89,7 @@ class User(AbstractUser):
     class Meta:
         db_table = "user"
         ordering = ["-id"]
-        
+
     def save(self, *args, **kwargs):
         self.full_name = f"{self.first_name} {self.last_name}".strip()
         super().save(*args, **kwargs)
@@ -95,8 +97,6 @@ class User(AbstractUser):
     @property
     def full_name_property(self):
         return f"{self.first_name} {self.last_name}".strip()
-
-
 
 
 class AuthGroupModel(models.Model):
@@ -177,7 +177,9 @@ class RoleFamily(models.Model):
 class CustomGroup(Group):
     sequence = models.PositiveIntegerField()
     group_name = models.CharField(max_length=150, null=True)
-    role_family = models.ForeignKey(RoleFamily, on_delete=models.SET_NULL, null=True, related_name="role_family")
+    role_family = models.ForeignKey(
+        RoleFamily, on_delete=models.SET_NULL, null=True, related_name="role_family"
+    )
 
     company = models.ForeignKey(
         Company,
@@ -203,7 +205,11 @@ class CustomGroup(Group):
 
     def save(self, *args, **kwargs):
         if self.sequence is None:
-            last_record = CustomGroup.objects.filter(created_by=self.created_by).order_by("-sequence").first()
+            last_record = (
+                CustomGroup.objects.filter(created_by=self.created_by)
+                .order_by("-sequence")
+                .first()
+            )
             self.sequence = (last_record.sequence + 1) if last_record else 1
         super(CustomGroup, self).save(*args, **kwargs)
 

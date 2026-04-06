@@ -38,7 +38,9 @@ def send_device_transfer_request_email(subject, template, data):
                 if reference and address:
                     custom_message_content += f"Site Address: {reference} | {address}\n"
             elif hasattr(site, "reference") and hasattr(site, "address"):
-                custom_message_content += f"Site Address: {site.reference} | {site.address}\n"
+                custom_message_content += (
+                    f"Site Address: {site.reference} | {site.address}\n"
+                )
 
     recipient_email = data["email"]
 
@@ -73,10 +75,20 @@ def send_device_transfer_request_email(subject, template, data):
 
         # Log successful emails for all recipients
         for recipient in recipients:
-            log_email_sent(msg, email_type=template.replace(".html", ""), custom_message_content=custom_message_content)
+            log_email_sent(
+                msg,
+                email_type=template.replace(".html", ""),
+                custom_message_content=custom_message_content,
+            )
 
         return HttpResponse("Mail Sent", status=200)
     except Exception as e:
         # Log failed email
-        log_email_failed(msg["To"], subject, str(e), msg["From"], email_type=template.replace(".html", ""))
+        log_email_failed(
+            msg["To"],
+            subject,
+            str(e),
+            msg["From"],
+            email_type=template.replace(".html", ""),
+        )
         return HttpResponse(f"Mail could not be sent: {str(e)}", status=500)

@@ -85,10 +85,20 @@ def geocode_site_location(site_location):
         "landmark": site_location.site_address_landmark,
         "pincode": site_location.site_address_pincode,
         "country": (
-            getattr(site_location.site_address_country, "name", None) if site_location.site_address_country else None
+            getattr(site_location.site_address_country, "name", None)
+            if site_location.site_address_country
+            else None
         ),
-        "state": getattr(site_location.site_address_state, "name", None) if site_location.site_address_state else None,
-        "city": getattr(site_location.site_address_city, "name", None) if site_location.site_address_city else None,
+        "state": (
+            getattr(site_location.site_address_state, "name", None)
+            if site_location.site_address_state
+            else None
+        ),
+        "city": (
+            getattr(site_location.site_address_city, "name", None)
+            if site_location.site_address_city
+            else None
+        ),
         "city_area": (
             getattr(site_location.site_address_city_area, "city_area_name", None)
             if site_location.site_address_city_area

@@ -19,7 +19,9 @@ class GovernmentDocVerification:
     _url_list: dict = {
         "request_data_url": "https://eve.idfy.com/v3/tasks?request_id=",
         "udhyam": "https://eve.idfy.com/v3/tasks/async/verify_with_source/udyam_aadhaar",
-        "gstn": ("https://eve.idfy.com/v3/tasks/async/verify_with_source/ind_gst_certificate"),
+        "gstn": (
+            "https://eve.idfy.com/v3/tasks/async/verify_with_source/ind_gst_certificate"
+        ),
         "pan1": "https://eve.idfy.com/v3/tasks/async/verify_with_source/ind_pan",
         "pan": "https://eve.idfy.com/v3/tasks/async/verify_with_source/ind_pan_plus",
     }
@@ -49,11 +51,17 @@ class GovernmentDocVerification:
 
                 verified_data = res[0].get("result", {}).get("source_output")
                 data = {}
-                data["company_name"] = verified_data.get("general_details").get("enterprise_name", "")
-                data["major_activity"] = verified_data.get("general_details").get("major_activity", "")
+                data["company_name"] = verified_data.get("general_details").get(
+                    "enterprise_name", ""
+                )
+                data["major_activity"] = verified_data.get("general_details").get(
+                    "major_activity", ""
+                )
                 data["block"] = verified_data.get("official_address").get("block", "")
                 data["city"] = verified_data.get("official_address").get("city", "")
-                data["district"] = verified_data.get("official_address").get("district", "")
+                data["district"] = verified_data.get("official_address").get(
+                    "district", ""
+                )
                 data["email"] = verified_data.get("official_address").get("email", "")
                 data["pin"] = verified_data.get("official_address").get("pin", "")
                 data["state"] = verified_data.get("official_address").get("state", "")
@@ -70,7 +78,9 @@ class GovernmentDocVerification:
         self._payload.update({"data": {"gstin": gst_no, "filing_status": True}})
 
         try:
-            response = requests.post(URL, headers=self._headers, json=dict(self._payload))
+            response = requests.post(
+                URL, headers=self._headers, json=dict(self._payload)
+            )
             res = json.loads(response.content)
             request_id = res.get("request_id", None)
             time.sleep(3)
@@ -91,9 +101,9 @@ class GovernmentDocVerification:
                 if verified_data.get("gstin_status").lower() == "active":
                     data["company"] = verified_data.get("trade_name", "")
                     data["legal_name"] = verified_data.get("legal_name", "")
-                    address = verified_data.get("principal_place_of_business_fields", {}).get(
-                        "principal_place_of_business_address"
-                    )
+                    address = verified_data.get(
+                        "principal_place_of_business_fields", {}
+                    ).get("principal_place_of_business_address")
                     data["building_name"] = address.get("building_name", "")
                     data["floor_number"] = address.get("floor_number", "")
                     data["door_name"] = address.get("door_number")
@@ -102,7 +112,9 @@ class GovernmentDocVerification:
                     data["street"] = address.get("street", "")
                     data["status"] = verified_data.get("gstin_status", "")
                     data["state"] = verified_data.get("state_jurisdiction_code", "")
-                    data["business_activity"] = verified_data.get("nature_of_business_activity", "")
+                    data["business_activity"] = verified_data.get(
+                        "nature_of_business_activity", ""
+                    )
                 else:
                     data["error"] = "GSTN Status is not active"
                 return data

@@ -10,7 +10,9 @@ from utils.email_logger import log_email_failed, log_email_sent
 logger = logging.getLogger(__name__)
 
 
-def send_subscription_reminder_email(company, subscription_item=None, days_until_end=None, day=None):
+def send_subscription_reminder_email(
+    company, subscription_item=None, days_until_end=None, day=None
+):
     """
     Send subscription renewal reminder email to company
     days_until_end: Days until subscription ends (7, 3, 1)
@@ -34,7 +36,9 @@ def send_subscription_reminder_email(company, subscription_item=None, days_until
         reminder_days = days_until_end if days_until_end is not None else day
 
         if not reminder_days or reminder_days not in [5, 4, 3, 2]:
-            logger.error(f"Invalid reminder days: {reminder_days}. Must be 5, 4, 3, or 2")
+            logger.error(
+                f"Invalid reminder days: {reminder_days}. Must be 5, 4, 3, or 2"
+            )
             return False
 
         # Prepare email context
@@ -76,25 +80,34 @@ def send_subscription_reminder_email(company, subscription_item=None, days_until
             subject = "Urgent: Your OutdoorX Subscription Ends in 3 Days - Renew Now"
             template_name = "subscription_reminder_day3.html"
         elif reminder_days == 2:
-            subject = "Final Notice: Your OutdoorX Subscription Ends in 2 Days - Act Now"
+            subject = (
+                "Final Notice: Your OutdoorX Subscription Ends in 2 Days - Act Now"
+            )
             template_name = "subscription_reminder_day2.html"
         else:
             return False
 
         # Render email content
-        html_content = render_to_string(f"subscription_reminders/{template_name}", context)
+        html_content = render_to_string(
+            f"subscription_reminders/{template_name}", context
+        )
         text_content = strip_tags(html_content)
 
         # Create and send email
         email = EmailMultiAlternatives(
-            subject=subject, body=text_content, from_email=settings.DEFAULT_FROM_EMAIL, to=[company_user.email]
+            subject=subject,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[company_user.email],
         )
         email.attach_alternative(html_content, "text/html")
 
         try:
             email.send()
             # Log successful email
-            log_email_sent(email, email_type="subscription_reminder", related_user=company_user)
+            log_email_sent(
+                email, email_type="subscription_reminder", related_user=company_user
+            )
             logger.info(
                 f"Subscription renewal reminder email sent to {company.name} for {reminder_days} days until end"
             )
@@ -102,11 +115,19 @@ def send_subscription_reminder_email(company, subscription_item=None, days_until
         except Exception as e:
             # Log failed email
             log_email_failed(
-                company_user.email, subject, str(e), settings.DEFAULT_FROM_EMAIL, email_type="subscription_reminder"
+                company_user.email,
+                subject,
+                str(e),
+                settings.DEFAULT_FROM_EMAIL,
+                email_type="subscription_reminder",
             )
-            logger.error(f"Error sending subscription renewal reminder to {company.name}: {str(e)}")
+            logger.error(
+                f"Error sending subscription renewal reminder to {company.name}: {str(e)}"
+            )
             return False
 
     except Exception as e:
-        logger.error(f"Error sending subscription renewal reminder to {company.name}: {str(e)}")
+        logger.error(
+            f"Error sending subscription renewal reminder to {company.name}: {str(e)}"
+        )
         return False

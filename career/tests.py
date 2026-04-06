@@ -84,13 +84,18 @@ class CareerAPITests(TestCase):
     def test_education_level_mapping_validation(self):
         bad = self.client.post(
             reverse("career-list"),
-            self._payload(max_education_level=str(self.edu_min.pk), min_education_level=str(self.edu_max.pk)),
+            self._payload(
+                max_education_level=str(self.edu_min.pk),
+                min_education_level=str(self.edu_max.pk),
+            ),
             format="json",
         )
         self.assertEqual(bad.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_change_status(self):
-        pk = self.client.post(reverse("career-list"), self._payload(), format="json").data["data"]["id"]
+        pk = self.client.post(
+            reverse("career-list"), self._payload(), format="json"
+        ).data["data"]["id"]
         r = self.client.post(
             reverse("career-change-status", args=[pk]),
             {"is_active": False},
@@ -100,7 +105,9 @@ class CareerAPITests(TestCase):
         self.assertFalse(r.data["data"]["is_active"])
 
     def test_filter_by_education_level(self):
-        self.client.post(reverse("career-list"), self._payload(code="filter_a"), format="json")
+        self.client.post(
+            reverse("career-list"), self._payload(code="filter_a"), format="json"
+        )
         edu_other = EducationLevel.objects.create(
             level_code="post_graduation",
             display_name="Post Graduation",
@@ -115,15 +122,23 @@ class CareerAPITests(TestCase):
             self._payload(code="filter_b", min_education_level=str(edu_other.pk)),
             format="json",
         )
-        r = self.client.get(reverse("career-list"), {"education_level": str(self.edu_min.pk)})
+        r = self.client.get(
+            reverse("career-list"), {"education_level": str(self.edu_min.pk)}
+        )
         payload = r.data.get("results", r.data)
         rows = payload.get("data", r.data.get("data", []))
-        self.assertTrue(all(row["min_education_level_id"] == str(self.edu_min.pk) for row in rows))
+        self.assertTrue(
+            all(row["min_education_level_id"] == str(self.edu_min.pk) for row in rows)
+        )
 
     def test_bulk_archive_restore(self):
         url = reverse("career-list")
-        p1 = self.client.post(url, self._payload(code="bulk_1"), format="json").data["data"]["id"]
-        p2 = self.client.post(url, self._payload(code="bulk_2"), format="json").data["data"]["id"]
+        p1 = self.client.post(url, self._payload(code="bulk_1"), format="json").data[
+            "data"
+        ]["id"]
+        p2 = self.client.post(url, self._payload(code="bulk_2"), format="json").data[
+            "data"
+        ]["id"]
         r = self.client.post(
             reverse("career-bulk-archive"),
             {"ids": [p1, p2]},
@@ -144,8 +159,12 @@ class CareerAPITests(TestCase):
             "soft_eng,Software Engineer,higher_secondary,graduation,Build systems,1\n"
             "soft_eng,Duplicate,higher_secondary,graduation,Duplicate row,1\n"
         )
-        f = SimpleUploadedFile("career.csv", csv_body.encode("utf-8"), content_type="text/csv")
-        r = self.client.post(reverse("career-bulk-upload"), {"file": f}, format="multipart")
+        f = SimpleUploadedFile(
+            "career.csv", csv_body.encode("utf-8"), content_type="text/csv"
+        )
+        r = self.client.post(
+            reverse("career-bulk-upload"), {"file": f}, format="multipart"
+        )
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         self.assertEqual(r.data["success_count"], 1)
         self.assertEqual(r.data["error_count"], 1)
@@ -167,13 +186,17 @@ class CareerAPITests(TestCase):
                 "is_active": True,
             },
         ]
-        r = self.client.post(reverse("career-bulk-import"), {"rows": rows}, format="json")
+        r = self.client.post(
+            reverse("career-bulk-import"), {"rows": rows}, format="json"
+        )
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         self.assertEqual(r.data["data"]["imported_count"], 1)
         self.assertEqual(r.data["data"]["failed_count"], 1)
 
     def test_archived_list(self):
-        pk = self.client.post(reverse("career-list"), self._payload(), format="json").data["data"]["id"]
+        pk = self.client.post(
+            reverse("career-list"), self._payload(), format="json"
+        ).data["data"]["id"]
         self.client.delete(reverse("career-detail", args=[pk]))
         r = self.client.get(reverse("career-archived"))
         self.assertEqual(r.status_code, status.HTTP_200_OK)
@@ -203,4 +226,3 @@ class CareerAPITests(TestCase):
         t0 = time.perf_counter()
         self.client.get(url)
         self.assertLess(time.perf_counter() - t0, 2.0)
-

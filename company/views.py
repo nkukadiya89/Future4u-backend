@@ -138,7 +138,9 @@ class CreateCompanyAccountViewSet(viewsets.ViewSet):
     def create(self, request):
         try:
             data = request.data
-            serializer = CreateCompanySerializer(data=data, context={"request": request})
+            serializer = CreateCompanySerializer(
+                data=data, context={"request": request}
+            )
             if serializer.is_valid(raise_exception=True):
                 with transaction.atomic():
                     company = serializer.save()
@@ -156,13 +158,29 @@ class CreateCompanyAccountViewSet(viewsets.ViewSet):
                             # Get the user associated with this company
                             from user.models import CustomGroup
 
-                            admin_group = CustomGroup.objects.filter(name="Company Admin", company=company).first()
+                            admin_group = CustomGroup.objects.filter(
+                                name="Company Admin", company=company
+                            ).first()
                             if admin_group:
-                                user = User.objects.filter(company=company, groups=admin_group).order_by("id").first()
+                                user = (
+                                    User.objects.filter(
+                                        company=company, groups=admin_group
+                                    )
+                                    .order_by("id")
+                                    .first()
+                                )
                             else:
-                                user = User.objects.filter(company=company, role__isnull=False).order_by("id").first()
+                                user = (
+                                    User.objects.filter(
+                                        company=company, role__isnull=False
+                                    )
+                                    .order_by("id")
+                                    .first()
+                                )
 
-                            email_thread = threading.Thread(target=self.send_email, args=(user, context))
+                            email_thread = threading.Thread(
+                                target=self.send_email, args=(user, context)
+                            )
                             email_thread.start()
 
                             message = (
@@ -175,15 +193,26 @@ class CreateCompanyAccountViewSet(viewsets.ViewSet):
                         message = "Company account created successfully"
 
                     return Response(
-                        {"status": True, "message": message, "data": CreateCompanySerializer(company).data},
+                        {
+                            "status": True,
+                            "message": message,
+                            "data": CreateCompanySerializer(company).data,
+                        },
                         status=status.HTTP_201_CREATED,
                     )
             return Response(
-                {"status": False, "message": "Invalid data provided", "errors": serializer.errors},
+                {
+                    "status": False,
+                    "message": "Invalid data provided",
+                    "errors": serializer.errors,
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            return Response({"status": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"status": False, "message": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
@@ -210,14 +239,21 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
         company_type = request.query_params.get("company_type")
 
         if state:
-            queryset = queryset.filter(models.Q(gst_address_state=state) | models.Q(communication_address_state=state))
+            queryset = queryset.filter(
+                models.Q(gst_address_state=state)
+                | models.Q(communication_address_state=state)
+            )
 
         if city:
-            queryset = queryset.filter(models.Q(gst_address_city=city) | models.Q(communication_address_city=city))
+            queryset = queryset.filter(
+                models.Q(gst_address_city=city)
+                | models.Q(communication_address_city=city)
+            )
 
         if city_area:
             queryset = queryset.filter(
-                models.Q(gst_address_area=city_area) | models.Q(communication_address_area=city_area)
+                models.Q(gst_address_area=city_area)
+                | models.Q(communication_address_area=city_area)
             )
 
         if company_type:
@@ -232,7 +268,9 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
 
         if page is not None:
             serializer = CompanyInfoSerializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = CompanyInfoSerializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -251,42 +289,6 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
                 ip_address = get_client_ip(request)
                 ActivityLog.log.company_create(instance, ip_address, request.user)
 
-                # try:
-                #     welcome_package = Subscription.objects.get(
-                #         package_name="Welcome Package", status="active", deleted=False
-                #     )
-                # except Subscription.DoesNotExist:
-                #     return Response(
-                #         {
-                #             "success": False,
-                #             "message": "Welcome Package not found in Subscription",
-                #         },
-                #         status=status.HTTP_400_BAD_REQUEST,
-                #     )
-
-                # Subscription ki expiry date calculate karna
-                # start_date = datetime.now().date()
-                # end_date = start_date + timedelta(days=int(welcome_package.duration))  # type: ignore
-                # days_to_expire = (end_date - start_date).days
-
-                # # PaymentSubscription create karna
-                # PaymentSubscription.objects.create(
-                #     company=instance,
-                #     subscription=welcome_package,
-                #     sell_price=welcome_package.sell_price,
-                #     amount=0.0,
-                #     duration=welcome_package.duration,
-                #     start_date=start_date,
-                #     end_date=end_date,
-                #     active="Active",
-                #     status="Active",
-                # )
-
-                # Company model me expiry_date aur days_to_expire save karna
-                # instance.expiry_date = end_date  # type: ignore
-                # instance.days_to_expire = days_to_expire  # type: ignore
-                # instance.save()  # type: ignore
-
                 serializer = CompanyInfoSerializer(instance)
                 email = data["email"]
                 user_phone = data["phone"]
@@ -300,25 +302,35 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
 
                 token = generate_forget_pass_token(email, user_phone, 30)
 
-                # phonenumber = str(user_phone)
-                # if phonenumber.startswith("91"):
-                #     phonenumber = phonenumber[2:]
-
                 context = {"name": name, "token": token, "email": email}
 
                 # Get the user associated with this company for email sending
-                admin_group = CustomGroup.objects.filter(name="Company Admin", company=instance).first()
+                admin_group = CustomGroup.objects.filter(
+                    name="Company Admin", company=instance
+                ).first()
                 if admin_group:
-                    user = User.objects.filter(company=instance, groups=admin_group).order_by("id").first()
+                    user = (
+                        User.objects.filter(company=instance, groups=admin_group)
+                        .order_by("id")
+                        .first()
+                    )
                 else:
-                    user = User.objects.filter(company=instance, role__isnull=False).order_by("id").first()
+                    user = (
+                        User.objects.filter(company=instance, role__isnull=False)
+                        .order_by("id")
+                        .first()
+                    )
 
-                email_thread = threading.Thread(target=self.send_email, args=(user, context))
+                email_thread = threading.Thread(
+                    target=self.send_email, args=(user, context)
+                )
                 email_thread.start()
                 return Response(
                     {
                         "success": True,
-                        "message": ("Reset Password Mail has been sent to registered email"),
+                        "message": (
+                            "Reset Password Mail has been sent to registered email"
+                        ),
                         "data": serializer.data,
                     },
                     status=status.HTTP_201_CREATED,
@@ -333,15 +345,27 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
                             # Handle nested errors (e.g., services)
                             for nested_field, nested_error in error.items():
                                 if isinstance(nested_error, list):
-                                    errors.extend([f"{field}.{nested_field}: {err}" for err in nested_error])
+                                    errors.extend(
+                                        [
+                                            f"{field}.{nested_field}: {err}"
+                                            for err in nested_error
+                                        ]
+                                    )
                                 else:
-                                    errors.append(f"{field}.{nested_field}: {nested_error}")
+                                    errors.append(
+                                        f"{field}.{nested_field}: {nested_error}"
+                                    )
                         else:
                             errors.append(f"{field}: {error}")
                 elif isinstance(error_list, dict):
                     for nested_field, nested_error in error_list.items():
                         if isinstance(nested_error, list):
-                            errors.extend([f"{field}.{nested_field}: {err}" for err in nested_error])
+                            errors.extend(
+                                [
+                                    f"{field}.{nested_field}: {err}"
+                                    for err in nested_error
+                                ]
+                            )
                         else:
                             errors.append(f"{field}.{nested_field}: {nested_error}")
                 else:
@@ -360,7 +384,9 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
         # data["updated_by"] = request.user.id
         company_logo = request.data.get("company_logo")
 
-        serializer = CompanySerializer(instance, data=data, context={"request": request}, partial=True)
+        serializer = CompanySerializer(
+            instance, data=data, context={"request": request}, partial=True
+        )
 
         if serializer.is_valid():
             # instance.updated_by = request.user
@@ -389,15 +415,27 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
                             # Handle nested errors (e.g., services)
                             for nested_field, nested_error in error.items():
                                 if isinstance(nested_error, list):
-                                    errors.extend([f"{field}.{nested_field}: {err}" for err in nested_error])
+                                    errors.extend(
+                                        [
+                                            f"{field}.{nested_field}: {err}"
+                                            for err in nested_error
+                                        ]
+                                    )
                                 else:
-                                    errors.append(f"{field}.{nested_field}: {nested_error}")
+                                    errors.append(
+                                        f"{field}.{nested_field}: {nested_error}"
+                                    )
                         else:
                             errors.append(f"{field}: {error}")
                 elif isinstance(error_list, dict):
                     for nested_field, nested_error in error_list.items():
                         if isinstance(nested_error, list):
-                            errors.extend([f"{field}.{nested_field}: {err}" for err in nested_error])
+                            errors.extend(
+                                [
+                                    f"{field}.{nested_field}: {err}"
+                                    for err in nested_error
+                                ]
+                            )
                         else:
                             errors.append(f"{field}.{nested_field}: {nested_error}")
                 else:
@@ -413,7 +451,9 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = CompanyInfoSerializer(instance)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -425,7 +465,9 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
         ip_address = get_client_ip(request)
         ActivityLog.log.company_archive(instance, ip_address, request.user)
 
-        return Response({"success": True, "message": "Company Delete"}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "message": "Company Delete"}, status=status.HTTP_200_OK
+        )
 
     @action(detail=True, methods=["patch"], url_path="company-logo-delete")
     def company_logo_delete(self, request, *args, **kwargs):
@@ -487,13 +529,21 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
             gst_address_pincode = form_data.get("gst_address_pincode")
 
             # Communication Address fields
-            communication_address_country = form_data.get("communication_address_country")
+            communication_address_country = form_data.get(
+                "communication_address_country"
+            )
             communication_address_state = form_data.get("communication_address_state")
             communication_address_city = form_data.get("communication_address_city")
-            communication_address_building = form_data.get("communication_address_building")
+            communication_address_building = form_data.get(
+                "communication_address_building"
+            )
             communication_address_area = form_data.get("communication_address_area")
-            communication_address_landmark = form_data.get("communication_address_landmark")
-            communication_address_pincode = form_data.get("communication_address_pincode")
+            communication_address_landmark = form_data.get(
+                "communication_address_landmark"
+            )
+            communication_address_pincode = form_data.get(
+                "communication_address_pincode"
+            )
 
             company_logo = request.data.get("company_logo", None)
 
@@ -561,7 +611,9 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
                     user.phone = phone
                 user.save()
 
-            return Response({"message": "Company basic info updated successfully."}, status=200)
+            return Response(
+                {"message": "Company basic info updated successfully."}, status=200
+            )
 
         except Company.DoesNotExist:
             return Response({"error": "Company not found."}, status=404)
@@ -578,25 +630,44 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
 
             if not (new_password and re_enter_password):
                 return Response(
-                    {"success": False, "message": "new_password and re_enter_password are required."},
+                    {
+                        "success": False,
+                        "message": "new_password and re_enter_password are required.",
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
             if new_password != re_enter_password:
                 return Response(
-                    {"success": False, "message": "New password and Re-enter password do not match."},
+                    {
+                        "success": False,
+                        "message": "New password and Re-enter password do not match.",
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            admin_group = CustomGroup.objects.filter(name="Company Admin", company=company).first()
+            admin_group = CustomGroup.objects.filter(
+                name="Company Admin", company=company
+            ).first()
             if admin_group:
-                user = User.objects.filter(company=company, groups=admin_group).order_by("id").first()
+                user = (
+                    User.objects.filter(company=company, groups=admin_group)
+                    .order_by("id")
+                    .first()
+                )
             else:
-                user = User.objects.filter(company=company, role__isnull=False).order_by("id").first()
+                user = (
+                    User.objects.filter(company=company, role__isnull=False)
+                    .order_by("id")
+                    .first()
+                )
 
             if not user:
                 return Response(
-                    {"success": False, "message": "Admin user not found for this company."},
+                    {
+                        "success": False,
+                        "message": "Admin user not found for this company.",
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -606,10 +677,16 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
             ip_address = get_client_ip(request)
             ActivityLog.log.change_company_password(company, ip_address, request.user)
 
-            return Response({"success": True, "message": "Password updated successfully."}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": True, "message": "Password updated successfully."},
+                status=status.HTTP_200_OK,
+            )
 
         except Company.DoesNotExist:
-            return Response({"success": False, "message": "Company not found."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": "Company not found."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     @action(detail=False, methods=["PATCH"], url_path="update-status")
     def update_company_status(self, request):
@@ -617,10 +694,16 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
         new_status = request.data.get("status")
 
         if not company_id:
-            return Response({"success": False, "message": "Company ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": "Company ID is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if not new_status:
-            return Response({"success": False, "message": "Status is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": "Status is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Validate status
         valid_statuses = ["active", "inactive", "pending"]
@@ -628,7 +711,9 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
             return Response(
                 {
                     "success": False,
-                    "message": ("Invalid status. Must be one of: " + ", ".join(valid_statuses)),
+                    "message": (
+                        "Invalid status. Must be one of: " + ", ".join(valid_statuses)
+                    ),
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -641,22 +726,29 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
             company.save()
 
             is_active_flag = True if new_status == "active" else False
-            User.objects.filter(company=company).update(status=new_status, is_active=is_active_flag)
+            User.objects.filter(company=company).update(
+                status=new_status, is_active=is_active_flag
+            )
 
             ip_address = get_client_ip(request)
             ActivityLog.log.update_company_status(company, ip_address, request.user)
 
             return Response(
-                {"success": True, "message": "Company status updated successfully"}, status=status.HTTP_200_OK
+                {"success": True, "message": "Company status updated successfully"},
+                status=status.HTTP_200_OK,
             )
 
         except Company.DoesNotExist:
             return Response(
-                {"success": False, "message": "Company not found or already deleted"}, status=status.HTTP_404_NOT_FOUND
+                {"success": False, "message": "Company not found or already deleted"},
+                status=status.HTTP_404_NOT_FOUND,
             )
         except Exception as e:
             return Response(
-                {"success": False, "message": f"Error updating company status: {str(e)}"},
+                {
+                    "success": False,
+                    "message": f"Error updating company status: {str(e)}",
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -753,7 +845,9 @@ class CompanyArchiveViewSet(SearchOrderingFilter, ModelViewSet):
     ]
 
     def create(self, request, *args, **kwargs):
-        serializer = CompanyArchiveSerializer(data=request.data, context={"request": request})
+        serializer = CompanyArchiveSerializer(
+            data=request.data, context={"request": request}
+        )
         if serializer.is_valid():
             # Determine count for pluralized message
             deleted_ids = (
@@ -774,7 +868,11 @@ class CompanyArchiveViewSet(SearchOrderingFilter, ModelViewSet):
 
             serializer.save()
 
-            message = "Company archived successfully" if count == 1 else "Companies archived successfully"
+            message = (
+                "Company archived successfully"
+                if count == 1
+                else "Companies archived successfully"
+            )
             return Response(
                 {"success": True, "message": message},
                 status=status.HTTP_200_OK,
@@ -794,7 +892,9 @@ class CompanyArchiveViewSet(SearchOrderingFilter, ModelViewSet):
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = CompanyArchiveListSerializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = CompanyArchiveListSerializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -808,7 +908,9 @@ class CompanyRestoreViewSet(SearchOrderingFilter, ModelViewSet):
     authentication_classes = [JWTAuthentication]
 
     def create(self, request, *args, **kwargs):
-        serializer = CompanyRestoreSerializer(data=request.data, context={"request": request})
+        serializer = CompanyRestoreSerializer(
+            data=request.data, context={"request": request}
+        )
         if serializer.is_valid():
             # Determine count for pluralized message
             deleted_ids = (
@@ -829,7 +931,11 @@ class CompanyRestoreViewSet(SearchOrderingFilter, ModelViewSet):
 
             serializer.save()
 
-            message = "Company restored successfully" if count == 1 else "Companies restored successfully"
+            message = (
+                "Company restored successfully"
+                if count == 1
+                else "Companies restored successfully"
+            )
             return Response(
                 {"success": True, "message": message},
                 status=status.HTTP_200_OK,
@@ -845,7 +951,13 @@ class GovtDocumentVerification(viewsets.ViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    @action(methods=["get"], detail=False, url_path="gst", permission_classes=[AllowAny], authentication_classes=[])
+    @action(
+        methods=["get"],
+        detail=False,
+        url_path="gst",
+        permission_classes=[AllowAny],
+        authentication_classes=[],
+    )
     def gst_verification(self, request, *args, **kwargs):
         gst_no = request.query_params.get("gst_no")
         if gst_no:
@@ -857,7 +969,9 @@ class GovtDocumentVerification(viewsets.ViewSet):
                 )
             return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
         else:
-            return Response({"success": False, "data": "Invalid GST No"}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": False, "data": "Invalid GST No"}, status=status.HTTP_200_OK
+            )
 
     @action(methods=["get"], detail=False, url_path="udhyam")
     def udhyam_verification(self, request, *args, **kwargs):
@@ -892,7 +1006,9 @@ class GovtDocumentVerification(viewsets.ViewSet):
 
             return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
         else:
-            return Response({"success": False, "data": "Invalid PAN No"}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": False, "data": "Invalid PAN No"}, status=status.HTTP_200_OK
+            )
 
 
 class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
@@ -906,9 +1022,15 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
     ordering_fields = ["title", "photo_file"]
 
     def get_queryset(self):
-        company_id = self.request.query_params.get("company_id") or self.request.data.get("company_id")
+        company_id = self.request.query_params.get(
+            "company_id"
+        ) or self.request.data.get("company_id")
 
-        if not company_id and hasattr(self.request, "data") and "form_data" in self.request.data:
+        if (
+            not company_id
+            and hasattr(self.request, "data")
+            and "form_data" in self.request.data
+        ):
             try:
                 form_data = json.loads(self.request.data["form_data"])
                 company_id = form_data.get("company_id")
@@ -919,11 +1041,15 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
             try:
 
                 company = Company.objects.get(id=company_id)
-                return CompanyPhoto.objects.filter(deleted=False, company=company).order_by("-id")
+                return CompanyPhoto.objects.filter(
+                    deleted=False, company=company
+                ).order_by("-id")
             except Company.DoesNotExist:
                 return CompanyPhoto.objects.none()
         elif self.request.user.company:
-            return CompanyPhoto.objects.filter(deleted=False, company=self.request.user.company).order_by("-id")
+            return CompanyPhoto.objects.filter(
+                deleted=False, company=self.request.user.company
+            ).order_by("-id")
         else:
             return CompanyPhoto.objects.none()
 
@@ -932,7 +1058,9 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
         page = self.paginate_queryset(queryset)
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = self.serializer_class(queryset, many=True, context={"request": request})
+            serializer = self.serializer_class(
+                queryset, many=True, context={"request": request}
+            )
             return Response({"success": True, "data": serializer.data})
 
         if page:
@@ -945,7 +1073,9 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
     def create(self, request, *args, **kwargs):
-        company_id = request.query_params.get("company_id") or request.data.get("company_id")
+        company_id = request.query_params.get("company_id") or request.data.get(
+            "company_id"
+        )
 
         if not company_id and "form_data" in request.data:
             try:
@@ -981,9 +1111,13 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
             instance = serializer.save()
 
             ip_address = get_client_ip(request)
-            ActivityLog.log.company_photo_create(instance, ip_address, request.user, target_company)
+            ActivityLog.log.company_photo_create(
+                instance, ip_address, request.user, target_company
+            )
 
-            company_photo = CompanyPhoto.objects.filter(company=target_company, deleted=False)
+            company_photo = CompanyPhoto.objects.filter(
+                company=target_company, deleted=False
+            )
             serializer = CompanyPhotoSerializer(company_photo, many=True)
 
             if photo_file and hasattr(photo_file, "read"):
@@ -1005,18 +1139,27 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
             instance = CompanyPhoto.objects.get(id=kwargs["pk"])
             if instance.deleted:
                 return Response(
-                    {"detail": "No CompanyPhoto matches the given query."}, status=status.HTTP_404_NOT_FOUND
+                    {"detail": "No CompanyPhoto matches the given query."},
+                    status=status.HTTP_404_NOT_FOUND,
                 )
             serializer = self.serializer_class(instance)
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
         except CompanyPhoto.DoesNotExist:
-            return Response({"detail": "No CompanyPhoto matches the given query."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "No CompanyPhoto matches the given query."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
     def update(self, request, *args, **kwargs):
         try:
             instance = CompanyPhoto.objects.get(id=kwargs["pk"], deleted=False)
         except CompanyPhoto.DoesNotExist:
-            return Response({"detail": "No CompanyPhoto matches the given query."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "No CompanyPhoto matches the given query."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         data = json.loads(request.data["form_data"])
         data["updated_by"] = request.user.id
@@ -1027,7 +1170,9 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
             instance = serializer.save()
 
             ip_address = get_client_ip(request)
-            ActivityLog.log.company_photo_modify(instance, ip_address, request.user, instance.company)
+            ActivityLog.log.company_photo_modify(
+                instance, ip_address, request.user, instance.company
+            )
 
             if photo_file and hasattr(photo_file, "read"):
                 instance.upload_company_photo_presentation(photo_file)
@@ -1045,7 +1190,9 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
             else:
                 target_company = instance.company
 
-            company_photo = CompanyPhoto.objects.filter(company=target_company, deleted=False)
+            company_photo = CompanyPhoto.objects.filter(
+                company=target_company, deleted=False
+            )
             serializer = CompanyPhotoSerializer(company_photo, many=True)
 
             return Response(
@@ -1063,11 +1210,16 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
         try:
             instance = CompanyPhoto.objects.get(id=kwargs["pk"])
         except CompanyPhoto.DoesNotExist:
-            return Response({"detail": "No CompanyPhoto matches the given query."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "No CompanyPhoto matches the given query."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         # If already deleted, return success response (idempotent operation)
         if instance.deleted:
-            company_id = request.query_params.get("company_id") or request.data.get("company_id")
+            company_id = request.query_params.get("company_id") or request.data.get(
+                "company_id"
+            )
 
             if company_id:
                 try:
@@ -1079,11 +1231,17 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
             else:
                 target_company = instance.company
 
-            company_photo = CompanyPhoto.objects.filter(company=target_company, deleted=False)
+            company_photo = CompanyPhoto.objects.filter(
+                company=target_company, deleted=False
+            )
             serializer = CompanyPhotoSerializer(company_photo, many=True)
 
             return Response(
-                {"success": True, "message": "Company Photo Already Deleted", "data": serializer.data},
+                {
+                    "success": True,
+                    "message": "Company Photo Already Deleted",
+                    "data": serializer.data,
+                },
                 status=status.HTTP_200_OK,
             )
 
@@ -1096,9 +1254,13 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
         instance.save()
 
         ip_address = get_client_ip(request)
-        ActivityLog.log.company_photo_delete(instance, ip_address, request.user, instance.company)
+        ActivityLog.log.company_photo_delete(
+            instance, ip_address, request.user, instance.company
+        )
 
-        company_id = request.query_params.get("company_id") or request.data.get("company_id")
+        company_id = request.query_params.get("company_id") or request.data.get(
+            "company_id"
+        )
 
         if company_id:
             try:
@@ -1110,11 +1272,17 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
         else:
             target_company = company_for_response
 
-        company_photo = CompanyPhoto.objects.filter(company=target_company, deleted=False)
+        company_photo = CompanyPhoto.objects.filter(
+            company=target_company, deleted=False
+        )
         serializer = CompanyPhotoSerializer(company_photo, many=True)
 
         return Response(
-            {"success": True, "message": "Company Photo Deleted Successfully", "data": serializer.data},
+            {
+                "success": True,
+                "message": "Company Photo Deleted Successfully",
+                "data": serializer.data,
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -1123,7 +1291,10 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
         try:
             instance = CompanyPhoto.objects.get(id=kwargs["pk"])
         except CompanyPhoto.DoesNotExist:
-            return Response({"detail": "No CompanyPhoto matches the given query."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "No CompanyPhoto matches the given query."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         photo_file = instance.photo_file
 
@@ -1132,7 +1303,9 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
             instance.save()
 
             ip_address = get_client_ip(request)
-            ActivityLog.log.company_photo_delete(instance, ip_address, request.user, instance.company)
+            ActivityLog.log.company_photo_delete(
+                instance, ip_address, request.user, instance.company
+            )
 
             return Response(
                 {"success": True, "message": "Image deleted"},
@@ -1161,11 +1334,15 @@ class CompanyPhotoArchiveViewSet(ModelViewSet):
         if company_id:
             try:
                 company = Company.objects.get(id=company_id)
-                return CompanyPhoto.objects.filter(deleted=True, company=company).order_by("-id")
+                return CompanyPhoto.objects.filter(
+                    deleted=True, company=company
+                ).order_by("-id")
             except Company.DoesNotExist:
                 return CompanyPhoto.objects.none()
         elif self.request.user.company:
-            return CompanyPhoto.objects.filter(deleted=True, company=self.request.user.company).order_by("-id")
+            return CompanyPhoto.objects.filter(
+                deleted=True, company=self.request.user.company
+            ).order_by("-id")
         else:
             return CompanyPhoto.objects.none()
 
@@ -1178,12 +1355,16 @@ class CompanyPhotoArchiveViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = CompanyPhotoSerializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = CompanyPhotoSerializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
     def create(self, request, *args, **kwargs):
-        serializer = CompanyPhotoArchiveSerializer(data=request.data, context={"request": request})
+        serializer = CompanyPhotoArchiveSerializer(
+            data=request.data, context={"request": request}
+        )
         if serializer.is_valid():
             deleted_ids = (
                 serializer.validated_data.get("deleted", [])
@@ -1197,13 +1378,21 @@ class CompanyPhotoArchiveViewSet(ModelViewSet):
             for deleted_id in deleted_ids:
                 try:
                     company_photo = CompanyPhoto.objects.get(id=deleted_id)
-                    ActivityLog.log.company_photo_delete(company_photo, ip_address, request.user, company_photo.company)
+                    ActivityLog.log.company_photo_delete(
+                        company_photo, ip_address, request.user, company_photo.company
+                    )
                 except CompanyPhoto.DoesNotExist:
                     continue
 
             serializer.save()
-            message = "Company Photo archived successfully" if count == 1 else "Company Photos archived successfully"
-            return Response({"success": True, "message": message}, status=status.HTTP_200_OK)
+            message = (
+                "Company Photo archived successfully"
+                if count == 1
+                else "Company Photos archived successfully"
+            )
+            return Response(
+                {"success": True, "message": message}, status=status.HTTP_200_OK
+            )
 
         else:
             return Response(
@@ -1228,19 +1417,28 @@ class CompanyPhotoRestoreViewSet(ModelViewSet):
         if company_id:
             try:
                 company = Company.objects.get(id=company_id)
-                return CompanyPhoto.objects.filter(deleted=True, company=company).order_by("-id")
+                return CompanyPhoto.objects.filter(
+                    deleted=True, company=company
+                ).order_by("-id")
             except Company.DoesNotExist:
                 return CompanyPhoto.objects.none()
         elif self.request.user.company:
-            return CompanyPhoto.objects.filter(deleted=True, company=self.request.user.company).order_by("-id")
+            return CompanyPhoto.objects.filter(
+                deleted=True, company=self.request.user.company
+            ).order_by("-id")
         else:
             return CompanyPhoto.objects.none()
 
     def list(self, request, *args, **kwargs):
-        return Response({"success": False, "message": "Method not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return Response(
+            {"success": False, "message": "Method not allowed"},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
 
     def create(self, request, *args, **kwargs):
-        serializer = CompanyPhotoRestoreSerializer(data=request.data, context={"request": request})
+        serializer = CompanyPhotoRestoreSerializer(
+            data=request.data, context={"request": request}
+        )
 
         if serializer.is_valid():
             deleted_ids = (
@@ -1255,13 +1453,21 @@ class CompanyPhotoRestoreViewSet(ModelViewSet):
             for deleted_id in deleted_ids:
                 try:
                     company_photo = CompanyPhoto.objects.get(id=deleted_id)
-                    ActivityLog.log.company_photo_modify(company_photo, ip_address, request.user, company_photo.company)
+                    ActivityLog.log.company_photo_modify(
+                        company_photo, ip_address, request.user, company_photo.company
+                    )
                 except CompanyPhoto.DoesNotExist:
                     continue
 
             serializer.save()
-            message = "Company Photo restored successfully" if count == 1 else "Company Photos restored successfully"
-            return Response({"success": True, "message": message}, status=status.HTTP_200_OK)
+            message = (
+                "Company Photo restored successfully"
+                if count == 1
+                else "Company Photos restored successfully"
+            )
+            return Response(
+                {"success": True, "message": message}, status=status.HTTP_200_OK
+            )
 
         else:
             return Response(
@@ -1293,7 +1499,8 @@ class EnquiryViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return Response(
-                {"success": False, "message": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED
+                {"success": False, "message": "Authentication required"},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
         is_super_admin = request.user.is_superuser
@@ -1317,7 +1524,9 @@ class EnquiryViewSet(ModelViewSet):
                 serializer.validated_data["user"] = request.user
             enquiry = serializer.save()
 
-            user_obj = request.user if request.user and request.user.is_authenticated else None
+            user_obj = (
+                request.user if request.user and request.user.is_authenticated else None
+            )
 
             try:
                 context = {
@@ -1325,24 +1534,47 @@ class EnquiryViewSet(ModelViewSet):
                     "enquirer_email": enquiry.email,
                     "phone": enquiry.phone,
                     "message": enquiry.message,
-                    "user_name": enquiry.user.get_full_name() if enquiry.user else "Guest User",
+                    "user_name": (
+                        enquiry.user.get_full_name() if enquiry.user else "Guest User"
+                    ),
                     "user_email": enquiry.user.email if enquiry.user else "N/A",
-                    "company_name": enquiry.send_enquiry_to.name if enquiry.send_enquiry_to else "N/A",
-                    "company_email": enquiry.send_enquiry_to.email if enquiry.send_enquiry_to else "N/A",
+                    "company_name": (
+                        enquiry.send_enquiry_to.name
+                        if enquiry.send_enquiry_to
+                        else "N/A"
+                    ),
+                    "company_email": (
+                        enquiry.send_enquiry_to.email
+                        if enquiry.send_enquiry_to
+                        else "N/A"
+                    ),
                 }
 
-                email_thread = threading.Thread(target=self.send_email, args=(user_obj, context))
+                email_thread = threading.Thread(
+                    target=self.send_email, args=(user_obj, context)
+                )
                 email_thread.start()
 
                 return Response(
-                    {"success": True, "message": "Enquiry submitted successfully", "data": serializer.data},
+                    {
+                        "success": True,
+                        "message": "Enquiry submitted successfully",
+                        "data": serializer.data,
+                    },
                     status=status.HTTP_201_CREATED,
                 )
 
             except Exception:
                 return Response(
-                    {"success": True, "message": "Enquiry submitted successfully", "data": serializer.data},
+                    {
+                        "success": True,
+                        "message": "Enquiry submitted successfully",
+                        "data": serializer.data,
+                    },
                     status=status.HTTP_201_CREATED,
                 )
 
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )

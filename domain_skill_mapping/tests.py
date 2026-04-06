@@ -61,7 +61,9 @@ class DomainSkillMappingAPITests(TestCase):
         self.assertIn("DSM Domain", str(obj))
 
     def test_crud_and_soft_delete(self):
-        r = self.client.post(reverse("domain-skill-mapping-list"), self._payload(), format="json")
+        r = self.client.post(
+            reverse("domain-skill-mapping-list"), self._payload(), format="json"
+        )
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         pk = r.data["data"]["id"]
 
@@ -94,7 +96,11 @@ class DomainSkillMappingAPITests(TestCase):
             is_active=True,
             created_by=self.user,
         )
-        self.client.post(reverse("domain-skill-mapping-list"), self._payload(weight_score=20), format="json")
+        self.client.post(
+            reverse("domain-skill-mapping-list"),
+            self._payload(weight_score=20),
+            format="json",
+        )
         self.client.post(
             reverse("domain-skill-mapping-list"),
             self._payload(skill=str(s2.pk), weight_score=99),
@@ -102,7 +108,11 @@ class DomainSkillMappingAPITests(TestCase):
         )
         r = self.client.get(
             reverse("domain-skill-mapping-list"),
-            {"domain": str(self.domain.pk), "search": "Robotics", "ordering": "-weight_score"},
+            {
+                "domain": str(self.domain.pk),
+                "search": "Robotics",
+                "ordering": "-weight_score",
+            },
         )
         payload = r.data.get("results", r.data)
         rows = payload.get("data", r.data.get("data", []))
@@ -117,15 +127,26 @@ class DomainSkillMappingAPITests(TestCase):
             is_active=True,
             created_by=self.user,
         )
-        self.client.post(reverse("domain-skill-mapping-list"), self._payload(weight_score=25), format="json")
+        self.client.post(
+            reverse("domain-skill-mapping-list"),
+            self._payload(weight_score=25),
+            format="json",
+        )
         self.client.post(
             reverse("domain-skill-mapping-list"),
             self._payload(skill=str(s2.pk), weight_score=88),
             format="json",
         )
-        r = self.client.get(reverse("domain-skill-mapping-by-domain", kwargs={"domain_id": str(self.domain.pk)}))
+        r = self.client.get(
+            reverse(
+                "domain-skill-mapping-by-domain",
+                kwargs={"domain_id": str(self.domain.pk)},
+            )
+        )
         self.assertEqual(r.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(r.data["data"][0]["weight_score"], r.data["data"][1]["weight_score"])
+        self.assertGreaterEqual(
+            r.data["data"][0]["weight_score"], r.data["data"][1]["weight_score"]
+        )
 
     def test_bulk_upload(self):
         s2 = Skill.objects.create(
@@ -140,8 +161,12 @@ class DomainSkillMappingAPITests(TestCase):
             f"{self.domain.domain_code},{self.skill.skill_code},80,1,1\n"
             f"{self.domain.domain_code},{s2.skill_code},not_a_number,0,1\n"
         )
-        f = SimpleUploadedFile("dsm.csv", csv_body.encode("utf-8"), content_type="text/csv")
-        r = self.client.post(reverse("domain-skill-mapping-bulk-import"), {"file": f}, format="multipart")
+        f = SimpleUploadedFile(
+            "dsm.csv", csv_body.encode("utf-8"), content_type="text/csv"
+        )
+        r = self.client.post(
+            reverse("domain-skill-mapping-bulk-import"), {"file": f}, format="multipart"
+        )
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         self.assertIn("success_count", r.data)
         self.assertIn("error_count", r.data)
@@ -160,19 +185,26 @@ class DomainSkillMappingAPITests(TestCase):
             is_active=True,
             created_by=self.user,
         )
-        p1 = self.client.post(reverse("domain-skill-mapping-list"), self._payload(weight_score=45), format="json").data[
-            "data"
-        ]["id"]
+        p1 = self.client.post(
+            reverse("domain-skill-mapping-list"),
+            self._payload(weight_score=45),
+            format="json",
+        ).data["data"]["id"]
         p2 = self.client.post(
             reverse("domain-skill-mapping-list"),
             self._payload(skill=str(s2.pk), weight_score=55),
             format="json",
         ).data["data"]["id"]
 
-        r = self.client.post(reverse("domain-skill-mapping-bulk-delete"), {"ids": [p1, p2]}, format="json")
+        r = self.client.post(
+            reverse("domain-skill-mapping-bulk-delete"),
+            {"ids": [p1, p2]},
+            format="json",
+        )
         self.assertEqual(r.status_code, status.HTTP_200_OK)
         r = self.client.get(reverse("domain-skill-mapping-deleted"))
         self.assertEqual(r.status_code, status.HTTP_200_OK)
-        r = self.client.post(reverse("domain-skill-mapping-bulk-restore"), {"ids": [p1]}, format="json")
+        r = self.client.post(
+            reverse("domain-skill-mapping-bulk-restore"), {"ids": [p1]}, format="json"
+        )
         self.assertEqual(r.status_code, status.HTTP_200_OK)
-

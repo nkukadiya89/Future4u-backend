@@ -2,6 +2,7 @@ from django.utils.timezone import now
 from rest_framework import serializers
 
 from company.models import Company
+
 # from site_location.models import SiteLocation
 from subscription.models import (
     PaymentSubscription,
@@ -26,16 +27,10 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             "id",
             "package_name",
             "subscription_type",
-            "device_price",
-            "device_discount",
-            "device_sell_price",
             "subscription_price",
             "subscription_discount",
             "subscription_sell_price",
             "plan_price",
-            "device_transfer_price",
-            "device_transfer_discount",
-            "device_transfer_sell_price",
             "duration_days",
             "description",
             "core_features",
@@ -69,7 +64,10 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                 "feature_status": data.get("feature_status", False),
                 "is_core": True,
             }
-            if payload["feature_name"] is not None and payload["feature_status"] is not None:
+            if (
+                payload["feature_name"] is not None
+                and payload["feature_status"] is not None
+            ):
                 feature_instances.append(SubscriptionFeature.objects.create(**payload))
 
         # Save custom features (is_core=False)
@@ -80,7 +78,10 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                 "feature_status": data.get("feature_status", False),
                 "is_core": False,
             }
-            if payload["feature_name"] is not None and payload["feature_status"] is not None:
+            if (
+                payload["feature_name"] is not None
+                and payload["feature_status"] is not None
+            ):
                 feature_instances.append(SubscriptionFeature.objects.create(**payload))
 
         return subscription_instance
@@ -122,25 +123,20 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         return instance
 
     def validate(self, attrs):
-        sub_type = attrs.get("subscription_type") or getattr(self.instance, "subscription_type", None)
+        sub_type = attrs.get("subscription_type") or getattr(
+            self.instance, "subscription_type", None
+        )
         errors = {}
 
         if sub_type == "subscription":
             # Require both device and subscription pricing fields
             for f in [
-                "device_price",
-                "device_discount",
-                "device_sell_price",
                 "subscription_price",
                 "subscription_discount",
                 "subscription_sell_price",
             ]:
                 if self.instance is None and attrs.get(f) in [None, ""]:
                     errors[f] = "This field is required for subscription type"
-        elif sub_type == "transfer":
-            for f in ["device_transfer_price", "device_transfer_discount", "device_transfer_sell_price"]:
-                if self.instance is None and attrs.get(f) in [None, ""]:
-                    errors[f] = "This field is required for transfer type"
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -162,7 +158,9 @@ class SubscriptionArchiveSerializer(serializers.ModelSerializer):
                 subscription = Subscription.objects.get(id=deleted_id)
                 subscription.deleted = True
                 subscription.deleted_at = now()
-                request = self.context.get("request") if hasattr(self, "context") else None
+                request = (
+                    self.context.get("request") if hasattr(self, "context") else None
+                )
                 if request and hasattr(request, "user"):
                     subscription.deleted_by = request.user
                 subscription.save()
@@ -208,22 +206,36 @@ class SubscriptionArchiveListSerializer(serializers.ModelSerializer):
         return format_datetime(getattr(obj, "created_at", None))
 
     def get_created_by_name(self, obj):
-        return f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else None
+        return (
+            f"{obj.created_by.first_name} {obj.created_by.last_name}"
+            if obj.created_by
+            else None
+        )
 
     def get_updated_at(self, obj):
         return format_datetime(getattr(obj, "updated_at", None))
 
     def get_updated_by_name(self, obj):
-        return f"{obj.updated_by.first_name} {obj.updated_by.last_name}" if obj.updated_by else None
+        return (
+            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
+            if obj.updated_by
+            else None
+        )
 
     def get_deleted_at(self, obj):
         return format_datetime(getattr(obj, "deleted_at", None))
 
     def get_deleted_by_name(self, obj):
-        return f"{obj.deleted_by.first_name} {obj.deleted_by.last_name}" if obj.deleted_by else None
+        return (
+            f"{obj.deleted_by.first_name} {obj.deleted_by.last_name}"
+            if obj.deleted_by
+            else None
+        )
 
     def get_core_features(self, instance):
-        features = SubscriptionFeature.objects.filter(subscription_id=instance.id, is_core=True)
+        features = SubscriptionFeature.objects.filter(
+            subscription_id=instance.id, is_core=True
+        )
         return [
             {
                 "id": f.id,
@@ -234,7 +246,9 @@ class SubscriptionArchiveListSerializer(serializers.ModelSerializer):
         ]
 
     def get_subscription_feature(self, instance):
-        features = SubscriptionFeature.objects.filter(subscription_id=instance.id, is_core=False)
+        features = SubscriptionFeature.objects.filter(
+            subscription_id=instance.id, is_core=False
+        )
         return [
             {
                 "id": f.id,
@@ -250,16 +264,10 @@ class SubscriptionArchiveListSerializer(serializers.ModelSerializer):
             "id",
             "package_name",
             "subscription_type",
-            "device_price",
-            "device_discount",
-            "device_sell_price",
             "subscription_price",
             "subscription_discount",
             "subscription_sell_price",
             "plan_price",
-            "device_transfer_price",
-            "device_transfer_discount",
-            "device_transfer_sell_price",
             "duration_days",
             "description",
             "status",
@@ -288,22 +296,31 @@ class SubscriptionGetSerializer(serializers.ModelSerializer):
     updated_at = serializers.SerializerMethodField(read_only=True)
     created_by_name = serializers.SerializerMethodField()
     updated_by_name = serializers.SerializerMethodField()
-    available_device_credit = serializers.SerializerMethodField()
 
     def get_created_at(self, obj):
         return format_datetime(getattr(obj, "created_at", None))
 
     def get_created_by_name(self, obj):
-        return f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else None
+        return (
+            f"{obj.created_by.first_name} {obj.created_by.last_name}"
+            if obj.created_by
+            else None
+        )
 
     def get_updated_at(self, obj):
         return format_datetime(getattr(obj, "updated_at", None))
 
     def get_updated_by_name(self, obj):
-        return f"{obj.updated_by.first_name} {obj.updated_by.last_name}" if obj.updated_by else None
+        return (
+            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
+            if obj.updated_by
+            else None
+        )
 
     def get_core_features(self, instance):
-        features = SubscriptionFeature.objects.filter(subscription_id=instance.id, is_core=True)
+        features = SubscriptionFeature.objects.filter(
+            subscription_id=instance.id, is_core=True
+        )
         return [
             {
                 "id": f.id,
@@ -314,7 +331,9 @@ class SubscriptionGetSerializer(serializers.ModelSerializer):
         ]
 
     def get_subscription_feature(self, instance):
-        features = SubscriptionFeature.objects.filter(subscription_id=instance.id, is_core=False)
+        features = SubscriptionFeature.objects.filter(
+            subscription_id=instance.id, is_core=False
+        )
         return [
             {
                 "id": f.id,
@@ -324,28 +343,16 @@ class SubscriptionGetSerializer(serializers.ModelSerializer):
             for f in features
         ]
 
-    def get_available_device_credit(self, obj):
-        qty = self.context.get("available_device_credit")
-        if qty is not None:
-            return qty
-        return 0
-
     class Meta:
         model = Subscription
         fields = [
             "id",
             "package_name",
             "subscription_type",
-            "device_price",
-            "device_discount",
-            "device_sell_price",
             "subscription_price",
             "subscription_discount",
             "subscription_sell_price",
             "plan_price",
-            "device_transfer_price",
-            "device_transfer_discount",
-            "device_transfer_sell_price",
             "duration_days",
             "description",
             "status",
@@ -355,7 +362,6 @@ class SubscriptionGetSerializer(serializers.ModelSerializer):
             "updated_at",
             "core_features",
             "subscription_feature",
-            "available_device_credit",
         ]
         extra_kwargs = {
             "created_by": {"write_only": True},
@@ -370,9 +376,6 @@ class TransferSubscriptionSerializer(SubscriptionGetSerializer):
             "package_name",
             "subscription_type",
             "plan_price",
-            "device_transfer_price",
-            "device_transfer_discount",
-            "device_transfer_sell_price",
             "description",
             "status",
             "created_by_name",
@@ -399,8 +402,12 @@ class SubscriptionInvoiceSerializer(serializers.ModelSerializer):
         format="%d-%m-%y",
     )
     invoice_number = serializers.CharField(read_only=True)
-    currency_name = serializers.CharField(source="currency.currency_name", required=False)
-    subscription_name = serializers.CharField(source="subscription.package_name", required=False)
+    currency_name = serializers.CharField(
+        source="currency.currency_name", required=False
+    )
+    subscription_name = serializers.CharField(
+        source="subscription.package_name", required=False
+    )
 
     business_name = serializers.CharField(source="company.name", required=False)
     address = serializers.CharField(source="company.address_line_1", required=False)
@@ -484,7 +491,9 @@ class SubscriptionInvoiceArchiveSerializer(serializers.ModelSerializer):
                 purchasedsubscription.deleted = True
                 purchasedsubscription.save()
             except SubscriptionInvoice.DoesNotExist:
-                raise serializers.ValidationError("Purchased Subscription does not exist")
+                raise serializers.ValidationError(
+                    "Purchased Subscription does not exist"
+                )
 
         return purchasedsubscription
 
@@ -506,14 +515,18 @@ class SubscriptionInvoiceRestoreSerializer(serializers.ModelSerializer):
                 purchasedsubscription.updated_at = now()
                 purchasedsubscription.save()
             except SubscriptionInvoice.DoesNotExist:
-                raise serializers.ValidationError("Purchased Subscription does not exist")
+                raise serializers.ValidationError(
+                    "Purchased Subscription does not exist"
+                )
 
         return purchasedsubscription
 
 
 class PaymentSubscriptionSerializer(serializers.ModelSerializer):
     company_name = serializers.CharField(source="company.name", read_only=True)
-    subscription_name = serializers.CharField(source="subscription.package_name", read_only=True)
+    subscription_name = serializers.CharField(
+        source="subscription.package_name", read_only=True
+    )
 
     class Meta:
         model = PaymentSubscription
@@ -537,7 +550,9 @@ class CartSetQuantitySerializer(serializers.Serializer):
 
 
 class SubscriptionCartSerializer(serializers.ModelSerializer):
-    subscription_name = serializers.CharField(source="subscription.package_name", read_only=True)
+    subscription_name = serializers.CharField(
+        source="subscription.package_name", read_only=True
+    )
 
     class Meta:
         model = SubscriptionCart
@@ -580,7 +595,9 @@ class AddToCartWithSiteSerializer(serializers.Serializer):
     company = serializers.IntegerField()
     subscription = serializers.IntegerField()
     quantity = serializers.IntegerField()
-    site = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    site = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False
+    )
 
     class Meta:
         model = SubscriptionCartWithSite
@@ -608,7 +625,9 @@ class AddToCartWithSiteSerializer(serializers.Serializer):
             raise serializers.ValidationError("Company not found.")
 
         try:
-            data["subscription_instance"] = Subscription.objects.get(id=data["subscription"])
+            data["subscription_instance"] = Subscription.objects.get(
+                id=data["subscription"]
+            )
         except Subscription.DoesNotExist:
             raise serializers.ValidationError("Subscription not found.")
 

@@ -85,7 +85,9 @@ class StreamViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.get_serializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -102,7 +104,10 @@ class StreamViewSet(ModelViewSet):
                 {"success": True, "message": "Stream created", "data": serializer.data},
                 status=status.HTTP_201_CREATED,
             )
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -110,7 +115,10 @@ class StreamViewSet(ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response({"success": True, "data": serializer.data})
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -118,15 +126,24 @@ class StreamViewSet(ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response({"success": True, "data": serializer.data})
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         try:
             stream_service.archive_stream(stream=instance, user=request.user)
         except ValidationError as e:
-            return Response({"success": False, "message": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"success": True, "message": "Archived Successfully"}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": False, "message": e.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            {"success": True, "message": "Archived Successfully"},
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=False, methods=["get"], url_path="archived")
     def archived(self, request, *args, **kwargs):
@@ -134,11 +151,15 @@ class StreamViewSet(ModelViewSet):
         page = self.paginate_queryset(queryset)
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = StreamSerializer(queryset, many=True, context={"request": request})
+            serializer = StreamSerializer(
+                queryset, many=True, context={"request": request}
+            )
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = StreamSerializer(page, many=True, context={"request": request})
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = StreamSerializer(queryset, many=True, context={"request": request})
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -147,7 +168,10 @@ class StreamViewSet(ModelViewSet):
         instance = self.get_object()
         ser = StreamChangeStatusSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         stream_service.set_active_status(
             stream=instance,
             user=request.user,
@@ -164,7 +188,11 @@ class StreamViewSet(ModelViewSet):
     @action(detail=False, methods=["get"], url_path="dropdown")
     def dropdown(self, request, *args, **kwargs):
         edu = request.query_params.get("education_level")
-        key = dropdown_key("streams") if not edu else f"{dropdown_key('streams')}:education_level:{edu}"
+        key = (
+            dropdown_key("streams")
+            if not edu
+            else f"{dropdown_key('streams')}:education_level:{edu}"
+        )
         try:
             cached = cache.get(key)
         except Exception:
@@ -187,26 +215,46 @@ class StreamViewSet(ModelViewSet):
     def bulk_archive(self, request, *args, **kwargs):
         ser = StreamBulkIdsSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         try:
-            n = stream_service.bulk_archive(ids=list(ser.validated_data["ids"]), user=request.user)
+            n = stream_service.bulk_archive(
+                ids=list(ser.validated_data["ids"]), user=request.user
+            )
         except ValidationError as e:
-            return Response({"success": False, "message": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"success": True, "message": "Bulk archived successfully", "count": n})
+            return Response(
+                {"success": False, "message": e.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            {"success": True, "message": "Bulk archived successfully", "count": n}
+        )
 
     @action(detail=False, methods=["post"], url_path="bulk-restore")
     def bulk_restore(self, request, *args, **kwargs):
         ser = StreamBulkIdsSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
-        n = stream_service.bulk_restore(ids=list(ser.validated_data["ids"]), user=request.user)
-        return Response({"success": True, "message": "Bulk restored successfully", "count": n})
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        n = stream_service.bulk_restore(
+            ids=list(ser.validated_data["ids"]), user=request.user
+        )
+        return Response(
+            {"success": True, "message": "Bulk restored successfully", "count": n}
+        )
 
     @action(detail=False, methods=["post"], url_path="bulk-import")
     def bulk_import(self, request, *args, **kwargs):
         ser = StreamBulkImportSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         batch = stream_service.bulk_import_rows(
             user=request.user,
             rows=ser.validated_data["rows"],
@@ -216,7 +264,9 @@ class StreamViewSet(ModelViewSet):
         return Response(
             {
                 "success": True,
-                "data": StreamImportBatchSerializer(batch, context={"request": request}).data,
+                "data": StreamImportBatchSerializer(
+                    batch, context={"request": request}
+                ).data,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -232,7 +282,9 @@ class StreamViewSet(ModelViewSet):
         rows, parse_errors = stream_service.parse_import_file(upload)
         if not rows:
             msg = parse_errors or ["No data rows in file."]
-            return Response({"success": False, "message": msg}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": msg}, status=status.HTTP_400_BAD_REQUEST
+            )
         result = stream_service.bulk_import_streams(
             user=request.user,
             rows=rows,
@@ -256,12 +308,20 @@ class StreamViewSet(ModelViewSet):
         page = self.paginate_queryset(qs)
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = StreamImportBatchSerializer(qs, many=True, context={"request": request})
+            serializer = StreamImportBatchSerializer(
+                qs, many=True, context={"request": request}
+            )
             return Response({"success": True, "data": serializer.data})
         if page is not None:
-            serializer = StreamImportBatchSerializer(page, many=True, context={"request": request})
-            return self.get_paginated_response({"success": True, "data": serializer.data})
-        serializer = StreamImportBatchSerializer(qs, many=True, context={"request": request})
+            serializer = StreamImportBatchSerializer(
+                page, many=True, context={"request": request}
+            )
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+        serializer = StreamImportBatchSerializer(
+            qs, many=True, context={"request": request}
+        )
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
     @action(detail=False, methods=["get"], url_path="import-errors")
@@ -272,7 +332,10 @@ class StreamViewSet(ModelViewSet):
             try:
                 bid = UUID(str(batch_id))
             except (ValueError, TypeError):
-                return Response({"success": False, "message": "Invalid batch_id"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"success": False, "message": "Invalid batch_id"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         qs = stream_service.import_errors_queryset(batch_id=bid)
         page = self.paginate_queryset(qs)
         no_pagination = request.query_params.get("no_pagination")
@@ -281,7 +344,9 @@ class StreamViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = StreamImportErrorSerializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = StreamImportErrorSerializer(qs, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -293,7 +358,10 @@ class StreamViewSet(ModelViewSet):
             try:
                 bid = UUID(str(batch_id))
             except (ValueError, TypeError):
-                return Response({"success": False, "message": "Invalid batch_id"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"success": False, "message": "Invalid batch_id"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         filename, data = stream_service.error_report_csv_bytes(batch_id=bid)
         resp = HttpResponse(data, content_type="text/csv; charset=utf-8")
         resp["Content-Disposition"] = f'attachment; filename="{filename}"'

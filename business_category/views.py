@@ -11,11 +11,8 @@ from activity_log.models import ActivityLog
 from common.api.mixins import ArchiveMixin
 from business_category.models import BusinessCategory
 from business_category.serializers import (
-    # BusinessCategoryArchiveListSerializer,
-    # BusinessCategoryArchiveSerializer,
-    # BusinessCategoryRestoreSerializer,
     BusinessCategorySerializers,
-    BusinessCategoryDropdownSerializer
+    BusinessCategoryDropdownSerializer,
 )
 from utils.generate_ip_address import get_client_ip
 from utils.pagination import Pagination
@@ -31,8 +28,8 @@ class BusinessCategoryViewSet(BaseModelViewSet, ArchiveMixin):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    search_fields = BaseModelViewSet.searching_fields +["=id", "business_category"]
-    ordering_fields = BaseModelViewSet.ordering_fields +["id", "business_category"]
+    search_fields = BaseModelViewSet.searching_fields + ["=id", "business_category"]
+    ordering_fields = BaseModelViewSet.ordering_fields + ["id", "business_category"]
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -43,7 +40,9 @@ class BusinessCategoryViewSet(BaseModelViewSet, ArchiveMixin):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.serializer_class(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -55,7 +54,11 @@ class BusinessCategoryViewSet(BaseModelViewSet, ArchiveMixin):
             ip_address = get_client_ip(request)
             ActivityLog.log.business_category_create(instance, ip_address, request.user)
             return Response(
-                {"success": True, "message": "Business category added successfully", "data": serializer.data},
+                {
+                    "success": True,
+                    "message": "Business category added successfully",
+                    "data": serializer.data,
+                },
                 status=status.HTTP_201_CREATED,
             )
         else:
@@ -77,7 +80,11 @@ class BusinessCategoryViewSet(BaseModelViewSet, ArchiveMixin):
             ip_address = get_client_ip(request)
             ActivityLog.log.business_category_update(instance, ip_address, request.user)
             return Response(
-                {"success": True, "message": "Business category updated successfully", "data": serializer.data},
+                {
+                    "success": True,
+                    "message": "Business category updated successfully",
+                    "data": serializer.data,
+                },
                 status=status.HTTP_202_ACCEPTED,
             )
         else:
@@ -89,7 +96,10 @@ class BusinessCategoryViewSet(BaseModelViewSet, ArchiveMixin):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         if getattr(instance, "deleted", False):
-            return Response({"success": False, "message": "Already Archived"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": "Already Archived"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         instance.deleted = 1
         instance.deleted_at = timezone.now()
         if hasattr(instance, "deleted_by"):
@@ -101,7 +111,7 @@ class BusinessCategoryViewSet(BaseModelViewSet, ArchiveMixin):
             {"success": True, "message": "Business category Deleted"},
             status=status.HTTP_204_NO_CONTENT,
         )
-        
+
     @action(
         detail=False,
         methods=["get"],
@@ -110,24 +120,35 @@ class BusinessCategoryViewSet(BaseModelViewSet, ArchiveMixin):
         authentication_classes=[],
     )
     def get_category(self, request, *args, **kwargs):
-        queryset = BusinessCategory.objects.filter(deleted=False).order_by("-id").values("id", "business_category")
+        queryset = (
+            BusinessCategory.objects.filter(deleted=False)
+            .order_by("-id")
+            .values("id", "business_category")
+        )
         return Response({"success": True, "data": list(queryset)})
-
 
     @action(detail=False, methods=["get"], url_path="dropdown")
     def dropdown(self, request):
         filter_param = request.query_params.get("filter")
-        key = dropdown_key("business_category") if not filter_param else f"{dropdown_key('business_category')}:filter:{filter_param}"
+        key = (
+            dropdown_key("business_category")
+            if not filter_param
+            else f"{dropdown_key('business_category')}:filter:{filter_param}"
+        )
         try:
             cached = cache.get(key)
         except Exception:
             cached = None
         if cached is not None:
-            return Response({"success": True, "data": cached}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": True, "data": cached}, status=status.HTTP_200_OK
+            )
 
         queryset = BusinessCategory.objects.filter(deleted=False)
         if filter_param:
-            queryset = queryset.filter(name__icontains=filter_param) | queryset.filter(code__icontains=filter_param)
+            queryset = queryset.filter(name__icontains=filter_param) | queryset.filter(
+                code__icontains=filter_param
+            )
 
         serializer = BusinessCategoryDropdownSerializer(queryset, many=True)
         data = serializer.data
@@ -159,17 +180,25 @@ class BusinessCategoryArchiveViewSet(ModelViewSet):
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.get_serializer(queryset, many=True)
         return Response({"success": True, "data": serializer.data})
 
     def create(self, request, *args, **kwargs):
         ids = request.data.get("deleted", [])
         if not ids:
-            return Response({"success": False, "message": "Ids are Required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": "Ids are Required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         qs = BusinessCategory.objects.filter(id__in=ids, deleted=False)
         if not qs.exists():
-            return Response({"success": False, "message": "No valid ids"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": "No valid ids"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         qs.update(deleted=True, deleted_at=timezone.now(), deleted_by=request.user)
         ip_address = get_client_ip(request)
         ActivityLog.log.business_category_archive(qs.first(), ip_address, request.user)
@@ -196,10 +225,16 @@ class BusinessCategoryRestoreViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         ids = request.data.get("deleted", [])
         if not ids:
-            return Response({"success": False, "message": "Ids are Required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": "Ids are Required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         qs = BusinessCategory.objects.filter(id__in=ids, deleted=True)
         if not qs.exists():
-            return Response({"success": False, "message": "No valid ids"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": "No valid ids"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         qs.update(deleted=False, deleted_at=None, deleted_by=None)
         ip_address = get_client_ip(request)
         ActivityLog.log.business_category_restore(qs.first(), ip_address, request.user)

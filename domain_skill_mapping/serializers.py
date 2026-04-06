@@ -66,17 +66,25 @@ class DomainSkillMappingSerializer(AuditFieldsMixin, serializers.ModelSerializer
         skill = attrs.get("skill", getattr(self.instance, "skill", None))
         if domain and skill:
             exclude = self.instance.pk if getattr(self.instance, "pk", None) else None
-            if domain_skill_mapping_service.pair_exists(domain_id=domain.pk, skill_id=skill.pk, exclude_pk=exclude):
-                raise serializers.ValidationError({"non_field_errors": ["Domain-skill mapping already exists."]})
+            if domain_skill_mapping_service.pair_exists(
+                domain_id=domain.pk, skill_id=skill.pk, exclude_pk=exclude
+            ):
+                raise serializers.ValidationError(
+                    {"non_field_errors": ["Domain-skill mapping already exists."]}
+                )
         return attrs
 
     def create(self, validated_data):
         user = self.context["request"].user
-        return domain_skill_mapping_service.create_mapping(user=user, validated_data=validated_data)
+        return domain_skill_mapping_service.create_mapping(
+            user=user, validated_data=validated_data
+        )
 
     def update(self, instance, validated_data):
         user = self.context["request"].user
-        return domain_skill_mapping_service.update_mapping(mapping=instance, user=user, validated_data=validated_data)
+        return domain_skill_mapping_service.update_mapping(
+            mapping=instance, user=user, validated_data=validated_data
+        )
 
 
 class DomainSkillMappingBulkIdsSerializer(serializers.Serializer):
@@ -89,4 +97,3 @@ class DomainSkillMappingBulkImportSerializer(serializers.Serializer):
 
 class DomainSkillMappingChangeStatusSerializer(serializers.Serializer):
     is_active = serializers.BooleanField()
-

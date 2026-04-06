@@ -95,11 +95,17 @@ def validate_skill_type(value: Any) -> str:
     raw = (value or "").strip().lower()
     allowed = {c for c, _ in SkillType.choices}
     if raw not in allowed:
-        raise ValidationError({"skill_type": f"Invalid skill_type. Allowed: {', '.join(sorted(allowed))}."})
+        raise ValidationError(
+            {
+                "skill_type": f"Invalid skill_type. Allowed: {', '.join(sorted(allowed))}."
+            }
+        )
     return raw
 
 
-def validate_skill_data(*, data: dict[str, Any], instance: Skill | None = None) -> dict[str, Any]:
+def validate_skill_data(
+    *, data: dict[str, Any], instance: Skill | None = None
+) -> dict[str, Any]:
     code = (data.get("skill_code") or "").strip()
     if not code:
         raise ValidationError({"skill_code": "This field may not be blank."})
@@ -108,7 +114,9 @@ def validate_skill_data(*, data: dict[str, Any], instance: Skill | None = None) 
         raise ValidationError({"skill_name": "This field may not be blank."})
     exclude_pk = instance.pk if instance and instance.pk else None
     if case_insensitive_code_exists(code=code, exclude_pk=exclude_pk):
-        raise ValidationError({"skill_code": "Skill code must be unique (case-insensitive)."})
+        raise ValidationError(
+            {"skill_code": "Skill code must be unique (case-insensitive)."}
+        )
     st = validate_skill_type(data.get("skill_type"))
     return {
         "skill_code": code,
@@ -239,7 +247,9 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
             try:
                 from openpyxl import load_workbook
             except ImportError:
-                return [], ["Excel support requires openpyxl. Install openpyxl or upload CSV."]
+                return [], [
+                    "Excel support requires openpyxl. Install openpyxl or upload CSV."
+                ]
             wb = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
             ws = wb.active
             rows_iter = ws.iter_rows(values_only=True)
@@ -273,10 +283,15 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
         if not reader.fieldnames:
             return [], ["CSV has no header row."]
         normalized_headers = [
-            HEADER_ALIASES.get((str(h).strip().lower() if h else ""), (str(h).strip().lower() if h else ""))
+            HEADER_ALIASES.get(
+                (str(h).strip().lower() if h else ""),
+                (str(h).strip().lower() if h else ""),
+            )
             for h in reader.fieldnames
         ]
-        missing = sorted(REQUIRED_IMPORT_HEADERS - set([h for h in normalized_headers if h]))
+        missing = sorted(
+            REQUIRED_IMPORT_HEADERS - set([h for h in normalized_headers if h])
+        )
         if missing:
             return [], [f"Missing required headers: {', '.join(missing)}"]
         out_rows = []
@@ -291,7 +306,9 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
 
 
 @transaction.atomic
-def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict) -> SkillImportBatch:
+def bulk_import_rows(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> SkillImportBatch:
     batch = SkillImportBatch.objects.create(
         created_by=user,
         total_rows=len(rows),
@@ -329,7 +346,9 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
         existing = None
         if row_code:
             existing = Skill.objects.filter(skill_code__iexact=row_code).first()
-        ser = serializer_class(instance=existing, data=row, partial=bool(existing), context=context)
+        ser = serializer_class(
+            instance=existing, data=row, partial=bool(existing), context=context
+        )
         if not ser.is_valid():
             msg = json.dumps(ser.errors)[:500]
             errors.append(
@@ -350,7 +369,15 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
                     obj.deleted_by = None
                     obj.updated_by = user
                     obj.updated_at = timezone.now()
-                    obj.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_by", "updated_at"])
+                    obj.save(
+                        update_fields=[
+                            "deleted",
+                            "deleted_at",
+                            "deleted_by",
+                            "updated_by",
+                            "updated_at",
+                        ]
+                    )
                 imported += 1
         except ValidationError as e:
             detail = e.detail
@@ -385,7 +412,9 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
     return batch
 
 
-def bulk_import_skills(*, user, rows: list[dict], serializer_class, context: dict) -> dict[str, Any]:
+def bulk_import_skills(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> dict[str, Any]:
     batch = bulk_import_rows(
         user=user,
         rows=rows,
@@ -393,7 +422,10 @@ def bulk_import_skills(*, user, rows: list[dict], serializer_class, context: dic
         context=context,
     )
     err_qs = SkillImportError.objects.filter(batch=batch).order_by("row_number")
-    error_details = [{"row": e.row_number, "message": e.message, "row_data": e.row_data} for e in err_qs.iterator(chunk_size=200)]
+    error_details = [
+        {"row": e.row_number, "message": e.message, "row_data": e.row_data}
+        for e in err_qs.iterator(chunk_size=200)
+    ]
     return {
         "success_count": batch.imported_count,
         "error_count": batch.failed_count,
@@ -407,7 +439,9 @@ def import_batches_queryset():
 
 
 def import_errors_queryset(*, batch_id: UUID | None = None):
-    qs = SkillImportError.objects.select_related("batch").order_by("-batch__created_at", "row_number")
+    qs = SkillImportError.objects.select_related("batch").order_by(
+        "-batch__created_at", "row_number"
+    )
     if batch_id:
         qs = qs.filter(batch_id=batch_id)
     return qs
@@ -436,6 +470,13 @@ def sample_csv_bytes() -> bytes:
     w = csv.writer(buf)
     w.writerow(SAMPLE_CSV_HEADERS)
     w.writerow(["python", "Python", "technical", "Programming language", "1"])
-    w.writerow(["communication", "Communication", "soft", "Verbal & written communication", "1"])
+    w.writerow(
+        [
+            "communication",
+            "Communication",
+            "soft",
+            "Verbal & written communication",
+            "1",
+        ]
+    )
     return buf.getvalue().encode("utf-8")
-

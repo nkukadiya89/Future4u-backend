@@ -66,17 +66,25 @@ class StreamDomainMappingSerializer(AuditFieldsMixin, serializers.ModelSerialize
         domain = attrs.get("domain", getattr(self.instance, "domain", None))
         if stream and domain:
             exclude = self.instance.pk if getattr(self.instance, "pk", None) else None
-            if stream_domain_mapping_service.pair_exists(stream_id=stream.pk, domain_id=domain.pk, exclude_pk=exclude):
-                raise serializers.ValidationError({"non_field_errors": ["Stream-domain mapping already exists."]})
+            if stream_domain_mapping_service.pair_exists(
+                stream_id=stream.pk, domain_id=domain.pk, exclude_pk=exclude
+            ):
+                raise serializers.ValidationError(
+                    {"non_field_errors": ["Stream-domain mapping already exists."]}
+                )
         return attrs
 
     def create(self, validated_data):
         user = self.context["request"].user
-        return stream_domain_mapping_service.create_mapping(user=user, validated_data=validated_data)
+        return stream_domain_mapping_service.create_mapping(
+            user=user, validated_data=validated_data
+        )
 
     def update(self, instance, validated_data):
         user = self.context["request"].user
-        return stream_domain_mapping_service.update_mapping(mapping=instance, user=user, validated_data=validated_data)
+        return stream_domain_mapping_service.update_mapping(
+            mapping=instance, user=user, validated_data=validated_data
+        )
 
 
 class StreamDomainMappingBulkIdsSerializer(serializers.Serializer):
@@ -89,4 +97,3 @@ class StreamDomainMappingBulkImportSerializer(serializers.Serializer):
 
 class StreamDomainMappingChangeStatusSerializer(serializers.Serializer):
     is_active = serializers.BooleanField()
-

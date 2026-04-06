@@ -27,14 +27,18 @@ class Command(BaseCommand):
             default="core/management/source/city_area.csv",
             help="Path to the CSV file containing city area data",
         )
-        parser.add_argument("--force", action="store_true", help="Force flush without confirmation")
+        parser.add_argument(
+            "--force", action="store_true", help="Force flush without confirmation"
+        )
 
     def handle(self, *args, **options):
         csv_file_path = options["csv_file"]
         force = options["force"]
 
         if CityArea is None:
-            self.stdout.write(self.style.WARNING("Skipping reload: 'city_areas' app removed"))
+            self.stdout.write(
+                self.style.WARNING("Skipping reload: 'city_areas' app removed")
+            )
             return
 
         # Check if CSV file exists
@@ -56,12 +60,18 @@ class Command(BaseCommand):
             with transaction.atomic():
                 # Flush existing data
                 deleted_count = CityArea.objects.all().delete()[0]
-                self.stdout.write(self.style.WARNING(f"Deleted {deleted_count} existing city area records"))
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"Deleted {deleted_count} existing city area records"
+                    )
+                )
 
                 # Load data from CSV
                 self.load_city_areas_from_csv(csv_file_path)
 
-                self.stdout.write(self.style.SUCCESS("City area data successfully reloaded"))
+                self.stdout.write(
+                    self.style.SUCCESS("City area data successfully reloaded")
+                )
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Error during reload: {str(e)}"))
@@ -113,12 +123,19 @@ class Command(BaseCommand):
                         self.stdout.write(f"Created {created_count} records...")
 
                 except Exception as e:
-                    self.stdout.write(self.style.ERROR(f"Error processing row {reader.line_num}: {str(e)}"))
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"Error processing row {reader.line_num}: {str(e)}"
+                        )
+                    )
                     skipped_count += 1
                     continue
 
         self.stdout.write(
-            self.style.SUCCESS(f"Created {created_count} city area records, " f"skipped {skipped_count} records")
+            self.style.SUCCESS(
+                f"Created {created_count} city area records, "
+                f"skipped {skipped_count} records"
+            )
         )
 
     def get_or_none(self, model, **kwargs):

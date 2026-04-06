@@ -11,7 +11,12 @@ from utils.generate_ip_address import get_client_ip
 from utils.pagination import Pagination
 
 from .models import State
-from .serializers import StateArchiveListSerializer, StateArchiveSerializer, StateRestoreSerializer, StateSerializer
+from .serializers import (
+    StateArchiveListSerializer,
+    StateArchiveSerializer,
+    StateRestoreSerializer,
+    StateSerializer,
+)
 
 
 # Create your views here.
@@ -25,7 +30,14 @@ class StateViewSet(ModelViewSet):
 
     search_fields = ["id", "name", "country__name"]
 
-    ordering_fields = ["id", "name", "country__id", "country__name", "created_at", "updated_at"]
+    ordering_fields = [
+        "id",
+        "name",
+        "country__id",
+        "country__name",
+        "created_at",
+        "updated_at",
+    ]
 
     def get_queryset(self):
         queryset = State.objects.filter(deleted=False).select_related("country")
@@ -49,7 +61,9 @@ class StateViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.serializer_class(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -61,12 +75,19 @@ class StateViewSet(ModelViewSet):
                 ip_address = get_client_ip(request)
                 ActivityLog.log.state_create(instance, ip_address, request.user)
                 return Response(
-                    {"success": True, "message": "State created successfully", "data": serializer.data},
+                    {
+                        "success": True,
+                        "message": "State created successfully",
+                        "data": serializer.data,
+                    },
                     status=status.HTTP_201_CREATED,
                 )
             else:
                 error_message = serializer.errors
-                if isinstance(error_message, dict) and "non_field_errors" in error_message:
+                if (
+                    isinstance(error_message, dict)
+                    and "non_field_errors" in error_message
+                ):
                     error_message = error_message["non_field_errors"][0]
                 return Response(
                     {"success": False, "message": error_message},
@@ -74,14 +95,19 @@ class StateViewSet(ModelViewSet):
                 )
         except Exception:
             return Response(
-                {"success": False, "message": "State name already exists or database error occurred"},
+                {
+                    "success": False,
+                    "message": "State name already exists or database error occurred",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = StateSerializer(instance)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -92,12 +118,19 @@ class StateViewSet(ModelViewSet):
                 ip_address = get_client_ip(request)
                 ActivityLog.log.state_update(instance, ip_address, request.user)
                 return Response(
-                    {"success": True, "message": "State updated successfully", "data": serializer.data},
+                    {
+                        "success": True,
+                        "message": "State updated successfully",
+                        "data": serializer.data,
+                    },
                     status=status.HTTP_202_ACCEPTED,
                 )
             else:
                 error_message = serializer.errors
-                if isinstance(error_message, dict) and "non_field_errors" in error_message:
+                if (
+                    isinstance(error_message, dict)
+                    and "non_field_errors" in error_message
+                ):
                     error_message = error_message["non_field_errors"][0]
                 return Response(
                     {"success": False, "message": error_message},
@@ -105,7 +138,10 @@ class StateViewSet(ModelViewSet):
                 )
         except Exception:
             return Response(
-                {"success": False, "message": "State name already exists or database error occurred"},
+                {
+                    "success": False,
+                    "message": "State name already exists or database error occurred",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -120,7 +156,13 @@ class StateViewSet(ModelViewSet):
             status=status.HTTP_204_NO_CONTENT,
         )
 
-    @action(detail=False, methods=["GET"], url_path="state-list", permission_classes=[], authentication_classes=[])
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path="state-list",
+        permission_classes=[],
+        authentication_classes=[],
+    )
     def state_list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset()).order_by("name")
         page = self.paginate_queryset(queryset)
@@ -130,7 +172,9 @@ class StateViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.serializer_class(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -145,7 +189,14 @@ class StateArchiveViewSet(ModelViewSet):
 
     search_fields = ["id", "name", "country__name"]
 
-    ordering_fields = ["id", "name", "country__id", "country__name", "created_at", "updated_at"]
+    ordering_fields = [
+        "id",
+        "name",
+        "country__id",
+        "country__name",
+        "created_at",
+        "updated_at",
+    ]
 
     def get_queryset(self):
         queryset = State.objects.filter(deleted=True).select_related("country")
@@ -169,12 +220,16 @@ class StateArchiveViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = StateArchiveListSerializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = StateArchiveListSerializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
     def create(self, request, *args, **kwargs):
-        serializer = StateArchiveSerializer(data=request.data, context={"request": request})
+        serializer = StateArchiveSerializer(
+            data=request.data, context={"request": request}
+        )
         if serializer.is_valid():
             deleted_ids = (
                 serializer.validated_data.get("deleted", [])
@@ -184,9 +239,17 @@ class StateArchiveViewSet(ModelViewSet):
             count = len(deleted_ids) if isinstance(deleted_ids, list) else 1
             instance = serializer.save()
             ip_address = get_client_ip(request)
-            ActivityLog.log.state_archive(instance, ip_address=ip_address, user=request.user)
-            message = "State archived successfully" if count == 1 else "States archived successfully"
-            return Response({"success": True, "message": message}, status=status.HTTP_200_OK)
+            ActivityLog.log.state_archive(
+                instance, ip_address=ip_address, user=request.user
+            )
+            message = (
+                "State archived successfully"
+                if count == 1
+                else "States archived successfully"
+            )
+            return Response(
+                {"success": True, "message": message}, status=status.HTTP_200_OK
+            )
 
         else:
             return Response(
@@ -215,9 +278,17 @@ class StateRestoreViewSet(ModelViewSet):
             count = len(deleted_ids) if isinstance(deleted_ids, list) else 1
             instance = serializer.save()
             ip_address = get_client_ip(request)
-            ActivityLog.log.state_restore(instance, ip_address=ip_address, user=request.user)
-            message = "State restored successfully" if count == 1 else "States restored successfully"
-            return Response({"success": True, "message": message}, status=status.HTTP_200_OK)
+            ActivityLog.log.state_restore(
+                instance, ip_address=ip_address, user=request.user
+            )
+            message = (
+                "State restored successfully"
+                if count == 1
+                else "States restored successfully"
+            )
+            return Response(
+                {"success": True, "message": message}, status=status.HTTP_200_OK
+            )
 
         else:
             return Response(

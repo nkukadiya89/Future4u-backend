@@ -11,55 +11,94 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('domain', '0001_initial'),
+        ("domain", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='domain',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
+            model_name="domain",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='domain',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
+            model_name="domain",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='domain',
-            name='parent',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='child_domains', to='domain.domain'),
+            model_name="domain",
+            name="parent",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="child_domains",
+                to="domain.domain",
+            ),
         ),
         migrations.AddField(
-            model_name='domain',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
+            model_name="domain",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='domainimportbatch',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='domain_import_batches', to=settings.AUTH_USER_MODEL),
+            model_name="domainimportbatch",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="domain_import_batches",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='domainimporterror',
-            name='batch',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='error_rows', to='domain.domainimportbatch'),
+            model_name="domainimporterror",
+            name="batch",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="error_rows",
+                to="domain.domainimportbatch",
+            ),
         ),
         migrations.AddIndex(
-            model_name='domain',
-            index=models.Index(fields=['domain_code'], name='domain_domain__c9a31b_idx'),
+            model_name="domain",
+            index=models.Index(
+                fields=["domain_code"], name="domain_domain__c9a31b_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='domain',
-            index=models.Index(fields=['is_active'], name='domain_is_acti_d8acfe_idx'),
+            model_name="domain",
+            index=models.Index(fields=["is_active"], name="domain_is_acti_d8acfe_idx"),
         ),
         migrations.AddIndex(
-            model_name='domain',
-            index=models.Index(fields=['deleted'], name='domain_deleted_d126d9_idx'),
+            model_name="domain",
+            index=models.Index(fields=["deleted"], name="domain_deleted_d126d9_idx"),
         ),
         migrations.AddConstraint(
-            model_name='domain',
-            constraint=models.UniqueConstraint(django.db.models.functions.text.Lower('domain_code'), name='domain_domain_code_ci_uniq'),
+            model_name="domain",
+            constraint=models.UniqueConstraint(
+                django.db.models.functions.text.Lower("domain_code"),
+                name="domain_domain_code_ci_uniq",
+            ),
         ),
     ]

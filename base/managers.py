@@ -21,4 +21,3 @@ class BaseManager(models.Manager.from_queryset(BaseQuerySet)):
     """
 
     pass
-

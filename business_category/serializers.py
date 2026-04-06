@@ -19,11 +19,12 @@ class BusinessCategorySerializers(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get("request") if hasattr(self, "context") else None
         user = getattr(request, "user", None) if request else None
-        instance.business_category = validated_data.get("business_category", instance.business_category)
+        instance.business_category = validated_data.get(
+            "business_category", instance.business_category
+        )
         instance.updated_by = user
         instance.save()
         return instance
-
 
 
 class BusinessCategoryDropdownSerializer(serializers.ModelSerializer):

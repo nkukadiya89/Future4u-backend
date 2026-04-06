@@ -69,7 +69,9 @@ class DomainCareerMappingAPITests(TestCase):
         self.assertIn("DCM Domain", str(obj))
 
     def test_crud_and_soft_delete_and_restore(self):
-        r = self.client.post(reverse("domain-career-mapping-list"), self._payload(), format="json")
+        r = self.client.post(
+            reverse("domain-career-mapping-list"), self._payload(), format="json"
+        )
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         pk = r.data["data"]["id"]
 
@@ -77,7 +79,9 @@ class DomainCareerMappingAPITests(TestCase):
         self.assertEqual(r.status_code, status.HTTP_200_OK)
         self.assertTrue(DomainCareerMapping.objects.get(pk=pk).deleted)
 
-        r = self.client.post(reverse("domain-career-mapping-bulk-restore"), {"ids": [pk]}, format="json")
+        r = self.client.post(
+            reverse("domain-career-mapping-bulk-restore"), {"ids": [pk]}, format="json"
+        )
         self.assertEqual(r.status_code, status.HTTP_200_OK)
         self.assertFalse(DomainCareerMapping.objects.get(pk=pk).deleted)
 
@@ -88,7 +92,11 @@ class DomainCareerMappingAPITests(TestCase):
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_weight_validation(self):
-        r = self.client.post(reverse("domain-career-mapping-list"), self._payload(weight_score=101), format="json")
+        r = self.client.post(
+            reverse("domain-career-mapping-list"),
+            self._payload(weight_score=101),
+            format="json",
+        )
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_bulk_upload(self):
@@ -104,8 +112,14 @@ class DomainCareerMappingAPITests(TestCase):
             f"{self.domain.domain_code},{self.career.career_code},80,1\n"
             f"{self.domain.domain_code},{c2.career_code},not_a_number,1\n"
         )
-        f = SimpleUploadedFile("dcm.csv", csv_body.encode("utf-8"), content_type="text/csv")
-        r = self.client.post(reverse("domain-career-mapping-bulk-import"), {"file": f}, format="multipart")
+        f = SimpleUploadedFile(
+            "dcm.csv", csv_body.encode("utf-8"), content_type="text/csv"
+        )
+        r = self.client.post(
+            reverse("domain-career-mapping-bulk-import"),
+            {"file": f},
+            format="multipart",
+        )
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         self.assertIn("success_count", r.data)
         self.assertIn("error_count", r.data)
@@ -115,4 +129,3 @@ class DomainCareerMappingAPITests(TestCase):
         anon = APIClient()
         r = anon.get(reverse("domain-career-mapping-list"))
         self.assertEqual(r.status_code, status.HTTP_401_UNAUTHORIZED)
-

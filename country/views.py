@@ -55,7 +55,9 @@ class CountryViewSet(ModelViewSet):
 
         if page is not None:
             serializer = CountrySerializers(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = CountrySerializers(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -67,7 +69,11 @@ class CountryViewSet(ModelViewSet):
             ip_address = get_client_ip(request)
             ActivityLog.log.country_create(instance, ip_address, request.user)
             return Response(
-                {"success": True, "message": "Country added successfully", "data": serializer.data},
+                {
+                    "success": True,
+                    "message": "Country added successfully",
+                    "data": serializer.data,
+                },
                 status=status.HTTP_201_CREATED,
             )
         else:
@@ -84,7 +90,11 @@ class CountryViewSet(ModelViewSet):
             ip_address = get_client_ip(request)
             ActivityLog.log.country_update(instance, ip_address, request.user)
             return Response(
-                {"success": True, "message": "Country updated successfully", "data": serializer.data},
+                {
+                    "success": True,
+                    "message": "Country updated successfully",
+                    "data": serializer.data,
+                },
                 status=status.HTTP_202_ACCEPTED,
             )
         else:
@@ -104,7 +114,13 @@ class CountryViewSet(ModelViewSet):
             status=status.HTTP_204_NO_CONTENT,
         )
 
-    @action(detail=False, methods=["GET"], url_path="country-list", permission_classes=[], authentication_classes=[])
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path="country-list",
+        permission_classes=[],
+        authentication_classes=[],
+    )
     def country_list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         no_pagination = request.query_params.get("no_pagination")
@@ -116,7 +132,9 @@ class CountryViewSet(ModelViewSet):
 
         if page is not None:
             serializer = CountrySerializers(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = CountrySerializers(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -157,12 +175,16 @@ class CountryArchiveViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = CountryArchiveListSerializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = CountryArchiveListSerializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
     def create(self, request, *args, **kwargs):
-        serializer = CountryArchiveSerializer(data=request.data, context={"request": request})
+        serializer = CountryArchiveSerializer(
+            data=request.data, context={"request": request}
+        )
         if serializer.is_valid():
             deleted_ids = (
                 serializer.validated_data.get("deleted", [])
@@ -172,9 +194,17 @@ class CountryArchiveViewSet(ModelViewSet):
             count = len(deleted_ids) if isinstance(deleted_ids, list) else 1
             instance = serializer.save()
             ip_address = get_client_ip(request)
-            ActivityLog.log.country_archive(instance, ip_address=ip_address, user=request.user)
-            message = "Country archived successfully" if count == 1 else "Countries archived successfully"
-            return Response({"success": True, "message": message}, status=status.HTTP_200_OK)
+            ActivityLog.log.country_archive(
+                instance, ip_address=ip_address, user=request.user
+            )
+            message = (
+                "Country archived successfully"
+                if count == 1
+                else "Countries archived successfully"
+            )
+            return Response(
+                {"success": True, "message": message}, status=status.HTTP_200_OK
+            )
 
         else:
             return Response(
@@ -204,9 +234,17 @@ class CountryRestoreViewSet(ModelViewSet):
             count = len(deleted_ids) if isinstance(deleted_ids, list) else 1
             instance = serializer.save()
             ip_address = get_client_ip(request)
-            ActivityLog.log.country_restore(instance, user=request.user, ip_address=ip_address)
-            message = "Country restored successfully" if count == 1 else "Countries restored successfully"
-            return Response({"success": True, "message": message}, status=status.HTTP_200_OK)
+            ActivityLog.log.country_restore(
+                instance, user=request.user, ip_address=ip_address
+            )
+            message = (
+                "Country restored successfully"
+                if count == 1
+                else "Countries restored successfully"
+            )
+            return Response(
+                {"success": True, "message": message}, status=status.HTTP_200_OK
+            )
 
         else:
             return Response(

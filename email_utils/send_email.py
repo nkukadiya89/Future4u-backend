@@ -176,10 +176,20 @@ def send_mail(subject, template, data):
     try:
         mail_server.sendmail(config("ADMIN_EMAIL"), msg["To"], msg.as_string())
         # Log successful email
-        log_email_sent(msg, email_type=template.replace(".html", ""), custom_message_content=custom_message_content)
+        log_email_sent(
+            msg,
+            email_type=template.replace(".html", ""),
+            custom_message_content=custom_message_content,
+        )
     except Exception as e:
         # Log failed email
-        log_email_failed(to_email, subject, str(e), msg["From"], email_type=template.replace(".html", ""))
+        log_email_failed(
+            to_email,
+            subject,
+            str(e),
+            msg["From"],
+            email_type=template.replace(".html", ""),
+        )
         raise e
 
     mail_server.quit()

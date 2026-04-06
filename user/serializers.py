@@ -6,10 +6,8 @@ from user.user_auth import get_user_groups, get_user_permissions
 
 
 class CustomGroupSerializers(serializers.ModelSerializer):
-    sequence = serializers.IntegerField(
-        source="customgroup.sequence", read_only=True)
-    name = serializers.CharField(
-        source="customgroup.group_name", read_only=True)
+    sequence = serializers.IntegerField(source="customgroup.sequence", read_only=True)
+    name = serializers.CharField(source="customgroup.group_name", read_only=True)
 
     class Meta:
         model = CustomGroup
@@ -182,6 +180,7 @@ class UserDetailsSerializer(serializers.ModelSerializer):
         ret["keep_me_logged_in"] = instance.keep_me_logged_in
 
         return ret
+
 
 class UserQuickSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()

@@ -63,15 +63,22 @@ def _collect_dimension_scores(
     if not responses.exists():
         return {}, 0
 
-    grouped = {dimension_key: {"total": 0.0, "weight": 0.0} for dimension_key in dimension_weights}
+    grouped = {
+        dimension_key: {"total": 0.0, "weight": 0.0}
+        for dimension_key in dimension_weights
+    }
     response_count = 0
 
     for response in responses:
         dimension = (response.question.dimension or "").strip().lower()
         if dimension not in grouped:
             continue
-        signal_strength = max(1, int(getattr(response.question, "signal_strength", 1) or 1))
-        grouped[dimension]["total"] += _to_percent(response.score_value, max_score_per_answer) * signal_strength
+        signal_strength = max(
+            1, int(getattr(response.question, "signal_strength", 1) or 1)
+        )
+        grouped[dimension]["total"] += (
+            _to_percent(response.score_value, max_score_per_answer) * signal_strength
+        )
         grouped[dimension]["weight"] += signal_strength
         response_count += 1
 
@@ -92,7 +99,10 @@ def _score_careers(
 ) -> dict[str, int]:
     career_scores: dict[str, int] = {}
     for career_key, career_cfg in careers_cfg.items():
-        factors = {str(k).strip().lower(): float(v) for k, v in (career_cfg.get("dimension_factors") or {}).items()}
+        factors = {
+            str(k).strip().lower(): float(v)
+            for k, v in (career_cfg.get("dimension_factors") or {}).items()
+        }
         weighted_sum = 0.0
         total_weight = 0.0
         for dimension_key, global_weight in dimension_weights.items():
@@ -113,10 +123,17 @@ def _apply_threshold_actions(*, actions: Iterable[dict], career_scores: dict[str
         if not career_key or career_key not in career_scores:
             continue
         multiplier = float(action.get("value", 1.0))
-        career_scores[career_key] = int(round(max(0.0, min(100.0, career_scores[career_key] * multiplier))))
+        career_scores[career_key] = int(
+            round(max(0.0, min(100.0, career_scores[career_key] * multiplier)))
+        )
 
 
-def _apply_rules(*, domain_cfg: dict, dimension_scores: dict[str, float], career_scores: dict[str, int]):
+def _apply_rules(
+    *,
+    domain_cfg: dict,
+    dimension_scores: dict[str, float],
+    career_scores: dict[str, int],
+):
     rules_cfg = domain_cfg.get("rules") or {}
 
     for rule in rules_cfg.get("thresholds", []):
@@ -126,7 +143,9 @@ def _apply_rules(*, domain_cfg: dict, dimension_scores: dict[str, float], career
         if dimension not in dimension_scores:
             continue
         if _compare(operator, dimension_scores[dimension], threshold_value):
-            _apply_threshold_actions(actions=rule.get("actions", []), career_scores=career_scores)
+            _apply_threshold_actions(
+                actions=rule.get("actions", []), career_scores=career_scores
+            )
 
     for suppression in rules_cfg.get("suppressions", []):
         dimension = str(suppression.get("dimension") or "").strip().lower()
@@ -141,7 +160,9 @@ def _apply_rules(*, domain_cfg: dict, dimension_scores: dict[str, float], career
             ckey = str(career_key).strip()
             if ckey not in career_scores:
                 continue
-            career_scores[ckey] = int(round(max(0.0, min(100.0, career_scores[ckey] * float(multiplier)))))
+            career_scores[ckey] = int(
+                round(max(0.0, min(100.0, career_scores[ckey] * float(multiplier))))
+            )
 
 
 def _resolve_top_career(*, career_scores: dict[str, int], hybrid_margin: float):
@@ -165,9 +186,17 @@ def _compute_confidence(
         return 0
 
     configured_dimension_count = len(dimension_scores)
-    answered_dimensions = len([v for v in dimension_scores.values() if v != missing_dimension_score])
-    coverage = (answered_dimensions / configured_dimension_count) if configured_dimension_count > 0 else 0.0
-    response_signal = min(1.0, float(response_count) / max(1.0, configured_dimension_count))
+    answered_dimensions = len(
+        [v for v in dimension_scores.values() if v != missing_dimension_score]
+    )
+    coverage = (
+        (answered_dimensions / configured_dimension_count)
+        if configured_dimension_count > 0
+        else 0.0
+    )
+    response_signal = min(
+        1.0, float(response_count) / max(1.0, configured_dimension_count)
+    )
 
     ordered_scores = sorted(career_scores.values(), reverse=True)
     if len(ordered_scores) > 1:
@@ -215,10 +244,16 @@ def evaluate_domain(domain_code, user_id):
         dimension_scores=dimension_scores,
         dimension_weights=dimension_weights,
     )
-    _apply_rules(domain_cfg=domain_cfg, dimension_scores=dimension_scores, career_scores=career_scores)
+    _apply_rules(
+        domain_cfg=domain_cfg,
+        dimension_scores=dimension_scores,
+        career_scores=career_scores,
+    )
 
     hybrid_margin = float((domain_cfg.get("rules") or {}).get("hybrid_margin", 5))
-    top_career = _resolve_top_career(career_scores=career_scores, hybrid_margin=hybrid_margin)
+    top_career = _resolve_top_career(
+        career_scores=career_scores, hybrid_margin=hybrid_margin
+    )
     confidence = _compute_confidence(
         response_count=response_count,
         dimension_scores=dimension_scores,
@@ -232,4 +267,3 @@ def evaluate_domain(domain_code, user_id):
         "top_career": top_career,
         "confidence": confidence,
     }
-

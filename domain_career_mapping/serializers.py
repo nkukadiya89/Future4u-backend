@@ -21,8 +21,12 @@ class DomainCareerMappingSerializer(AuditFieldsMixin, serializers.ModelSerialize
     domain_code = serializers.CharField(source="domain.domain_code", read_only=True)
     career_name = serializers.CharField(source="career.career_name", read_only=True)
     career_code = serializers.CharField(source="career.career_code", read_only=True)
-    min_education_level_id = serializers.UUIDField(source="career.min_education_level.id", read_only=True)
-    max_education_level_id = serializers.UUIDField(source="career.max_education_level.id", read_only=True)
+    min_education_level_id = serializers.UUIDField(
+        source="career.min_education_level.id", read_only=True
+    )
+    max_education_level_id = serializers.UUIDField(
+        source="career.max_education_level.id", read_only=True
+    )
 
     class Meta:
         model = DomainCareerMapping
@@ -69,17 +73,25 @@ class DomainCareerMappingSerializer(AuditFieldsMixin, serializers.ModelSerialize
         career = attrs.get("career", getattr(self.instance, "career", None))
         if domain and career:
             exclude = self.instance.pk if getattr(self.instance, "pk", None) else None
-            if domain_career_mapping_service.pair_exists(domain_id=domain.pk, career_id=career.pk, exclude_pk=exclude):
-                raise serializers.ValidationError({"non_field_errors": ["Domain-career mapping already exists."]})
+            if domain_career_mapping_service.pair_exists(
+                domain_id=domain.pk, career_id=career.pk, exclude_pk=exclude
+            ):
+                raise serializers.ValidationError(
+                    {"non_field_errors": ["Domain-career mapping already exists."]}
+                )
         return attrs
 
     def create(self, validated_data):
         user = self.context["request"].user
-        return domain_career_mapping_service.create_mapping(user=user, validated_data=validated_data)
+        return domain_career_mapping_service.create_mapping(
+            user=user, validated_data=validated_data
+        )
 
     def update(self, instance, validated_data):
         user = self.context["request"].user
-        return domain_career_mapping_service.update_mapping(mapping=instance, user=user, validated_data=validated_data)
+        return domain_career_mapping_service.update_mapping(
+            mapping=instance, user=user, validated_data=validated_data
+        )
 
 
 class DomainCareerMappingBulkIdsSerializer(serializers.Serializer):
@@ -92,4 +104,3 @@ class DomainCareerMappingBulkImportSerializer(serializers.Serializer):
 
 class DomainCareerMappingChangeStatusSerializer(serializers.Serializer):
     is_active = serializers.BooleanField()
-

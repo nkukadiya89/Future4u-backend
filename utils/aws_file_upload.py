@@ -27,7 +27,9 @@ def file_extention(file_path):
     return path.splitext(file_path)[1]
 
 
-def upload_file_to_bucket(upload_file, allowed_type, folder_name, p_value, file_name=None):
+def upload_file_to_bucket(
+    upload_file, allowed_type, folder_name, p_value, file_name=None
+):
     file_type = file_extention(str(upload_file))
 
     if file_type.lower() not in allowed_type:
@@ -64,7 +66,9 @@ def upload_file_to_bucket(upload_file, allowed_type, folder_name, p_value, file_
     file_size = os.path.getsize(tempfile) / 1000
     if file_size > 51200:  # 50MB = 50 * 1024 KB = 51200 KB
         remove(tempfile)
-        raise serializers.ValidationError("File size too large. Maximum allowed size is 50MB.")
+        raise serializers.ValidationError(
+            "File size too large. Maximum allowed size is 50MB."
+        )
 
     # Upload to S3
     s3.upload_file(
@@ -96,7 +100,9 @@ def upload_doc_file(upload_file, allowed_type, folder_name, p_value, file_name=N
     if file_name is None:
         file_name = timezone.now().strftime("%Y%m%d-%H%M%S")
 
-    path = default_storage.save("./" + upload_file.name, ContentFile(upload_file.read()))
+    path = default_storage.save(
+        "./" + upload_file.name, ContentFile(upload_file.read())
+    )
     tempfile = os.path.join(settings.MEDIA_ROOT, path)
 
     s3 = boto3.client(
@@ -112,7 +118,9 @@ def upload_doc_file(upload_file, allowed_type, folder_name, p_value, file_name=N
     file_size = os.path.getsize(tempfile) / 1000
     if file_size > 51200:  # 50MB = 50 * 1024 KB = 51200 KB
         remove(tempfile)
-        raise serializers.ValidationError("File size too large. Maximum allowed size is 50MB.")
+        raise serializers.ValidationError(
+            "File size too large. Maximum allowed size is 50MB."
+        )
 
     s3.upload_file(
         tempfile,

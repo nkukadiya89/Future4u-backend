@@ -10,7 +10,11 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from user.models import AuthGroupPermissionsModel, CustomGroup, RoleFamily, User
 from utils.pagination import Pagination
-from utils.role_permission import get_group_permission_by_user, get_permission_by_group_ids, get_purticlare_permission
+from utils.role_permission import (
+    get_group_permission_by_user,
+    get_permission_by_group_ids,
+    get_purticlare_permission,
+)
 
 from .serializers import CustomGroupSerializers, PermissionSerializers
 
@@ -32,12 +36,17 @@ class GroupViewSet(ModelViewSet):
         # partner_company / end_client groups removed from the data model
         if partner_company_id:
             return Response(
-                {"success": False, "message": "partner company groups are not available anymore"},
+                {
+                    "success": False,
+                    "message": "partner company groups are not available anymore",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if company_id:
             queryset = self.filter_queryset(
-                CustomGroup.objects.filter(company=company_id, deleted=False).order_by("-id")
+                CustomGroup.objects.filter(company=company_id, deleted=False).order_by(
+                    "-id"
+                )
             )
 
         else:
@@ -58,7 +67,9 @@ class GroupViewSet(ModelViewSet):
 
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
 
         serializer = self.serializer_class(queryset, many=True)
         return Response({"success": True, "data": serializer.data})
@@ -85,7 +96,9 @@ class GroupViewSet(ModelViewSet):
     @action(detail=False, methods=["get"], url_path="archive-group-permissions-list")
     def archive_group_permissions_list(self, request, *args, **kwargs):
         user = request.user
-        archive_group_list = CustomGroup.objects.filter(created_by=user.id, deleted=True).order_by("-sequence")
+        archive_group_list = CustomGroup.objects.filter(
+            created_by=user.id, deleted=True
+        ).order_by("-sequence")
         queryset = self.filter_queryset(archive_group_list)
         excluded_group_ids = [1, 2, 3]
         queryset = queryset.exclude(id__in=excluded_group_ids)
@@ -99,10 +112,14 @@ class GroupViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
 
         serializer = self.serializer_class(queryset, many=True)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
     def update(self, request, *args, **kwargs):
         data = request.data
@@ -112,7 +129,9 @@ class GroupViewSet(ModelViewSet):
 
         if serializer.is_valid():
             instance.save()
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
         else:
             return Response(
                 {"success": False, "message": serializer.errors},
@@ -178,7 +197,12 @@ class PermissionViewSet(ModelViewSet):
             return Response({"success": False, "message": "Model Name Not Found"})
 
         response = get_purticlare_permission(
-            content_types, model_names, group_id, company_id, partner_company_id, end_client_id
+            content_types,
+            model_names,
+            group_id,
+            company_id,
+            partner_company_id,
+            end_client_id,
         )
         return Response({"success": True, "data": response}, status=status.HTTP_200_OK)
 
@@ -195,7 +219,9 @@ class PermissionViewSet(ModelViewSet):
         if not model_name:
             return Response({"success": False, "message": "Model Name Not Found"})
 
-        permission_list = queryset.filter(content_type=app_label, content_type__model=model_name)
+        permission_list = queryset.filter(
+            content_type=app_label, content_type__model=model_name
+        )
 
         page = self.paginate_queryset(permission_list)
         no_pagination = request.query_params.get("no_pagination")
@@ -207,7 +233,9 @@ class PermissionViewSet(ModelViewSet):
             return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(permission_list, many=True)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
     @action(detail=False, methods=["PATCH"], url_path="group-wise-permission")
     def group_wise_permission(self, request, *args, **kwargs):
@@ -229,7 +257,10 @@ class PermissionViewSet(ModelViewSet):
                     user_assigned_groups = Group.objects.get(name="Company Admin")
                 else:
                     return Response(
-                        {"success": False, "message": "partner company groups are not available anymore"},
+                        {
+                            "success": False,
+                            "message": "partner company groups are not available anymore",
+                        },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
@@ -239,28 +270,42 @@ class PermissionViewSet(ModelViewSet):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-            response = get_permission_by_group_ids(group_ids, user_assigned_groups, user_assigned_permissions)
-            return Response({"success": True, "data": response}, status=status.HTTP_200_OK)
+            response = get_permission_by_group_ids(
+                group_ids, user_assigned_groups, user_assigned_permissions
+            )
+            return Response(
+                {"success": True, "data": response}, status=status.HTTP_200_OK
+            )
 
         elif group_id:
-            fetched_permissions = AuthGroupPermissionsModel.objects.filter(group_id__in=group_id).order_by("-id")
+            fetched_permissions = AuthGroupPermissionsModel.objects.filter(
+                group_id__in=group_id
+            ).order_by("-id")
 
             permission_details = []
             for get_permission in fetched_permissions:
-                codename = Permission.objects.get(id=get_permission.permission.id).codename
-                custom_group = CustomGroup.objects.get(group_ptr=get_permission.group.id)
+                codename = Permission.objects.get(
+                    id=get_permission.permission.id
+                ).codename
+                custom_group = CustomGroup.objects.get(
+                    group_ptr=get_permission.group.id
+                )
 
                 permission_info = {
                     "id": get_permission.id,
                     "group_id": get_permission.group.id,
                     "group_name": custom_group.group_name,
                     "content_type": get_permission.permission.content_type.id,
-                    "model_name": (get_permission.permission.content_type.model.capitalize()),
+                    "model_name": (
+                        get_permission.permission.content_type.model.capitalize()
+                    ),
                     "codename": codename,
                 }
                 permission_details.append(permission_info)
 
-            return Response({"success": True, "data": permission_details}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": True, "data": permission_details}, status=status.HTTP_200_OK
+            )
 
         else:
             return Response(
@@ -273,7 +318,9 @@ class PermissionViewSet(ModelViewSet):
 
         if group_name:
             permission_list = []
-            permission_by_group = AuthGroupPermissionsModel.objects.filter(group__name=group_name)
+            permission_by_group = AuthGroupPermissionsModel.objects.filter(
+                group__name=group_name
+            )
 
             for permissions in permission_by_group:
                 codename = Permission.objects.get(id=permissions.permission.id)
@@ -358,7 +405,9 @@ class AssignPermissionGroupViewSet(ModelViewSet):
 
         group = Group.objects.get(pk=group_id)
         for codename in codename_list:
-            code_id = Permission.objects.filter(codename=codename).values("id")[0].get("id")
+            code_id = (
+                Permission.objects.filter(codename=codename).values("id")[0].get("id")
+            )
             group.permissions.add(code_id)
 
         group_permission = Permission.objects.filter(group=group)
@@ -370,7 +419,9 @@ class AssignPermissionGroupViewSet(ModelViewSet):
                     [permission_name, permission.name.split(" ")[1]]
                 )
             else:
-                permission_list[permission.content_type.app_label] = permission.name.split(" ")[1]
+                permission_list[permission.content_type.app_label] = (
+                    permission.name.split(" ")[1]
+                )
 
         return Response(
             {
@@ -442,23 +493,31 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
         # Determine which admin group to exclude based on user type
         if login_user.company:  # Assuming company field exists on User model
             exclude_group_names = ["Company Admin"]
-        elif hasattr(login_user, "partner_company"):  # Adjust based on your actual model
+        elif hasattr(
+            login_user, "partner_company"
+        ):  # Adjust based on your actual model
             exclude_group_names = ["Partner Company Admin"]
         else:
             exclude_group_names = ["EndClient Admin"]
 
         # Get user's custom groups, excluding the admin role specific to their type
-        user_custom_groups = CustomGroup.objects.filter(group_ptr__in=user_groups).exclude(
+        user_custom_groups = CustomGroup.objects.filter(
+            group_ptr__in=user_groups
+        ).exclude(group_ptr__name__in=exclude_group_names)
+
+        # Optional: Get the excluded admin group (if needed for logic)
+        excluded_admin_groups = CustomGroup.objects.filter(
             group_ptr__name__in=exclude_group_names
         )
 
-        # Optional: Get the excluded admin group (if needed for logic)
-        excluded_admin_groups = CustomGroup.objects.filter(group_ptr__name__in=exclude_group_names)
-
         # Call your helper function (make sure it exists and works correctly)
-        response = get_group_permission_by_user(user_custom_groups, excluded_admin_groups)
+        response = get_group_permission_by_user(
+            user_custom_groups, excluded_admin_groups
+        )
 
-        return Response({"success": True, "response": response}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "response": response}, status=status.HTTP_200_OK
+        )
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -481,7 +540,9 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
             permissions = [
                 {
                     "id": permission.id,
-                    "permission": (f"{permission.content_type.app_label}| {permission.name}"),
+                    "permission": (
+                        f"{permission.content_type.app_label}| {permission.name}"
+                    ),
                 }
                 for permission in group.permissions.all()
             ]
@@ -496,7 +557,9 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                 }
             )
 
-        return Response({"success": True, "response": group_list}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "response": group_list}, status=status.HTTP_200_OK
+        )
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -514,13 +577,21 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
         group_data = {
             "group_id": instance.id,
             "group_name": custom_group.group_name,
-            "role_family": (custom_group.role_family.id if custom_group.role_family else None),
-            "family_name": (custom_group.role_family.family_name if custom_group.role_family else None),
+            "role_family": (
+                custom_group.role_family.id if custom_group.role_family else None
+            ),
+            "family_name": (
+                custom_group.role_family.family_name
+                if custom_group.role_family
+                else None
+            ),
             "sequence": custom_group.sequence if custom_group else None,
             "permissions": permissions,
         }
 
-        return Response({"success": True, "response": group_data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "response": group_data}, status=status.HTTP_200_OK
+        )
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -543,7 +614,9 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                 )
 
         if company_id:
-            group_exists = CustomGroup.objects.filter(group_name=group_name, company_id=company_id).exists()
+            group_exists = CustomGroup.objects.filter(
+                group_name=group_name, company_id=company_id
+            ).exists()
             if group_exists:
                 return Response(
                     {"success": False, "message": "Group name already exists"},
@@ -585,14 +658,19 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
             # Create the CustomGroup instance, which will automatically assign a sequence
             if group_name and group_name.replace(" ", "").isalpha():
                 custom_group = CustomGroup(
-                    name="partner_company_" + str(partner_company_id) + "_" + group_name,
+                    name="partner_company_"
+                    + str(partner_company_id)
+                    + "_"
+                    + group_name,
                     group_name=group_name,
                     role_family=role_family_instance,
                     partner_company_id=partner_company_id,
                     created_by=request.user,
                 )
                 custom_group.save()
-                user = User.objects.get(partner_company=partner_company_id, company__isnull=True).id
+                user = User.objects.get(
+                    partner_company=partner_company_id, company__isnull=True
+                ).id
                 custom_group.user_set.add(user)
 
             else:
@@ -605,7 +683,9 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                 )
 
         elif end_client_id:
-            group_exists = CustomGroup.objects.filter(group_name=group_name, end_client_id=end_client_id).exists()
+            group_exists = CustomGroup.objects.filter(
+                group_name=group_name, end_client_id=end_client_id
+            ).exists()
             if group_exists:
                 return Response(
                     {"success": False, "message": "Group name already exists"},
@@ -622,7 +702,11 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                     created_by=request.user,
                 )
                 custom_group.save()
-                user = User.objects.get(end_client=end_client_id, company__isnull=True, partner_company__isnull=True).id
+                user = User.objects.get(
+                    end_client=end_client_id,
+                    company__isnull=True,
+                    partner_company__isnull=True,
+                ).id
                 custom_group.user_set.add(user)
 
             else:
@@ -635,7 +719,9 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                 )
 
         else:
-            group_exists = CustomGroup.objects.filter(group_name=group_name, created_by=request.user).exists()
+            group_exists = CustomGroup.objects.filter(
+                group_name=group_name, created_by=request.user
+            ).exists()
             if group_exists:
                 return Response(
                     {"success": False, "message": "Group name already exists"},
@@ -663,7 +749,9 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                     [permission_name, permission.name.split(" ")[1]]
                 )
             else:
-                permission_list[permission.content_type.app_label] = permission.name.split(" ")[1]
+                permission_list[permission.content_type.app_label] = (
+                    permission.name.split(" ")[1]
+                )
 
         return Response(
             {
@@ -672,7 +760,11 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                 "id": custom_group.id,
                 "group_name": group_name,
                 "sequence": custom_group.sequence,
-                "role_family": (custom_group.role_family.family_name if custom_group.role_family else None),
+                "role_family": (
+                    custom_group.role_family.family_name
+                    if custom_group.role_family
+                    else None
+                ),
                 "company": company_id,
                 "partner_company": partner_company_id,
                 "end_client": end_client_id,
@@ -705,7 +797,9 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
         group_instance = CustomGroup.objects.get(pk=group_id)
         if company_id:
             group_exists = (
-                CustomGroup.objects.filter(group_name=group_name, company_id=company_id).exclude(pk=group_id).exists()
+                CustomGroup.objects.filter(group_name=group_name, company_id=company_id)
+                .exclude(pk=group_id)
+                .exists()
             )
             if group_exists:
                 return Response(
@@ -725,7 +819,9 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
 
         elif partner_company_id:
             group_exists = (
-                CustomGroup.objects.filter(group_name=group_name, partner_company_id=partner_company_id)
+                CustomGroup.objects.filter(
+                    group_name=group_name, partner_company_id=partner_company_id
+                )
                 .exclude(pk=group_id)
                 .exists()
             )
@@ -738,7 +834,9 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            group_instance.name = "partner_company_" + str(partner_company_id) + "_" + group_name
+            group_instance.name = (
+                "partner_company_" + str(partner_company_id) + "_" + group_name
+            )
             group_instance.group_name = group_name
             group_instance.role_family = role_family_instance
             group_instance.partner_company_id = partner_company_id
@@ -747,7 +845,9 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
 
         elif end_client_id:
             group_exists = (
-                CustomGroup.objects.filter(group_name=group_name, end_client_id=end_client_id)
+                CustomGroup.objects.filter(
+                    group_name=group_name, end_client_id=end_client_id
+                )
                 .exclude(pk=group_id)
                 .exists()
             )
@@ -769,7 +869,11 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
 
         else:
             group_exists = (
-                CustomGroup.objects.filter(group_name=group_name, created_by=request.user).exclude(pk=group_id).exists()
+                CustomGroup.objects.filter(
+                    group_name=group_name, created_by=request.user
+                )
+                .exclude(pk=group_id)
+                .exists()
             )
             if group_exists:
                 return Response(
@@ -793,7 +897,9 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                     [permission_name, permission.name.split(" ")[1]]
                 )
             else:
-                permission_list[permission.content_type.app_label] = permission.name.split(" ")[1]
+                permission_list[permission.content_type.app_label] = (
+                    permission.name.split(" ")[1]
+                )
 
         return Response(
             {
@@ -801,8 +907,14 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                 "message": "Group updated and Permission assigned to Group",
                 "id": group_instance.id,
                 "group_name": group_instance.group_name,
-                "sequence": (group_instance.sequence if group_instance.sequence else None),
-                "role_family": (group_instance.role_family.family_name if group_instance.role_family else None),
+                "sequence": (
+                    group_instance.sequence if group_instance.sequence else None
+                ),
+                "role_family": (
+                    group_instance.role_family.family_name
+                    if group_instance.role_family
+                    else None
+                ),
                 "company": company_id,
                 "partner_company": partner_company_id,
                 "end_client": end_client_id,
@@ -816,7 +928,9 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
         instance = self.get_object()
         instance.delete()
         instance.save()
-        return Response({"success": True, "message": "Role Deleted"}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "message": "Role Deleted"}, status=status.HTTP_200_OK
+        )
 
 
 class DeleteGroupWithPermissionsViewSet(ModelViewSet):

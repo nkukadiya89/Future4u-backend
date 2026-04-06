@@ -81,12 +81,16 @@ class BaseModule(models.Model):
             if user and not self.created_by:
                 self.created_by = user
         else:
-            old_deleted = getattr(self.__class__.objects.get(pk=self.pk), 'deleted', False) if self.pk else False
-            current_deleted = getattr(self, 'deleted', False)
-            
+            old_deleted = (
+                getattr(self.__class__.objects.get(pk=self.pk), "deleted", False)
+                if self.pk
+                else False
+            )
+            current_deleted = getattr(self, "deleted", False)
+
             if old_deleted == current_deleted and not current_deleted:
                 self.updated_at = timezone.now()
-            
+
             if user:
                 self.updated_by = user
 
@@ -101,10 +105,10 @@ class BaseModule(models.Model):
         self.deleted_at = timezone.now()
         if user:
             self.deleted_by = user
-        models.Model.save(self, update_fields=[
-                          "deleted", "deleted_at", "deleted_by"])
+        models.Model.save(self, update_fields=["deleted", "deleted_at", "deleted_by"])
 
         return (1, {self.__class__.__name__: [self.pk]})
+
 
 """
 NOTE:

@@ -6,10 +6,18 @@ class FAQ(models.Model):
     question = models.TextField()
     answer = models.TextField()
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="faq_created", editable=False
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="faq_created",
+        editable=False,
     )
     updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="faq_updated", editable=False
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="faq_updated",
+        editable=False,
     )
     deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

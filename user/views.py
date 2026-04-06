@@ -26,7 +26,11 @@ from user.serializers import (
     VerifyLoginWithEmailOtpSerializer,
     VerifyOTPSerializer,
 )
-from user.user_auth import get_user_group_permissions, get_user_groups, get_user_permissions
+from user.user_auth import (
+    get_user_group_permissions,
+    get_user_groups,
+    get_user_permissions,
+)
 from utils.generate_otp import generate_otp, send_otp_email
 from utils.pagination import Pagination
 
@@ -40,7 +44,9 @@ class UserDetailsViewSet(ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.serializer_class(instance)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
 
 class VerifyOtpViewSet(ModelViewSet):
@@ -122,7 +128,8 @@ class ForgetPasswordViewSet(ModelViewSet):
             return Response(
                 {
                     "success": True,
-                    "message": "Forgot Password Link has been sent to " "Registed Phone Number and Email",
+                    "message": "Forgot Password Link has been sent to "
+                    "Registed Phone Number and Email",
                 },
                 status=status.HTTP_200_OK,
             )
@@ -257,7 +264,11 @@ class ResetPasswordViewSet(ModelViewSet):
                 "employee": user.employee.first_name if user.employee else None,
             }
 
-            employee_id = User.objects.filter(employee=user.employee.id).first() if user.employee else None
+            employee_id = (
+                User.objects.filter(employee=user.employee.id).first()
+                if user.employee
+                else None
+            )
             company_id = None
 
             # Determine the company_id only if the employee is not set or
@@ -369,13 +380,19 @@ class ForgotPasswordViewSet(ModelViewSet):
 
             if not (new_password and re_enter_password):
                 return Response(
-                    {"success": False, "message": "Both new_password and re_enter_password are required."},
+                    {
+                        "success": False,
+                        "message": "Both new_password and re_enter_password are required.",
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
             if new_password != re_enter_password:
                 return Response(
-                    {"success": False, "message": "New password and Re-enter password do not match."},
+                    {
+                        "success": False,
+                        "message": "New password and Re-enter password do not match.",
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -404,7 +421,11 @@ class ForgotPasswordViewSet(ModelViewSet):
                 "employee": user.employee.first_name if user.employee else None,
             }
 
-            employee_id = User.objects.filter(employee=user.employee.id).first() if user.employee else None
+            employee_id = (
+                User.objects.filter(employee=user.employee.id).first()
+                if user.employee
+                else None
+            )
             company_id = None
 
             # Determine the company_id only if the employee is not set or
@@ -693,7 +714,9 @@ class LogoutViewSet(ModelViewSet):
 
             return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
         except Exception:
-            return Response({"error": "Logout failed"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Logout failed"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class RoleFamilyViewSet(ModelViewSet):
@@ -718,10 +741,14 @@ class RoleFamilyViewSet(ModelViewSet):
             page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = self.serializer_class(page, many=True)
-                return self.get_paginated_response({"success": True, "data": serializer.data})
+                return self.get_paginated_response(
+                    {"success": True, "data": serializer.data}
+                )
 
             serializer = self.serializer_class(queryset, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -736,7 +763,9 @@ class RoleFamilyViewSet(ModelViewSet):
             )
 
         else:
-            error_message = " ".join([", ".join(value) for value in serializer.errors.values()])
+            error_message = " ".join(
+                [", ".join(value) for value in serializer.errors.values()]
+            )
             return Response(
                 {"success": False, "message": error_message},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -745,7 +774,9 @@ class RoleFamilyViewSet(ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.serializer_class(instance)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -755,10 +786,14 @@ class RoleFamilyViewSet(ModelViewSet):
 
         if serializer.is_valid():
             serializer.save()
-            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+            )
 
         else:
-            error_message = " ".join([", ".join(value) for value in serializer.errors.values()])
+            error_message = " ".join(
+                [", ".join(value) for value in serializer.errors.values()]
+            )
             return Response(
                 {"success": True, "data": error_message},
                 status=status.HTTP_400_BAD_REQUEST,

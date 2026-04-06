@@ -217,7 +217,9 @@ class EventCreater(object):
 
     # Partner Company Document
     @staticmethod
-    def partner_company_document_create(partner_company_document, ip_address, user, partner_company):
+    def partner_company_document_create(
+        partner_company_document, ip_address, user, partner_company
+    ):
         details = f"{partner_company_document.partner_company} - {partner_company_document.document_title}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_DOCUMENT_CREATE,
@@ -227,7 +229,9 @@ class EventCreater(object):
         )
 
     @staticmethod
-    def partner_company_document_modify(partner_company_document, ip_address, user, partner_company):
+    def partner_company_document_modify(
+        partner_company_document, ip_address, user, partner_company
+    ):
         details = f"{partner_company_document.partner_company} - {partner_company_document.document_title}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_DOCUMENT_MODIFY,
@@ -237,7 +241,9 @@ class EventCreater(object):
         )
 
     @staticmethod
-    def partner_company_document_archive(partner_company_document, ip_address, user, partner_company):
+    def partner_company_document_archive(
+        partner_company_document, ip_address, user, partner_company
+    ):
         details = f"{partner_company_document.partner_company} - {partner_company_document.document_title}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_DOCUMENT_ARCHIVE,
@@ -247,7 +253,9 @@ class EventCreater(object):
         )
 
     @staticmethod
-    def partner_company_document_restore(partner_company_document, ip_address, user, partner_company):
+    def partner_company_document_restore(
+        partner_company_document, ip_address, user, partner_company
+    ):
         details = f"{partner_company_document.partner_company} - {partner_company_document.document_title}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PARTNER_COMPANY_DOCUMENT_RESTORE,
@@ -622,7 +630,7 @@ class EventCreater(object):
             details=details,
             ip_address=ip_address,
         )
-    
+
     # Notification Template
     @staticmethod
     def notification_template_create(notification_template, ip_address, user):
@@ -671,9 +679,19 @@ class EventCreater(object):
     # site location
     @staticmethod
     def site_location_create(site_location, ip_address, user, company):
-        state_name = site_location.site_address_state.name if site_location.site_address_state else "N/A"
-        city_name = site_location.site_address_city.name if site_location.site_address_city else "N/A"
-        holding_types = site_location.holding_types.name if site_location.holding_types else "N/A"
+        state_name = (
+            site_location.site_address_state.name
+            if site_location.site_address_state
+            else "N/A"
+        )
+        city_name = (
+            site_location.site_address_city.name
+            if site_location.site_address_city
+            else "N/A"
+        )
+        holding_types = (
+            site_location.holding_types.name if site_location.holding_types else "N/A"
+        )
         details = f"{state_name} - {city_name} - {holding_types}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_SITE_LOCATION_CREATE,
@@ -686,9 +704,19 @@ class EventCreater(object):
 
     @staticmethod
     def site_location_modify(site_location, ip_address, user, company):
-        state_name = site_location.site_address_state.name if site_location.site_address_state else "N/A"
-        city_name = site_location.site_address_city.name if site_location.site_address_city else "N/A"
-        holding_types = site_location.holding_types.name if site_location.holding_types else "N/A"
+        state_name = (
+            site_location.site_address_state.name
+            if site_location.site_address_state
+            else "N/A"
+        )
+        city_name = (
+            site_location.site_address_city.name
+            if site_location.site_address_city
+            else "N/A"
+        )
+        holding_types = (
+            site_location.holding_types.name if site_location.holding_types else "N/A"
+        )
         details = f"{state_name} - {city_name} - {holding_types}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_SITE_LOCATION_MODIFY,
@@ -701,9 +729,19 @@ class EventCreater(object):
 
     @staticmethod
     def site_location_archive(site_location, ip_address, user, company):
-        state_name = site_location.site_address_state.name if site_location.site_address_state else "N/A"
-        city_name = site_location.site_address_city.name if site_location.site_address_city else "N/A"
-        holding_types = site_location.holding_types.name if site_location.holding_types else "N/A"
+        state_name = (
+            site_location.site_address_state.name
+            if site_location.site_address_state
+            else "N/A"
+        )
+        city_name = (
+            site_location.site_address_city.name
+            if site_location.site_address_city
+            else "N/A"
+        )
+        holding_types = (
+            site_location.holding_types.name if site_location.holding_types else "N/A"
+        )
         details = f"{state_name} - {city_name} - {holding_types}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_SITE_LOCATION_ARCHIVE,
@@ -717,9 +755,19 @@ class EventCreater(object):
     @staticmethod
     def site_location_restore(site_location, ip_address, user, company):
         company_name = site_location.company.name if site_location.company else "N/A"
-        state_name = site_location.site_address_state.name if site_location.site_address_state else "N/A"
-        city_name = site_location.site_address_city.name if site_location.site_address_city else "N/A"
-        holding_types = site_location.holding_types.name if site_location.holding_types else "N/A"
+        state_name = (
+            site_location.site_address_state.name
+            if site_location.site_address_state
+            else "N/A"
+        )
+        city_name = (
+            site_location.site_address_city.name
+            if site_location.site_address_city
+            else "N/A"
+        )
+        holding_types = (
+            site_location.holding_types.name if site_location.holding_types else "N/A"
+        )
         details = f"{company_name} - {state_name} - {city_name} - {holding_types}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_SITE_LOCATION_RESTORE,
@@ -775,7 +823,10 @@ class EventCreater(object):
     # Subscrpiton
     @staticmethod
     def subscription_create(subscription, ip_address, user):
-        details = f"{subscription.package_name} - {subscription.subscription_type} - " f"{subscription.status}"
+        details = (
+            f"{subscription.package_name} - {subscription.subscription_type} - "
+            f"{subscription.status}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_SUBSCRIPTION_CREATE,
             subscription=subscription,
@@ -786,7 +837,10 @@ class EventCreater(object):
 
     @staticmethod
     def subscription_update(subscription, ip_address, user):
-        details = f"{subscription.package_name} - {subscription.subscription_type} - " f"{subscription.status}"
+        details = (
+            f"{subscription.package_name} - {subscription.subscription_type} - "
+            f"{subscription.status}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_SUBSCRIPTION_MODIFY,
             subscription=subscription,
@@ -797,7 +851,10 @@ class EventCreater(object):
 
     @staticmethod
     def subscription_archive(subscription, ip_address, user):
-        details = f"{subscription.package_name} - {subscription.subscription_type} - " f"{subscription.status}"
+        details = (
+            f"{subscription.package_name} - {subscription.subscription_type} - "
+            f"{subscription.status}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_SUBSCRIPTION_ARCHIVE,
             subscription=subscription,
@@ -808,7 +865,10 @@ class EventCreater(object):
 
     @staticmethod
     def subscription_restore(subscription, ip_address, user):
-        details = f"{subscription.package_name} - {subscription.subscription_type} - " f"{subscription.status}"
+        details = (
+            f"{subscription.package_name} - {subscription.subscription_type} - "
+            f"{subscription.status}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_SUBSCRIPTION_RESTORE,
             subscription=subscription,
@@ -820,7 +880,9 @@ class EventCreater(object):
     # Purchased subscription
     @staticmethod
     def subscription_invoice_create(subscription_invoice, ip_address, user):
-        details = f"{subscription_invoice.subscription} - {subscription_invoice.company}"
+        details = (
+            f"{subscription_invoice.subscription} - {subscription_invoice.company}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PURCHASED_SUBSCRIPTION_CREATE,
             subscription_invoice=subscription_invoice,
@@ -831,7 +893,9 @@ class EventCreater(object):
 
     @staticmethod
     def subscription_invoice_update(subscription_invoice, ip_address, user):
-        details = f"{subscription_invoice.subscription} - {subscription_invoice.company}"
+        details = (
+            f"{subscription_invoice.subscription} - {subscription_invoice.company}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PURCHASED_SUBSCRIPTION_MODIFY,
             subscription_invoice=subscription_invoice,
@@ -842,7 +906,9 @@ class EventCreater(object):
 
     @staticmethod
     def subscription_invoice_archive(subscription_invoice, ip_address, user):
-        details = f"{subscription_invoice.subscription} - {subscription_invoice.company}"
+        details = (
+            f"{subscription_invoice.subscription} - {subscription_invoice.company}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PURCHASED_SUBSCRIPTION_ARCHIVE,
             subscription_invoice=subscription_invoice,
@@ -853,7 +919,9 @@ class EventCreater(object):
 
     @staticmethod
     def subscription_invoice_restore(subscription_invoice, ip_address, user):
-        details = f"{subscription_invoice.subscription} - {subscription_invoice.company}"
+        details = (
+            f"{subscription_invoice.subscription} - {subscription_invoice.company}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_PURCHASED_SUBSCRIPTION_RESTORE,
             subscription_invoice=subscription_invoice,
@@ -966,11 +1034,13 @@ class EventCreater(object):
 
     # Business Setting
     @staticmethod
-    def business_setting_update(business_setting, ip_address, user, company, partner_company=None):
-        company_name = business_setting.company.name if business_setting.company else "N/A"
-        details = (
-            f"Company: {company_name} - Country: {business_setting.country}"
+    def business_setting_update(
+        business_setting, ip_address, user, company, partner_company=None
+    ):
+        company_name = (
+            business_setting.company.name if business_setting.company else "N/A"
         )
+        details = f"Company: {company_name} - Country: {business_setting.country}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_BUSINESS_SETTING_MODIFY,
             business_setting=business_setting,
@@ -983,9 +1053,7 @@ class EventCreater(object):
     # FAQ
     @staticmethod
     def faq_create(faq, ip_address, user):
-        details = (
-            f"FAQ: {faq.question[:50]}{'...' if len(faq.question) > 50 else ''} - {user.email if user else 'System'}"
-        )
+        details = f"FAQ: {faq.question[:50]}{'...' if len(faq.question) > 50 else ''} - {user.email if user else 'System'}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_FAQ_CREATE,
             faq=faq,
@@ -996,9 +1064,7 @@ class EventCreater(object):
 
     @staticmethod
     def faq_update(faq, ip_address, user):
-        details = (
-            f"FAQ: {faq.question[:50]}{'...' if len(faq.question) > 50 else ''} - {user.email if user else 'System'}"
-        )
+        details = f"FAQ: {faq.question[:50]}{'...' if len(faq.question) > 50 else ''} - {user.email if user else 'System'}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_FAQ_MODIFY,
             faq=faq,
@@ -1009,9 +1075,7 @@ class EventCreater(object):
 
     @staticmethod
     def faq_archive(faq, ip_address, user):
-        details = (
-            f"FAQ: {faq.question[:50]}{'...' if len(faq.question) > 50 else ''} - {user.email if user else 'System'}"
-        )
+        details = f"FAQ: {faq.question[:50]}{'...' if len(faq.question) > 50 else ''} - {user.email if user else 'System'}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_FAQ_ARCHIVE,
             faq=faq,
@@ -1022,9 +1086,7 @@ class EventCreater(object):
 
     @staticmethod
     def faq_restore(faq, ip_address, user):
-        details = (
-            f"FAQ: {faq.question[:50]}{'...' if len(faq.question) > 50 else ''} - {user.email if user else 'System'}"
-        )
+        details = f"FAQ: {faq.question[:50]}{'...' if len(faq.question) > 50 else ''} - {user.email if user else 'System'}"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_FAQ_RESTORE,
             faq=faq,
@@ -1080,8 +1142,12 @@ class EventCreater(object):
 
     # Device Configuration
     @staticmethod
-    def device_configuration_create(device_configuration, ip_address, user, partner_company):
-        details = f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+    def device_configuration_create(
+        device_configuration, ip_address, user, partner_company
+    ):
+        details = (
+            f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_CREATE,
             device_configuration=device_configuration,
@@ -1109,8 +1175,12 @@ class EventCreater(object):
         )
 
     @staticmethod
-    def device_configuration_edit_site(device_configuration, ip_address, user, partner_company):
-        details = f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+    def device_configuration_edit_site(
+        device_configuration, ip_address, user, partner_company
+    ):
+        details = (
+            f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_EDIT_SITE,
             device_configuration=device_configuration,
@@ -1120,8 +1190,12 @@ class EventCreater(object):
         )
 
     @staticmethod
-    def device_configuration_update_status(device_configuration, ip_address, user, partner_company):
-        details = f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+    def device_configuration_update_status(
+        device_configuration, ip_address, user, partner_company
+    ):
+        details = (
+            f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_UPDATE_STATUS,
             device_configuration=device_configuration,
@@ -1134,7 +1208,9 @@ class EventCreater(object):
     def device_configuration_create_schedule(
         device_configuration, ip_address, user, partner_company=None, company=None
     ):
-        details = f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+        details = (
+            f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_CREATE_SCHEDULE,
             device_configuration=device_configuration,
@@ -1148,7 +1224,9 @@ class EventCreater(object):
     def device_configuration_update_schedule(
         device_configuration, ip_address, user, partner_company=None, company=None
     ):
-        details = f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+        details = (
+            f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_UPDATE_SCHEDULE,
             device_configuration=device_configuration,
@@ -1159,8 +1237,12 @@ class EventCreater(object):
         )
 
     @staticmethod
-    def device_configuration_power_control(device_configuration, ip_address, user, partner_company=None, company=None):
-        details = f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+    def device_configuration_power_control(
+        device_configuration, ip_address, user, partner_company=None, company=None
+    ):
+        details = (
+            f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_POWER_CONTROL,
             device_configuration=device_configuration,
@@ -1171,8 +1253,12 @@ class EventCreater(object):
         )
 
     @staticmethod
-    def device_configuration_update(device_configuration, ip_address, user, partner_company):
-        details = f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+    def device_configuration_update(
+        device_configuration, ip_address, user, partner_company
+    ):
+        details = (
+            f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_MODIFY,
             device_configuration=device_configuration,
@@ -1182,8 +1268,12 @@ class EventCreater(object):
         )
 
     @staticmethod
-    def device_configuration_archive(device_configuration, ip_address, user, partner_company):
-        details = f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+    def device_configuration_archive(
+        device_configuration, ip_address, user, partner_company
+    ):
+        details = (
+            f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_ARCHIVE,
             device_configuration=device_configuration,
@@ -1193,8 +1283,12 @@ class EventCreater(object):
         )
 
     @staticmethod
-    def device_configuration_restore(device_configuration, ip_address, user, partner_company):
-        details = f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+    def device_configuration_restore(
+        device_configuration, ip_address, user, partner_company
+    ):
+        details = (
+            f"{device_configuration.imei_number} - {device_configuration.mac_address}"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_DEVICE_CONFIGURATION_RESTORE,
             device_configuration=device_configuration,
@@ -1206,7 +1300,9 @@ class EventCreater(object):
     # Device Transfer
     @staticmethod
     def device_transfer_site_photo_delete(device_transfer, ip_address, user):
-        details = f"{device_transfer.current_device_config.device_code} - Site Photo Delete"
+        details = (
+            f"{device_transfer.current_device_config.device_code} - Site Photo Delete"
+        )
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_DEVICE_TRANSFER_SITE_PHOTO_DELETE,
             device_transfer=device_transfer,
@@ -1216,7 +1312,9 @@ class EventCreater(object):
         )
 
     @staticmethod
-    def device_transfer_edit_request(device_transfer, ip_address, user, partner_company):
+    def device_transfer_edit_request(
+        device_transfer, ip_address, user, partner_company
+    ):
         details = f"{device_transfer.current_device_config.device_code} - Edit Request"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_DEVICE_TRANSFER_EDIT_REQUEST,
@@ -1227,7 +1325,9 @@ class EventCreater(object):
         )
 
     @staticmethod
-    def device_transfer_update_status(device_transfer, ip_address, user, partner_company):
+    def device_transfer_update_status(
+        device_transfer, ip_address, user, partner_company
+    ):
         details = f"{device_transfer.current_device_config.device_code} - Update Status"
         return ActivityLog.objects.create(
             event_type=ActivityLog.EVENT_TYPE_DEVICE_TRANSFER_UPDATE_STATUS,
@@ -1239,9 +1339,13 @@ class EventCreater(object):
 
     @staticmethod
     def device_transfer_create(device_transfer, ip_address, user, company):
-        company_name = device_transfer.company.name if device_transfer.company else "N/A"
+        company_name = (
+            device_transfer.company.name if device_transfer.company else "N/A"
+        )
         device_code = (
-            device_transfer.current_device_config.device_code if device_transfer.current_device_config else "N/A"
+            device_transfer.current_device_config.device_code
+            if device_transfer.current_device_config
+            else "N/A"
         )
         details = f"{company_name} - {device_code}"
         return ActivityLog.objects.create(
@@ -1255,9 +1359,13 @@ class EventCreater(object):
 
     @staticmethod
     def device_transfer_update(device_transfer, ip_address, user, company):
-        company_name = device_transfer.company.name if device_transfer.company else "N/A"
+        company_name = (
+            device_transfer.company.name if device_transfer.company else "N/A"
+        )
         device_code = (
-            device_transfer.current_device_config.device_code if device_transfer.current_device_config else "N/A"
+            device_transfer.current_device_config.device_code
+            if device_transfer.current_device_config
+            else "N/A"
         )
         details = f"{company_name} - {device_code}"
         return ActivityLog.objects.create(
@@ -1271,9 +1379,13 @@ class EventCreater(object):
 
     @staticmethod
     def device_transfer_archive(device_transfer, ip_address, user, company):
-        company_name = device_transfer.company.name if device_transfer.company else "N/A"
+        company_name = (
+            device_transfer.company.name if device_transfer.company else "N/A"
+        )
         device_code = (
-            device_transfer.current_device_config.device_code if device_transfer.current_device_config else "N/A"
+            device_transfer.current_device_config.device_code
+            if device_transfer.current_device_config
+            else "N/A"
         )
         details = f"{company_name} - {device_code}"
         return ActivityLog.objects.create(
@@ -1287,9 +1399,13 @@ class EventCreater(object):
 
     @staticmethod
     def device_transfer_restore(device_transfer, ip_address, user, company):
-        company_name = device_transfer.company.name if device_transfer.company else "N/A"
+        company_name = (
+            device_transfer.company.name if device_transfer.company else "N/A"
+        )
         device_code = (
-            device_transfer.current_device_config.device_code if device_transfer.current_device_config else "N/A"
+            device_transfer.current_device_config.device_code
+            if device_transfer.current_device_config
+            else "N/A"
         )
         details = f"{company_name} - {device_code}"
         return ActivityLog.objects.create(
@@ -1438,8 +1554,12 @@ class ActivityLog(models.Model):
     EVENT_TYPE_DEVICE_CONFIGURATION_ASSIGN = "device_configuration:assign"
     EVENT_TYPE_DEVICE_CONFIGURATION_EDIT_SITE = "device_configuration:edit_site"
     EVENT_TYPE_DEVICE_CONFIGURATION_UPDATE_STATUS = "device_configuration:update_status"
-    EVENT_TYPE_DEVICE_CONFIGURATION_CREATE_SCHEDULE = "device_configuration:create_schedule"
-    EVENT_TYPE_DEVICE_CONFIGURATION_UPDATE_SCHEDULE = "device_configuration:update_schedule"
+    EVENT_TYPE_DEVICE_CONFIGURATION_CREATE_SCHEDULE = (
+        "device_configuration:create_schedule"
+    )
+    EVENT_TYPE_DEVICE_CONFIGURATION_UPDATE_SCHEDULE = (
+        "device_configuration:update_schedule"
+    )
     EVENT_TYPE_DEVICE_CONFIGURATION_POWER_CONTROL = "device_configuration:power_control"
     EVENT_TYPE_DEVICE_CONFIGURATION_ARCHIVE = "device_configuration:archive"
     EVENT_TYPE_DEVICE_CONFIGURATION_RESTORE = "device_configuration:restore"
@@ -1482,9 +1602,18 @@ class ActivityLog(models.Model):
         (EVENT_TYPE_PARTNER_COMPANY_RESTORE, "Restore Partner Company"),
         (EVENT_TYPE_PARTNER_COMPANY_DOCUMENT_CREATE, "Add Partner Company Document"),
         (EVENT_TYPE_PARTNER_COMPANY_DOCUMENT_MODIFY, "Modify Partner Company Document"),
-        (EVENT_TYPE_PARTNER_COMPANY_DOCUMENT_ARCHIVE, "Archive Partner Company Document"),
-        (EVENT_TYPE_PARTNER_COMPANY_DOCUMENT_RESTORE, "Restore Partner Company Document"),
-        (EVENT_TYPE_PARTNER_COMPANY_BASIC_INFO_UPDATE, "Partner Company Basic Info Update"),
+        (
+            EVENT_TYPE_PARTNER_COMPANY_DOCUMENT_ARCHIVE,
+            "Archive Partner Company Document",
+        ),
+        (
+            EVENT_TYPE_PARTNER_COMPANY_DOCUMENT_RESTORE,
+            "Restore Partner Company Document",
+        ),
+        (
+            EVENT_TYPE_PARTNER_COMPANY_BASIC_INFO_UPDATE,
+            "Partner Company Basic Info Update",
+        ),
         (EVENT_TYPE_PARTNER_COMPANY_CHANGE_PASSWORD, "Partner Company Password Change"),
         (EVENT_TYPE_PARTNER_COMPANY_STATUS_UPDATE, "Partner Company Status Update"),
         (EVENT_TYPE_END_CLIENT_CREATE, "Add EndClient"),
@@ -1559,10 +1688,22 @@ class ActivityLog(models.Model):
         (EVENT_TYPE_DEVICE_CONFIGURATION_MODIFY, "Modify Device Configuration"),
         (EVENT_TYPE_DEVICE_CONFIGURATION_ASSIGN, "Assign Device Configuration"),
         (EVENT_TYPE_DEVICE_CONFIGURATION_EDIT_SITE, "Edit Device Configuration Site"),
-        (EVENT_TYPE_DEVICE_CONFIGURATION_UPDATE_STATUS, "Update Device Configuration Status"),
-        (EVENT_TYPE_DEVICE_CONFIGURATION_CREATE_SCHEDULE, "Create Device Configuration Schedule"),
-        (EVENT_TYPE_DEVICE_CONFIGURATION_UPDATE_SCHEDULE, "Update Device Configuration Schedule"),
-        (EVENT_TYPE_DEVICE_CONFIGURATION_POWER_CONTROL, "Device Configuration Power Control"),
+        (
+            EVENT_TYPE_DEVICE_CONFIGURATION_UPDATE_STATUS,
+            "Update Device Configuration Status",
+        ),
+        (
+            EVENT_TYPE_DEVICE_CONFIGURATION_CREATE_SCHEDULE,
+            "Create Device Configuration Schedule",
+        ),
+        (
+            EVENT_TYPE_DEVICE_CONFIGURATION_UPDATE_SCHEDULE,
+            "Update Device Configuration Schedule",
+        ),
+        (
+            EVENT_TYPE_DEVICE_CONFIGURATION_POWER_CONTROL,
+            "Device Configuration Power Control",
+        ),
         (EVENT_TYPE_DEVICE_CONFIGURATION_ARCHIVE, "Archive Device Configuration"),
         (EVENT_TYPE_DEVICE_CONFIGURATION_RESTORE, "Restore Device Configuration"),
         (EVENT_TYPE_DEVICE_TRANSFER_CREATE, "Add Device Transfer"),
@@ -1571,22 +1712,37 @@ class ActivityLog(models.Model):
         (EVENT_TYPE_DEVICE_TRANSFER_UPDATE_STATUS, "Update Device Transfer Status"),
         (EVENT_TYPE_DEVICE_TRANSFER_ARCHIVE, "Archive Device Transfer"),
         (EVENT_TYPE_DEVICE_TRANSFER_RESTORE, "Restore Device Transfer"),
-        (EVENT_TYPE_DEVICE_TRANSFER_SITE_PHOTO_DELETE, "Device Transfer Site Photo Delete"),
+        (
+            EVENT_TYPE_DEVICE_TRANSFER_SITE_PHOTO_DELETE,
+            "Device Transfer Site Photo Delete",
+        ),
     )
 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True)
     company_photo = models.ForeignKey(CompanyPhoto, on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    employee = models.ForeignKey("employee.Employee", on_delete=models.CASCADE, null=True)
+    employee = models.ForeignKey(
+        "employee.Employee", on_delete=models.CASCADE, null=True
+    )
     country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True)
     state = models.ForeignKey("state.State", on_delete=models.CASCADE, null=True)
     city = models.ForeignKey("city.City", on_delete=models.CASCADE, null=True)
-    business_category = models.ForeignKey("business_category.BusinessCategory", on_delete=models.CASCADE, null=True)
-    business_setting = models.ForeignKey(BusinessSetting, on_delete=models.CASCADE, null=True)
+    business_category = models.ForeignKey(
+        "business_category.BusinessCategory", on_delete=models.CASCADE, null=True
+    )
+    business_setting = models.ForeignKey(
+        BusinessSetting, on_delete=models.CASCADE, null=True
+    )
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, null=True)
-    subscription_invoice = models.ForeignKey(SubscriptionInvoice, on_delete=models.CASCADE, null=True)
-    subscription_feature = models.ForeignKey(SubscriptionFeature, on_delete=models.CASCADE, null=True)
-    subscription_invoice = models.ForeignKey(SubscriptionInvoice, on_delete=models.CASCADE, null=True)
+    subscription_invoice = models.ForeignKey(
+        SubscriptionInvoice, on_delete=models.CASCADE, null=True
+    )
+    subscription_feature = models.ForeignKey(
+        SubscriptionFeature, on_delete=models.CASCADE, null=True
+    )
+    subscription_invoice = models.ForeignKey(
+        SubscriptionInvoice, on_delete=models.CASCADE, null=True
+    )
     faq = models.ForeignKey(FAQ, on_delete=models.CASCADE, null=True)
     event_type = models.CharField(max_length=50, choices=EVENT_TYPE)
     details = models.TextField(blank=True, default="")

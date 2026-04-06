@@ -23,7 +23,12 @@ SAMPLE_CSV_HEADERS = (
     "education_level",
     "is_active",
 )
-REQUIRED_IMPORT_HEADERS = {"stream_code", "stream_name", "sequence_order", "parent_safe_label"}
+REQUIRED_IMPORT_HEADERS = {
+    "stream_code",
+    "stream_name",
+    "sequence_order",
+    "parent_safe_label",
+}
 HEADER_ALIASES = {
     "code": "stream_code",
     "stream_master_code": "stream_code",
@@ -106,7 +111,15 @@ def restore_stream(*, stream: Stream, user) -> Stream:
     stream.deleted_by = None
     stream.updated_at = timezone.now()
     stream.updated_by = user
-    stream.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_at", "updated_by"])
+    stream.save(
+        update_fields=[
+            "deleted",
+            "deleted_at",
+            "deleted_by",
+            "updated_at",
+            "updated_by",
+        ]
+    )
     return stream
 
 
@@ -207,7 +220,9 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
             try:
                 from openpyxl import load_workbook
             except ImportError:
-                return [], ["Excel support requires openpyxl. Install openpyxl or upload CSV."]
+                return [], [
+                    "Excel support requires openpyxl. Install openpyxl or upload CSV."
+                ]
             wb = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
             ws = wb.active
             rows_iter = ws.iter_rows(values_only=True)
@@ -241,10 +256,15 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
         if not reader.fieldnames:
             return [], ["CSV has no header row."]
         normalized_headers = [
-            HEADER_ALIASES.get((str(h).strip().lower() if h else ""), (str(h).strip().lower() if h else ""))
+            HEADER_ALIASES.get(
+                (str(h).strip().lower() if h else ""),
+                (str(h).strip().lower() if h else ""),
+            )
             for h in reader.fieldnames
         ]
-        missing = sorted(REQUIRED_IMPORT_HEADERS - set([h for h in normalized_headers if h]))
+        missing = sorted(
+            REQUIRED_IMPORT_HEADERS - set([h for h in normalized_headers if h])
+        )
         if missing:
             return [], [f"Missing required headers: {', '.join(missing)}"]
         out_rows = []
@@ -276,7 +296,9 @@ def _resolve_education_level_value(value):
 
 
 @transaction.atomic
-def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict) -> StreamImportBatch:
+def bulk_import_rows(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> StreamImportBatch:
     batch = StreamImportBatch.objects.create(
         created_by=user,
         total_rows=len(rows),
@@ -314,7 +336,9 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
         stream_code = (row.get("stream_code") or "").strip().lower()
         if stream_code:
             existing = Stream.objects.filter(stream_code__iexact=stream_code).first()
-        ser = serializer_class(instance=existing, data=row, partial=bool(existing), context=context)
+        ser = serializer_class(
+            instance=existing, data=row, partial=bool(existing), context=context
+        )
         if not ser.is_valid():
             msg = json.dumps(ser.errors)[:500]
             errors.append(
@@ -335,7 +359,15 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
                     obj.deleted_by = None
                     obj.updated_by = user
                     obj.updated_at = timezone.now()
-                    obj.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_by", "updated_at"])
+                    obj.save(
+                        update_fields=[
+                            "deleted",
+                            "deleted_at",
+                            "deleted_by",
+                            "updated_by",
+                            "updated_at",
+                        ]
+                    )
                 imported += 1
         except ValidationError as e:
             detail = e.detail
@@ -370,7 +402,9 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
     return batch
 
 
-def bulk_import_streams(*, user, rows: list[dict], serializer_class, context: dict) -> dict[str, Any]:
+def bulk_import_streams(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> dict[str, Any]:
     batch = bulk_import_rows(
         user=user,
         rows=rows,
@@ -391,11 +425,15 @@ def bulk_import_streams(*, user, rows: list[dict], serializer_class, context: di
 
 
 def import_batches_queryset():
-    return StreamImportBatch.objects.select_related("created_by").order_by("-created_at")
+    return StreamImportBatch.objects.select_related("created_by").order_by(
+        "-created_at"
+    )
 
 
 def import_errors_queryset(*, batch_id: UUID | None = None):
-    qs = StreamImportError.objects.select_related("batch").order_by("-batch__created_at", "row_number")
+    qs = StreamImportError.objects.select_related("batch").order_by(
+        "-batch__created_at", "row_number"
+    )
     if batch_id:
         qs = qs.filter(batch_id=batch_id)
     return qs
@@ -423,6 +461,28 @@ def sample_csv_bytes() -> bytes:
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(SAMPLE_CSV_HEADERS)
-    w.writerow(["science", "Science", "1", "1", "General Science", "Physics/Chemistry/Biology path", "secondary", "1"])
-    w.writerow(["commerce", "Commerce", "2", "1", "Business Studies", "Accounts/Economics path", "higher_secondary", "1"])
+    w.writerow(
+        [
+            "science",
+            "Science",
+            "1",
+            "1",
+            "General Science",
+            "Physics/Chemistry/Biology path",
+            "secondary",
+            "1",
+        ]
+    )
+    w.writerow(
+        [
+            "commerce",
+            "Commerce",
+            "2",
+            "1",
+            "Business Studies",
+            "Accounts/Economics path",
+            "higher_secondary",
+            "1",
+        ]
+    )
     return buf.getvalue().encode("utf-8")

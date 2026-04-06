@@ -72,7 +72,11 @@ def _assert_education_level_mapping(*, min_education_level, max_education_level)
     if max_education_level is None:
         return
     if max_education_level.sequence_order < min_education_level.sequence_order:
-        raise ValidationError({"max_education_level": "Max education level cannot be below min education level."})
+        raise ValidationError(
+            {
+                "max_education_level": "Max education level cannot be below min education level."
+            }
+        )
 
 
 def _recommendation_blocker(career: Career) -> str | None:
@@ -111,7 +115,9 @@ def blocking_foreign_key_usage(career: Career) -> str | None:
 def assert_can_archive(career: Career):
     recommendation_blocker = _recommendation_blocker(career)
     if recommendation_blocker:
-        raise ValidationError(f"Cannot archive: used in recommendations ({recommendation_blocker}).")
+        raise ValidationError(
+            f"Cannot archive: used in recommendations ({recommendation_blocker})."
+        )
     blocker = blocking_foreign_key_usage(career)
     if blocker:
         raise ValidationError(f"Cannot archive: referenced by {blocker}.")
@@ -246,7 +252,9 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
             try:
                 from openpyxl import load_workbook
             except ImportError:
-                return [], ["Excel support requires openpyxl. Install openpyxl or upload CSV."]
+                return [], [
+                    "Excel support requires openpyxl. Install openpyxl or upload CSV."
+                ]
             wb = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
             ws = wb.active
             rows_iter = ws.iter_rows(values_only=True)
@@ -280,10 +288,15 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
         if not reader.fieldnames:
             return [], ["CSV has no header row."]
         normalized_headers = [
-            HEADER_ALIASES.get((str(h).strip().lower() if h else ""), (str(h).strip().lower() if h else ""))
+            HEADER_ALIASES.get(
+                (str(h).strip().lower() if h else ""),
+                (str(h).strip().lower() if h else ""),
+            )
             for h in reader.fieldnames
         ]
-        missing = sorted(REQUIRED_IMPORT_HEADERS - set([h for h in normalized_headers if h]))
+        missing = sorted(
+            REQUIRED_IMPORT_HEADERS - set([h for h in normalized_headers if h])
+        )
         if missing:
             return [], [f"Missing required headers: {', '.join(missing)}"]
         out_rows = []
@@ -298,7 +311,9 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
 
 
 @transaction.atomic
-def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict) -> CareerImportBatch:
+def bulk_import_rows(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> CareerImportBatch:
     batch = CareerImportBatch.objects.create(
         created_by=user,
         total_rows=len(rows),
@@ -356,10 +371,16 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
             )
             continue
         try:
-            _assert_education_level_mapping(min_education_level=min_edu, max_education_level=max_edu)
+            _assert_education_level_mapping(
+                min_education_level=min_edu, max_education_level=max_edu
+            )
         except ValidationError as e:
             detail = e.detail
-            msg = json.dumps(detail)[:500] if isinstance(detail, (dict, list)) else str(detail)[:500]
+            msg = (
+                json.dumps(detail)[:500]
+                if isinstance(detail, (dict, list))
+                else str(detail)[:500]
+            )
             errors.append(
                 CareerImportError(
                     batch=batch,
@@ -376,7 +397,9 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
         if row_code:
             existing = Career.objects.filter(career_code__iexact=row_code).first()
 
-        ser = serializer_class(instance=existing, data=row, partial=bool(existing), context=context)
+        ser = serializer_class(
+            instance=existing, data=row, partial=bool(existing), context=context
+        )
         if not ser.is_valid():
             msg = json.dumps(ser.errors)[:500]
             errors.append(
@@ -397,7 +420,15 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
                     obj.deleted_by = None
                     obj.updated_by = user
                     obj.updated_at = timezone.now()
-                    obj.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_by", "updated_at"])
+                    obj.save(
+                        update_fields=[
+                            "deleted",
+                            "deleted_at",
+                            "deleted_by",
+                            "updated_by",
+                            "updated_at",
+                        ]
+                    )
                 imported += 1
         except ValidationError as e:
             detail = e.detail
@@ -432,7 +463,9 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
     return batch
 
 
-def bulk_import_careers(*, user, rows: list[dict], serializer_class, context: dict) -> dict[str, Any]:
+def bulk_import_careers(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> dict[str, Any]:
     batch = bulk_import_rows(
         user=user,
         rows=rows,
@@ -440,7 +473,10 @@ def bulk_import_careers(*, user, rows: list[dict], serializer_class, context: di
         context=context,
     )
     err_qs = CareerImportError.objects.filter(batch=batch).order_by("row_number")
-    error_details = [{"row": e.row_number, "message": e.message, "row_data": e.row_data} for e in err_qs.iterator(chunk_size=200)]
+    error_details = [
+        {"row": e.row_number, "message": e.message, "row_data": e.row_data}
+        for e in err_qs.iterator(chunk_size=200)
+    ]
     return {
         "success_count": batch.imported_count,
         "error_count": batch.failed_count,
@@ -450,11 +486,15 @@ def bulk_import_careers(*, user, rows: list[dict], serializer_class, context: di
 
 
 def import_batches_queryset():
-    return CareerImportBatch.objects.select_related("created_by").order_by("-created_at")
+    return CareerImportBatch.objects.select_related("created_by").order_by(
+        "-created_at"
+    )
 
 
 def import_errors_queryset(*, batch_id: UUID | None = None):
-    qs = CareerImportError.objects.select_related("batch").order_by("-batch__created_at", "row_number")
+    qs = CareerImportError.objects.select_related("batch").order_by(
+        "-batch__created_at", "row_number"
+    )
     if batch_id:
         qs = qs.filter(batch_id=batch_id)
     return qs
@@ -482,7 +522,24 @@ def sample_csv_bytes() -> bytes:
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(SAMPLE_CSV_HEADERS)
-    w.writerow(["software_engineer", "Software Engineer", "higher_secondary", "graduation", "Build software systems", "1"])
-    w.writerow(["data_analyst", "Data Analyst", "graduation", "", "Analyze and interpret data", "1"])
+    w.writerow(
+        [
+            "software_engineer",
+            "Software Engineer",
+            "higher_secondary",
+            "graduation",
+            "Build software systems",
+            "1",
+        ]
+    )
+    w.writerow(
+        [
+            "data_analyst",
+            "Data Analyst",
+            "graduation",
+            "",
+            "Analyze and interpret data",
+            "1",
+        ]
+    )
     return buf.getvalue().encode("utf-8")
-

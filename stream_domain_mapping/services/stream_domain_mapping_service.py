@@ -18,7 +18,13 @@ from stream_domain_mapping.models import (
 
 logger = logging.getLogger(__name__)
 
-SAMPLE_CSV_HEADERS = ("stream_code", "domain_code", "weight_score", "is_primary", "is_active")
+SAMPLE_CSV_HEADERS = (
+    "stream_code",
+    "domain_code",
+    "weight_score",
+    "is_primary",
+    "is_active",
+)
 REQUIRED_IMPORT_HEADERS = {"stream_code", "domain_code", "weight_score"}
 HEADER_ALIASES = {
     "stream": "stream_code",
@@ -30,7 +36,9 @@ HEADER_ALIASES = {
 
 
 def mapping_base_queryset():
-    return StreamDomainMapping.objects.select_related("stream", "domain", "created_by", "updated_by")
+    return StreamDomainMapping.objects.select_related(
+        "stream", "domain", "created_by", "updated_by"
+    )
 
 
 def _to_bool(value, *, default=False):
@@ -40,7 +48,7 @@ def _to_bool(value, *, default=False):
 
 
 def _normalize_code(value):
-    return (str(value).strip().lower() if value is not None else "")
+    return str(value).strip().lower() if value is not None else ""
 
 
 def _resolve_stream(stream_code):
@@ -48,7 +56,9 @@ def _resolve_stream(stream_code):
         return None
     from stream.models import Stream
 
-    return Stream.objects.filter(stream_code__iexact=str(stream_code).strip(), deleted=False).first()
+    return Stream.objects.filter(
+        stream_code__iexact=str(stream_code).strip(), deleted=False
+    ).first()
 
 
 def _resolve_domain(domain_code):
@@ -56,7 +66,9 @@ def _resolve_domain(domain_code):
         return None
     from domain.models import Domain
 
-    return Domain.objects.filter(domain_code__iexact=str(domain_code).strip(), deleted=False).first()
+    return Domain.objects.filter(
+        domain_code__iexact=str(domain_code).strip(), deleted=False
+    ).first()
 
 
 def pair_exists(*, stream_id, domain_id, exclude_pk: UUID | None = None) -> bool:
@@ -95,7 +107,9 @@ def create_mapping(*, user, validated_data: dict) -> StreamDomainMapping:
 
 
 @transaction.atomic
-def update_mapping(*, mapping: StreamDomainMapping, user, validated_data: dict) -> StreamDomainMapping:
+def update_mapping(
+    *, mapping: StreamDomainMapping, user, validated_data: dict
+) -> StreamDomainMapping:
     for k, v in validated_data.items():
         setattr(mapping, k, v)
     mapping.save(user=user)
@@ -142,7 +156,9 @@ def bulk_restore(*, ids: list, user) -> int:
 
 
 @transaction.atomic
-def set_active_status(*, mapping: StreamDomainMapping, user, is_active: bool) -> StreamDomainMapping:
+def set_active_status(
+    *, mapping: StreamDomainMapping, user, is_active: bool
+) -> StreamDomainMapping:
     mapping.is_active = is_active
     mapping.save(user=user)
     return mapping
@@ -161,7 +177,9 @@ def bulk_set_active(*, ids: list, user, is_active: bool) -> int:
 
 def by_stream_queryset(*, stream_id):
     return (
-        StreamDomainMapping.objects.filter(stream_id=stream_id, deleted=False, is_active=True)
+        StreamDomainMapping.objects.filter(
+            stream_id=stream_id, deleted=False, is_active=True
+        )
         .select_related("domain", "stream")
         .order_by("-weight_score", "domain__domain_name")
     )
@@ -184,7 +202,9 @@ def normalize_import_row(row: dict[str, Any]) -> dict[str, Any]:
             raise ValueError("Invalid weight_score")
     for b in ("is_primary", "is_active"):
         if b in out:
-            out[b] = _to_bool(out.get(b), default=(False if b == "is_primary" else True))
+            out[b] = _to_bool(
+                out.get(b), default=(False if b == "is_primary" else True)
+            )
     return out
 
 
@@ -199,7 +219,9 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
             try:
                 from openpyxl import load_workbook
             except ImportError:
-                return [], ["Excel support requires openpyxl. Install openpyxl or upload CSV."]
+                return [], [
+                    "Excel support requires openpyxl. Install openpyxl or upload CSV."
+                ]
             wb = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
             ws = wb.active
             rows_iter = ws.iter_rows(values_only=True)
@@ -234,10 +256,15 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
         if not reader.fieldnames:
             return [], ["CSV has no header row."]
         normalized_headers = [
-            HEADER_ALIASES.get((str(h).strip().lower() if h else ""), (str(h).strip().lower() if h else ""))
+            HEADER_ALIASES.get(
+                (str(h).strip().lower() if h else ""),
+                (str(h).strip().lower() if h else ""),
+            )
             for h in reader.fieldnames
         ]
-        missing = sorted(REQUIRED_IMPORT_HEADERS - set([h for h in normalized_headers if h]))
+        missing = sorted(
+            REQUIRED_IMPORT_HEADERS - set([h for h in normalized_headers if h])
+        )
         if missing:
             return [], [f"Missing required headers: {', '.join(missing)}"]
         out_rows = []
@@ -252,8 +279,12 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
 
 
 @transaction.atomic
-def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict) -> StreamDomainMappingImportBatch:
-    batch = StreamDomainMappingImportBatch.objects.create(created_by=user, total_rows=len(rows))
+def bulk_import_rows(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> StreamDomainMappingImportBatch:
+    batch = StreamDomainMappingImportBatch.objects.create(
+        created_by=user, total_rows=len(rows)
+    )
     imported = 0
     errors: list[StreamDomainMappingImportError] = []
     for idx, raw_row in enumerate(rows, start=1):
@@ -302,8 +333,12 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
             "is_primary": row.get("is_primary", False),
             "is_active": row.get("is_active", True),
         }
-        existing = StreamDomainMapping.objects.filter(stream=stream, domain=domain).first()
-        ser = serializer_class(instance=existing, data=payload, partial=bool(existing), context=context)
+        existing = StreamDomainMapping.objects.filter(
+            stream=stream, domain=domain
+        ).first()
+        ser = serializer_class(
+            instance=existing, data=payload, partial=bool(existing), context=context
+        )
         if not ser.is_valid():
             msg = json.dumps(ser.errors)[:500]
             errors.append(
@@ -324,11 +359,23 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
                     obj.deleted_by = None
                     obj.updated_by = user
                     obj.updated_at = timezone.now()
-                    obj.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_by", "updated_at"])
+                    obj.save(
+                        update_fields=[
+                            "deleted",
+                            "deleted_at",
+                            "deleted_by",
+                            "updated_by",
+                            "updated_at",
+                        ]
+                    )
                 imported += 1
         except ValidationError as e:
             detail = e.detail
-            msg = json.dumps(detail)[:500] if isinstance(detail, (dict, list)) else str(detail)[:500]
+            msg = (
+                json.dumps(detail)[:500]
+                if isinstance(detail, (dict, list))
+                else str(detail)[:500]
+            )
             errors.append(
                 StreamDomainMappingImportError(
                     batch=batch,
@@ -356,10 +403,19 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
     return batch
 
 
-def bulk_import_mappings(*, user, rows: list[dict], serializer_class, context: dict) -> dict[str, Any]:
-    batch = bulk_import_rows(user=user, rows=rows, serializer_class=serializer_class, context=context)
-    err_qs = StreamDomainMappingImportError.objects.filter(batch=batch).order_by("row_number")
-    error_details = [{"row": e.row_number, "message": e.message, "row_data": e.row_data} for e in err_qs]
+def bulk_import_mappings(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> dict[str, Any]:
+    batch = bulk_import_rows(
+        user=user, rows=rows, serializer_class=serializer_class, context=context
+    )
+    err_qs = StreamDomainMappingImportError.objects.filter(batch=batch).order_by(
+        "row_number"
+    )
+    error_details = [
+        {"row": e.row_number, "message": e.message, "row_data": e.row_data}
+        for e in err_qs
+    ]
     return {
         "success_count": batch.imported_count,
         "error_count": batch.failed_count,

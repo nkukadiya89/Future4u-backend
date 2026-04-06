@@ -9,14 +9,18 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('activity_log', '0001_initial'),
-        ('business_category', '0001_initial'),
+        ("activity_log", "0001_initial"),
+        ("business_category", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='activitylog',
-            name='business_category',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='business_category.businesscategory'),
+            model_name="activitylog",
+            name="business_category",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="business_category.businesscategory",
+            ),
         ),
     ]

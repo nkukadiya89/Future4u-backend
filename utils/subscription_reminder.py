@@ -36,19 +36,25 @@ def send_subscription_reminders():
                 try:
                     # Send reminder email
                     success = send_subscription_reminder_email(
-                        company=company, subscription_item=subscription_item, days_until_end=days_until_end
+                        company=company,
+                        subscription_item=subscription_item,
+                        days_until_end=days_until_end,
                     )
 
                     if success:
                         sent_count += 1
-                        logger.info(f"Renewal reminder sent to {company.name} (Ends in {days_until_end} days)")
+                        logger.info(
+                            f"Renewal reminder sent to {company.name} (Ends in {days_until_end} days)"
+                        )
                     else:
                         logger.warning(
                             f"Failed to send renewal reminder to {company.name} (Ends in {days_until_end} days)"
                         )
 
                 except Exception as e:
-                    logger.error(f"Error sending renewal reminder to {company.name}: {str(e)}")
+                    logger.error(
+                        f"Error sending renewal reminder to {company.name}: {str(e)}"
+                    )
 
         logger.info(f"Total renewal reminder emails sent: {sent_count}")
         return {
@@ -134,7 +140,9 @@ def send_manual_reminder(company_id, subscription_item_id=None):
         company = Company.objects.get(id=company_id)
 
         if subscription_item_id:
-            subscription_item = PaymentSubscriptionItem.objects.get(id=subscription_item_id)
+            subscription_item = PaymentSubscriptionItem.objects.get(
+                id=subscription_item_id
+            )
             today = timezone.now().date()
             days_until_end = (subscription_item.end_date - today).days
         else:
@@ -147,20 +155,33 @@ def send_manual_reminder(company_id, subscription_item_id=None):
             ).first()
 
             if not subscription_item:
-                return {"success": False, "message": "No active subscription found for this company"}
+                return {
+                    "success": False,
+                    "message": "No active subscription found for this company",
+                }
 
             today = timezone.now().date()
             days_until_end = (subscription_item.end_date - today).days
 
         success = send_subscription_reminder_email(
-            company=company, subscription_item=subscription_item, days_until_end=days_until_end
+            company=company,
+            subscription_item=subscription_item,
+            days_until_end=days_until_end,
         )
 
         if success:
-            logger.info(f"Manual renewal reminder sent to {company.name} (Ends in {days_until_end} days)")
-            return {"success": True, "message": f"Renewal reminder sent to {company.name}"}
+            logger.info(
+                f"Manual renewal reminder sent to {company.name} (Ends in {days_until_end} days)"
+            )
+            return {
+                "success": True,
+                "message": f"Renewal reminder sent to {company.name}",
+            }
         else:
-            return {"success": False, "message": f"Failed to send renewal reminder to {company.name}"}
+            return {
+                "success": False,
+                "message": f"Failed to send renewal reminder to {company.name}",
+            }
 
     except Company.DoesNotExist:
         return {"success": False, "message": "Company not found"}

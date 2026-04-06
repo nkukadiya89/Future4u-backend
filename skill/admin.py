@@ -166,7 +166,9 @@ class SkillAdmin(BaseAdmin):
                         skill_service.archive_skill(skill=obj, user=request.user)
                         self.message_user(request, "Archived.")
                     except DRFValidationError as exc:
-                        self.message_user(request, str(exc.detail), level=messages.ERROR)
+                        self.message_user(
+                            request, str(exc.detail), level=messages.ERROR
+                        )
                 return HttpResponseRedirect(request.get_full_path())
             if request.POST.get("skill_admin_restore_one"):
                 pk = request.POST["skill_admin_restore_one"]
@@ -210,4 +212,3 @@ class SkillAdmin(BaseAdmin):
             skill_service.restore_skill(skill=obj, user=request.user)
             n += 1
         self.message_user(request, f"{n} skill(s) restored.")
-

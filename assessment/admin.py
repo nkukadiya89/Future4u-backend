@@ -31,9 +31,20 @@ class MappedDomainFilter(admin.SimpleListFilter):
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ("id", "dimension", "signal_strength", "is_active", "question_text", "mapped_domains_list")
+    list_display = (
+        "id",
+        "dimension",
+        "signal_strength",
+        "is_active",
+        "question_text",
+        "mapped_domains_list",
+    )
     list_filter = ("dimension", "is_active", MappedDomainFilter)
-    search_fields = ("question_text", "mapped_domains__domain_name", "mapped_domains__domain_code")
+    search_fields = (
+        "question_text",
+        "mapped_domains__domain_name",
+        "mapped_domains__domain_code",
+    )
     filter_horizontal = ("mapped_domains",)
     inlines = [OptionInline]
 

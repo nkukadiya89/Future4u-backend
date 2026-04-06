@@ -88,7 +88,9 @@ class DomainViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.get_serializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -105,7 +107,10 @@ class DomainViewSet(ModelViewSet):
                 {"success": True, "message": "Domain created", "data": serializer.data},
                 status=status.HTTP_201_CREATED,
             )
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -113,7 +118,10 @@ class DomainViewSet(ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response({"success": True, "data": serializer.data})
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -121,15 +129,24 @@ class DomainViewSet(ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response({"success": True, "data": serializer.data})
-        return Response({"success": False, "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         try:
             domain_service.soft_archive_domain(domain=instance, user=request.user)
         except ValidationError as e:
-            return Response({"success": False, "message": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"success": True, "message": "Archived Successfully"}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": False, "message": e.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            {"success": True, "message": "Archived Successfully"},
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=False, methods=["get"], url_path="archived")
     def archived(self, request, *args, **kwargs):
@@ -137,11 +154,15 @@ class DomainViewSet(ModelViewSet):
         page = self.paginate_queryset(queryset)
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = DomainSerializer(queryset, many=True, context={"request": request})
+            serializer = DomainSerializer(
+                queryset, many=True, context={"request": request}
+            )
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = DomainSerializer(page, many=True, context={"request": request})
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = DomainSerializer(queryset, many=True, context={"request": request})
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -150,7 +171,10 @@ class DomainViewSet(ModelViewSet):
         instance = self.get_object()
         ser = DomainChangeStatusSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         domain_service.set_active_status(
             domain=instance,
             user=request.user,
@@ -191,26 +215,46 @@ class DomainViewSet(ModelViewSet):
     def bulk_archive(self, request, *args, **kwargs):
         ser = DomainBulkIdsSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         try:
-            n = domain_service.bulk_archive(ids=list(ser.validated_data["ids"]), user=request.user)
+            n = domain_service.bulk_archive(
+                ids=list(ser.validated_data["ids"]), user=request.user
+            )
         except ValidationError as e:
-            return Response({"success": False, "message": e.detail}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"success": True, "message": "Bulk archived successfully", "count": n})
+            return Response(
+                {"success": False, "message": e.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            {"success": True, "message": "Bulk archived successfully", "count": n}
+        )
 
     @action(detail=False, methods=["post"], url_path="bulk-restore")
     def bulk_restore(self, request, *args, **kwargs):
         ser = DomainBulkIdsSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
-        n = domain_service.bulk_restore(ids=list(ser.validated_data["ids"]), user=request.user)
-        return Response({"success": True, "message": "Bulk restored successfully", "count": n})
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        n = domain_service.bulk_restore(
+            ids=list(ser.validated_data["ids"]), user=request.user
+        )
+        return Response(
+            {"success": True, "message": "Bulk restored successfully", "count": n}
+        )
 
     @action(detail=False, methods=["post"], url_path="bulk-import")
     def bulk_import(self, request, *args, **kwargs):
         ser = DomainBulkImportSerializer(data=request.data)
         if not ser.is_valid():
-            return Response({"success": False, "message": ser.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": ser.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         batch = domain_service.bulk_import_rows(
             user=request.user,
             rows=ser.validated_data["rows"],
@@ -220,7 +264,9 @@ class DomainViewSet(ModelViewSet):
         return Response(
             {
                 "success": True,
-                "data": DomainImportBatchSerializer(batch, context={"request": request}).data,
+                "data": DomainImportBatchSerializer(
+                    batch, context={"request": request}
+                ).data,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -236,7 +282,9 @@ class DomainViewSet(ModelViewSet):
         rows, parse_errors = domain_service.parse_import_file(upload)
         if not rows:
             msg = parse_errors or ["No data rows in file."]
-            return Response({"success": False, "message": msg}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"success": False, "message": msg}, status=status.HTTP_400_BAD_REQUEST
+            )
         result = domain_service.bulk_import_domains(
             user=request.user,
             rows=rows,
@@ -260,12 +308,20 @@ class DomainViewSet(ModelViewSet):
         page = self.paginate_queryset(qs)
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = DomainImportBatchSerializer(qs, many=True, context={"request": request})
+            serializer = DomainImportBatchSerializer(
+                qs, many=True, context={"request": request}
+            )
             return Response({"success": True, "data": serializer.data})
         if page is not None:
-            serializer = DomainImportBatchSerializer(page, many=True, context={"request": request})
-            return self.get_paginated_response({"success": True, "data": serializer.data})
-        serializer = DomainImportBatchSerializer(qs, many=True, context={"request": request})
+            serializer = DomainImportBatchSerializer(
+                page, many=True, context={"request": request}
+            )
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+        serializer = DomainImportBatchSerializer(
+            qs, many=True, context={"request": request}
+        )
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
     @action(detail=False, methods=["get"], url_path="import-errors")
@@ -276,7 +332,10 @@ class DomainViewSet(ModelViewSet):
             try:
                 bid = UUID(str(batch_id))
             except (ValueError, TypeError):
-                return Response({"success": False, "message": "Invalid batch_id"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"success": False, "message": "Invalid batch_id"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         qs = domain_service.import_errors_queryset(batch_id=bid)
         page = self.paginate_queryset(qs)
         no_pagination = request.query_params.get("no_pagination")
@@ -285,7 +344,9 @@ class DomainViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = DomainImportErrorSerializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = DomainImportErrorSerializer(qs, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -297,7 +358,10 @@ class DomainViewSet(ModelViewSet):
             try:
                 bid = UUID(str(batch_id))
             except (ValueError, TypeError):
-                return Response({"success": False, "message": "Invalid batch_id"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"success": False, "message": "Invalid batch_id"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         filename, data = domain_service.error_report_csv_bytes(batch_id=bid)
         resp = HttpResponse(data, content_type="text/csv; charset=utf-8")
         resp["Content-Disposition"] = f'attachment; filename="{filename}"'

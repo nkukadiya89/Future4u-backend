@@ -10,77 +10,119 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('activity_log', '0002_initial'),
-        ('city', '0002_initial'),
-        ('company', '0003_initial'),
-        ('country', '0001_initial'),
-        ('employee', '0001_initial'),
-        ('faq', '0001_initial'),
-        ('state', '0001_initial'),
-        ('subscription', '0001_initial'),
-        ('user_profile', '0001_initial'),
+        ("activity_log", "0002_initial"),
+        ("city", "0002_initial"),
+        ("company", "0003_initial"),
+        ("country", "0001_initial"),
+        ("employee", "0001_initial"),
+        ("faq", "0001_initial"),
+        ("state", "0001_initial"),
+        ("subscription", "0001_initial"),
+        ("user_profile", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='activitylog',
-            name='business_setting',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='user_profile.businesssetting'),
+            model_name="activitylog",
+            name="business_setting",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="user_profile.businesssetting",
+            ),
         ),
         migrations.AddField(
-            model_name='activitylog',
-            name='city',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='city.city'),
+            model_name="activitylog",
+            name="city",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, to="city.city"
+            ),
         ),
         migrations.AddField(
-            model_name='activitylog',
-            name='company',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='company.company'),
+            model_name="activitylog",
+            name="company",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="company.company",
+            ),
         ),
         migrations.AddField(
-            model_name='activitylog',
-            name='company_photo',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='company.companyphoto'),
+            model_name="activitylog",
+            name="company_photo",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="company.companyphoto",
+            ),
         ),
         migrations.AddField(
-            model_name='activitylog',
-            name='country',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='country.country'),
+            model_name="activitylog",
+            name="country",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="country.country",
+            ),
         ),
         migrations.AddField(
-            model_name='activitylog',
-            name='employee',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='employee.employee'),
+            model_name="activitylog",
+            name="employee",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="employee.employee",
+            ),
         ),
         migrations.AddField(
-            model_name='activitylog',
-            name='faq',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='faq.faq'),
+            model_name="activitylog",
+            name="faq",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, to="faq.faq"
+            ),
         ),
         migrations.AddField(
-            model_name='activitylog',
-            name='state',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='state.state'),
+            model_name="activitylog",
+            name="state",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, to="state.state"
+            ),
         ),
         migrations.AddField(
-            model_name='activitylog',
-            name='subscription',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='subscription.subscription'),
+            model_name="activitylog",
+            name="subscription",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="subscription.subscription",
+            ),
         ),
         migrations.AddField(
-            model_name='activitylog',
-            name='subscription_feature',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='subscription.subscriptionfeature'),
+            model_name="activitylog",
+            name="subscription_feature",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="subscription.subscriptionfeature",
+            ),
         ),
         migrations.AddField(
-            model_name='activitylog',
-            name='subscription_invoice',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='subscription.subscriptioninvoice'),
+            model_name="activitylog",
+            name="subscription_invoice",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="subscription.subscriptioninvoice",
+            ),
         ),
         migrations.AddField(
-            model_name='activitylog',
-            name='user',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="activitylog",
+            name="user",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

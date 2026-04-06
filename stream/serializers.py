@@ -17,9 +17,15 @@ class StreamSerializer(AuditFieldsMixin, serializers.ModelSerializer):
     created_by = UserQuickSerializer(read_only=True)
     updated_by = UserQuickSerializer(read_only=True)
     is_archived = serializers.SerializerMethodField(read_only=True)
-    education_level_id = serializers.UUIDField(source="education_level.id", read_only=True)
-    education_level_code = serializers.CharField(source="education_level.level_code", read_only=True)
-    education_level_name = serializers.CharField(source="education_level.display_name", read_only=True)
+    education_level_id = serializers.UUIDField(
+        source="education_level.id", read_only=True
+    )
+    education_level_code = serializers.CharField(
+        source="education_level.level_code", read_only=True
+    )
+    education_level_name = serializers.CharField(
+        source="education_level.display_name", read_only=True
+    )
 
     class Meta:
         model = Stream
@@ -62,12 +68,16 @@ class StreamSerializer(AuditFieldsMixin, serializers.ModelSerializer):
             raise serializers.ValidationError("This field may not be blank.")
         exclude = self.instance.pk if getattr(self.instance, "pk", None) else None
         if stream_service.case_insensitive_code_exists(code=value, exclude_pk=exclude):
-            raise serializers.ValidationError("Stream code must be unique (case-insensitive).")
+            raise serializers.ValidationError(
+                "Stream code must be unique (case-insensitive)."
+            )
         return value
 
     def validate_sequence_order(self, value):
         exclude = self.instance.pk if getattr(self.instance, "pk", None) else None
-        if stream_service.sequence_exists(sequence_order=int(value), exclude_pk=exclude):
+        if stream_service.sequence_exists(
+            sequence_order=int(value), exclude_pk=exclude
+        ):
             raise serializers.ValidationError("Sequence order must be unique.")
         return value
 
@@ -85,9 +95,15 @@ class StreamSerializer(AuditFieldsMixin, serializers.ModelSerializer):
 
 
 class StreamDropdownSerializer(serializers.ModelSerializer):
-    education_level_id = serializers.UUIDField(source="education_level.id", read_only=True)
-    education_level_code = serializers.CharField(source="education_level.level_code", read_only=True)
-    education_level_name = serializers.CharField(source="education_level.display_name", read_only=True)
+    education_level_id = serializers.UUIDField(
+        source="education_level.id", read_only=True
+    )
+    education_level_code = serializers.CharField(
+        source="education_level.level_code", read_only=True
+    )
+    education_level_name = serializers.CharField(
+        source="education_level.display_name", read_only=True
+    )
 
     class Meta:
         model = Stream

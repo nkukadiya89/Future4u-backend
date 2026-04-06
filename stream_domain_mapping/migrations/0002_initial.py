@@ -10,74 +10,128 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('domain', '0002_initial'),
-        ('stream', '0002_initial'),
-        ('stream_domain_mapping', '0001_initial'),
+        ("domain", "0002_initial"),
+        ("stream", "0002_initial"),
+        ("stream_domain_mapping", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='streamdomainmapping',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
+            model_name="streamdomainmapping",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='streamdomainmapping',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
+            model_name="streamdomainmapping",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='streamdomainmapping',
-            name='domain',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stream_domain_mappings', to='domain.domain'),
+            model_name="streamdomainmapping",
+            name="domain",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="stream_domain_mappings",
+                to="domain.domain",
+            ),
         ),
         migrations.AddField(
-            model_name='streamdomainmapping',
-            name='stream',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stream_domain_mappings', to='stream.stream'),
+            model_name="streamdomainmapping",
+            name="stream",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="stream_domain_mappings",
+                to="stream.stream",
+            ),
         ),
         migrations.AddField(
-            model_name='streamdomainmapping',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
+            model_name="streamdomainmapping",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='streamdomainmappingimportbatch',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='stream_domain_mapping_import_batches', to=settings.AUTH_USER_MODEL),
+            model_name="streamdomainmappingimportbatch",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="stream_domain_mapping_import_batches",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='streamdomainmappingimporterror',
-            name='batch',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='error_rows', to='stream_domain_mapping.streamdomainmappingimportbatch'),
+            model_name="streamdomainmappingimporterror",
+            name="batch",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="error_rows",
+                to="stream_domain_mapping.streamdomainmappingimportbatch",
+            ),
         ),
         migrations.AddIndex(
-            model_name='streamdomainmapping',
-            index=models.Index(fields=['stream'], name='stream_doma_stream__d968cb_idx'),
+            model_name="streamdomainmapping",
+            index=models.Index(
+                fields=["stream"], name="stream_doma_stream__d968cb_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='streamdomainmapping',
-            index=models.Index(fields=['domain'], name='stream_doma_domain__e40876_idx'),
+            model_name="streamdomainmapping",
+            index=models.Index(
+                fields=["domain"], name="stream_doma_domain__e40876_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='streamdomainmapping',
-            index=models.Index(fields=['weight_score'], name='stream_doma_weight__d6494e_idx'),
+            model_name="streamdomainmapping",
+            index=models.Index(
+                fields=["weight_score"], name="stream_doma_weight__d6494e_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='streamdomainmapping',
-            index=models.Index(fields=['is_active'], name='stream_doma_is_acti_2b0fe7_idx'),
+            model_name="streamdomainmapping",
+            index=models.Index(
+                fields=["is_active"], name="stream_doma_is_acti_2b0fe7_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='streamdomainmapping',
-            index=models.Index(fields=['deleted'], name='stream_doma_deleted_602f10_idx'),
+            model_name="streamdomainmapping",
+            index=models.Index(
+                fields=["deleted"], name="stream_doma_deleted_602f10_idx"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='streamdomainmapping',
-            constraint=models.UniqueConstraint(fields=('stream', 'domain'), name='stream_domain_mapping_stream_domain_uniq'),
+            model_name="streamdomainmapping",
+            constraint=models.UniqueConstraint(
+                fields=("stream", "domain"),
+                name="stream_domain_mapping_stream_domain_uniq",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='streamdomainmapping',
-            constraint=models.CheckConstraint(condition=models.Q(('weight_score__gte', 0), ('weight_score__lte', 100)), name='stream_domain_mapping_weight_score_0_100_ck'),
+            model_name="streamdomainmapping",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    ("weight_score__gte", 0), ("weight_score__lte", 100)
+                ),
+                name="stream_domain_mapping_weight_score_0_100_ck",
+            ),
         ),
     ]

@@ -9,14 +9,19 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('city_areas', '0001_initial'),
-        ('country', '0001_initial'),
+        ("city_areas", "0001_initial"),
+        ("country", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='cityarea',
-            name='country',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='country.country'),
+            model_name="cityarea",
+            name="country",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="country.country",
+            ),
         ),
     ]

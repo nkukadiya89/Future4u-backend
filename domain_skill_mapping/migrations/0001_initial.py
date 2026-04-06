@@ -8,8 +8,7 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
@@ -19,7 +18,15 @@ class Migration(migrations.Migration):
                 ("updated_at", models.DateTimeField(blank=True, null=True)),
                 ("deleted_at", models.DateTimeField(blank=True, null=True)),
                 ("deleted", models.BooleanField(default=False)),
-                ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
                 ("weight_score", models.PositiveSmallIntegerField()),
                 ("is_core", models.BooleanField(default=False)),
                 ("is_active", models.BooleanField(default=True)),
@@ -32,7 +39,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="DomainSkillMappingImportBatch",
             fields=[
-                ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
                 ("total_rows", models.PositiveIntegerField(default=0)),
                 ("imported_count", models.PositiveIntegerField(default=0)),
@@ -47,7 +62,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="DomainSkillMappingImportError",
             fields=[
-                ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
                 ("row_number", models.PositiveIntegerField()),
                 ("message", models.CharField(max_length=500)),
                 ("row_data", models.JSONField(default=dict)),
@@ -58,4 +81,3 @@ class Migration(migrations.Migration):
             },
         ),
     ]
-

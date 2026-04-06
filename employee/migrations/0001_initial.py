@@ -7,48 +7,114 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Employee',
+            name="Employee",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('first_name', models.CharField(blank=True, max_length=100, null=True)),
-                ('middle_name', models.CharField(blank=True, max_length=100, null=True)),
-                ('last_name', models.CharField(blank=True, max_length=100, null=True)),
-                ('email', models.EmailField(max_length=254)),
-                ('phone', models.CharField(max_length=15)),
-                ('date_of_birth', models.DateField(blank=True, null=True)),
-                ('date_of_joining', models.DateField(blank=True, null=True)),
-                ('alternate_mobile', models.CharField(blank=True, max_length=15, null=True)),
-                ('aadhar_card', models.CharField(blank=True, max_length=20, null=True)),
-                ('pan_card', models.CharField(blank=True, max_length=20, null=True)),
-                ('role', models.CharField(max_length=15, null=True)),
-                ('status', models.CharField(choices=[('pending', 'pending'), ('active', 'active'), ('inactive', 'inactive')], default='pending', max_length=25)),
-                ('profile_photo', models.CharField(max_length=150, null=True)),
-                ('permanent_address_building', models.CharField(blank=True, max_length=255, null=True)),
-                ('permanent_address_area', models.CharField(blank=True, max_length=255, null=True)),
-                ('permanent_address_landmark', models.CharField(blank=True, max_length=255, null=True)),
-                ('permanent_address_pincode', models.CharField(blank=True, max_length=10, null=True)),
-                ('permanent_address_country', models.CharField(blank=True, max_length=100, null=True)),
-                ('permanent_address_state', models.CharField(blank=True, max_length=100, null=True)),
-                ('permanent_address_city', models.CharField(blank=True, max_length=100, null=True)),
-                ('current_address_building', models.CharField(blank=True, max_length=255, null=True)),
-                ('current_address_area', models.CharField(blank=True, max_length=255, null=True)),
-                ('current_address_landmark', models.CharField(blank=True, max_length=255, null=True)),
-                ('current_address_pincode', models.CharField(blank=True, max_length=10, null=True)),
-                ('current_address_country', models.CharField(blank=True, max_length=100, null=True)),
-                ('current_address_state', models.CharField(blank=True, max_length=100, null=True)),
-                ('current_address_city', models.CharField(blank=True, max_length=100, null=True)),
-                ('deleted', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(blank=True, null=True)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("first_name", models.CharField(blank=True, max_length=100, null=True)),
+                (
+                    "middle_name",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                ("last_name", models.CharField(blank=True, max_length=100, null=True)),
+                ("email", models.EmailField(max_length=254)),
+                ("phone", models.CharField(max_length=15)),
+                ("date_of_birth", models.DateField(blank=True, null=True)),
+                ("date_of_joining", models.DateField(blank=True, null=True)),
+                (
+                    "alternate_mobile",
+                    models.CharField(blank=True, max_length=15, null=True),
+                ),
+                ("aadhar_card", models.CharField(blank=True, max_length=20, null=True)),
+                ("pan_card", models.CharField(blank=True, max_length=20, null=True)),
+                ("role", models.CharField(max_length=15, null=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "pending"),
+                            ("active", "active"),
+                            ("inactive", "inactive"),
+                        ],
+                        default="pending",
+                        max_length=25,
+                    ),
+                ),
+                ("profile_photo", models.CharField(max_length=150, null=True)),
+                (
+                    "permanent_address_building",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "permanent_address_area",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "permanent_address_landmark",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "permanent_address_pincode",
+                    models.CharField(blank=True, max_length=10, null=True),
+                ),
+                (
+                    "permanent_address_country",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "permanent_address_state",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "permanent_address_city",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "current_address_building",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "current_address_area",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "current_address_landmark",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "current_address_pincode",
+                    models.CharField(blank=True, max_length=10, null=True),
+                ),
+                (
+                    "current_address_country",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "current_address_state",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "current_address_city",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                ("deleted", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(blank=True, null=True)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'employee',
+                "db_table": "employee",
             },
         ),
     ]

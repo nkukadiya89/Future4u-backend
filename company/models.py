@@ -38,14 +38,22 @@ class Company(models.Model):
     person_name = models.CharField(max_length=150, null=True)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
-    company_type = models.CharField(choices=COMPANY_TYPE, max_length=25, null=True, blank=True)
+    company_type = models.CharField(
+        choices=COMPANY_TYPE, max_length=25, null=True, blank=True
+    )
     gst_no_verified = models.BooleanField(default=False)
 
     gst_address_country = models.ForeignKey(
-        Country, on_delete=models.SET_NULL, null=True, related_name="gst_address_companies"
+        Country,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="gst_address_companies",
     )
     gst_address_state = models.ForeignKey(
-        State, on_delete=models.SET_NULL, null=True, related_name="gst_address_companies"
+        State,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="gst_address_companies",
     )
     gst_address_city = models.ForeignKey(
         City, on_delete=models.SET_NULL, null=True, related_name="gst_address_companies"
@@ -55,13 +63,22 @@ class Company(models.Model):
     gst_address_pincode = models.IntegerField(null=True)
 
     communication_address_country = models.ForeignKey(
-        Country, on_delete=models.SET_NULL, null=True, related_name="communication_address_companies"
+        Country,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="communication_address_companies",
     )
     communication_address_state = models.ForeignKey(
-        State, on_delete=models.SET_NULL, null=True, related_name="communication_address_companies"
+        State,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="communication_address_companies",
     )
     communication_address_city = models.ForeignKey(
-        City, on_delete=models.SET_NULL, null=True, related_name="communication_address_companies"
+        City,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="communication_address_companies",
     )
     communication_address_building = models.CharField(max_length=150, null=True)
     communication_address_landmark = models.CharField(max_length=100, null=True)
@@ -76,7 +93,9 @@ class Company(models.Model):
     youtube_url = models.URLField(null=True, blank=True)
     pinterest_url = models.URLField(null=True, blank=True)
     year_of_establishment = models.IntegerField(default=0000)
-    number_of_employees = models.CharField(choices=EMPLOYEES_CHOICES, default="1-10 employees", max_length=25)
+    number_of_employees = models.CharField(
+        choices=EMPLOYEES_CHOICES, default="1-10 employees", max_length=25
+    )
     monday_friday_hours = models.CharField(max_length=50, null=True, blank=True)
     saturday_hours = models.CharField(max_length=50, null=True, blank=True)
     sunday_hours = models.CharField(max_length=50, null=True, blank=True)
@@ -140,7 +159,9 @@ class CompanyService(models.Model):
 
 
 class CompanyPhoto(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="company_photo", default=None)
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="company_photo", default=None
+    )
     title = models.CharField(max_length=50, null=True)
     photo_file = models.CharField(max_length=250, null=True)
 

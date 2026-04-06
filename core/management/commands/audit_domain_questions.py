@@ -90,7 +90,13 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--out",
-            default=str(Path(settings.BASE_DIR) / "core" / "management" / "source" / "domain_question_gaps.csv"),
+            default=str(
+                Path(settings.BASE_DIR)
+                / "core"
+                / "management"
+                / "source"
+                / "domain_question_gaps.csv"
+            ),
             help="Where to write the CSV output.",
         )
 
@@ -115,7 +121,11 @@ class Command(BaseCommand):
             .order_by("domain_name", "domain_code")
         )
 
-        missing = [d for d in domain_rows if int(getattr(d, "active_question_count", 0) or 0) < min_questions]
+        missing = [
+            d
+            for d in domain_rows
+            if int(getattr(d, "active_question_count", 0) or 0) < min_questions
+        ]
 
         # CSV: include a per-domain summary row (for reporting) plus seed rows for new questions.
         with out_path.open("w", newline="", encoding="utf-8") as f:
@@ -124,7 +134,9 @@ class Command(BaseCommand):
             # Report section (human-readable) as a commented CSV-style header.
             w.writerow(["# domain_code", "domain_name", "active_mapped_questions"])
             for d in missing:
-                w.writerow([d.domain_code, d.domain_name, int(d.active_question_count or 0)])
+                w.writerow(
+                    [d.domain_code, d.domain_name, int(d.active_question_count or 0)]
+                )
 
             w.writerow([])  # spacer row
 
@@ -133,7 +145,9 @@ class Command(BaseCommand):
             opt1, opt2, opt3, opt4, opt5 = _likert_frequency_options()
 
             for d in missing:
-                questions = _behavior_questions_for_domain(domain_name=d.domain_name)[:max_generate]
+                questions = _behavior_questions_for_domain(domain_name=d.domain_name)[
+                    :max_generate
+                ]
                 for q in questions:
                     w.writerow(
                         [
@@ -156,4 +170,3 @@ class Command(BaseCommand):
                 f"CSV written: {out_path.resolve()}"
             )
         )
-

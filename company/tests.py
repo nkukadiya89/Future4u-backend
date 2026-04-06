@@ -20,8 +20,12 @@ class BaseAPITest(TestCase):
         )
         self.client.force_authenticate(user=self.user)
         self.category = BusinessCategory.objects.create(business_category="IT")
-        self.admin_group = CustomGroup.objects.create(name="Company Admin", group_name="Company Admin")
-        self.alog_patcher = patch("activity_log.models.ActivityLog.log", new=MagicMock())
+        self.admin_group = CustomGroup.objects.create(
+            name="Company Admin", group_name="Company Admin"
+        )
+        self.alog_patcher = patch(
+            "activity_log.models.ActivityLog.log", new=MagicMock()
+        )
         self.alog_patcher.start()
 
     def tearDown(self):
@@ -47,9 +51,14 @@ class CompanyModelTests(BaseAPITest):
         c = self.create_company(name="Foo")
         self.assertEqual(str(c), "Foo")
 
-    @patch("company.models.upload_file_to_bucket", return_value=("/path/logo.png", "presigned"))
+    @patch(
+        "company.models.upload_file_to_bucket",
+        return_value=("/path/logo.png", "presigned"),
+    )
     @patch("company.models.delete_uploaded_file")
-    def test_upload_company_logo_presentation_replaces_file(self, mock_delete, mock_upload):
+    def test_upload_company_logo_presentation_replaces_file(
+        self, mock_delete, mock_upload
+    ):
         c = self.create_company(company_logo="/old/logo.png")
         f = SimpleUploadedFile("logo.png", b"img", content_type="image/png")
         c.upload_company_logo_presentation(f)
@@ -81,7 +90,10 @@ class CompanySerializerValidationTests(BaseAPITest):
 
 
 class CompanyViewSetCRUDTests(BaseAPITest):
-    @patch("company.serializer.create_company_role_family", return_value={"success": True, "company_group": []})
+    @patch(
+        "company.serializer.create_company_role_family",
+        return_value={"success": True, "company_group": []},
+    )
     @patch("company.views.send_mail")
     def test_create_company_success(self, _mail, _role):
         url = reverse("company-list")
@@ -96,14 +108,18 @@ class CompanyViewSetCRUDTests(BaseAPITest):
         import json as _json
 
         payload = {"form_data": _json.dumps(data), "company_logo": logo}
-        with patch("company.models.upload_file_to_bucket", return_value=("/path/n.png", "url")):
+        with patch(
+            "company.models.upload_file_to_bucket", return_value=("/path/n.png", "url")
+        ):
             resp = self.client.post(url, data=payload, format="multipart")
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         self.assertTrue(resp.data["success"])
 
     def test_list_companies_with_and_without_pagination(self):
         for i in range(3):
-            self.create_company(name=f"C{i}", email=f"c{i}@x.com", phone=f"900000000{i}")
+            self.create_company(
+                name=f"C{i}", email=f"c{i}@x.com", phone=f"900000000{i}"
+            )
         url = reverse("company-list")
         r1 = self.client.get(url)
         self.assertEqual(r1.status_code, 200)
@@ -156,7 +172,9 @@ class CompanyCustomActionsTests(BaseAPITest):
         r2 = self.client.get("/company/99999/company-basic-info/")
         self.assertEqual(r2.status_code, 404)
 
-    @patch("company.models.upload_file_to_bucket", return_value=("/new/logo.png", "url"))
+    @patch(
+        "company.models.upload_file_to_bucket", return_value=("/new/logo.png", "url")
+    )
     def test_update_company_basic_info(self, _):
         c = self.create_company()
         url = reverse("company-update-company-basic-info", args=[c.id])
@@ -210,9 +228,15 @@ class CompanyCustomActionsTests(BaseAPITest):
         u.role = 1
         u.save()
         url = reverse("company-change-company-password", args=[c.id])
-        r1 = self.client.patch(url, {"new_password": "a", "re_enter_password": "b"}, format="json")
+        r1 = self.client.patch(
+            url, {"new_password": "a", "re_enter_password": "b"}, format="json"
+        )
         self.assertEqual(r1.status_code, 400)
-        r2 = self.client.patch(url, {"new_password": "newpass", "re_enter_password": "newpass"}, format="json")
+        r2 = self.client.patch(
+            url,
+            {"new_password": "newpass", "re_enter_password": "newpass"},
+            format="json",
+        )
         self.assertEqual(r2.status_code, 200)
 
     def test_update_company_status_edge_cases_and_success(self):
@@ -221,10 +245,14 @@ class CompanyCustomActionsTests(BaseAPITest):
         self.assertEqual(r1.status_code, 400)
         r2 = self.client.patch(url, {"company_id": 1}, format="json")
         self.assertEqual(r2.status_code, 400)
-        r3 = self.client.patch(url, {"company_id": 999, "status": "active"}, format="json")
+        r3 = self.client.patch(
+            url, {"company_id": 999, "status": "active"}, format="json"
+        )
         self.assertIn(r3.status_code, (404,))
         c = self.create_company()
-        r4 = self.client.patch(url, {"company_id": c.id, "status": "active"}, format="json")
+        r4 = self.client.patch(
+            url, {"company_id": c.id, "status": "active"}, format="json"
+        )
         self.assertEqual(r4.status_code, 200)
         c.refresh_from_db()
         self.assertTrue(c.is_active)
@@ -242,7 +270,9 @@ class CompanyArchiveRestoreTests(BaseAPITest):
         self.assertTrue(c1.deleted and c2.deleted)
         rest_url = reverse("company_restore-list")
         with patch("company.serializer.get_client_ip", return_value="127.0.0.1"):
-            res2 = self.client.post(rest_url, {"deleted": [c1.id, c2.id]}, format="json")
+            res2 = self.client.post(
+                rest_url, {"deleted": [c1.id, c2.id]}, format="json"
+            )
         self.assertEqual(res2.status_code, 200)
         c1.refresh_from_db()
         c2.refresh_from_db()
@@ -255,7 +285,10 @@ class CompanyArchiveRestoreTests(BaseAPITest):
 
 
 class CreateCompanyAccountTests(BaseAPITest):
-    @patch("company.serializer.create_company_role_family", return_value={"success": True, "company_group": []})
+    @patch(
+        "company.serializer.create_company_role_family",
+        return_value={"success": True, "company_group": []},
+    )
     @patch("email_utils.send_email.send_mail")
     def test_public_create_company_account(self, _mail, _role):
         self.client.force_authenticate(user=None)

@@ -1,6 +1,10 @@
 from rest_framework import serializers
 
-from education_level.models import EducationLevel, EducationLevelImportBatch, EducationLevelImportError
+from education_level.models import (
+    EducationLevel,
+    EducationLevelImportBatch,
+    EducationLevelImportError,
+)
 from education_level.services import education_level_service
 from user.serializers import UserQuickSerializer
 from utils.datetime_formatter import format_datetime
@@ -54,20 +58,28 @@ class EducationLevelSerializer(AuditFieldsMixin, serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError("This field may not be blank.")
         exclude = self.instance.pk if getattr(self.instance, "pk", None) else None
-        if education_level_service.case_insensitive_code_exists(code=value, exclude_pk=exclude):
-            raise serializers.ValidationError("Level code must be unique (case-insensitive).")
+        if education_level_service.case_insensitive_code_exists(
+            code=value, exclude_pk=exclude
+        ):
+            raise serializers.ValidationError(
+                "Level code must be unique (case-insensitive)."
+            )
         return value
 
     def validate(self, attrs):
         min_age = attrs.get("min_age", getattr(self.instance, "min_age", None))
         max_age = attrs.get("max_age", getattr(self.instance, "max_age", None))
         if min_age is not None and max_age is not None and int(min_age) > int(max_age):
-            raise serializers.ValidationError({"max_age": "max_age must be greater than or equal to min_age."})
+            raise serializers.ValidationError(
+                {"max_age": "max_age must be greater than or equal to min_age."}
+            )
         return attrs
 
     def create(self, validated_data):
         user = self.context["request"].user
-        return education_level_service.create_level(user=user, validated_data=validated_data)
+        return education_level_service.create_level(
+            user=user, validated_data=validated_data
+        )
 
     def update(self, instance, validated_data):
         user = self.context["request"].user
@@ -101,7 +113,9 @@ class EducationLevelReorderSerializer(serializers.Serializer):
     orders = EducationLevelReorderItemSerializer(many=True, allow_empty=False)
 
 
-class EducationLevelImportBatchSerializer(AuditFieldsMixin, serializers.ModelSerializer):
+class EducationLevelImportBatchSerializer(
+    AuditFieldsMixin, serializers.ModelSerializer
+):
     created_by = UserQuickSerializer(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)
     completed_at = serializers.SerializerMethodField(read_only=True)

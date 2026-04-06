@@ -22,7 +22,9 @@ class EducationLevelAdminForm(forms.ModelForm):
         min_age = cleaned.get("min_age")
         max_age = cleaned.get("max_age")
         if min_age is not None and max_age is not None and min_age > max_age:
-            self.add_error("max_age", "max_age must be greater than or equal to min_age.")
+            self.add_error(
+                "max_age", "max_age must be greater than or equal to min_age."
+            )
         return cleaned
 
 
@@ -47,7 +49,14 @@ class EducationLevelAdmin(admin.ModelAdmin):
     list_filter = ("is_active", "deleted")
     ordering = ("sequence_order", "display_name")
     raw_id_fields = ("created_by", "updated_by")
-    readonly_fields = ("created_by", "created_at", "updated_by", "updated_at", "deleted_at", "deleted_by")
+    readonly_fields = (
+        "created_by",
+        "created_at",
+        "updated_by",
+        "updated_at",
+        "deleted_at",
+        "deleted_by",
+    )
     actions = (
         "activate_selected",
         "deactivate_selected",
@@ -120,7 +129,9 @@ class EducationLevelAdmin(admin.ModelAdmin):
     def sample_csv_view(self, request):
         data = education_level_service.sample_csv_bytes()
         resp = HttpResponse(data, content_type="text/csv; charset=utf-8")
-        resp["Content-Disposition"] = 'attachment; filename="education_level_master_sample.csv"'
+        resp["Content-Disposition"] = (
+            'attachment; filename="education_level_master_sample.csv"'
+        )
         return resp
 
     def upload_view(self, request):
@@ -133,7 +144,9 @@ class EducationLevelAdmin(admin.ModelAdmin):
                     " ".join(errs) if errs else "No rows to import.",
                     level=messages.ERROR,
                 )
-                return HttpResponseRedirect(reverse("admin:education_level_educationlevel_upload"))
+                return HttpResponseRedirect(
+                    reverse("admin:education_level_educationlevel_upload")
+                )
             result = education_level_service.bulk_import_levels(
                 user=request.user,
                 rows=rows,
@@ -151,8 +164,14 @@ class EducationLevelAdmin(admin.ModelAdmin):
                         f"Row {d['row']}: {d['message']}",
                         level=messages.WARNING,
                     )
-            return HttpResponseRedirect(reverse("admin:education_level_educationlevel_changelist"))
-        return render(request, "admin/education_level/education_level/upload_education_levels.html", {})
+            return HttpResponseRedirect(
+                reverse("admin:education_level_educationlevel_changelist")
+            )
+        return render(
+            request,
+            "admin/education_level/education_level/upload_education_levels.html",
+            {},
+        )
 
     def changelist_view(self, request, extra_context=None):
         self._csrf_token = get_token(request)
@@ -173,10 +192,14 @@ class EducationLevelAdmin(admin.ModelAdmin):
                 obj = EducationLevel.objects.filter(pk=pk, deleted=False).first()
                 if obj:
                     try:
-                        education_level_service.archive_level(level=obj, user=request.user)
+                        education_level_service.archive_level(
+                            level=obj, user=request.user
+                        )
                         self.message_user(request, "Archived.")
                     except DRFValidationError as exc:
-                        self.message_user(request, str(exc.detail), level=messages.ERROR)
+                        self.message_user(
+                            request, str(exc.detail), level=messages.ERROR
+                        )
                 return HttpResponseRedirect(request.get_full_path())
             if request.POST.get("education_level_admin_restore_one"):
                 pk = request.POST["education_level_admin_restore_one"]
@@ -186,8 +209,12 @@ class EducationLevelAdmin(admin.ModelAdmin):
                     self.message_user(request, "Restored.")
                 return HttpResponseRedirect(request.get_full_path())
         extra_context = extra_context or {}
-        extra_context["upload_url"] = reverse("admin:education_level_educationlevel_upload")
-        extra_context["sample_csv_url"] = reverse("admin:education_level_educationlevel_sample_csv")
+        extra_context["upload_url"] = reverse(
+            "admin:education_level_educationlevel_upload"
+        )
+        extra_context["sample_csv_url"] = reverse(
+            "admin:education_level_educationlevel_sample_csv"
+        )
         return super().changelist_view(request, extra_context=extra_context)
 
     def save_model(self, request, obj, form, change):
@@ -196,13 +223,17 @@ class EducationLevelAdmin(admin.ModelAdmin):
     @admin.action(description="Activate selected")
     def activate_selected(self, request, queryset):
         ids = list(queryset.values_list("pk", flat=True))
-        n = education_level_service.bulk_set_active(ids=ids, user=request.user, is_active=True)
+        n = education_level_service.bulk_set_active(
+            ids=ids, user=request.user, is_active=True
+        )
         self.message_user(request, f"{n} education level(s) activated.")
 
     @admin.action(description="Deactivate selected")
     def deactivate_selected(self, request, queryset):
         ids = list(queryset.values_list("pk", flat=True))
-        n = education_level_service.bulk_set_active(ids=ids, user=request.user, is_active=False)
+        n = education_level_service.bulk_set_active(
+            ids=ids, user=request.user, is_active=False
+        )
         self.message_user(request, f"{n} education level(s) deactivated.")
 
     @admin.action(description="Archive selected (soft)")

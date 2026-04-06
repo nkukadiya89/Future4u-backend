@@ -21,9 +21,14 @@ def resolve_import_user(*, username: str | None):
         if not user:
             raise CommandError(f"User not found: {username}")
     if user is None:
-        user = User.objects.filter(is_superuser=True).first() or User.objects.order_by("pk").first()
+        user = (
+            User.objects.filter(is_superuser=True).first()
+            or User.objects.order_by("pk").first()
+        )
     if user is None:
-        raise CommandError("No user available for audit fields; create a user or pass --username.")
+        raise CommandError(
+            "No user available for audit fields; create a user or pass --username."
+        )
     return user
 
 
@@ -43,4 +48,3 @@ def load_csv_rows(file_path: str) -> list[dict]:
     if not rows:
         raise CommandError("No data rows in CSV.")
     return rows
-

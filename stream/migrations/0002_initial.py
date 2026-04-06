@@ -11,60 +11,101 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('education_level', '0002_initial'),
-        ('stream', '0001_initial'),
+        ("education_level", "0002_initial"),
+        ("stream", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='stream',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
+            model_name="stream",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='stream',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
+            model_name="stream",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='stream',
-            name='education_level',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='streams', to='education_level.educationlevel'),
+            model_name="stream",
+            name="education_level",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="streams",
+                to="education_level.educationlevel",
+            ),
         ),
         migrations.AddField(
-            model_name='stream',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
+            model_name="stream",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='streamimportbatch',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='stream_import_batches', to=settings.AUTH_USER_MODEL),
+            model_name="streamimportbatch",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="stream_import_batches",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='streamimporterror',
-            name='batch',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='error_rows', to='stream.streamimportbatch'),
+            model_name="streamimporterror",
+            name="batch",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="error_rows",
+                to="stream.streamimportbatch",
+            ),
         ),
         migrations.AddIndex(
-            model_name='stream',
-            index=models.Index(fields=['stream_code'], name='stream_stream__d76666_idx'),
+            model_name="stream",
+            index=models.Index(
+                fields=["stream_code"], name="stream_stream__d76666_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='stream',
-            index=models.Index(fields=['sequence_order'], name='stream_sequenc_2f1e97_idx'),
+            model_name="stream",
+            index=models.Index(
+                fields=["sequence_order"], name="stream_sequenc_2f1e97_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='stream',
-            index=models.Index(fields=['is_active'], name='stream_is_acti_c3a521_idx'),
+            model_name="stream",
+            index=models.Index(fields=["is_active"], name="stream_is_acti_c3a521_idx"),
         ),
         migrations.AddIndex(
-            model_name='stream',
-            index=models.Index(fields=['deleted'], name='stream_deleted_dc5c5c_idx'),
+            model_name="stream",
+            index=models.Index(fields=["deleted"], name="stream_deleted_dc5c5c_idx"),
         ),
         migrations.AddConstraint(
-            model_name='stream',
-            constraint=models.UniqueConstraint(django.db.models.functions.text.Lower('stream_code'), name='stream_stream_code_ci_uniq'),
+            model_name="stream",
+            constraint=models.UniqueConstraint(
+                django.db.models.functions.text.Lower("stream_code"),
+                name="stream_stream_code_ci_uniq",
+            ),
         ),
     ]

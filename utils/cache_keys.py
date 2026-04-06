@@ -4,4 +4,3 @@ def dropdown_key(model_name: str) -> str:
 
 def recommendation_key(user_id: int) -> str:
     return f"recommendation:{user_id}"
-

@@ -11,38 +11,115 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('city', '0002_initial'),
-        ('company', '0003_initial'),
-        ('country', '0001_initial'),
-        ('state', '0001_initial'),
+        ("city", "0002_initial"),
+        ("company", "0003_initial"),
+        ("country", "0001_initial"),
+        ("state", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='BusinessSetting',
+            name="BusinessSetting",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('notifications', models.BooleanField(default=True)),
-                ('sgst', models.FloatField(blank=True, default=0, null=True)),
-                ('cgst', models.FloatField(blank=True, default=0, null=True)),
-                ('igst', models.FloatField(blank=True, default=0, null=True)),
-                ('currency', models.CharField(blank=True, max_length=5, null=True)),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
-                ('updated_at', models.DateTimeField(default=django.utils.timezone.now)),
-                ('deleted', models.BooleanField(default=False)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('city', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='business_settings_city', to='city.city')),
-                ('company', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='company_business_setting', to='company.company')),
-                ('country', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='business_settings_country', to='country.country')),
-                ('created_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='business_setting_created', to=settings.AUTH_USER_MODEL)),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='business_setting_deleted', to=settings.AUTH_USER_MODEL)),
-                ('state', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='business_settings_state', to='state.state')),
-                ('updated_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='business_setting_updated', to=settings.AUTH_USER_MODEL)),
-                ('user_id', models.ForeignKey(help_text='User who created this business setting', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='user_business_settings', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("notifications", models.BooleanField(default=True)),
+                ("sgst", models.FloatField(blank=True, default=0, null=True)),
+                ("cgst", models.FloatField(blank=True, default=0, null=True)),
+                ("igst", models.FloatField(blank=True, default=0, null=True)),
+                ("currency", models.CharField(blank=True, max_length=5, null=True)),
+                ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
+                ("updated_at", models.DateTimeField(default=django.utils.timezone.now)),
+                ("deleted", models.BooleanField(default=False)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "city",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="business_settings_city",
+                        to="city.city",
+                    ),
+                ),
+                (
+                    "company",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="company_business_setting",
+                        to="company.company",
+                    ),
+                ),
+                (
+                    "country",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="business_settings_country",
+                        to="country.country",
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="business_setting_created",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="business_setting_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "state",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="business_settings_state",
+                        to="state.state",
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="business_setting_updated",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "user_id",
+                    models.ForeignKey(
+                        help_text="User who created this business setting",
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="user_business_settings",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'business_setting',
+                "db_table": "business_setting",
             },
         ),
     ]

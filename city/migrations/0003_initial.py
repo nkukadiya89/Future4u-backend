@@ -10,30 +10,50 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('city', '0002_initial'),
-        ('state', '0001_initial'),
+        ("city", "0002_initial"),
+        ("state", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='city',
-            name='created_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='city_created', to=settings.AUTH_USER_MODEL),
+            model_name="city",
+            name="created_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="city_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='city',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='city_deleted', to=settings.AUTH_USER_MODEL),
+            model_name="city",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="city_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='city',
-            name='state',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='city_set', to='state.state'),
+            model_name="city",
+            name="state",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="city_set",
+                to="state.state",
+            ),
         ),
         migrations.AddField(
-            model_name='city',
-            name='updated_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='city_updated', to=settings.AUTH_USER_MODEL),
+            model_name="city",
+            name="updated_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="city_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

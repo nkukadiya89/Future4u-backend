@@ -105,7 +105,9 @@ class SkillAPITests(TestCase):
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_change_status(self):
-        pk = self.client.post(reverse("skill-list"), self._payload(), format="json").data["data"]["id"]
+        pk = self.client.post(
+            reverse("skill-list"), self._payload(), format="json"
+        ).data["data"]["id"]
         r = self.client.post(
             reverse("skill-change-status", args=[pk]),
             {"is_active": False},
@@ -115,8 +117,14 @@ class SkillAPITests(TestCase):
         self.assertFalse(r.data["data"]["is_active"])
 
     def test_dropdown_active_only(self):
-        p1 = self.client.post(reverse("skill-list"), self._payload(code="dd_1"), format="json").data["data"]["id"]
-        p2 = self.client.post(reverse("skill-list"), self._payload(code="dd_2", is_active=False), format="json").data["data"]["id"]
+        p1 = self.client.post(
+            reverse("skill-list"), self._payload(code="dd_1"), format="json"
+        ).data["data"]["id"]
+        p2 = self.client.post(
+            reverse("skill-list"),
+            self._payload(code="dd_2", is_active=False),
+            format="json",
+        ).data["data"]["id"]
         self.client.delete(reverse("skill-detail", args=[p1]))
         r = self.client.get(reverse("skill-dropdown"))
         ids = [row["id"] for row in r.data["data"]]
@@ -124,11 +132,21 @@ class SkillAPITests(TestCase):
         self.assertNotIn(p2, ids)
 
     def test_filter_search_and_archived(self):
-        self.client.post(reverse("skill-list"), self._payload(code="py_01", name="Python", skill_type="technical"), format="json")
-        archived = self.client.post(reverse("skill-list"), self._payload(code="soft_01", name="Communication", skill_type="soft"), format="json").data["data"]["id"]
+        self.client.post(
+            reverse("skill-list"),
+            self._payload(code="py_01", name="Python", skill_type="technical"),
+            format="json",
+        )
+        archived = self.client.post(
+            reverse("skill-list"),
+            self._payload(code="soft_01", name="Communication", skill_type="soft"),
+            format="json",
+        ).data["data"]["id"]
         self.client.delete(reverse("skill-detail", args=[archived]))
 
-        r = self.client.get(reverse("skill-list") + "?skill_type=technical&search=py_01")
+        r = self.client.get(
+            reverse("skill-list") + "?skill_type=technical&search=py_01"
+        )
         payload = r.data.get("results", r.data)
         rows = payload.get("data", r.data.get("data", []))
         self.assertTrue(any(row["skill_code"] == "py_01" for row in rows))
@@ -140,8 +158,12 @@ class SkillAPITests(TestCase):
 
     def test_bulk_archive_restore(self):
         url = reverse("skill-list")
-        p1 = self.client.post(url, self._payload(code="bulk_1"), format="json").data["data"]["id"]
-        p2 = self.client.post(url, self._payload(code="bulk_2"), format="json").data["data"]["id"]
+        p1 = self.client.post(url, self._payload(code="bulk_1"), format="json").data[
+            "data"
+        ]["id"]
+        p2 = self.client.post(url, self._payload(code="bulk_2"), format="json").data[
+            "data"
+        ]["id"]
         r = self.client.post(
             reverse("skill-bulk-archive"),
             {"ids": [p1, p2]},
@@ -162,8 +184,12 @@ class SkillAPITests(TestCase):
             "python,Python,technical,lang,1\n"
             "python,Duplicate,technical,lang,1\n"
         )
-        f = SimpleUploadedFile("s.csv", csv_body.encode("utf-8"), content_type="text/csv")
-        r = self.client.post(reverse("skill-bulk-upload"), {"file": f}, format="multipart")
+        f = SimpleUploadedFile(
+            "s.csv", csv_body.encode("utf-8"), content_type="text/csv"
+        )
+        r = self.client.post(
+            reverse("skill-bulk-upload"), {"file": f}, format="multipart"
+        )
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         self.assertEqual(r.data["success_count"], 1)
         self.assertEqual(r.data["error_count"], 1)
@@ -205,4 +231,3 @@ class SkillAPITests(TestCase):
         t0 = time.perf_counter()
         self.client.get(url)
         self.assertLess(time.perf_counter() - t0, 2.0)
-

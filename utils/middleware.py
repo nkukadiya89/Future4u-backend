@@ -21,10 +21,15 @@ class PasswordChangeMiddleware:
                 password_last_changed = request.user.password_last_changed.date()
                 days_since_password_changed = (today_date - password_last_changed).days
 
-                password_expired = days_since_password_changed > int(config("PASSWORD_CHANGE_DUE_DAYS"))
+                password_expired = days_since_password_changed > int(
+                    config("PASSWORD_CHANGE_DUE_DAYS")
+                )
                 if password_expired:
                     logout(request)
-                    response_data = {"message": "Your Password is Expired, " "Need to Change Your Password"}
+                    response_data = {
+                        "message": "Your Password is Expired, "
+                        "Need to Change Your Password"
+                    }
                     return JsonResponse(response_data, status=200)
 
         return response
@@ -56,7 +61,8 @@ class TitleCaseMiddleware:
                 if isinstance(value, str):
                     # Capitalize words that do not contain special characters
                     data[key] = " ".join(
-                        word.capitalize() if re.match(r"^[A-Za-z]+$", word) else word for word in value.split()
+                        word.capitalize() if re.match(r"^[A-Za-z]+$", word) else word
+                        for word in value.split()
                     )
                 elif isinstance(value, (dict, list)):
                     # Recursively capitalize values of nested dictionaries and lists

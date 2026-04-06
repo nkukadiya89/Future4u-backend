@@ -9,24 +9,26 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='FinancialYearModel',
+            name="FinancialYearModel",
             fields=[
-                ('fid', models.AutoField(primary_key=True, serialize=False)),
-                ('financial_year', models.CharField(default='', max_length=15)),
-                ('start_date', models.DateField(default=datetime.date.today)),
-                ('end_date', models.DateField(default=datetime.date.today)),
-                ('deleted', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
-                ('updated_at', models.DateTimeField(default=django.utils.timezone.now)),
-                ('approved_at', models.DateTimeField(default=django.utils.timezone.now)),
+                ("fid", models.AutoField(primary_key=True, serialize=False)),
+                ("financial_year", models.CharField(default="", max_length=15)),
+                ("start_date", models.DateField(default=datetime.date.today)),
+                ("end_date", models.DateField(default=datetime.date.today)),
+                ("deleted", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
+                ("updated_at", models.DateTimeField(default=django.utils.timezone.now)),
+                (
+                    "approved_at",
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
             ],
             options={
-                'db_table': 'financial_year',
+                "db_table": "financial_year",
             },
         ),
     ]

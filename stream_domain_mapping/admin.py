@@ -22,17 +22,42 @@ class StreamDomainMappingAdminForm(forms.ModelForm):
 @admin.register(StreamDomainMapping)
 class StreamDomainMappingAdmin(BaseAdminMixin, admin.ModelAdmin):
     form = StreamDomainMappingAdminForm
-    change_list_template = "admin/stream_domain_mapping/streamdomainmapping/change_list.html"
+    change_list_template = (
+        "admin/stream_domain_mapping/streamdomainmapping/change_list.html"
+    )
 
-    list_display = ("stream", "domain", "weight_score", "is_primary", "is_active", "deleted", "row_actions")
+    list_display = (
+        "stream",
+        "domain",
+        "weight_score",
+        "is_primary",
+        "is_active",
+        "deleted",
+        "row_actions",
+    )
     list_filter = ("is_active", "deleted", "is_primary")
     search_fields = ("stream__stream_name", "domain__domain_name")
     raw_id_fields = ("stream", "domain", "created_by", "updated_by")
-    readonly_fields = ("created_by", "created_at", "updated_by", "updated_at", "deleted_at", "deleted_by")
-    actions = ("activate_selected", "deactivate_selected", "archive_selected", "restore_selected")
+    readonly_fields = (
+        "created_by",
+        "created_at",
+        "updated_by",
+        "updated_at",
+        "deleted_at",
+        "deleted_by",
+    )
+    actions = (
+        "activate_selected",
+        "deactivate_selected",
+        "archive_selected",
+        "restore_selected",
+    )
 
     fieldsets = (
-        (None, {"fields": ("stream", "domain", "weight_score", "is_primary", "is_active")}),
+        (
+            None,
+            {"fields": ("stream", "domain", "weight_score", "is_primary", "is_active")},
+        ),
         ("Archive/Restore", {"fields": ("deleted", "deleted_at", "deleted_by")}),
         ("Audit", {"fields": ("created_by", "created_at", "updated_by", "updated_at")}),
     )
@@ -64,14 +89,24 @@ class StreamDomainMappingAdmin(BaseAdminMixin, admin.ModelAdmin):
     def get_urls(self):
         info = self.model._meta.app_label, self.model._meta.model_name
         return [
-            path("upload/", self.admin_site.admin_view(self.upload_view), name="%s_%s_upload" % info),
-            path("sample-csv/", self.admin_site.admin_view(self.sample_csv_view), name="%s_%s_sample_csv" % info),
+            path(
+                "upload/",
+                self.admin_site.admin_view(self.upload_view),
+                name="%s_%s_upload" % info,
+            ),
+            path(
+                "sample-csv/",
+                self.admin_site.admin_view(self.sample_csv_view),
+                name="%s_%s_sample_csv" % info,
+            ),
         ] + super().get_urls()
 
     def sample_csv_view(self, request):
         data = stream_domain_mapping_service.sample_csv_bytes()
         resp = HttpResponse(data, content_type="text/csv; charset=utf-8")
-        resp["Content-Disposition"] = 'attachment; filename="stream_domain_mapping_sample.csv"'
+        resp["Content-Disposition"] = (
+            'attachment; filename="stream_domain_mapping_sample.csv"'
+        )
         return resp
 
     def upload_view(self, request):
@@ -84,19 +119,34 @@ class StreamDomainMappingAdmin(BaseAdminMixin, admin.ModelAdmin):
                     " ".join(errs) if errs else "No rows to import.",
                     level=messages.ERROR,
                 )
-                return HttpResponseRedirect(reverse("admin:stream_domain_mapping_streamdomainmapping_upload"))
+                return HttpResponseRedirect(
+                    reverse("admin:stream_domain_mapping_streamdomainmapping_upload")
+                )
             result = stream_domain_mapping_service.bulk_import_mappings(
                 user=request.user,
                 rows=rows,
                 serializer_class=StreamDomainMappingSerializer,
                 context={"request": request},
             )
-            self.message_user(request, f"Imported {result['success_count']}, failed {result['error_count']}.")
+            self.message_user(
+                request,
+                f"Imported {result['success_count']}, failed {result['error_count']}.",
+            )
             if result["error_details"][:5]:
                 for d in result["error_details"][:5]:
-                    self.message_user(request, f"Row {d['row']}: {d['message']}", level=messages.WARNING)
-            return HttpResponseRedirect(reverse("admin:stream_domain_mapping_streamdomainmapping_changelist"))
-        return render(request, "admin/stream_domain_mapping/streamdomainmapping/upload_mappings.html", {})
+                    self.message_user(
+                        request,
+                        f"Row {d['row']}: {d['message']}",
+                        level=messages.WARNING,
+                    )
+            return HttpResponseRedirect(
+                reverse("admin:stream_domain_mapping_streamdomainmapping_changelist")
+            )
+        return render(
+            request,
+            "admin/stream_domain_mapping/streamdomainmapping/upload_mappings.html",
+            {},
+        )
 
     def changelist_view(self, request, extra_context=None):
         self._csrf_token = get_token(request)
@@ -117,21 +167,31 @@ class StreamDomainMappingAdmin(BaseAdminMixin, admin.ModelAdmin):
                 obj = StreamDomainMapping.objects.filter(pk=pk, deleted=False).first()
                 if obj:
                     try:
-                        stream_domain_mapping_service.archive_mapping(mapping=obj, user=request.user)
+                        stream_domain_mapping_service.archive_mapping(
+                            mapping=obj, user=request.user
+                        )
                         self.message_user(request, "Archived.")
                     except DRFValidationError as exc:
-                        self.message_user(request, str(exc.detail), level=messages.ERROR)
+                        self.message_user(
+                            request, str(exc.detail), level=messages.ERROR
+                        )
                 return HttpResponseRedirect(request.get_full_path())
             if request.POST.get("sdm_admin_restore_one"):
                 pk = request.POST["sdm_admin_restore_one"]
                 obj = StreamDomainMapping.objects.filter(pk=pk, deleted=True).first()
                 if obj:
-                    stream_domain_mapping_service.restore_mapping(mapping=obj, user=request.user)
+                    stream_domain_mapping_service.restore_mapping(
+                        mapping=obj, user=request.user
+                    )
                     self.message_user(request, "Restored.")
                 return HttpResponseRedirect(request.get_full_path())
         extra_context = extra_context or {}
-        extra_context["upload_url"] = reverse("admin:stream_domain_mapping_streamdomainmapping_upload")
-        extra_context["sample_csv_url"] = reverse("admin:stream_domain_mapping_streamdomainmapping_sample_csv")
+        extra_context["upload_url"] = reverse(
+            "admin:stream_domain_mapping_streamdomainmapping_upload"
+        )
+        extra_context["sample_csv_url"] = reverse(
+            "admin:stream_domain_mapping_streamdomainmapping_sample_csv"
+        )
         return super().changelist_view(request, extra_context=extra_context)
 
     def save_model(self, request, obj, form, change):
@@ -140,20 +200,26 @@ class StreamDomainMappingAdmin(BaseAdminMixin, admin.ModelAdmin):
     @admin.action(description="Activate selected")
     def activate_selected(self, request, queryset):
         ids = list(queryset.values_list("pk", flat=True))
-        n = stream_domain_mapping_service.bulk_set_active(ids=ids, user=request.user, is_active=True)
+        n = stream_domain_mapping_service.bulk_set_active(
+            ids=ids, user=request.user, is_active=True
+        )
         self.message_user(request, f"{n} mapping(s) activated.")
 
     @admin.action(description="Deactivate selected")
     def deactivate_selected(self, request, queryset):
         ids = list(queryset.values_list("pk", flat=True))
-        n = stream_domain_mapping_service.bulk_set_active(ids=ids, user=request.user, is_active=False)
+        n = stream_domain_mapping_service.bulk_set_active(
+            ids=ids, user=request.user, is_active=False
+        )
         self.message_user(request, f"{n} mapping(s) deactivated.")
 
     @admin.action(description="Archive selected (soft)")
     def archive_selected(self, request, queryset):
         for obj in queryset.filter(deleted=False):
             try:
-                stream_domain_mapping_service.archive_mapping(mapping=obj, user=request.user)
+                stream_domain_mapping_service.archive_mapping(
+                    mapping=obj, user=request.user
+                )
             except DRFValidationError as exc:
                 self.message_user(request, f"{obj}: {exc.detail}", level=messages.ERROR)
 
@@ -161,7 +227,8 @@ class StreamDomainMappingAdmin(BaseAdminMixin, admin.ModelAdmin):
     def restore_selected(self, request, queryset):
         n = 0
         for obj in queryset.filter(deleted=True):
-            stream_domain_mapping_service.restore_mapping(mapping=obj, user=request.user)
+            stream_domain_mapping_service.restore_mapping(
+                mapping=obj, user=request.user
+            )
             n += 1
         self.message_user(request, f"{n} mapping(s) restored.")
-

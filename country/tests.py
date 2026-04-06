@@ -15,7 +15,9 @@ class CountryAPITestCase(APITestCase):
     def setUp(self):
         """Set up test data"""
         # Create test user
-        self.user = User.objects.create_user(email="testuser@example.com", username="testuser", password="testpass")
+        self.user = User.objects.create_user(
+            email="testuser@example.com", username="testuser", password="testpass"
+        )
 
         # Create test country
         self.country = Country.objects.create(
@@ -52,7 +54,9 @@ class CountryAPITestCase(APITestCase):
             self.assertEqual(response.data["data"]["name"], "United States")
 
             # Verify the country was created in the database
-            country_exists = Country.objects.filter(name="United States", deleted=False).exists()
+            country_exists = Country.objects.filter(
+                name="United States", deleted=False
+            ).exists()
             self.assertTrue(country_exists)
 
             # Verify activity log was called
@@ -63,7 +67,12 @@ class CountryAPITestCase(APITestCase):
         url = reverse("country-list")
 
         # Test empty name
-        data = {"name": "", "code": "US", "unicode": "🇺🇸", "country_flag": "https://example.com/us-flag.png"}
+        data = {
+            "name": "",
+            "code": "US",
+            "unicode": "🇺🇸",
+            "country_flag": "https://example.com/us-flag.png",
+        }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(response.data["success"])
@@ -83,7 +92,12 @@ class CountryAPITestCase(APITestCase):
         """Test country name with maximum allowed length"""
         url = reverse("country-list")
         long_name = "A" * 50  # Max length from model
-        data = {"name": long_name, "code": "XX", "unicode": "🏳️", "country_flag": "https://example.com/flag.png"}
+        data = {
+            "name": long_name,
+            "code": "XX",
+            "unicode": "🏳️",
+            "country_flag": "https://example.com/flag.png",
+        }
 
         # Modified: Removed unused mock_log variable
         with patch("country.views.ActivityLog.log.country_create", return_value=None):
@@ -265,7 +279,9 @@ class CountryAPITestCase(APITestCase):
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertTrue(response.data["success"])
-            self.assertEqual(response.data["message"], "Countries archived successfully")
+            self.assertEqual(
+                response.data["message"], "Countries archived successfully"
+            )
 
             # Verify both countries were archived
             self.country.refresh_from_db()
@@ -366,7 +382,10 @@ class CountryAPITestCase(APITestCase):
     def test_model_defaults(self):
         """Test Country model default values"""
         country = Country.objects.create(
-            name="Test Country", code="TC", unicode="🏳️", country_flag="https://example.com/flag.png"
+            name="Test Country",
+            code="TC",
+            unicode="🏳️",
+            country_flag="https://example.com/flag.png",
         )
         self.assertEqual(country.deleted, 0)
         self.assertIsNotNone(country.created_at)
@@ -376,7 +395,9 @@ class CountryAPITestCase(APITestCase):
     def test_model_foreign_key_on_delete(self):
         """Test that deleting user sets foreign key to null"""
         # Create a new user for this test
-        test_user = User.objects.create_user(email="testuser2@example.com", username="testuser2", password="testpass")
+        test_user = User.objects.create_user(
+            email="testuser2@example.com", username="testuser2", password="testpass"
+        )
 
         country = Country.objects.create(
             name="Test Country",
@@ -428,7 +449,12 @@ class CountryAPITestCase(APITestCase):
     def test_create_with_ip_address_logging(self):
         """Test that IP address is captured during creation"""
         url = reverse("country-list")
-        data = {"name": "New Country", "code": "NC", "unicode": "🏳️", "country_flag": "https://example.com/flag.png"}
+        data = {
+            "name": "New Country",
+            "code": "NC",
+            "unicode": "🏳️",
+            "country_flag": "https://example.com/flag.png",
+        }
 
         with patch("country.views.get_client_ip") as mock_get_ip, patch(
             "country.views.ActivityLog.log.country_create"
@@ -486,7 +512,9 @@ class CountryAPITestCase(APITestCase):
             "country_flag": "https://example.com/flag.png",
         }
         response = self.client.post(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)  # Expect success
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED
+        )  # Expect success
         self.assertTrue(response.data["success"])
         self.assertEqual(response.data["data"]["name"], "Different India")
         self.assertEqual(response.data["data"]["unicode"], "🇮🇳")
@@ -516,7 +544,9 @@ class CountryModelTestCase(TestCase):
 
     def setUp(self):
         """Set up test data"""
-        self.user = User.objects.create_user(email="testuser@example.com", username="testuser", password="testpass")
+        self.user = User.objects.create_user(
+            email="testuser@example.com", username="testuser", password="testpass"
+        )
 
     def test_country_creation(self):
         """Test basic country creation"""
@@ -542,7 +572,10 @@ class CountryModelTestCase(TestCase):
     def test_country_str_representation(self):
         """Test country string representation"""
         country = Country.objects.create(
-            name="India", code="IN", unicode="🇮🇳", country_flag="https://example.com/india-flag.png"
+            name="India",
+            code="IN",
+            unicode="🇮🇳",
+            country_flag="https://example.com/india-flag.png",
         )
 
         self.assertEqual(str(country), "India")

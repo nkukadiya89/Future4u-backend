@@ -11,54 +11,93 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('education_level', '0001_initial'),
+        ("education_level", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='educationlevel',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL),
+            model_name="educationlevel",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='educationlevel',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL),
+            model_name="educationlevel",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='educationlevel',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL),
+            model_name="educationlevel",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='educationlevelimportbatch',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='education_level_import_batches', to=settings.AUTH_USER_MODEL),
+            model_name="educationlevelimportbatch",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="education_level_import_batches",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='educationlevelimporterror',
-            name='batch',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='error_rows', to='education_level.educationlevelimportbatch'),
+            model_name="educationlevelimporterror",
+            name="batch",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="error_rows",
+                to="education_level.educationlevelimportbatch",
+            ),
         ),
         migrations.AddIndex(
-            model_name='educationlevel',
-            index=models.Index(fields=['level_code'], name='education_l_level_c_ed3e27_idx'),
+            model_name="educationlevel",
+            index=models.Index(
+                fields=["level_code"], name="education_l_level_c_ed3e27_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='educationlevel',
-            index=models.Index(fields=['sequence_order'], name='education_l_sequenc_de889c_idx'),
+            model_name="educationlevel",
+            index=models.Index(
+                fields=["sequence_order"], name="education_l_sequenc_de889c_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='educationlevel',
-            index=models.Index(fields=['is_active'], name='education_l_is_acti_528815_idx'),
+            model_name="educationlevel",
+            index=models.Index(
+                fields=["is_active"], name="education_l_is_acti_528815_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='educationlevel',
-            index=models.Index(fields=['deleted'], name='education_l_deleted_0882e2_idx'),
+            model_name="educationlevel",
+            index=models.Index(
+                fields=["deleted"], name="education_l_deleted_0882e2_idx"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='educationlevel',
-            constraint=models.UniqueConstraint(django.db.models.functions.text.Lower('level_code'), name='education_level_level_code_ci_uniq'),
+            model_name="educationlevel",
+            constraint=models.UniqueConstraint(
+                django.db.models.functions.text.Lower("level_code"),
+                name="education_level_level_code_ci_uniq",
+            ),
         ),
     ]

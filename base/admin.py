@@ -62,4 +62,3 @@ class BaseAdmin(BaseAdminMixin, admin.ModelAdmin):
     """
 
     search_fields = ()
-

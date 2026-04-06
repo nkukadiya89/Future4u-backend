@@ -49,12 +49,16 @@ class BusinessSettingSerializer(serializers.ModelSerializer):
         try:
             return model.objects.get(id=id)
         except model.DoesNotExist:
-            raise serializers.ValidationError({"success": False, "message": error_message})
+            raise serializers.ValidationError(
+                {"success": False, "message": error_message}
+            )
 
     def update(self, instance, validated_data):
         # Update instance attributes with validated data
         instance.company = validated_data.get("company", instance.company)
-        instance.notifications = validated_data.get("notifications", instance.notifications)
+        instance.notifications = validated_data.get(
+            "notifications", instance.notifications
+        )
         instance.sgst = validated_data.get("sgst", instance.sgst)
         instance.cgst = validated_data.get("cgst", instance.cgst)
         instance.igst = validated_data.get("igst", instance.igst)
@@ -70,9 +74,15 @@ class BusinessSettingSerializer(serializers.ModelSerializer):
 
 class BusinessSettingInfoSerializer(serializers.ModelSerializer):
     company_name = serializers.CharField(source="company.name", required=False)
-    country_name = serializers.CharField(source="country.name", required=False, allow_null=True)
-    state_name = serializers.CharField(source="state.name", required=False, allow_null=True)
-    city_name = serializers.CharField(source="city.name", required=False, allow_null=True)
+    country_name = serializers.CharField(
+        source="country.name", required=False, allow_null=True
+    )
+    state_name = serializers.CharField(
+        source="state.name", required=False, allow_null=True
+    )
+    city_name = serializers.CharField(
+        source="city.name", required=False, allow_null=True
+    )
 
     class Meta:
         model = BusinessSetting

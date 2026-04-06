@@ -167,7 +167,9 @@ class CareerAdmin(BaseAdmin):
                         career_service.archive_career(career=obj, user=request.user)
                         self.message_user(request, "Archived.")
                     except DRFValidationError as exc:
-                        self.message_user(request, str(exc.detail), level=messages.ERROR)
+                        self.message_user(
+                            request, str(exc.detail), level=messages.ERROR
+                        )
                 return HttpResponseRedirect(request.get_full_path())
             if request.POST.get("career_admin_restore_one"):
                 pk = request.POST["career_admin_restore_one"]
@@ -211,4 +213,3 @@ class CareerAdmin(BaseAdmin):
             career_service.restore_career(career=obj, user=request.user)
             n += 1
         self.message_user(request, f"{n} career(s) restored.")
-

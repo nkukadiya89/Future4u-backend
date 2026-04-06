@@ -8,4 +8,3 @@ domain_career_mapping_router.register(
     DomainCareerMappingViewSet,
     basename="domain-career-mapping",
 )
-

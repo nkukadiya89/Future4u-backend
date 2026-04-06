@@ -58,14 +58,22 @@ class EducationLevelAPITests(TestCase):
 
     def test_level_code_case_insensitive_unique(self):
         url = reverse("education-level-list")
-        self.client.post(url, self._payload(code="10TH", sequence_order=1), format="json")
-        r = self.client.post(url, self._payload(code="10th", sequence_order=2), format="json")
+        self.client.post(
+            url, self._payload(code="10TH", sequence_order=1), format="json"
+        )
+        r = self.client.post(
+            url, self._payload(code="10th", sequence_order=2), format="json"
+        )
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_sequence_order_unique(self):
         url = reverse("education-level-list")
-        self.client.post(url, self._payload(code="10th", sequence_order=1), format="json")
-        r = self.client.post(url, self._payload(code="12th", sequence_order=1), format="json")
+        self.client.post(
+            url, self._payload(code="10th", sequence_order=1), format="json"
+        )
+        r = self.client.post(
+            url, self._payload(code="12th", sequence_order=1), format="json"
+        )
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_validation_age_range(self):
@@ -104,11 +112,20 @@ class EducationLevelAPITests(TestCase):
 
     def test_reorder(self):
         url = reverse("education-level-list")
-        a = self.client.post(url, self._payload(code="10th", sequence_order=10), format="json").data["data"]["id"]
-        b = self.client.post(url, self._payload(code="12th", sequence_order=11), format="json").data["data"]["id"]
+        a = self.client.post(
+            url, self._payload(code="10th", sequence_order=10), format="json"
+        ).data["data"]["id"]
+        b = self.client.post(
+            url, self._payload(code="12th", sequence_order=11), format="json"
+        ).data["data"]["id"]
         r = self.client.post(
             reverse("education-level-reorder"),
-            {"orders": [{"id": a, "sequence_order": 20}, {"id": b, "sequence_order": 21}]},
+            {
+                "orders": [
+                    {"id": a, "sequence_order": 20},
+                    {"id": b, "sequence_order": 21},
+                ]
+            },
             format="json",
         )
         self.assertEqual(r.status_code, status.HTTP_200_OK)
@@ -117,8 +134,12 @@ class EducationLevelAPITests(TestCase):
 
     def test_bulk_archive_restore(self):
         url = reverse("education-level-list")
-        p1 = self.client.post(url, self._payload(code="bulk_1", sequence_order=30), format="json").data["data"]["id"]
-        p2 = self.client.post(url, self._payload(code="bulk_2", sequence_order=31), format="json").data["data"]["id"]
+        p1 = self.client.post(
+            url, self._payload(code="bulk_1", sequence_order=30), format="json"
+        ).data["data"]["id"]
+        p2 = self.client.post(
+            url, self._payload(code="bulk_2", sequence_order=31), format="json"
+        ).data["data"]["id"]
         r = self.client.post(
             reverse("education-level-bulk-archive"),
             {"ids": [p1, p2]},
@@ -139,8 +160,12 @@ class EducationLevelAPITests(TestCase):
             "l_csv_1,CSV One,101,14,16\n"
             "l_csv_1,CSV Dup,102,14,16\n"
         )
-        f = SimpleUploadedFile("education_level.csv", csv_body.encode("utf-8"), content_type="text/csv")
-        r = self.client.post(reverse("education-level-bulk-upload"), {"file": f}, format="multipart")
+        f = SimpleUploadedFile(
+            "education_level.csv", csv_body.encode("utf-8"), content_type="text/csv"
+        )
+        r = self.client.post(
+            reverse("education-level-bulk-upload"), {"file": f}, format="multipart"
+        )
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         self.assertEqual(r.data["success_count"], 1)
         self.assertEqual(r.data["error_count"], 1)
@@ -163,7 +188,9 @@ class EducationLevelAPITests(TestCase):
                 "max_age": 16,
             },
         ]
-        r = self.client.post(reverse("education-level-bulk-import"), {"rows": rows}, format="json")
+        r = self.client.post(
+            reverse("education-level-bulk-import"), {"rows": rows}, format="json"
+        )
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)
         self.assertEqual(r.data["data"]["imported_count"], 1)
         self.assertEqual(r.data["data"]["failed_count"], 1)
@@ -185,7 +212,9 @@ class EducationLevelAPITests(TestCase):
     def test_list_query_budget(self):
         url = reverse("education-level-list")
         for i in range(5):
-            self.client.post(url, self._payload(code=f"q_{i}", sequence_order=300 + i), format="json")
+            self.client.post(
+                url, self._payload(code=f"q_{i}", sequence_order=300 + i), format="json"
+            )
         connection.force_debug_cursor = True
         connection.queries_log.clear()
         self.client.get(url)
@@ -194,7 +223,9 @@ class EducationLevelAPITests(TestCase):
     def test_list_response_time_budget(self):
         url = reverse("education-level-list")
         for i in range(8):
-            self.client.post(url, self._payload(code=f"t_{i}", sequence_order=400 + i), format="json")
+            self.client.post(
+                url, self._payload(code=f"t_{i}", sequence_order=400 + i), format="json"
+            )
         t0 = time.perf_counter()
         self.client.get(url)
         self.assertLess(time.perf_counter() - t0, 2.0)

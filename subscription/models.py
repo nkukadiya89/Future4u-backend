@@ -1,7 +1,9 @@
 from django.conf import settings
 from django.db import models
 from django.utils.timezone import now
+
 from company.models import Company
+
 
 class Subscription(models.Model):
     SUBSCRIPTION_CHOICES = (
@@ -13,18 +15,14 @@ class Subscription(models.Model):
         ("in_active", "in_active"),
     )
     package_name = models.CharField(max_length=100)
-    subscription_type = models.CharField(max_length=50, choices=SUBSCRIPTION_CHOICES, default="subscription")
-    device_price = models.FloatField(default=0)
-    device_discount = models.FloatField(default=0)
-    device_sell_price = models.FloatField(default=0)
+    subscription_type = models.CharField(
+        max_length=50, choices=SUBSCRIPTION_CHOICES, default="subscription"
+    )
     subscription_price = models.FloatField(default=0)
     subscription_discount = models.FloatField(default=0)
     subscription_sell_price = models.FloatField(default=0)
     plan_price = models.FloatField(default=0)
     # Transfer specific fields
-    device_transfer_price = models.FloatField(default=0)
-    device_transfer_discount = models.FloatField(default=0)
-    device_transfer_sell_price = models.FloatField(default=0)
     duration_days = models.IntegerField(default=0)
     description = models.TextField(null=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="active")
@@ -99,7 +97,9 @@ class SubscriptionCart(models.Model):
     last_reminder_sent = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.company.name} - {self.subscription.package_name} x {self.quantity}"
+        return (
+            f"{self.company.name} - {self.subscription.package_name} x {self.quantity}"
+        )
 
     class Meta:
         db_table = "subscription_cart"
@@ -121,7 +121,9 @@ class PaymentSubscription(models.Model):
     check_out_url = models.URLField(blank=True, null=True)
     invoice_no = models.CharField(max_length=50)
     active = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Inactive")
-    payment_status = models.CharField(max_length=10, choices=PAYMENT_STATUS_CHOICES, default="pending")
+    payment_status = models.CharField(
+        max_length=10, choices=PAYMENT_STATUS_CHOICES, default="pending"
+    )
     razor_order_id = models.CharField(max_length=100, blank=True, null=True)
     payment_id = models.CharField(max_length=100, blank=True, null=True)
     currency = models.CharField(max_length=10)
@@ -143,13 +145,15 @@ class PaymentSubscription(models.Model):
 
 
 class PaymentSubscriptionItem(models.Model):
-    payment_subscription = models.ForeignKey(PaymentSubscription, on_delete=models.CASCADE, related_name="items")
+    payment_subscription = models.ForeignKey(
+        PaymentSubscription, on_delete=models.CASCADE, related_name="items"
+    )
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=0)
     subscription_type = models.CharField(max_length=50)
-    device_price = models.FloatField(default=0)
+    # device_price = models.FloatField(default=0)
     subscription_price = models.FloatField(default=0)
-    device_amount = models.FloatField(default=0)
+    # device_amount = models.FloatField(default=0)
     subscription_amount = models.FloatField(default=0)
     plan_total = models.FloatField(default=0)
     start_date = models.DateField(blank=True, null=True)
@@ -164,7 +168,9 @@ class PaymentSubscriptionItem(models.Model):
 
 
 class PaymentGSTDetails(models.Model):
-    payment_subscription = models.ForeignKey(PaymentSubscription, on_delete=models.CASCADE, related_name="gst_details")
+    payment_subscription = models.ForeignKey(
+        PaymentSubscription, on_delete=models.CASCADE, related_name="gst_details"
+    )
     company_name = models.CharField(max_length=255)
     gst_no = models.CharField(max_length=15)
     country = models.CharField(max_length=100)
@@ -192,8 +198,12 @@ class SubscriptionInvoice(models.Model):
     due_date = models.DateField(null=True)
     company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, null=True)
     currency = models.CharField(max_length=10, null=True)
-    subscription = models.ForeignKey(Subscription, on_delete=models.DO_NOTHING, null=True)
-    invoice_type = models.CharField(max_length=50, choices=INVOICE_CHOICES, default="Performa Invoice")
+    subscription = models.ForeignKey(
+        Subscription, on_delete=models.DO_NOTHING, null=True
+    )
+    invoice_type = models.CharField(
+        max_length=50, choices=INVOICE_CHOICES, default="Performa Invoice"
+    )
     quantity = models.FloatField(default=1)
     sell_price = models.FloatField(default=0)
     rate = models.FloatField(default=0)
@@ -233,23 +243,31 @@ class SubscriptionInvoice(models.Model):
 
 
 class SubscriptionCartWithSite(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="subscription_carts_with_site")
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="subscription_carts_with_site"
+    )
     subscription = models.ForeignKey(
-        Subscription, on_delete=models.CASCADE, related_name="subscription_carts_with_site"
+        Subscription,
+        on_delete=models.CASCADE,
+        related_name="subscription_carts_with_site",
     )
     quantity = models.PositiveIntegerField(default=1)
     created_at = models.DateTimeField(default=now)
     updated_at = models.DateTimeField(default=now)
 
     def __str__(self):
-        return f"Cart {self.id} - {self.company.name} - {self.subscription.package_name}"
+        return (
+            f"Cart {self.id} - {self.company.name} - {self.subscription.package_name}"
+        )
 
     class Meta:
         db_table = "subscription_cart_with_site"
 
 
 class RenewalCart(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="renewal_carts")
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="renewal_carts"
+    )
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -258,4 +276,4 @@ class RenewalCart(models.Model):
         db_table = "renewal_cart"
 
     def __str__(self):
-        return f"{self.device_configuration.device_code} - Renewal Cart"
+        return f"{self.subscription.package_name} - Renewal Cart"
