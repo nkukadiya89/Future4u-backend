@@ -168,6 +168,14 @@ class DomainCounsellorKnowledge(models.Model):
     tradeoff = models.TextField(blank=True)
     action = models.TextField(blank=True)
     tension = models.TextField(blank=True)
+    technical_keywords = models.JSONField(
+        default=list, blank=True,
+        help_text="Technical skill keywords for this domain e.g. ['python','sql','machine learning']",
+    )
+    domain_keywords = models.JSONField(
+        default=list, blank=True,
+        help_text="Domain/soft skill keywords for this domain e.g. ['data analysis','research']",
+    )
 
     class Meta:
         db_table = "domain_counsellor_knowledge"

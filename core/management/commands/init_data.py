@@ -861,6 +861,10 @@ class Command(BaseCommand):
             code = (row.get("domain_code") or "").strip().lower()
             if not code:
                 continue
+
+            def _parse_keywords(raw):
+                return [k.strip().lower() for k in (raw or "").split("|") if k.strip()]
+
             DomainCounsellorKnowledge.objects.update_or_create(
                 domain_code=code,
                 defaults={
@@ -868,6 +872,8 @@ class Command(BaseCommand):
                     "tradeoff": (row.get("tradeoff") or "").strip(),
                     "action": (row.get("action") or "").strip(),
                     "tension": (row.get("tension") or "").strip(),
+                    "technical_keywords": _parse_keywords(row.get("technical_keywords")),
+                    "domain_keywords": _parse_keywords(row.get("domain_keywords")),
                 },
             )
 
