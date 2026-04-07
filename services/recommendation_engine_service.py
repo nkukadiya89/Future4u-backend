@@ -164,7 +164,9 @@ def _top_factor(scores: dict[str, float]) -> tuple[str, float]:
     return best_dim, best_val
 
 
-def _load_domain_keywords() -> tuple[list[str], list[str]]:
+def _estimate_skill_proficiency_40_70(
+    *, skill_name: str, dim_scores: dict[str, float]
+) -> int:
     """
     Load all technical and domain keywords from DomainCounsellorKnowledge.
     Returns two flat deduplicated lists: (technical_keywords, domain_keywords).
