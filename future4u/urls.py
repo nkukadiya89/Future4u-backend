@@ -19,13 +19,14 @@ from django.contrib import admin
 from django.urls import path, include
 from user.user_auth import CustomTokenObtainPairView
 from future4u.routers import future4u_router
-from user_profile.views import UserProfileViewSet
+from recommendation.debug_views import RecommendationDebugAPIView
 from recommendation.views import (
     CareerDetailsAPIView,
     RecommendationDomainDetailAPIView,
     RecommendationListAPIView,
 )
-from recommendation.debug_views import RecommendationDebugAPIView
+from user.user_auth import CustomTokenObtainPairView
+from user_profile.views import UserProfileViewSet
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -59,4 +60,5 @@ urlpatterns = [
     ),
     path("", include(future4u_router.urls)),
     path("", include("subscription.urls")),
+    path("api/v1/", include("subscription.urls")),
 ]

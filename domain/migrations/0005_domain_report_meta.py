@@ -12,10 +12,31 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="DomainReportMeta",
             fields=[
-                ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ("domain_code", models.CharField(db_index=True, max_length=64, unique=True)),
-                ("degrees", models.TextField(blank=True, help_text="Pipe-separated degree options")),
-                ("careers", models.TextField(blank=True, help_text="Pipe-separated career titles")),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "domain_code",
+                    models.CharField(db_index=True, max_length=64, unique=True),
+                ),
+                (
+                    "degrees",
+                    models.TextField(
+                        blank=True, help_text="Pipe-separated degree options"
+                    ),
+                ),
+                (
+                    "careers",
+                    models.TextField(
+                        blank=True, help_text="Pipe-separated career titles"
+                    ),
+                ),
                 ("note", models.CharField(blank=True, max_length=512)),
                 ("how_to_choose_hint", models.CharField(blank=True, max_length=512)),
             ],
@@ -24,8 +45,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="DomainCounsellorKnowledge",
             fields=[
-                ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ("domain_code", models.CharField(db_index=True, max_length=64, unique=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "domain_code",
+                    models.CharField(db_index=True, max_length=64, unique=True),
+                ),
                 ("insight", models.TextField(blank=True)),
                 ("tradeoff", models.TextField(blank=True)),
                 ("action", models.TextField(blank=True)),
@@ -36,8 +68,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="StreamCounsellorKnowledge",
             fields=[
-                ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ("stream_code", models.CharField(db_index=True, max_length=64, unique=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "stream_code",
+                    models.CharField(db_index=True, max_length=64, unique=True),
+                ),
                 ("insight", models.TextField(blank=True)),
                 ("tradeoff", models.TextField(blank=True)),
                 ("action", models.TextField(blank=True)),

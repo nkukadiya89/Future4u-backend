@@ -12,7 +12,11 @@ class Migration(migrations.Migration):
             model_name="question",
             name="question_type",
             field=models.CharField(
-                choices=[("scale", "Scale (1-5 agreement)"), ("mcq", "Multiple Choice (pick one)"), ("yesno", "Yes / No")],
+                choices=[
+                    ("scale", "Scale (1-5 agreement)"),
+                    ("mcq", "Multiple Choice (pick one)"),
+                    ("yesno", "Yes / No"),
+                ],
                 default="scale",
                 max_length=10,
                 help_text="Controls how options are presented to the user.",
