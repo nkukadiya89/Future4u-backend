@@ -306,7 +306,12 @@ def normalize_import_row(row: dict[str, Any]) -> dict[str, Any]:
         out["is_active"] = v in ("1", "true", "yes", "y")
 
     # Optional affinity weights (floats 0..1). Keep None/"" as None.
-    for k in ("interest_weight", "aptitude_weight", "personality_weight", "work_style_weight"):
+    for k in (
+        "interest_weight",
+        "aptitude_weight",
+        "personality_weight",
+        "work_style_weight",
+    ):
         if k in out and out[k] not in ("", None):
             try:
                 out[k] = float(str(out[k]).strip())
@@ -570,6 +575,22 @@ def sample_csv_bytes() -> bytes:
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(SAMPLE_CSV_HEADERS)
-    w.writerow(["ROOT", "Root domain", "", "3", "80", "Top-level sample", "1", "", "", "", ""])
-    w.writerow(["CHILD_A", "Child A", "ROOT", "2", "60", "Under ROOT", "1", "0.25", "0.25", "0.25", "0.25"])
+    w.writerow(
+        ["ROOT", "Root domain", "", "3", "80", "Top-level sample", "1", "", "", "", ""]
+    )
+    w.writerow(
+        [
+            "CHILD_A",
+            "Child A",
+            "ROOT",
+            "2",
+            "60",
+            "Under ROOT",
+            "1",
+            "0.25",
+            "0.25",
+            "0.25",
+            "0.25",
+        ]
+    )
     return buf.getvalue().encode("utf-8")

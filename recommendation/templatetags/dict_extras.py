@@ -11,4 +11,3 @@ def get_item(dct, key):
         return dct.get(key)
     except Exception:
         return None
-

@@ -6,13 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0004_question_type_sequence_option_sequence'),
+        ("assessment", "0004_question_type_sequence_option_sequence"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='question',
-            name='dimension',
-            field=models.CharField(choices=[('interest', 'Interest'), ('aptitude', 'Aptitude'), ('personality', 'Personality'), ('work_style', 'Work Style'), ('background', 'Background')], max_length=20),
+            model_name="question",
+            name="dimension",
+            field=models.CharField(
+                choices=[
+                    ("interest", "Interest"),
+                    ("aptitude", "Aptitude"),
+                    ("personality", "Personality"),
+                    ("work_style", "Work Style"),
+                    ("background", "Background"),
+                ],
+                max_length=20,
+            ),
         ),
     ]

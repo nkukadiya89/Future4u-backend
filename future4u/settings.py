@@ -10,8 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from decouple import config
 from pathlib import Path
+
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,11 +23,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-oxpz+z-9f7_jrz=2q_#3slp7)k^_xz8ua^yu+-g(12itz##71!"
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = config("SECRET_KEY")
 
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = [h.strip() for h in config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')]
+ALLOWED_HOSTS = [
+    h.strip() for h in config("ALLOWED_HOSTS", default="localhost,127.0.0.1").split(",")
+]
 
 # ── Security headers (safe in both dev and prod) ──────────────────────────────
 SECURE_BROWSER_XSS_FILTER = True
@@ -53,6 +56,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "django_extensions",
     "rest_framework_simplejwt",
     "activity_log",
     "business_category",
@@ -166,7 +170,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 AUTH_USER_MODEL = "user.User"
 
 # ── Cache ─────────────────────────────────────────────────────────────────────
@@ -223,6 +227,10 @@ LOGGING = {
         },
         "services": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "assessment": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        "recommendation": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "recommendation": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }

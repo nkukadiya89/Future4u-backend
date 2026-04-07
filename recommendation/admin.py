@@ -9,7 +9,10 @@ from django.shortcuts import render
 from django.urls import path
 
 from assessment.models import Option, Question, UserResponse
-from services.recommendation_engine_service import RecommendationEngineService, TENTH_GRADE_STREAM_CODES
+from services.recommendation_engine_service import (
+    RecommendationEngineService,
+    TENTH_GRADE_STREAM_CODES,
+)
 from education_level.models import EducationLevel
 from stream.models import Stream
 
@@ -24,12 +27,16 @@ class RecommendationQAForm(forms.Form):
         help_text="Select a student/user to run the recommendation engine.",
     )
     education_level = forms.ModelChoiceField(
-        queryset=EducationLevel.objects.filter(is_active=True, deleted=False).order_by("sequence_order"),
+        queryset=EducationLevel.objects.filter(is_active=True, deleted=False).order_by(
+            "sequence_order"
+        ),
         required=False,
         help_text="Optional override (not saved).",
     )
     stream = forms.ModelChoiceField(
-        queryset=Stream.objects.filter(is_active=True, deleted=False).order_by("stream_name"),
+        queryset=Stream.objects.filter(is_active=True, deleted=False).order_by(
+            "stream_name"
+        ),
         required=False,
         help_text="Optional override (not saved).",
     )
@@ -60,11 +67,17 @@ def _upsert_user_responses(*, user_id: int, answers: dict) -> None:
     qids = list(answers.keys())
     existing = {
         r.question_id: r
-        for r in UserResponse.objects.filter(user_id=user_id, question_id__in=qids)
-        .only("id", "question_id", "selected_option_id", "score_value")
+        for r in UserResponse.objects.filter(
+            user_id=user_id, question_id__in=qids
+        ).only("id", "question_id", "selected_option_id", "score_value")
     }
     opt_ids = list(set(answers.values()))
-    options = {o.id: o for o in Option.objects.filter(id__in=opt_ids).only("id", "question_id", "score_value")}
+    options = {
+        o.id: o
+        for o in Option.objects.filter(id__in=opt_ids).only(
+            "id", "question_id", "score_value"
+        )
+    }
 
     to_create, to_update = [], []
     for qid, oid in answers.items():
@@ -77,14 +90,20 @@ def _upsert_user_responses(*, user_id: int, answers: dict) -> None:
             r.score_value = int(opt.score_value)
             to_update.append(r)
         else:
-            to_create.append(UserResponse(
-                user_id=user_id, question_id=qid,
-                selected_option_id=oid, score_value=int(opt.score_value),
-            ))
+            to_create.append(
+                UserResponse(
+                    user_id=user_id,
+                    question_id=qid,
+                    selected_option_id=oid,
+                    score_value=int(opt.score_value),
+                )
+            )
     if to_create:
         UserResponse.objects.bulk_create(to_create, ignore_conflicts=True)
     if to_update:
-        UserResponse.objects.bulk_update(to_update, ["selected_option_id", "score_value"])
+        UserResponse.objects.bulk_update(
+            to_update, ["selected_option_id", "score_value"]
+        )
 
 
 def _recommendation_qa_view(request):
@@ -103,17 +122,20 @@ def _recommendation_qa_view(request):
         try:
             # Load questions for the QA form
             questions = _pick_questions_per_dimension(
-                list(Question.objects.filter(is_active=True)
-                     .prefetch_related("options")
-                     .order_by("-signal_strength", "id")),
+                list(
+                    Question.objects.filter(is_active=True)
+                    .prefetch_related("options")
+                    .order_by("-signal_strength", "id")
+                ),
                 per_dimension=5,
             )
             if questions:
                 qids = [q.id for q in questions]
                 existing_answers = {
                     r.question_id: r.selected_option_id
-                    for r in UserResponse.objects.filter(user_id=user.id, question_id__in=qids)
-                    .only("question_id", "selected_option_id")
+                    for r in UserResponse.objects.filter(
+                        user_id=user.id, question_id__in=qids
+                    ).only("question_id", "selected_option_id")
                 }
 
             if request.method == "POST" and request.POST.get("_qa_submit") == "1":
@@ -129,14 +151,18 @@ def _recommendation_qa_view(request):
                     except (TypeError, ValueError):
                         missing += 1
                 if missing:
-                    raise ValueError(f"Please answer all questions ({missing} missing).")
+                    raise ValueError(
+                        f"Please answer all questions ({missing} missing)."
+                    )
                 with transaction.atomic():
                     _upsert_user_responses(user_id=user.id, answers=answers)
                 saved = True
                 existing_answers = answers
 
             edu_code = (getattr(edu, "level_code", "") or "").lower() if edu else None
-            stream_code = (getattr(stream, "stream_code", "") or "").lower() if stream else None
+            stream_code = (
+                (getattr(stream, "stream_code", "") or "").lower() if stream else None
+            )
 
             result = RecommendationEngineService().recommend(
                 user_id=user.id,
@@ -148,12 +174,16 @@ def _recommendation_qa_view(request):
             totals = {
                 r["dimension"]: int(r["total"] or 0)
                 for r in Question.objects.filter(is_active=True)
-                .values("dimension").annotate(total=Count("id"))
+                .values("dimension")
+                .annotate(total=Count("id"))
             }
             answered = {
                 r["question__dimension"]: int(r["answered"] or 0)
-                for r in UserResponse.objects.filter(user_id=user.id, question__is_active=True)
-                .values("question__dimension").annotate(answered=Count("id"))
+                for r in UserResponse.objects.filter(
+                    user_id=user.id, question__is_active=True
+                )
+                .values("question__dimension")
+                .annotate(answered=Count("id"))
             }
             diagnostics = {
                 "assessment_by_dimension": [

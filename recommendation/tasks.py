@@ -11,7 +11,10 @@ from utils.cache_keys import recommendation_key
 def refresh_recommendation_cache(user_id: int, *, ttl_seconds: int = 60 * 5) -> None:
     payload = RecommendationEngineService().recommend(user_id=user_id)
     try:
-        from assessment.services.counsellor_report_service import build_counsellor_report
+        from assessment.services.counsellor_report_service import (
+            build_counsellor_report,
+        )
+
         report = build_counsellor_report(payload)
         if report:
             payload["report"] = report
@@ -20,7 +23,9 @@ def refresh_recommendation_cache(user_id: int, *, ttl_seconds: int = 60 * 5) -> 
     cache.set(recommendation_key(user_id), payload, ttl_seconds)
 
 
-def refresh_recommendation_cache_async(user_id: int, *, ttl_seconds: int = 60 * 5) -> None:
+def refresh_recommendation_cache_async(
+    user_id: int, *, ttl_seconds: int = 60 * 5
+) -> None:
     """Best-effort async cache refresh using a daemon thread."""
     lock_key = f"{recommendation_key(user_id)}:refresh_lock"
     try:

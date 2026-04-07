@@ -36,14 +36,23 @@ FULL_CAREER_LEVELS = {LEVEL_GRAD, LEVEL_PG, LEVEL_PHD, LEVEL_PROFESSIONAL}
 
 # Streams shown to 10th-grade users (parent_safe_label=True means suitable for younger users)
 TENTH_GRADE_STREAM_CODES = {
-    "science", "commerce", "arts", "vocational",
-    "sports", "fine_arts", "agriculture",
+    "science",
+    "commerce",
+    "arts",
+    "vocational",
+    "sports",
+    "fine_arts",
+    "agriculture",
 }
 
 # Streams shown to 12th-grade users as selectable options
 TWELFTH_GRADE_STREAM_CODES = {
-    "science", "commerce", "arts", "vocational",
-    "sports", "fine_arts",
+    "science",
+    "commerce",
+    "arts",
+    "vocational",
+    "sports",
+    "fine_arts",
 }
 
 
@@ -126,7 +135,9 @@ class RecommendationEngineService:
         for row in rows:
             max_possible = float(row.get("max_possible") or 0.0)
             weighted_sum = float(row.get("weighted_sum") or 0.0)
-            normalized = (weighted_sum / max_possible * 100.0) if max_possible > 0 else 0.0
+            normalized = (
+                (weighted_sum / max_possible * 100.0) if max_possible > 0 else 0.0
+            )
             stream_ranking.append(
                 {
                     "stream_id": str(row["question__mapped_streams__id"]),
@@ -260,13 +271,17 @@ class RecommendationEngineService:
         from user_profile.models import UserProfile
 
         try:
-            profile = UserProfile.objects.select_related("education_level").get(user_id=user_id)
+            profile = UserProfile.objects.select_related("education_level").get(
+                user_id=user_id
+            )
             edu = profile.education_level
             return (edu.level_code or "").lower() if edu else None
         except UserProfile.DoesNotExist:
             return None
 
-    def _evaluate_top_domain_decisions(self, *, user_id, domain_ranking: list[dict]) -> dict[str, dict]:
+    def _evaluate_top_domain_decisions(
+        self, *, user_id, domain_ranking: list[dict]
+    ) -> dict[str, dict]:
         decisions: dict[str, dict] = {}
         for ranked_domain in domain_ranking[: self.DOMAIN_DECISION_TOP_N]:
             domain_code = (ranked_domain.get("domain_code") or "").strip().lower()
@@ -342,7 +357,12 @@ class RecommendationEngineService:
 
         # Sort: score desc, then question_count desc, then domain_code for determinism
         domain_ranking.sort(
-            key=lambda d: (-d["score"], -d["question_count"], -d["_raw"], d["domain_code"])
+            key=lambda d: (
+                -d["score"],
+                -d["question_count"],
+                -d["_raw"],
+                d["domain_code"],
+            )
         )
 
         # Strip internal fields
@@ -352,7 +372,13 @@ class RecommendationEngineService:
 
         return domain_ranking
 
-    def _build_generic_result(self, *, top_domain: Domain, domain_ranking: list[dict], level_code: str | None = None):
+    def _build_generic_result(
+        self,
+        *,
+        top_domain: Domain,
+        domain_ranking: list[dict],
+        level_code: str | None = None,
+    ):
         top_domain_score = domain_ranking[0]["score"] if domain_ranking else 0
 
         mappings_qs = DomainCareerMapping.objects.filter(
@@ -366,8 +392,14 @@ class RecommendationEngineService:
         # Filter careers appropriate for the user's education level
         # e.g. don't show "Investment Banker (requires PG)" to a diploma student
         LEVEL_ORDER = {
-            "secondary": 2, "higher_secondary": 3, "iti": 4, "diploma": 5,
-            "graduation": 6, "post_graduation": 7, "doctorate": 8, "professional": 9,
+            "secondary": 2,
+            "higher_secondary": 3,
+            "iti": 4,
+            "diploma": 5,
+            "graduation": 6,
+            "post_graduation": 7,
+            "doctorate": 8,
+            "professional": 9,
         }
         user_level_seq = LEVEL_ORDER.get(level_code or "", 0)
 
@@ -376,7 +408,9 @@ class RecommendationEngineService:
             career = mapping.career
             # Skip careers that require a higher education level than the user has
             if career.min_education_level:
-                min_seq = LEVEL_ORDER.get((career.min_education_level.level_code or "").lower(), 0)
+                min_seq = LEVEL_ORDER.get(
+                    (career.min_education_level.level_code or "").lower(), 0
+                )
                 if user_level_seq > 0 and min_seq > user_level_seq:
                     continue
             key = career.career_code or str(career.id)
