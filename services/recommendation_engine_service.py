@@ -153,7 +153,6 @@ def _calc_confidence(
 
 
 def _top_factor(scores: dict[str, float]) -> tuple[str, float]:
-    # Deterministic tie-break: DIMENSIONS order.
     best_dim = DIMENSIONS[0]
     best_val = float(scores.get(best_dim, 50.0))
     for d in DIMENSIONS[1:]:
@@ -163,9 +162,35 @@ def _top_factor(scores: dict[str, float]) -> tuple[str, float]:
     return best_dim, best_val
 
 
+def _load_domain_keywords() -> tuple[list[str], list[str]]:
+    """
+    Load all technical and domain keywords from DomainCounsellorKnowledge.
+    Returns two flat deduplicated lists: (technical_keywords, domain_keywords).
+    Falls back to minimal hardcoded defaults if DB is empty.
+    """
+    try:
+        from domain.models import DomainCounsellorKnowledge
+        rows = DomainCounsellorKnowledge.objects.exclude(
+            technical_keywords=[]
+        ).values_list("technical_keywords", "domain_keywords")
+        tech, dom = set(), set()
+        for tk, dk in rows:
+            tech.update(k.lower() for k in (tk or []) if k)
+            dom.update(k.lower() for k in (dk or []) if k)
+        if tech or dom:
+            return list(tech), list(dom)
+    except Exception:
+        pass
+    return (
+        ["python", "sql", "coding", "programming", "data", "cloud", "api", "backend", "frontend", "devops", "linux", "network", "machine learning", "excel"],
+        ["marketing", "sales", "finance", "accounting", "design", "health", "medical", "education", "teaching", "law", "hr", "communication", "writing", "business", "management"],
+    )
+
+
 def _estimate_skill_proficiency_40_70(*, skill_name: str, dim_scores: dict[str, float]) -> int:
     """
     Heuristic skill proficiency estimator when UserSkill is missing.
+    Reads keywords from DomainCounsellorKnowledge in DB.
     Keeps output within 40–70 range as per UX spec.
     """
     name = (skill_name or "").strip().lower()
@@ -174,56 +199,7 @@ def _estimate_skill_proficiency_40_70(*, skill_name: str, dim_scores: dict[str, 
     personality = float(dim_scores.get("personality", 50.0))
     work_style = float(dim_scores.get("work_style", 50.0))
 
-    technical_keywords = (
-        "python",
-        "java",
-        "javascript",
-        "typescript",
-        "c++",
-        "c#",
-        "sql",
-        "database",
-        "coding",
-        "program",
-        "programming",
-        "development",
-        "api",
-        "backend",
-        "frontend",
-        "cloud",
-        "devops",
-        "linux",
-        "network",
-        "data",
-        "excel",
-        "ai",
-        "ml",
-        "machine learning",
-    )
-    domain_keywords = (
-        "marketing",
-        "sales",
-        "finance",
-        "account",
-        "accounting",
-        "design",
-        "ui",
-        "ux",
-        "health",
-        "medical",
-        "nursing",
-        "sports",
-        "education",
-        "teaching",
-        "law",
-        "hr",
-        "human resources",
-        "communication",
-        "writing",
-        "content",
-        "business",
-        "management",
-    )
+    technical_keywords, domain_keywords = _load_domain_keywords()
 
     if any(k in name for k in technical_keywords):
         basis = aptitude
@@ -799,7 +775,7 @@ def generate_recommendation(
         if prof is None:
             prof = _estimate_skill_proficiency_40_70(
                 skill_name=skill_name_by_id.get(sid, "") or "",
-                dim_scores=dim_scores,
+                dim_scores=dim_scores_0_100,
             )
         gap = int(req_w) - int(prof)
         skill_gaps.append({"skill": skill_name_by_id.get(sid, "") or "", "gap_level": _gap_level(gap)})
