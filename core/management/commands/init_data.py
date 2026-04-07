@@ -806,8 +806,8 @@ class Command(BaseCommand):
 
     def load_domain_report_meta(self):
         self.stdout.write("Loading Domain Report Meta...")
-        from domain.models import DomainReportMeta
         from core.management.commands._master_import_utils import load_csv_rows
+        from domain.models import DomainReportMeta
 
         file_path = path.join(
             settings.BASE_DIR, "core", "management", "source", "domain_report_meta.csv"
@@ -832,8 +832,8 @@ class Command(BaseCommand):
 
     def load_stream_report_meta(self):
         self.stdout.write("Loading Stream Report Meta...")
-        from domain.models import StreamReportMeta
         from core.management.commands._master_import_utils import load_csv_rows
+        from domain.models import StreamReportMeta
 
         file_path = path.join(
             settings.BASE_DIR, "core", "management", "source", "stream_report_meta.csv"
@@ -858,8 +858,8 @@ class Command(BaseCommand):
 
     def load_domain_counsellor_knowledge(self):
         self.stdout.write("Loading Domain Counsellor Knowledge...")
-        from domain.models import DomainCounsellorKnowledge
         from core.management.commands._master_import_utils import load_csv_rows
+        from domain.models import DomainCounsellorKnowledge
 
         file_path = path.join(
             settings.BASE_DIR,
@@ -893,8 +893,8 @@ class Command(BaseCommand):
 
     def load_stream_counsellor_knowledge(self):
         self.stdout.write("Loading Stream Counsellor Knowledge...")
-        from domain.models import StreamCounsellorKnowledge
         from core.management.commands._master_import_utils import load_csv_rows
+        from domain.models import StreamCounsellorKnowledge
 
         file_path = path.join(
             settings.BASE_DIR,
@@ -1065,11 +1065,7 @@ class Command(BaseCommand):
             subscription, created = Subscription.objects.get_or_create(
                 package_name=data["package_name"],
                 defaults={
-                    "subscription_type": data["subscription_type"],
-                    "subscription_price": data["subscription_price"],
-                    "subscription_discount": data["subscription_discount"],
-                    "subscription_sell_price": data["subscription_sell_price"],
-                    "plan_price": data["plan_price"],
+                    "price": data["plan_price"],
                     "duration_days": data["duration_days"],
                     "description": data["description"],
                     "is_active": data["status"],
