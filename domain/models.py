@@ -177,11 +177,13 @@ class DomainCounsellorKnowledge(models.Model):
     action = models.TextField(blank=True)
     tension = models.TextField(blank=True)
     technical_keywords = models.JSONField(
-        default=list, blank=True,
+        default=list,
+        blank=True,
         help_text="Technical skill keywords for this domain e.g. ['python','sql','machine learning']",
     )
     domain_keywords = models.JSONField(
-        default=list, blank=True,
+        default=list,
+        blank=True,
         help_text="Domain/soft skill keywords for this domain e.g. ['data analysis','research']",
     )
 

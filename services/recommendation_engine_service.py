@@ -172,6 +172,7 @@ def _load_domain_keywords() -> tuple[list[str], list[str]]:
     """
     try:
         from domain.models import DomainCounsellorKnowledge
+
         rows = DomainCounsellorKnowledge.objects.exclude(
             technical_keywords=[]
         ).values_list("technical_keywords", "domain_keywords")
@@ -184,12 +185,45 @@ def _load_domain_keywords() -> tuple[list[str], list[str]]:
     except Exception:
         pass
     return (
-        ["python", "sql", "coding", "programming", "data", "cloud", "api", "backend", "frontend", "devops", "linux", "network", "machine learning", "excel"],
-        ["marketing", "sales", "finance", "accounting", "design", "health", "medical", "education", "teaching", "law", "hr", "communication", "writing", "business", "management"],
+        [
+            "python",
+            "sql",
+            "coding",
+            "programming",
+            "data",
+            "cloud",
+            "api",
+            "backend",
+            "frontend",
+            "devops",
+            "linux",
+            "network",
+            "machine learning",
+            "excel",
+        ],
+        [
+            "marketing",
+            "sales",
+            "finance",
+            "accounting",
+            "design",
+            "health",
+            "medical",
+            "education",
+            "teaching",
+            "law",
+            "hr",
+            "communication",
+            "writing",
+            "business",
+            "management",
+        ],
     )
 
 
-def _estimate_skill_proficiency_40_70(*, skill_name: str, dim_scores: dict[str, float]) -> int:
+def _estimate_skill_proficiency_40_70(
+    *, skill_name: str, dim_scores: dict[str, float]
+) -> int:
     """
     Heuristic skill proficiency estimator when UserSkill is missing.
     Reads keywords from DomainCounsellorKnowledge in DB.

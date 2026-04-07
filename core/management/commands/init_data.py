@@ -884,7 +884,9 @@ class Command(BaseCommand):
                     "tradeoff": (row.get("tradeoff") or "").strip(),
                     "action": (row.get("action") or "").strip(),
                     "tension": (row.get("tension") or "").strip(),
-                    "technical_keywords": _parse_keywords(row.get("technical_keywords")),
+                    "technical_keywords": _parse_keywords(
+                        row.get("technical_keywords")
+                    ),
                     "domain_keywords": _parse_keywords(row.get("domain_keywords")),
                 },
             )

@@ -6,18 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('domain', '0008_alter_streamreportmeta_note_and_more'),
+        ("domain", "0008_alter_streamreportmeta_note_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='domaincounsellorknowledge',
-            name='domain_keywords',
-            field=models.JSONField(blank=True, default=list, help_text="Domain/soft skill keywords for this domain e.g. ['data analysis','research']"),
+            model_name="domaincounsellorknowledge",
+            name="domain_keywords",
+            field=models.JSONField(
+                blank=True,
+                default=list,
+                help_text="Domain/soft skill keywords for this domain e.g. ['data analysis','research']",
+            ),
         ),
         migrations.AddField(
-            model_name='domaincounsellorknowledge',
-            name='technical_keywords',
-            field=models.JSONField(blank=True, default=list, help_text="Technical skill keywords for this domain e.g. ['python','sql','machine learning']"),
+            model_name="domaincounsellorknowledge",
+            name="technical_keywords",
+            field=models.JSONField(
+                blank=True,
+                default=list,
+                help_text="Technical skill keywords for this domain e.g. ['python','sql','machine learning']",
+            ),
         ),
     ]
