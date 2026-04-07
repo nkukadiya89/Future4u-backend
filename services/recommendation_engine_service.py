@@ -111,7 +111,9 @@ def _clamp_0_100(value: float) -> int:
     return int(round(max(0.0, min(100.0, float(value)))))
 
 
-def _domain_score_0_1(*, dim_avgs_0_1: dict[str, float], dim_counts: dict[str, int]) -> float:
+def _domain_score_0_1(
+    *, dim_avgs_0_1: dict[str, float], dim_counts: dict[str, int]
+) -> float:
     """
     Step 2: Domain score on 0..1.
     Uses ONLY dimensions that have relevant questions for this domain.
@@ -163,7 +165,9 @@ def _top_factor(scores: dict[str, float]) -> tuple[str, float]:
     return best_dim, best_val
 
 
-def _estimate_skill_proficiency_40_70(*, skill_name: str, dim_scores: dict[str, float]) -> int:
+def _estimate_skill_proficiency_40_70(
+    *, skill_name: str, dim_scores: dict[str, float]
+) -> int:
     """
     Heuristic skill proficiency estimator when UserSkill is missing.
     Keeps output within 40–70 range as per UX spec.
@@ -230,12 +234,23 @@ def _estimate_skill_proficiency_40_70(*, skill_name: str, dim_scores: dict[str, 
     elif any(k in name for k in domain_keywords):
         basis = interest
     else:
-        basis = (aptitude * 0.45) + (interest * 0.45) + (personality * 0.05) + (work_style * 0.05)
+        basis = (
+            (aptitude * 0.45)
+            + (interest * 0.45)
+            + (personality * 0.05)
+            + (work_style * 0.05)
+        )
 
     return int(round(max(40.0, min(70.0, 40.0 + (float(basis) / 100.0) * 30.0))))
 
 
-def _domain_reason(*, top_dim: str, top_dim_score: float, mapping_weight: int, domain_future_relevance: int | None) -> str:
+def _domain_reason(
+    *,
+    top_dim: str,
+    top_dim_score: float,
+    mapping_weight: int,
+    domain_future_relevance: int | None,
+) -> str:
     dim_label = {
         "interest": "interest",
         "aptitude": "aptitude",
@@ -329,7 +344,12 @@ def _resolve_user_context(
 
     seq = int(getattr(edu, "sequence_order", 0) or 0)
     level_code = (getattr(edu, "level_code", "") or "").lower() or None
-    return _UserContext(user_id=user_id, stream_id=stream.pk, education_sequence=seq, education_level_code=level_code)
+    return _UserContext(
+        user_id=user_id,
+        stream_id=stream.pk,
+        education_sequence=seq,
+        education_level_code=level_code,
+    )
 
 
 def generate_recommendation(
@@ -342,17 +362,25 @@ def generate_recommendation(
     if not User.objects.filter(pk=user_id).exists():
         return _empty("User not found.")
 
-    ctx = _resolve_user_context(user_id=user_id, education_level_code=education_level_code, stream_code=stream_code)
+    ctx = _resolve_user_context(
+        user_id=user_id,
+        education_level_code=education_level_code,
+        stream_code=stream_code,
+    )
     if ctx is None:
         return _empty("User profile missing required education_level or active stream.")
 
     # STEP 1: dimension normalization (0..1)
     dim_scores_0_1 = _assessment_dimension_scores_0_1(user_id=user_id)
-    dim_scores_0_100 = {d: round(_to_0_100(dim_scores_0_1.get(d, 0.5)), 2) for d in DIMENSIONS}
+    dim_scores_0_100 = {
+        d: round(_to_0_100(dim_scores_0_1.get(d, 0.5)), 2) for d in DIMENSIONS
+    }
     top_dim, top_dim_score = _top_factor(dim_scores_0_100)
 
     # Shared assessment coverage metric (0..1)
-    answered = UserResponse.objects.filter(user_id=user_id, question__is_active=True).count()
+    answered = UserResponse.objects.filter(
+        user_id=user_id, question__is_active=True
+    ).count()
     total_active = max(1, Question.objects.filter(is_active=True).count())
     coverage = float(answered) / float(total_active)
 
@@ -398,7 +426,9 @@ def generate_recommendation(
                 continue
 
             n = len(streams)
-            contrib = _normalize_1_5(float(getattr(r, "score_value", 0) or 0)) / float(n)
+            contrib = _normalize_1_5(float(getattr(r, "score_value", 0) or 0)) / float(
+                n
+            )
             for s in streams:
                 sid = int(s.id)
                 sums[sid] = float(sums.get(sid, 0.0)) + float(contrib)
@@ -424,11 +454,28 @@ def generate_recommendation(
             )
 
         stream_ranking.sort(
-            key=lambda s: (-float(s.get("score") or 0.0), str(s.get("stream_name") or ""), str(s.get("stream_id") or ""))
+            key=lambda s: (
+                -float(s.get("score") or 0.0),
+                str(s.get("stream_name") or ""),
+                str(s.get("stream_id") or ""),
+            )
         )
-        top_stream_score = float(stream_ranking[0].get("score") or 0.0) if stream_ranking else 0.0
-        second_stream_score = float(stream_ranking[1].get("score") or 0.0) if len(stream_ranking) > 1 else 0.0
-        spread = (max([float(s.get("score") or 0.0) for s in stream_ranking]) - min([float(s.get("score") or 0.0) for s in stream_ranking])) if stream_ranking else 0.0
+        top_stream_score = (
+            float(stream_ranking[0].get("score") or 0.0) if stream_ranking else 0.0
+        )
+        second_stream_score = (
+            float(stream_ranking[1].get("score") or 0.0)
+            if len(stream_ranking) > 1
+            else 0.0
+        )
+        spread = (
+            (
+                max([float(s.get("score") or 0.0) for s in stream_ranking])
+                - min([float(s.get("score") or 0.0) for s in stream_ranking])
+            )
+            if stream_ranking
+            else 0.0
+        )
         gap = top_stream_score - second_stream_score
         confidence = _calc_confidence(
             top_score_0_100=top_stream_score,
@@ -448,7 +495,11 @@ def generate_recommendation(
             confidence = _clamp_0_100(float(confidence) * 0.7)
 
         result: dict[str, Any] = {
-            "message": "ok" if stream_ranking else "Complete more assessment questions for a clearer stream recommendation.",
+            "message": (
+                "ok"
+                if stream_ranking
+                else "Complete more assessment questions for a clearer stream recommendation."
+            ),
             "suggestion": [],
             "top_domains": [],
             "top_careers": [],
@@ -471,7 +522,9 @@ def generate_recommendation(
                 }
             },
             # Legacy-facing keys (single pipeline output)
-            "top_stream": stream_ranking[0].get("stream_code") if stream_ranking else None,
+            "top_stream": (
+                stream_ranking[0].get("stream_code") if stream_ranking else None
+            ),
             "stream_ranking": stream_ranking,
             "top_domain": None,
             "domain_ranking": [],
@@ -514,7 +567,10 @@ def generate_recommendation(
         )
     )
     if not stream_domain_rows:
-        return _empty("No active stream→domain mappings found for this user.", education_level_code=ctx.education_level_code)
+        return _empty(
+            "No active stream→domain mappings found for this user.",
+            education_level_code=ctx.education_level_code,
+        )
 
     # STEP 2 + 3: per-domain signals (normalized + leakage fix)
     responses = list(
@@ -540,7 +596,8 @@ def generate_recommendation(
                 [
                     d
                     for d in list(getattr(q, "mapped_domains", []).all())
-                    if getattr(d, "is_active", True) and not getattr(d, "deleted", False)
+                    if getattr(d, "is_active", True)
+                    and not getattr(d, "deleted", False)
                 ],
                 key=lambda d: int(getattr(d, "id", 0) or 0),
             )
@@ -574,7 +631,9 @@ def generate_recommendation(
             else:
                 dim_avgs_0_1[d] = 0.0
 
-        base_domain_score = _domain_score_0_1(dim_avgs_0_1=dim_avgs_0_1, dim_counts=dim_counts)
+        base_domain_score = _domain_score_0_1(
+            dim_avgs_0_1=dim_avgs_0_1, dim_counts=dim_counts
+        )
 
         # STEP 4: apply stream weight (soft influence)
         multiplier = 1.0 + (float(mapping_weight) / 100.0) * 0.2
@@ -596,13 +655,17 @@ def generate_recommendation(
                     top_dim=top_dim,
                     top_dim_score=float(top_dim_score),
                     mapping_weight=mapping_weight,
-                    domain_future_relevance=getattr(dom, "future_relevance_score", None),
+                    domain_future_relevance=getattr(
+                        dom, "future_relevance_score", None
+                    ),
                 ),
             }
         )
         breakdown_domains[str(did)] = {
             "domain_name": getattr(dom, "domain_name", "") or "",
-            "dimension_avgs_0_1": {d: round(float(dim_avgs_0_1.get(d, 0.0)), 4) for d in DIMENSIONS},
+            "dimension_avgs_0_1": {
+                d: round(float(dim_avgs_0_1.get(d, 0.0)), 4) for d in DIMENSIONS
+            },
             "dimension_counts": {d: int(dim_counts.get(d, 0) or 0) for d in DIMENSIONS},
             "base_domain_score_0_1": round(float(base_domain_score), 6),
             "stream_mapping_weight": mapping_weight,
@@ -612,13 +675,19 @@ def generate_recommendation(
 
     domain_scores.sort(key=lambda x: (-float(x["score"]), str(x["name"]), str(x["id"])))
     top_domains = domain_scores[:10]
-    top_domain_ids = {int(d["id"]) for d in top_domains if str(d.get("id") or "").isdigit()}
+    top_domain_ids = {
+        int(d["id"]) for d in top_domains if str(d.get("id") or "").isdigit()
+    }
 
     # STEP 6: confidence
     top_score = float(top_domains[0]["score"]) if top_domains else 0.0
     second_score = float(top_domains[1]["score"]) if len(top_domains) > 1 else 0.0
     all_domain_scores_0_100 = [float(d.get("score") or 0.0) for d in domain_scores]
-    spread = (max(all_domain_scores_0_100) - min(all_domain_scores_0_100)) if all_domain_scores_0_100 else 0.0
+    spread = (
+        (max(all_domain_scores_0_100) - min(all_domain_scores_0_100))
+        if all_domain_scores_0_100
+        else 0.0
+    )
     gap = top_score - second_score
     confidence = _calc_confidence(
         top_score_0_100=top_score,
@@ -650,9 +719,17 @@ def generate_recommendation(
             career__min_education_level__deleted=False,
             career__min_education_level__is_active=True,
         )
-        .select_related("domain", "career", "career__min_education_level", "career__max_education_level")
+        .select_related(
+            "domain",
+            "career",
+            "career__min_education_level",
+            "career__max_education_level",
+        )
         .filter(career__min_education_level__sequence_order__lte=ctx.education_sequence)
-        .filter(Q(career__max_education_level__isnull=True) | Q(career__max_education_level__sequence_order__gte=ctx.education_sequence))
+        .filter(
+            Q(career__max_education_level__isnull=True)
+            | Q(career__max_education_level__sequence_order__gte=ctx.education_sequence)
+        )
         .order_by("career__career_name", "career_id", "domain_id")
     )
 
@@ -711,16 +788,22 @@ def generate_recommendation(
             "career_name": r["career_name"],
             "domain_id": r["domain_id"],
             "domain_name": r["domain_name"],
-            "final_domain_score_0_1": round(float(domain_score_by_id_0_1.get(int(r["domain_id"]), 0.0)), 6),
+            "final_domain_score_0_1": round(
+                float(domain_score_by_id_0_1.get(int(r["domain_id"]), 0.0)), 6
+            ),
             "career_mapping_weight": int(r["mw"]),
             "cscore": round(float(r["cscore"]), 8),
-            "domain_career_count": int(domain_counts.get(str(r.get("domain_id") or ""), 1) or 1),
+            "domain_career_count": int(
+                domain_counts.get(str(r.get("domain_id") or ""), 1) or 1
+            ),
             "adjusted_cscore": round(float(adj), 8),
             "total_cscore": round(float(total_cscore), 8),
             "career_score_0_100": round(float(score), 4),
         }
 
-    careers_scored.sort(key=lambda x: (-float(x["score"]), str(x["name"]), str(x["id"])))
+    careers_scored.sort(
+        key=lambda x: (-float(x["score"]), str(x["name"]), str(x["id"]))
+    )
 
     # STEP 8: enforce diversity (max 2 careers per domain)
     top_careers: list[dict[str, Any]] = []
@@ -734,7 +817,9 @@ def generate_recommendation(
                 "id": c["id"],
                 "name": c["name"],
                 "score": c["score"],
-                "reason": _career_reason(top_dimension=top_dim, top_domains=[d["name"] for d in top_domains]),
+                "reason": _career_reason(
+                    top_dimension=top_dim, top_domains=[d["name"] for d in top_domains]
+                ),
             }
         )
         per_domain[dom_id] = per_domain.get(dom_id, 0) + 1
@@ -778,7 +863,9 @@ def generate_recommendation(
         .select_related("skill")
         .only("skill_id", "proficiency_score")
     )
-    proficiency_by_skill: dict[Any, int] = {r.skill_id: int(r.proficiency_score) for r in user_skill_rows}
+    proficiency_by_skill: dict[Any, int] = {
+        r.skill_id: int(r.proficiency_score) for r in user_skill_rows
+    }
 
     def _gap_level(gap: int) -> str:
         if gap > 50:
@@ -788,7 +875,9 @@ def generate_recommendation(
         return "LOW"
 
     skill_gap_message = "ok"
-    has_assessment = UserResponse.objects.filter(user_id=user_id, question__is_active=True).exists()
+    has_assessment = UserResponse.objects.filter(
+        user_id=user_id, question__is_active=True
+    ).exists()
     if not user_skill_rows and not has_assessment:
         skill_gap_message = "Skill gap analysis requires further input. You can update your skills for better accuracy."
 
@@ -802,12 +891,18 @@ def generate_recommendation(
                 dim_scores=dim_scores,
             )
         gap = int(req_w) - int(prof)
-        skill_gaps.append({"skill": skill_name_by_id.get(sid, "") or "", "gap_level": _gap_level(gap)})
+        skill_gaps.append(
+            {"skill": skill_name_by_id.get(sid, "") or "", "gap_level": _gap_level(gap)}
+        )
     skill_gaps.sort(key=lambda x: (gap_rank.get(x["gap_level"], 99), x["skill"]))
     skill_gaps = skill_gaps[:50]
 
     if not top_careers:
-        suggestion = ["Explore diploma programs", "Consider skill-based careers", "Improve your education level"]
+        suggestion = [
+            "Explore diploma programs",
+            "Consider skill-based careers",
+            "Improve your education level",
+        ]
         fallback_rows = list(
             Career.objects.filter(deleted=False, is_active=True)
             .select_related("min_education_level", "max_education_level")
@@ -827,7 +922,9 @@ def generate_recommendation(
                 "id": str(c.pk),
                 "name": getattr(c, "career_name", "") or "",
                 "score": 0.0,
-                "reason": _career_reason(top_dimension=top_dim, top_domains=[d["name"] for d in top_domains]),
+                "reason": _career_reason(
+                    top_dimension=top_dim, top_domains=[d["name"] for d in top_domains]
+                ),
             }
             for c in fallback_rows
         ]
@@ -841,7 +938,9 @@ def generate_recommendation(
             "decision_type": decision_type,
             "signals": {
                 "top_dimension": top_dim,
-                "strongest_domains": [d.get("name") for d in top_domains[:3] if d.get("name")],
+                "strongest_domains": [
+                    d.get("name") for d in top_domains[:3] if d.get("name")
+                ],
                 "decision_type": decision_type,
             },
             "recommendation_type": "career",
@@ -876,7 +975,11 @@ def generate_recommendation(
                 for d in top_domains
                 if str(d.get("id") or "").isdigit()
             ],
-            "career_scores": {c["id"]: _clamp_0_100(float(c.get("score") or 0.0)) for c in top_careers if c.get("id")},
+            "career_scores": {
+                c["id"]: _clamp_0_100(float(c.get("score") or 0.0))
+                for c in top_careers
+                if c.get("id")
+            },
             "top_career": (top_careers[0].get("id") if top_careers else None),
             "is_entry_level": (ctx.education_level_code in ENTRY_CAREER_LEVELS),
         }
@@ -891,7 +994,9 @@ def generate_recommendation(
         "decision_type": decision_type,
         "signals": {
             "top_dimension": top_dim,
-            "strongest_domains": [d.get("name") for d in top_domains[:3] if d.get("name")],
+            "strongest_domains": [
+                d.get("name") for d in top_domains[:3] if d.get("name")
+            ],
             "decision_type": decision_type,
         },
         "recommendation_type": "career",
@@ -915,7 +1020,7 @@ def generate_recommendation(
     # Legacy-facing keys (single pipeline output)
     result["top_stream"] = None
     result["stream_ranking"] = []
-    result["top_domain"] = (top_domains[0].get("name") if top_domains else None)
+    result["top_domain"] = top_domains[0].get("name") if top_domains else None
     result["domain_ranking"] = [
         {
             "domain_id": int(d["id"]),
@@ -927,9 +1032,13 @@ def generate_recommendation(
         for d in top_domains
         if str(d.get("id") or "").isdigit()
     ]
-    result["career_scores"] = {c["id"]: _clamp_0_100(float(c.get("score") or 0.0)) for c in top_careers if c.get("id")}
-    result["top_career"] = (top_careers[0].get("id") if top_careers else None)
-    result["is_entry_level"] = (ctx.education_level_code in ENTRY_CAREER_LEVELS)
+    result["career_scores"] = {
+        c["id"]: _clamp_0_100(float(c.get("score") or 0.0))
+        for c in top_careers
+        if c.get("id")
+    }
+    result["top_career"] = top_careers[0].get("id") if top_careers else None
+    result["is_entry_level"] = ctx.education_level_code in ENTRY_CAREER_LEVELS
     result["counsellor"] = build_counsellor_message(
         level_code=result.get("education_level"),
         recommendation_type=result.get("recommendation_type"),
@@ -945,7 +1054,9 @@ def generate_recommendation(
     )
     if result.get("domain_ranking"):
         try:
-            result["domain_decisions"] = RecommendationEngineService()._evaluate_top_domain_decisions(
+            result[
+                "domain_decisions"
+            ] = RecommendationEngineService()._evaluate_top_domain_decisions(
                 user_id=user_id,
                 domain_ranking=result["domain_ranking"],
             )
@@ -980,13 +1091,17 @@ class RecommendationEngineService:
 
     def _get_education_level_code(self, user_id: int) -> str | None:
         try:
-            profile = UserProfile.objects.select_related("education_level").get(user_id=user_id)
+            profile = UserProfile.objects.select_related("education_level").get(
+                user_id=user_id
+            )
         except UserProfile.DoesNotExist:
             return None
         edu = getattr(profile, "education_level", None)
         return (getattr(edu, "level_code", "") or "").lower() or None
 
-    def _evaluate_top_domain_decisions(self, *, user_id: int, domain_ranking: list[dict]) -> dict[str, dict]:
+    def _evaluate_top_domain_decisions(
+        self, *, user_id: int, domain_ranking: list[dict]
+    ) -> dict[str, dict]:
         decisions: dict[str, dict] = {}
         for ranked_domain in domain_ranking[: self.DOMAIN_DECISION_TOP_N]:
             domain_code = (ranked_domain.get("domain_code") or "").strip().lower()
@@ -1011,4 +1126,3 @@ class RecommendationEngineService:
             "domain_ranking": [],
             "stream_ranking": [],
         }
-

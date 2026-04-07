@@ -2,56 +2,98 @@
 Counsellor messages — trait-based, domain-specific, no repeated phrases.
 Each level has distinct structure. Tradeoff appears once. Decision tension included.
 """
+
 from __future__ import annotations
 
 STREAM_DISPLAY = {
-    "science": "Science (PCM/PCB)", "commerce": "Commerce",
-    "arts": "Arts & Humanities", "vocational": "Vocational / Skill-based",
-    "sports": "Sports & Physical Education", "fine_arts": "Fine Arts & Performing Arts",
+    "science": "Science (PCM/PCB)",
+    "commerce": "Commerce",
+    "arts": "Arts & Humanities",
+    "vocational": "Vocational / Skill-based",
+    "sports": "Sports & Physical Education",
+    "fine_arts": "Fine Arts & Performing Arts",
     "agriculture": "Agriculture",
 }
 
 DOMAIN_DISPLAY = {
-    "ai_data": "AI & Data Science", "cloud_computing": "Cloud Computing",
-    "cybersecurity": "Cybersecurity", "fintech": "Finance & FinTech",
-    "healthtech": "Healthcare Tech", "biotech": "Biotechnology",
-    "digital_marketing": "Digital Marketing", "creator_economy": "Content & Media",
-    "legaltech": "Law & Legal Tech", "edtech": "Education Technology",
-    "robotics": "Robotics & Automation", "manufacturing": "Manufacturing & Engineering",
-    "ecommerce": "E-Commerce", "entrepreneurship": "Entrepreneurship",
-    "agritech": "AgriTech", "traveltech": "Travel & Hospitality",
-    "defense_tech": "Defense & Armed Forces", "space_tech": "Aviation & Aerospace",
-    "mental_health": "Psychology & Mental Health", "fashiontech": "Fashion & Design",
-    "ar_vr": "AR/VR & Immersive Tech", "gaming": "Gaming",
-    "data_engineering": "Data Engineering", "supply_chain": "Supply Chain & Ops",
-    "hrtech": "HR & People Management", "insurance_tech": "Insurance & Risk",
-    "climate_tech": "Climate Tech", "renewable_energy": "Renewable Energy",
-    "ev_mobility": "EV & Mobility", "iot": "IoT & Smart Systems",
-    "blockchain": "Blockchain & Web3", "nanotech": "Nanotechnology",
-    "quantum": "Quantum Computing", "pharma": "Pharmaceuticals",
-    "med_devices": "Medical Devices", "construction_tech": "Construction Tech",
-    "urban_tech": "Smart Cities", "water_tech": "Water Technology",
-    "energy_storage": "Energy Storage", "ai_ethics": "AI Ethics & Policy",
-    "marketing": "Marketing", "sports_tech": "Sports Science", "foodtech": "Food Technology",
+    "ai_data": "AI & Data Science",
+    "cloud_computing": "Cloud Computing",
+    "cybersecurity": "Cybersecurity",
+    "fintech": "Finance & FinTech",
+    "healthtech": "Healthcare Tech",
+    "biotech": "Biotechnology",
+    "digital_marketing": "Digital Marketing",
+    "creator_economy": "Content & Media",
+    "legaltech": "Law & Legal Tech",
+    "edtech": "Education Technology",
+    "robotics": "Robotics & Automation",
+    "manufacturing": "Manufacturing & Engineering",
+    "ecommerce": "E-Commerce",
+    "entrepreneurship": "Entrepreneurship",
+    "agritech": "AgriTech",
+    "traveltech": "Travel & Hospitality",
+    "defense_tech": "Defense & Armed Forces",
+    "space_tech": "Aviation & Aerospace",
+    "mental_health": "Psychology & Mental Health",
+    "fashiontech": "Fashion & Design",
+    "ar_vr": "AR/VR & Immersive Tech",
+    "gaming": "Gaming",
+    "data_engineering": "Data Engineering",
+    "supply_chain": "Supply Chain & Ops",
+    "hrtech": "HR & People Management",
+    "insurance_tech": "Insurance & Risk",
+    "climate_tech": "Climate Tech",
+    "renewable_energy": "Renewable Energy",
+    "ev_mobility": "EV & Mobility",
+    "iot": "IoT & Smart Systems",
+    "blockchain": "Blockchain & Web3",
+    "nanotech": "Nanotechnology",
+    "quantum": "Quantum Computing",
+    "pharma": "Pharmaceuticals",
+    "med_devices": "Medical Devices",
+    "construction_tech": "Construction Tech",
+    "urban_tech": "Smart Cities",
+    "water_tech": "Water Technology",
+    "energy_storage": "Energy Storage",
+    "ai_ethics": "AI Ethics & Policy",
+    "marketing": "Marketing",
+    "sports_tech": "Sports Science",
+    "foodtech": "Food Technology",
     "devops": "DevOps",
 }
 
 CAREER_DISPLAY = {
-    "data_scientist": "Data Scientist", "ml_engineer": "ML Engineer",
-    "data_analyst": "Data Analyst", "software_engineer": "Software Engineer",
-    "cybersecurity_analyst": "Cybersecurity Analyst", "ethical_hacker": "Ethical Hacker",
-    "financial_analyst": "Financial Analyst", "investment_banker": "Investment Banker",
-    "digital_marketer": "Digital Marketer", "seo_specialist": "SEO Specialist",
-    "uiux_designer": "UI/UX Designer", "graphic_designer": "Graphic Designer",
-    "robotics_engineer": "Robotics Engineer", "cloud_engineer": "Cloud Engineer",
-    "product_manager": "Product Manager", "agriculture_officer": "Agriculture Officer",
-    "journalist": "Journalist", "content_creator": "Content Creator",
-    "doctor": "Doctor", "pharmacist": "Pharmacist", "teacher": "Teacher",
-    "defense_officer": "Defense Officer", "pilot": "Pilot", "entrepreneur": "Entrepreneur",
-    "hotel_manager": "Hotel Manager", "junior_content_creator": "Junior Content Creator",
-    "freelance_designer": "Freelance Designer", "coding_intern": "Junior Developer",
+    "data_scientist": "Data Scientist",
+    "ml_engineer": "ML Engineer",
+    "data_analyst": "Data Analyst",
+    "software_engineer": "Software Engineer",
+    "cybersecurity_analyst": "Cybersecurity Analyst",
+    "ethical_hacker": "Ethical Hacker",
+    "financial_analyst": "Financial Analyst",
+    "investment_banker": "Investment Banker",
+    "digital_marketer": "Digital Marketer",
+    "seo_specialist": "SEO Specialist",
+    "uiux_designer": "UI/UX Designer",
+    "graphic_designer": "Graphic Designer",
+    "robotics_engineer": "Robotics Engineer",
+    "cloud_engineer": "Cloud Engineer",
+    "product_manager": "Product Manager",
+    "agriculture_officer": "Agriculture Officer",
+    "journalist": "Journalist",
+    "content_creator": "Content Creator",
+    "doctor": "Doctor",
+    "pharmacist": "Pharmacist",
+    "teacher": "Teacher",
+    "defense_officer": "Defense Officer",
+    "pilot": "Pilot",
+    "entrepreneur": "Entrepreneur",
+    "hotel_manager": "Hotel Manager",
+    "junior_content_creator": "Junior Content Creator",
+    "freelance_designer": "Freelance Designer",
+    "coding_intern": "Junior Developer",
     "junior_sales_executive": "Junior Sales Executive",
-    "data_entry_analyst": "Data Entry Analyst", "field_technician": "Field Technician",
+    "data_entry_analyst": "Data Entry Analyst",
+    "field_technician": "Field Technician",
 }
 
 
@@ -374,13 +416,16 @@ def _d(code: str, mapping: dict) -> str:
     clean = code.split("__", 1)[-1].lower() if "__" in code else code.lower()
     return mapping.get(clean, clean.replace("_", " ").title())
 
+
 def _clean(code: str) -> str:
     return code.split("__", 1)[-1].lower() if "__" in code else code.lower()
+
 
 def _dk(code: str) -> tuple:
     clean = _clean(code)
     try:
         from domain.models import DomainCounsellorKnowledge
+
         obj = DomainCounsellorKnowledge.objects.filter(domain_code=clean).first()
         if obj and obj.insight:
             return obj.as_tuple()
@@ -393,6 +438,7 @@ def _sk(code: str) -> tuple:
     clean = _clean(code)
     try:
         from domain.models import StreamCounsellorKnowledge
+
         obj = StreamCounsellorKnowledge.objects.filter(stream_code=clean).first()
         if obj and obj.insight:
             return obj.as_tuple()
@@ -400,11 +446,16 @@ def _sk(code: str) -> tuple:
         pass
     return STREAM_KNOWLEDGE.get(clean, _DEFAULT_STREAM_KNOWLEDGE)
 
+
 def _confidence_label(confidence: int) -> str:
-    if confidence >= 72: return "Strong match"
-    if confidence >= 55: return "Good match"
-    if confidence >= 38: return "Moderate match"
-    if confidence >= 20: return "Early signal"
+    if confidence >= 72:
+        return "Strong match"
+    if confidence >= 55:
+        return "Good match"
+    if confidence >= 38:
+        return "Moderate match"
+    if confidence >= 20:
+        return "Early signal"
     return "Not enough data yet"
 
 
@@ -433,7 +484,9 @@ def build_counsellor_message(
 
     # ── 10th grade — stream ──────────────────────────────────────────────────
     if recommendation_type == "stream":
-        code = top_stream or (stream_ranking[0].get("stream_code") if stream_ranking else None)
+        code = top_stream or (
+            stream_ranking[0].get("stream_code") if stream_ranking else None
+        )
         if not code:
             return _no_data_message(level_code)
         k = _sk(code)
@@ -441,7 +494,9 @@ def build_counsellor_message(
         top_score = stream_ranking[0].get("score", 0) if stream_ranking else 0
         second = stream_ranking[1] if len(stream_ranking) > 1 else None
         tied = second and abs(top_score - second.get("score", 0)) <= 5
-        second_label = _d(second.get("stream_code", ""), STREAM_DISPLAY) if second else None
+        second_label = (
+            _d(second.get("stream_code", ""), STREAM_DISPLAY) if second else None
+        )
 
         if tied and second_label:
             insight = (
@@ -477,7 +532,9 @@ def build_counsellor_message(
 
     # ── 12th grade — college domain ──────────────────────────────────────────
     if recommendation_type == "college_domain":
-        code = top_domain or (domain_ranking[0].get("domain_code") if domain_ranking else None)
+        code = top_domain or (
+            domain_ranking[0].get("domain_code") if domain_ranking else None
+        )
         if not code:
             return _no_data_message(level_code)
         k = _dk(code)
@@ -514,7 +571,11 @@ def build_counsellor_message(
         second_label = second.get("domain_name") if second else None
         override_note = ""  # override_reason is internal — never surface to users
 
-        label = f"You seem built for {career_label}" if career_label else f"{domain_label} looks like your space"
+        label = (
+            f"You seem built for {career_label}"
+            if career_label
+            else f"{domain_label} looks like your space"
+        )
 
         if level_code in ("iti", "diploma"):
             if strong:
@@ -531,13 +592,21 @@ def build_counsellor_message(
                     + f"{override_note}. The signal is still forming — try something practical before committing."
                 )
                 action = f"Find a short project or apprenticeship in {domain_label} first. Hands-on time will tell you more than any assessment."
-                tension = f"The real call: go deeper in {domain_label} now, or explore {second_label} first?" if second_label else k[3]
+                tension = (
+                    f"The real call: go deeper in {domain_label} now, or explore {second_label} first?"
+                    if second_label
+                    else k[3]
+                )
 
         elif level_code in ("post_graduation", "doctorate", "professional"):
             if strong:
                 insight = (
                     f"{domain_label} is where your answers land most consistently"
-                    + (f" — {career_label} is the clearest role fit" if career_label else "")
+                    + (
+                        f" — {career_label} is the clearest role fit"
+                        if career_label
+                        else ""
+                    )
                     + f"{override_note}. At this level, going deep beats staying broad. {k[0]}"
                 )
                 action = k[2]
@@ -555,7 +624,11 @@ def build_counsellor_message(
             if strong:
                 insight = (
                     f"{domain_label} came through most consistently across your answers"
-                    + (f", pointing to {career_label} as the best-fit role" if career_label else "")
+                    + (
+                        f", pointing to {career_label} as the best-fit role"
+                        if career_label
+                        else ""
+                    )
                     + f"{override_note}. {k[0]}"
                 )
                 action = k[2]
@@ -567,7 +640,11 @@ def build_counsellor_message(
                     + f"{override_note}. A moderate signal at graduation level usually means not enough real exposure yet — not a wrong fit."
                 )
                 action = f"One internship or project in {domain_label} will sharpen this signal fast."
-                tension = f"The real question: commit to {domain_label} now, or explore {second_label} first to be sure?" if second_label else k[3]
+                tension = (
+                    f"The real question: commit to {domain_label} now, or explore {second_label} first to be sure?"
+                    if second_label
+                    else k[3]
+                )
 
         return {
             "label": label,
@@ -579,7 +656,6 @@ def build_counsellor_message(
         }
 
     return _no_data_message(level_code)
-
 
 
 # ── Level-aware no-data fallback ─────────────────────────────────────────────
@@ -629,10 +705,13 @@ def _no_data_message(level_code: str | None) -> dict:
     if not level_code:
         insight, action = _NO_PROFILE_FALLBACK
     else:
-        insight, action = _LEVEL_FALLBACK.get(level_code, (
-            "We need a few more answers before we can give you something useful.",
-            "Finish the assessment and we'll give you a personalised career direction.",
-        ))
+        insight, action = _LEVEL_FALLBACK.get(
+            level_code,
+            (
+                "We need a few more answers before we can give you something useful.",
+                "Finish the assessment and we'll give you a personalised career direction.",
+            ),
+        )
     return {
         "label": "Let's get a bit more from you first",
         "confidence_label": "Not enough data yet",
@@ -641,4 +720,3 @@ def _no_data_message(level_code: str | None) -> dict:
         "action": action,
         "tension": None,
     }
-

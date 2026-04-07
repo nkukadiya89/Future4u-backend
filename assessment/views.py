@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
 
-from assessment.models import Option,Question, UserResponse
+from assessment.models import Option, Question, UserResponse
 from assessment.serializers import (
     AssessmentSubmitSerializer,
     QuestionSerializer,
@@ -29,7 +29,6 @@ class UserResponseViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     authentication_classes = [JWTAuthentication]
 
 
-
 class ApiAssessmentQuestionsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     GET /api/assessment/questions/
@@ -44,8 +43,11 @@ class ApiAssessmentQuestionsViewSet(mixins.ListModelMixin, viewsets.GenericViewS
 
     def _get_user_profile(self, user):
         from user_profile.models import UserProfile
+
         try:
-            return UserProfile.objects.select_related("education_level", "stream").get(user=user)
+            return UserProfile.objects.select_related("education_level", "stream").get(
+                user=user
+            )
         except UserProfile.DoesNotExist:
             return None
 
@@ -67,13 +69,15 @@ class ApiAssessmentQuestionsViewSet(mixins.ListModelMixin, viewsets.GenericViewS
             # Q(education_level__isnull=True) handles generic questions with no level restriction
             # Questions tagged to OTHER levels are automatically excluded by this filter
             qs = qs.filter(
-                models.Q(education_level=edu_level) | models.Q(education_level__isnull=True)
+                models.Q(education_level=edu_level)
+                | models.Q(education_level__isnull=True)
             )
             HIGHER_SECONDARY_CODE = "higher_secondary"
             level_code = (edu_level.level_code or "").lower()
             if level_code == HIGHER_SECONDARY_CODE and user_stream is not None:
                 qs = qs.filter(
-                    models.Q(target_stream=user_stream) | models.Q(target_stream__isnull=True)
+                    models.Q(target_stream=user_stream)
+                    | models.Q(target_stream__isnull=True)
                 )
 
         return qs.order_by("dimension", "id")

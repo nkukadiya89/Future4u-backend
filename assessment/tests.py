@@ -36,6 +36,7 @@ User = get_user_model()
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_user(email_prefix):
     return User.objects.create_user(
         email=f"{email_prefix}_{uuid.uuid4().hex[:6]}@test.com",
@@ -49,7 +50,13 @@ def make_education_level(code, display, seq):
     # Use high sequence numbers to avoid collisions with real data in test DB
     obj, _ = EducationLevel.objects.get_or_create(
         level_code=code,
-        defaults=dict(display_name=display, sequence_order=seq, min_age=10, max_age=50, is_active=True),
+        defaults=dict(
+            display_name=display,
+            sequence_order=seq,
+            min_age=10,
+            max_age=50,
+            is_active=True,
+        ),
     )
     return EducationLevel.objects.get(pk=obj.pk)  # always return fresh from DB
 
@@ -119,7 +126,15 @@ def make_domain(code, name):
     return Domain.objects.get(domain_code=code)
 
 
-def make_question(text, dimension, edu_level, mapped_domains=None, mapped_streams=None, target_stream=None, signal=3):
+def make_question(
+    text,
+    dimension,
+    edu_level,
+    mapped_domains=None,
+    mapped_streams=None,
+    target_stream=None,
+    signal=3,
+):
     q = Question.objects.create(
         question_text=text,
         dimension=dimension,
@@ -154,12 +169,15 @@ def answer_questions(user, questions, score=5):
 # Base test case with shared fixtures
 # ---------------------------------------------------------------------------
 
+
 class AssessmentBaseTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         # Education levels
         cls.edu_secondary = make_education_level("secondary", "Secondary (10th)", 2)
-        cls.edu_higher_sec = make_education_level("higher_secondary", "Higher Secondary (12th)", 3)
+        cls.edu_higher_sec = make_education_level(
+            "higher_secondary", "Higher Secondary (12th)", 3
+        )
         cls.edu_iti = make_education_level("iti", "ITI / Vocational", 4)
         cls.edu_diploma = make_education_level("diploma", "Diploma", 5)
         cls.edu_grad = make_education_level("graduation", "Graduation", 6)
@@ -169,7 +187,9 @@ class AssessmentBaseTestCase(TestCase):
 
         # Streams (for 10th recommendations + 12th filtering)
         cls.stream_science = make_stream("science", "Science", 8001, cls.edu_higher_sec)
-        cls.stream_commerce = make_stream("commerce", "Commerce", 8002, cls.edu_higher_sec)
+        cls.stream_commerce = make_stream(
+            "commerce", "Commerce", 8002, cls.edu_higher_sec
+        )
         cls.stream_arts = make_stream("arts", "Arts", 8003, cls.edu_higher_sec)
         cls.stream_sports = make_stream("sports", "Sports", 8004, cls.edu_higher_sec)
 
@@ -185,6 +205,7 @@ class AssessmentBaseTestCase(TestCase):
 # ---------------------------------------------------------------------------
 # 1. Question filtering tests
 # ---------------------------------------------------------------------------
+
 
 class QuestionFilteringTests(AssessmentBaseTestCase):
     """Verify that GET /api/assessment/questions/ returns only level-appropriate questions."""
@@ -219,42 +240,71 @@ class QuestionFilteringTests(AssessmentBaseTestCase):
 
     def test_10th_user_sees_only_secondary_and_generic_questions(self):
         uid = uuid.uuid4().hex[:6]
-        q_secondary = make_question(f"10th only Q {uid}", "interest", self.edu_secondary,
-                                    mapped_streams=[self.stream_science])
-        q_grad = make_question(f"Grad only Q {uid}", "interest", self.edu_grad,
-                               mapped_domains=[self.domain_ai])
+        q_secondary = make_question(
+            f"10th only Q {uid}",
+            "interest",
+            self.edu_secondary,
+            mapped_streams=[self.stream_science],
+        )
+        q_grad = make_question(
+            f"Grad only Q {uid}",
+            "interest",
+            self.edu_grad,
+            mapped_domains=[self.domain_ai],
+        )
         # Note: generic (null level) questions are intentionally shown to all users
 
         client = self._client_for(self.edu_secondary)
         ids = self._all_question_ids(client)
 
         self.assertIn(q_secondary.id, ids)
-        self.assertNotIn(q_grad.id, ids)  # grad-tagged question must NOT appear for 10th user
+        self.assertNotIn(
+            q_grad.id, ids
+        )  # grad-tagged question must NOT appear for 10th user
 
     def test_12th_science_user_sees_science_and_untagged_12th_questions(self):
         uid = uuid.uuid4().hex[:6]
-        q_science = make_question(f"12th science Q {uid}", "interest", self.edu_higher_sec,
-                                  mapped_domains=[self.domain_ai],
-                                  target_stream=self.stream_science)
-        q_commerce = make_question(f"12th commerce Q {uid}", "interest", self.edu_higher_sec,
-                                   mapped_domains=[self.domain_fintech],
-                                   target_stream=self.stream_commerce)
-        q_any_12th = make_question(f"12th generic Q {uid}", "aptitude", self.edu_higher_sec,
-                                   mapped_domains=[self.domain_ai])
+        q_science = make_question(
+            f"12th science Q {uid}",
+            "interest",
+            self.edu_higher_sec,
+            mapped_domains=[self.domain_ai],
+            target_stream=self.stream_science,
+        )
+        q_commerce = make_question(
+            f"12th commerce Q {uid}",
+            "interest",
+            self.edu_higher_sec,
+            mapped_domains=[self.domain_fintech],
+            target_stream=self.stream_commerce,
+        )
+        q_any_12th = make_question(
+            f"12th generic Q {uid}",
+            "aptitude",
+            self.edu_higher_sec,
+            mapped_domains=[self.domain_ai],
+        )
 
         client = self._client_for(self.edu_higher_sec, stream=self.stream_science)
         ids = self._all_question_ids(client)
 
         self.assertIn(q_science.id, ids)
         self.assertIn(q_any_12th.id, ids)
-        self.assertNotIn(q_commerce.id, ids)  # commerce-stream question must NOT appear for science user
+        self.assertNotIn(
+            q_commerce.id, ids
+        )  # commerce-stream question must NOT appear for science user
 
     def test_grad_user_does_not_see_10th_questions(self):
         uid = uuid.uuid4().hex[:6]
-        q_10th = make_question(f"10th Q {uid}", "interest", self.edu_secondary,
-                               mapped_streams=[self.stream_science])
-        q_grad = make_question(f"Grad Q {uid}", "interest", self.edu_grad,
-                               mapped_domains=[self.domain_ai])
+        q_10th = make_question(
+            f"10th Q {uid}",
+            "interest",
+            self.edu_secondary,
+            mapped_streams=[self.stream_science],
+        )
+        q_grad = make_question(
+            f"Grad Q {uid}", "interest", self.edu_grad, mapped_domains=[self.domain_ai]
+        )
 
         client = self._client_for(self.edu_grad)
         ids = self._all_question_ids(client)
@@ -267,8 +317,12 @@ class QuestionFilteringTests(AssessmentBaseTestCase):
         self.assertEqual(r.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_questions_grouped_by_dimension(self):
-        make_question("Interest Q", "interest", self.edu_grad, mapped_domains=[self.domain_ai])
-        make_question("Aptitude Q", "aptitude", self.edu_grad, mapped_domains=[self.domain_ai])
+        make_question(
+            "Interest Q", "interest", self.edu_grad, mapped_domains=[self.domain_ai]
+        )
+        make_question(
+            "Aptitude Q", "aptitude", self.edu_grad, mapped_domains=[self.domain_ai]
+        )
 
         client = self._client_for(self.edu_grad)
         r = client.get(reverse("api_assessment_questions-list"))
@@ -281,6 +335,7 @@ class QuestionFilteringTests(AssessmentBaseTestCase):
 # ---------------------------------------------------------------------------
 # 2. Submit + Recommendation tests per education level
 # ---------------------------------------------------------------------------
+
 
 class BaseRecommendationTest(AssessmentBaseTestCase):
     """Shared submit helper."""
@@ -315,8 +370,13 @@ class TenthGradeRecommendationTests(BaseRecommendationTest):
 
         # Create science-signalling questions
         questions = [
-            make_question(f"10th science Q{i}", "interest", self.edu_secondary,
-                          mapped_streams=[self.stream_science], signal=4)
+            make_question(
+                f"10th science Q{i}",
+                "interest",
+                self.edu_secondary,
+                mapped_streams=[self.stream_science],
+                signal=4,
+            )
             for i in range(4)
         ]
         answer_questions(user, questions, score=5)
@@ -331,13 +391,23 @@ class TenthGradeRecommendationTests(BaseRecommendationTest):
 
         # Answer science questions with max score, sports with low score
         sci_qs = [
-            make_question(f"sci Q{i}", "interest", self.edu_secondary,
-                          mapped_streams=[self.stream_science], signal=4)
+            make_question(
+                f"sci Q{i}",
+                "interest",
+                self.edu_secondary,
+                mapped_streams=[self.stream_science],
+                signal=4,
+            )
             for i in range(3)
         ]
         sports_qs = [
-            make_question(f"sports Q{i}", "interest", self.edu_secondary,
-                          mapped_streams=[self.stream_sports], signal=4)
+            make_question(
+                f"sports Q{i}",
+                "interest",
+                self.edu_secondary,
+                mapped_streams=[self.stream_sports],
+                signal=4,
+            )
             for i in range(3)
         ]
         answer_questions(user, sci_qs, score=5)
@@ -363,8 +433,14 @@ class TwelfthGradeRecommendationTests(BaseRecommendationTest):
         user, client = self._setup_user(self.edu_higher_sec, stream=self.stream_science)
 
         questions = [
-            make_question(f"12th sci Q{i}", "interest", self.edu_higher_sec,
-                          mapped_domains=[self.domain_ai], target_stream=self.stream_science, signal=4)
+            make_question(
+                f"12th sci Q{i}",
+                "interest",
+                self.edu_higher_sec,
+                mapped_domains=[self.domain_ai],
+                target_stream=self.stream_science,
+                signal=4,
+            )
             for i in range(4)
         ]
         answer_questions(user, questions, score=5)
@@ -375,11 +451,19 @@ class TwelfthGradeRecommendationTests(BaseRecommendationTest):
         self.assertFalse(result.get("career_scores"))
 
     def test_top_domain_reflects_answered_questions(self):
-        user, client = self._setup_user(self.edu_higher_sec, stream=self.stream_commerce)
+        user, client = self._setup_user(
+            self.edu_higher_sec, stream=self.stream_commerce
+        )
 
         fintech_qs = [
-            make_question(f"fintech Q{i}", "interest", self.edu_higher_sec,
-                          mapped_domains=[self.domain_fintech], target_stream=self.stream_commerce, signal=4)
+            make_question(
+                f"fintech Q{i}",
+                "interest",
+                self.edu_higher_sec,
+                mapped_domains=[self.domain_fintech],
+                target_stream=self.stream_commerce,
+                signal=4,
+            )
             for i in range(4)
         ]
         answer_questions(user, fintech_qs, score=5)
@@ -396,8 +480,13 @@ class ITIRecommendationTests(BaseRecommendationTest):
         user, _ = self._setup_user(self.edu_iti)
 
         questions = [
-            make_question(f"iti Q{i}", "interest", self.edu_iti,
-                          mapped_domains=[self.domain_manufacturing], signal=4)
+            make_question(
+                f"iti Q{i}",
+                "interest",
+                self.edu_iti,
+                mapped_domains=[self.domain_manufacturing],
+                signal=4,
+            )
             for i in range(4)
         ]
         answer_questions(user, questions, score=5)
@@ -415,8 +504,13 @@ class DiplomaRecommendationTests(BaseRecommendationTest):
         user, _ = self._setup_user(self.edu_diploma)
 
         questions = [
-            make_question(f"dip Q{i}", "aptitude", self.edu_diploma,
-                          mapped_domains=[self.domain_manufacturing], signal=4)
+            make_question(
+                f"dip Q{i}",
+                "aptitude",
+                self.edu_diploma,
+                mapped_domains=[self.domain_manufacturing],
+                signal=4,
+            )
             for i in range(4)
         ]
         answer_questions(user, questions, score=5)
@@ -433,8 +527,13 @@ class GraduationRecommendationTests(BaseRecommendationTest):
         user, _ = self._setup_user(self.edu_grad)
 
         questions = [
-            make_question(f"grad Q{i}", "interest", self.edu_grad,
-                          mapped_domains=[self.domain_ai], signal=4)
+            make_question(
+                f"grad Q{i}",
+                "interest",
+                self.edu_grad,
+                mapped_domains=[self.domain_ai],
+                signal=4,
+            )
             for i in range(4)
         ]
         answer_questions(user, questions, score=5)
@@ -448,13 +547,23 @@ class GraduationRecommendationTests(BaseRecommendationTest):
         user, _ = self._setup_user(self.edu_grad)
 
         ai_qs = [
-            make_question(f"ai Q{i}", "interest", self.edu_grad,
-                          mapped_domains=[self.domain_ai], signal=5)
+            make_question(
+                f"ai Q{i}",
+                "interest",
+                self.edu_grad,
+                mapped_domains=[self.domain_ai],
+                signal=5,
+            )
             for i in range(5)
         ]
         cloud_qs = [
-            make_question(f"cloud Q{i}", "interest", self.edu_grad,
-                          mapped_domains=[self.domain_cloud], signal=2)
+            make_question(
+                f"cloud Q{i}",
+                "interest",
+                self.edu_grad,
+                mapped_domains=[self.domain_cloud],
+                signal=2,
+            )
             for i in range(2)
         ]
         answer_questions(user, ai_qs, score=5)
@@ -472,8 +581,13 @@ class PostGradRecommendationTests(BaseRecommendationTest):
         user, _ = self._setup_user(self.edu_pg)
 
         questions = [
-            make_question(f"pg Q{i}", "interest", self.edu_pg,
-                          mapped_domains=[self.domain_ai], signal=5)
+            make_question(
+                f"pg Q{i}",
+                "interest",
+                self.edu_pg,
+                mapped_domains=[self.domain_ai],
+                signal=5,
+            )
             for i in range(4)
         ]
         answer_questions(user, questions, score=5)
@@ -490,8 +604,13 @@ class PhDRecommendationTests(BaseRecommendationTest):
         user, _ = self._setup_user(self.edu_phd)
 
         questions = [
-            make_question(f"phd Q{i}", "interest", self.edu_phd,
-                          mapped_domains=[self.domain_ai], signal=5)
+            make_question(
+                f"phd Q{i}",
+                "interest",
+                self.edu_phd,
+                mapped_domains=[self.domain_ai],
+                signal=5,
+            )
             for i in range(4)
         ]
         answer_questions(user, questions, score=5)
@@ -509,8 +628,13 @@ class ProfessionalRecommendationTests(BaseRecommendationTest):
         user, _ = self._setup_user(self.edu_professional)
 
         questions = [
-            make_question(f"pro Q{i}", "interest", self.edu_professional,
-                          mapped_domains=[self.domain_cloud], signal=4)
+            make_question(
+                f"pro Q{i}",
+                "interest",
+                self.edu_professional,
+                mapped_domains=[self.domain_cloud],
+                signal=4,
+            )
             for i in range(4)
         ]
         answer_questions(user, questions, score=5)
@@ -525,12 +649,15 @@ class ProfessionalRecommendationTests(BaseRecommendationTest):
 # 3. Submit API tests
 # ---------------------------------------------------------------------------
 
+
 class AssessmentSubmitAPITests(BaseRecommendationTest):
     """Test the POST /api/assessment/submit/ endpoint."""
 
     def test_submit_valid_responses(self):
         user, client = self._setup_user(self.edu_grad)
-        q = make_question("Submit Q", "interest", self.edu_grad, mapped_domains=[self.domain_ai])
+        q = make_question(
+            "Submit Q", "interest", self.edu_grad, mapped_domains=[self.domain_ai]
+        )
         opt = make_option(q, "Agree", 4)
 
         r = self._submit(client, [{"question_id": q.id, "option_id": opt.id}])
@@ -546,8 +673,12 @@ class AssessmentSubmitAPITests(BaseRecommendationTest):
 
     def test_submit_option_not_belonging_to_question(self):
         _, client = self._setup_user(self.edu_grad)
-        q1 = make_question("Q1", "interest", self.edu_grad, mapped_domains=[self.domain_ai])
-        q2 = make_question("Q2", "interest", self.edu_grad, mapped_domains=[self.domain_ai])
+        q1 = make_question(
+            "Q1", "interest", self.edu_grad, mapped_domains=[self.domain_ai]
+        )
+        q2 = make_question(
+            "Q2", "interest", self.edu_grad, mapped_domains=[self.domain_ai]
+        )
         opt2 = make_option(q2, "Agree", 4)
 
         r = self._submit(client, [{"question_id": q1.id, "option_id": opt2.id}])
@@ -560,7 +691,9 @@ class AssessmentSubmitAPITests(BaseRecommendationTest):
 
     def test_submit_updates_existing_response(self):
         user, client = self._setup_user(self.edu_grad)
-        q = make_question("Update Q", "interest", self.edu_grad, mapped_domains=[self.domain_ai])
+        q = make_question(
+            "Update Q", "interest", self.edu_grad, mapped_domains=[self.domain_ai]
+        )
         opt1 = make_option(q, "Agree", 4)
         opt2 = make_option(q, "Strongly Agree", 5)
 
@@ -571,7 +704,9 @@ class AssessmentSubmitAPITests(BaseRecommendationTest):
         self.assertEqual(ur.score_value, 5)
 
     def test_submit_requires_auth(self):
-        q = make_question("Auth Q", "interest", self.edu_grad, mapped_domains=[self.domain_ai])
+        q = make_question(
+            "Auth Q", "interest", self.edu_grad, mapped_domains=[self.domain_ai]
+        )
         opt = make_option(q, "Agree", 4)
         r = APIClient().post(
             reverse("api_assessment_submit-list"),
@@ -585,12 +720,17 @@ class AssessmentSubmitAPITests(BaseRecommendationTest):
 # 4. Summary API tests
 # ---------------------------------------------------------------------------
 
+
 class AssessmentSummaryAPITests(BaseRecommendationTest):
     def test_summary_returns_dimension_scores(self):
         user, client = self._setup_user(self.edu_grad)
-        q = make_question("Summary Q", "interest", self.edu_grad, mapped_domains=[self.domain_ai])
+        q = make_question(
+            "Summary Q", "interest", self.edu_grad, mapped_domains=[self.domain_ai]
+        )
         opt = make_option(q, "Agree", 4)
-        UserResponse.objects.create(user=user, question=q, selected_option=opt, score_value=4)
+        UserResponse.objects.create(
+            user=user, question=q, selected_option=opt, score_value=4
+        )
 
         r = client.get(reverse("api_assessment_summary-list"))
         self.assertEqual(r.status_code, status.HTTP_200_OK)
@@ -600,7 +740,13 @@ class AssessmentSummaryAPITests(BaseRecommendationTest):
     def test_recommendation_endpoint_on_summary(self):
         user, client = self._setup_user(self.edu_grad)
         questions = [
-            make_question(f"rec Q{i}", "interest", self.edu_grad, mapped_domains=[self.domain_ai], signal=4)
+            make_question(
+                f"rec Q{i}",
+                "interest",
+                self.edu_grad,
+                mapped_domains=[self.domain_ai],
+                signal=4,
+            )
             for i in range(3)
         ]
         answer_questions(user, questions, score=5)
@@ -614,6 +760,7 @@ class AssessmentSummaryAPITests(BaseRecommendationTest):
 # ---------------------------------------------------------------------------
 # 5. Edge cases
 # ---------------------------------------------------------------------------
+
 
 class EdgeCaseTests(BaseRecommendationTest):
     def test_user_without_profile_gets_fallback(self):
@@ -635,8 +782,12 @@ class EdgeCaseTests(BaseRecommendationTest):
     def test_10th_user_gets_no_career_scores(self):
         user, _ = self._setup_user(self.edu_secondary)
         questions = [
-            make_question(f"10th Q{i}", "interest", self.edu_secondary,
-                          mapped_streams=[self.stream_science])
+            make_question(
+                f"10th Q{i}",
+                "interest",
+                self.edu_secondary,
+                mapped_streams=[self.stream_science],
+            )
             for i in range(3)
         ]
         answer_questions(user, questions, score=5)
@@ -646,8 +797,12 @@ class EdgeCaseTests(BaseRecommendationTest):
     def test_12th_user_gets_no_career_scores(self):
         user, _ = self._setup_user(self.edu_higher_sec, stream=self.stream_arts)
         questions = [
-            make_question(f"12th Q{i}", "interest", self.edu_higher_sec,
-                          mapped_domains=[self.domain_legaltech])
+            make_question(
+                f"12th Q{i}",
+                "interest",
+                self.edu_higher_sec,
+                mapped_domains=[self.domain_legaltech],
+            )
             for i in range(3)
         ]
         answer_questions(user, questions, score=5)

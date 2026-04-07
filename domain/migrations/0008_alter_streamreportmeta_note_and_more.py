@@ -6,18 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('domain', '0007_drop_stale_counselor_note'),
+        ("domain", "0007_drop_stale_counselor_note"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='streamreportmeta',
-            name='note',
-            field=models.CharField(blank=True, help_text='Day-to-day work description', max_length=512),
+            model_name="streamreportmeta",
+            name="note",
+            field=models.CharField(
+                blank=True, help_text="Day-to-day work description", max_length=512
+            ),
         ),
         migrations.AlterField(
-            model_name='streamreportmeta',
-            name='why',
-            field=models.CharField(blank=True, help_text='One-line direction explanation', max_length=512),
+            model_name="streamreportmeta",
+            name="why",
+            field=models.CharField(
+                blank=True, help_text="One-line direction explanation", max_length=512
+            ),
         ),
     ]

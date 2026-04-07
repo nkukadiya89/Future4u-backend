@@ -32,11 +32,32 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="StreamReportMeta",
             fields=[
-                ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ("stream_code", models.CharField(db_index=True, max_length=64, unique=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "stream_code",
+                    models.CharField(db_index=True, max_length=64, unique=True),
+                ),
                 ("why", models.CharField(blank=True, max_length=512)),
-                ("subjects", models.TextField(blank=True, help_text="Pipe-separated subject names")),
-                ("careers", models.TextField(blank=True, help_text="Pipe-separated career titles")),
+                (
+                    "subjects",
+                    models.TextField(
+                        blank=True, help_text="Pipe-separated subject names"
+                    ),
+                ),
+                (
+                    "careers",
+                    models.TextField(
+                        blank=True, help_text="Pipe-separated career titles"
+                    ),
+                ),
                 ("note", models.CharField(blank=True, max_length=512)),
                 ("next_step_1", models.TextField(blank=True)),
                 ("next_step_2", models.TextField(blank=True)),

@@ -123,4 +123,3 @@ class RecommendationAdminQATests(TestCase):
             url = self._qa_url(self.student.id, edu.id, self.stream_science.id)
             r = self.client.get(url)
             self.assertEqual(r.status_code, 200)
-

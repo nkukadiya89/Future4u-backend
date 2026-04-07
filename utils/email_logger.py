@@ -116,7 +116,6 @@ def extract_recipients_from_email_field(email_field):
     return emails
 
 
-
 def find_related_objects_from_email(email_address):
 
     result = {
@@ -377,4 +376,3 @@ def log_email_failed(
             or sender_objects["partner_company_id"]
             or sender_objects["end_client_id"]
         )
-

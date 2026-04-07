@@ -3,14 +3,17 @@ Counsellor Report Service
 Builds student-facing recommendation reports from engine output.
 All content (why, notes, next steps) is DB-driven via DomainReportMeta / StreamReportMeta.
 """
+
 from __future__ import annotations
 
 
 # ── DB accessors ──────────────────────────────────────────────────────────────
 
+
 def _get_domain_meta(domain_code: str) -> dict:
     try:
         from domain.models import DomainReportMeta
+
         obj = DomainReportMeta.objects.filter(domain_code=domain_code).first()
         if obj and obj.degrees:
             return {
@@ -34,6 +37,7 @@ def _get_domain_meta(domain_code: str) -> dict:
 def _get_stream_meta(stream_code: str) -> dict:
     try:
         from domain.models import StreamReportMeta
+
         obj = StreamReportMeta.objects.filter(stream_code=stream_code).first()
         if obj and obj.why:
             return {
@@ -98,11 +102,14 @@ _DIRECTION_WHY = {
 
 def _direction_why(domain_name: str, confidence: int, domain_code: str) -> str:
     if confidence >= 55:
-        return _DIRECTION_WHY.get(domain_code, f"{domain_name} is a strong fit based on your responses.")
+        return _DIRECTION_WHY.get(
+            domain_code, f"{domain_name} is a strong fit based on your responses."
+        )
     return f"{domain_name} is the closest match so far. Answer a few more questions to sharpen this."
 
 
 # ── How-to-choose ─────────────────────────────────────────────────────────────
+
 
 def _how_to_choose(top_options: list[dict]) -> str:
     if len(top_options) == 1:
@@ -180,6 +187,7 @@ _DEFAULT_NEXT_STEPS = [
 
 # ── Stream report (10th grade) ────────────────────────────────────────────────
 
+
 def _build_stream_report(recommendation: dict) -> dict | None:
     stream_ranking = recommendation.get("stream_ranking") or []
     if not stream_ranking:
@@ -197,18 +205,26 @@ def _build_stream_report(recommendation: dict) -> dict | None:
         code = entry.get("stream_code", "")
         name = entry.get("stream_name", code)
         meta = _get_stream_meta(code)
-        top_options.append({
-            "name": name,
-            "subjects": meta["subjects"],
-            "careers": meta["careers"],
-            "note": meta["note"],
-        })
+        top_options.append(
+            {
+                "name": name,
+                "subjects": meta["subjects"],
+                "careers": meta["careers"],
+                "note": meta["note"],
+            }
+        )
 
     if len(top_options) >= 3:
         a, b, c = top_options[0]["name"], top_options[1]["name"], top_options[2]["name"]
-        ha = _get_stream_meta(stream_ranking[0].get("stream_code", "")).get("how_to_choose_hint", "")
-        hb = _get_stream_meta(stream_ranking[1].get("stream_code", "")).get("how_to_choose_hint", "")
-        hc = _get_stream_meta(stream_ranking[2].get("stream_code", "")).get("how_to_choose_hint", "")
+        ha = _get_stream_meta(stream_ranking[0].get("stream_code", "")).get(
+            "how_to_choose_hint", ""
+        )
+        hb = _get_stream_meta(stream_ranking[1].get("stream_code", "")).get(
+            "how_to_choose_hint", ""
+        )
+        hc = _get_stream_meta(stream_ranking[2].get("stream_code", "")).get(
+            "how_to_choose_hint", ""
+        )
         if ha and hb and hc:
             how_to_choose = f"Go with {a} if {ha.rstrip('.')}. Pick {b} if {hb.rstrip('.')}. Choose {c} if {hc.rstrip('.')}."
         else:
@@ -231,6 +247,7 @@ def _build_stream_report(recommendation: dict) -> dict | None:
 
 
 # ── Domain report (12th and above) ───────────────────────────────────────────
+
 
 def build_counsellor_report(recommendation: dict) -> dict | None:
     rec_type = recommendation.get("recommendation_type")
@@ -261,13 +278,15 @@ def build_counsellor_report(recommendation: dict) -> dict | None:
         code = entry.get("domain_code", "")
         name = entry.get("domain_name", code)
         meta = _get_domain_meta(code)
-        top_options.append({
-            "name": name,
-            "degrees": meta["degrees"],
-            "careers": meta["careers"],
-            "note": meta["note"],
-            "how_to_choose_hint": meta["how_to_choose_hint"],
-        })
+        top_options.append(
+            {
+                "name": name,
+                "degrees": meta["degrees"],
+                "careers": meta["careers"],
+                "note": meta["note"],
+                "how_to_choose_hint": meta["how_to_choose_hint"],
+            }
+        )
 
     how_to_choose = _how_to_choose(top_options)
     for opt in top_options:

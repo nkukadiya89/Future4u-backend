@@ -15,12 +15,12 @@ from city.models import City
 from country.models import Country
 from domain.serializers import DomainSerializer
 from domain.services import domain_service
-from education_level.serializers import EducationLevelSerializer
-from education_level.services import education_level_service
 from domain_career_mapping.serializers import DomainCareerMappingSerializer
 from domain_career_mapping.services import domain_career_mapping_service
 from domain_skill_mapping.serializers import DomainSkillMappingSerializer
 from domain_skill_mapping.services import domain_skill_mapping_service
+from education_level.serializers import EducationLevelSerializer
+from education_level.services import education_level_service
 from skill.serializers import SkillSerializer
 from skill.services import skill_service
 from state.models import State
@@ -258,7 +258,6 @@ class Command(BaseCommand):
             # "meter_config|Can change meter config",
             # "meter_config|Can delete meter config",
             # "meter_config|Can view meter config",
-           
             # "notification_templates|Can add notification templates",
             # "notification_templates|Can change notification templates",
             # "notification_templates|Can delete notification templates",
@@ -809,7 +808,10 @@ class Command(BaseCommand):
         self.stdout.write("Loading Domain Report Meta...")
         from domain.models import DomainReportMeta
         from core.management.commands._master_import_utils import load_csv_rows
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "domain_report_meta.csv")
+
+        file_path = path.join(
+            settings.BASE_DIR, "core", "management", "source", "domain_report_meta.csv"
+        )
         rows = load_csv_rows(file_path)
         for row in rows:
             code = (row.get("domain_code") or "").strip().lower()
@@ -832,7 +834,10 @@ class Command(BaseCommand):
         self.stdout.write("Loading Stream Report Meta...")
         from domain.models import StreamReportMeta
         from core.management.commands._master_import_utils import load_csv_rows
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "stream_report_meta.csv")
+
+        file_path = path.join(
+            settings.BASE_DIR, "core", "management", "source", "stream_report_meta.csv"
+        )
         rows = load_csv_rows(file_path)
         for row in rows:
             code = (row.get("stream_code") or "").strip().lower()
@@ -855,7 +860,14 @@ class Command(BaseCommand):
         self.stdout.write("Loading Domain Counsellor Knowledge...")
         from domain.models import DomainCounsellorKnowledge
         from core.management.commands._master_import_utils import load_csv_rows
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "domain_counsellor_knowledge.csv")
+
+        file_path = path.join(
+            settings.BASE_DIR,
+            "core",
+            "management",
+            "source",
+            "domain_counsellor_knowledge.csv",
+        )
         rows = load_csv_rows(file_path)
         for row in rows:
             code = (row.get("domain_code") or "").strip().lower()
@@ -875,7 +887,14 @@ class Command(BaseCommand):
         self.stdout.write("Loading Stream Counsellor Knowledge...")
         from domain.models import StreamCounsellorKnowledge
         from core.management.commands._master_import_utils import load_csv_rows
-        file_path = path.join(settings.BASE_DIR, "core", "management", "source", "stream_counsellor_knowledge.csv")
+
+        file_path = path.join(
+            settings.BASE_DIR,
+            "core",
+            "management",
+            "source",
+            "stream_counsellor_knowledge.csv",
+        )
         rows = load_csv_rows(file_path)
         for row in rows:
             code = (row.get("stream_code") or "").strip().lower()
@@ -905,7 +924,7 @@ class Command(BaseCommand):
                 "Easily control your connected lights anytime, anywhere. "
                 "Instantly switch lights on or off with a single tap for quick manual control."
             ),
-            "status": "active",
+            "status": True,
             "core_features": [
                 {"feature_name": "light_on_off", "feature_status": True},
                 {"feature_name": "set_schedule", "feature_status": True},
@@ -942,7 +961,7 @@ class Command(BaseCommand):
                 "Easily control your connected lights anytime, anywhere. "
                 "Instantly switch lights on or off with a single tap for quick manual control."
             ),
-            "status": "active",
+            "status": True,
             "core_features": [
                 {"feature_name": "light_on_off", "feature_status": True},
                 {"feature_name": "set_schedule", "feature_status": True},
@@ -987,7 +1006,7 @@ class Command(BaseCommand):
                 "Easily control your connected lights anytime, anywhere. "
                 "Instantly switch lights on or off with a single tap for quick manual control."
             ),
-            "status": "active",
+            "status": True,
             "core_features": [
                 {"feature_name": "light_on_off", "feature_status": True},
                 {"feature_name": "set_schedule", "feature_status": True},
@@ -1045,7 +1064,7 @@ class Command(BaseCommand):
                     "plan_price": data["plan_price"],
                     "duration_days": data["duration_days"],
                     "description": data["description"],
-                    "status": data["status"],
+                    "is_active": data["status"],
                     "created_by": created_by_user,
                     "created_at": now(),
                 },
@@ -1058,7 +1077,7 @@ class Command(BaseCommand):
                     SubscriptionFeature.objects.create(
                         subscription=subscription,
                         feature_name=feature["feature_name"],
-                        feature_status=feature["feature_status"],
+                        is_enabled=feature["feature_status"],
                         is_core=True,
                         created_by=created_by_user,
                         created_at=now(),
@@ -1071,7 +1090,7 @@ class Command(BaseCommand):
                     SubscriptionFeature.objects.create(
                         subscription=subscription,
                         feature_name=feature["feature_name"],
-                        feature_status=feature["feature_status"],
+                        is_enabled=feature["feature_status"],
                         is_core=False,
                         created_by=created_by_user,
                         created_at=now(),
