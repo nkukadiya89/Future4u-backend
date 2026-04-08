@@ -249,3 +249,13 @@ class DomainAdmin(BaseAdmin):
             domain_service.restore_domain(domain=obj, user=request.user)
             n += 1
         self.message_user(request, f"{n} domain(s) restored.")
+
+from domain.models import DomainScoringConfig
+
+
+@admin.register(DomainScoringConfig)
+class DomainScoringConfigAdmin(admin.ModelAdmin):
+    list_display = ("domain_code", "is_active")
+    list_filter = ("is_active",)
+    search_fields = ("domain_code",)
+    ordering = ("domain_code",)

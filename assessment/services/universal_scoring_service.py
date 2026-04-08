@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from assessment.models import UserResponse
-from assessment.services.domain_config import DOMAIN_CONFIG
+from assessment.services.domain_config import get_domain_config
 from domain.models import Domain
 
 
@@ -210,7 +210,7 @@ def _compute_confidence(
 
 def evaluate_domain(domain_code, user_id):
     domain_key = str(domain_code or "").strip().lower()
-    domain_cfg = DOMAIN_CONFIG.get(domain_key)
+    domain_cfg = get_domain_config(domain_key)
     if not domain_cfg:
         return None
 

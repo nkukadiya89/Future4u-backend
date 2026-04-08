@@ -4,9 +4,26 @@ from user_profile.models import BusinessSetting, UserProfile
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    education_level_code = serializers.CharField(
+        source="education_level.level_code", read_only=True, default=None
+    )
+    education_level_name = serializers.CharField(
+        source="education_level.display_name", read_only=True, default=None
+    )
+    stream_code = serializers.CharField(
+        source="stream.stream_code", read_only=True, default=None
+    )
+    stream_name = serializers.CharField(
+        source="stream.stream_name", read_only=True, default=None
+    )
+
     class Meta:
         model = UserProfile
-        fields = ["id", "user", "education_level", "stream"]
+        fields = [
+            "id", "user",
+            "education_level", "education_level_code", "education_level_name",
+            "stream", "stream_code", "stream_name",
+        ]
 
 
 class UserProfileUpsertSerializer(serializers.ModelSerializer):

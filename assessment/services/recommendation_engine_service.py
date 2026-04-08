@@ -6,13 +6,14 @@ from django.db.models.expressions import ExpressionWrapper
 
 from assessment.models import UserResponse
 from assessment.services.counsellor_message_service import build_counsellor_message
-from assessment.services.domain_config import DOMAIN_CONFIG
+from assessment.services.domain_config import domain_has_config
 from assessment.services.universal_scoring_service import evaluate_domain
 from domain.models import Domain
 from domain_career_mapping.models import DomainCareerMapping
 
 
-# Education level codes ordered by progression
+# ── Education level codes ─────────────────────────────────────────────────────
+# These match EducationLevel.level_code values in the DB.
 LEVEL_10TH = "secondary"
 LEVEL_12TH = "higher_secondary"
 LEVEL_ITI = "iti"
@@ -22,38 +23,46 @@ LEVEL_PG = "post_graduation"
 LEVEL_PHD = "doctorate"
 LEVEL_PROFESSIONAL = "professional"
 
-# Levels where output should be stream recommendations (not careers)
 STREAM_RECOMMENDATION_LEVELS = {LEVEL_10TH}
-
-# Levels where output should be domain/field recommendations (college path)
 DOMAIN_RECOMMENDATION_LEVELS = {LEVEL_12TH}
-
-# Levels where entry-level career + domain output is appropriate
 ENTRY_CAREER_LEVELS = {LEVEL_ITI, LEVEL_DIPLOMA}
-
-# Levels where full career + skill recommendations apply
 FULL_CAREER_LEVELS = {LEVEL_GRAD, LEVEL_PG, LEVEL_PHD, LEVEL_PROFESSIONAL}
 
-# Streams shown to 10th-grade users (parent_safe_label=True means suitable for younger users)
-TENTH_GRADE_STREAM_CODES = {
-    "science",
-    "commerce",
-    "arts",
-    "vocational",
-    "sports",
-    "fine_arts",
-    "agriculture",
+# ── Fallback stream codes (used only if DB has no Stream records for that level) ─
+_FALLBACK_STREAM_CODES: dict[str, set[str]] = {
+    LEVEL_10TH: {"science", "commerce", "arts", "vocational", "sports", "fine_arts", "agriculture"},
+    LEVEL_12TH: {"science", "commerce", "arts", "vocational", "sports", "fine_arts"},
 }
 
-# Streams shown to 12th-grade users as selectable options
-TWELFTH_GRADE_STREAM_CODES = {
-    "science",
-    "commerce",
-    "arts",
-    "vocational",
-    "sports",
-    "fine_arts",
-}
+
+def _get_stream_codes_for_level(level_code: str) -> set[str]:
+    """Load active stream codes for a given education level from DB. Falls back to _FALLBACK_STREAM_CODES."""
+    from stream.models import Stream
+    codes = set(
+        Stream.objects.filter(
+            education_level__level_code=level_code,
+            is_active=True,
+            deleted=False,
+        ).values_list("stream_code", flat=True)
+    )
+    return codes if codes else _FALLBACK_STREAM_CODES.get(level_code, set())
+
+
+def _get_education_level_sequence(level_code: str) -> int:
+    """
+    Return sequence_order for a level_code from the DB.
+    Falls back to 0 if not found, which safely skips career-level filtering.
+    """
+    from education_level.models import EducationLevel
+    try:
+        obj = EducationLevel.objects.filter(
+            level_code__iexact=level_code, is_active=True, deleted=False
+        ).only("sequence_order").first()
+        if obj:
+            return int(obj.sequence_order)
+    except Exception:
+        pass
+    return 0
 
 
 class RecommendationEngineService:
@@ -115,7 +124,7 @@ class RecommendationEngineService:
         rows = (
             UserResponse.objects.filter(
                 user_id=user_id,
-                question__mapped_streams__stream_code__in=TENTH_GRADE_STREAM_CODES,
+                question__mapped_streams__stream_code__in=_get_stream_codes_for_level(LEVEL_10TH),
                 question__mapped_streams__is_active=True,
                 question__mapped_streams__deleted=False,
             )
@@ -285,7 +294,7 @@ class RecommendationEngineService:
         decisions: dict[str, dict] = {}
         for ranked_domain in domain_ranking[: self.DOMAIN_DECISION_TOP_N]:
             domain_code = (ranked_domain.get("domain_code") or "").strip().lower()
-            if not domain_code or domain_code not in DOMAIN_CONFIG:
+            if not domain_code or not domain_has_config(domain_code):
                 continue
             domain_result = evaluate_domain(domain_code=domain_code, user_id=user_id)
             if domain_result:
@@ -389,28 +398,16 @@ class RecommendationEngineService:
             career__is_active=True,
         ).select_related("career", "career__min_education_level")
 
-        # Filter careers appropriate for the user's education level
+        # Filter careers appropriate for the user's education level using DB sequence_order.
         # e.g. don't show "Investment Banker (requires PG)" to a diploma student
-        LEVEL_ORDER = {
-            "secondary": 2,
-            "higher_secondary": 3,
-            "iti": 4,
-            "diploma": 5,
-            "graduation": 6,
-            "post_graduation": 7,
-            "doctorate": 8,
-            "professional": 9,
-        }
-        user_level_seq = LEVEL_ORDER.get(level_code or "", 0)
+        user_level_seq = _get_education_level_sequence(level_code or "")
 
         career_scores: dict[str, int] = {}
         for mapping in mappings_qs.order_by("-weight_score", "career__career_name"):
             career = mapping.career
             # Skip careers that require a higher education level than the user has
             if career.min_education_level:
-                min_seq = LEVEL_ORDER.get(
-                    (career.min_education_level.level_code or "").lower(), 0
-                )
+                min_seq = int(getattr(career.min_education_level, "sequence_order", 0) or 0)
                 if user_level_seq > 0 and min_seq > user_level_seq:
                     continue
             key = career.career_code or str(career.id)

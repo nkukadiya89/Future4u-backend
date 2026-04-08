@@ -13,6 +13,9 @@ class QuestionSerializer(serializers.ModelSerializer):
     options = OptionSerializer(many=True, read_only=True)
     mapped_domains = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     mapped_streams = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    education_level_code = serializers.CharField(
+        source="education_level.level_code", read_only=True, default=None
+    )
 
     class Meta:
         model = Question
@@ -26,6 +29,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             "mapped_domains",
             "mapped_streams",
             "education_level",
+            "education_level_code",
             "target_stream",
             "is_active",
             "options",
