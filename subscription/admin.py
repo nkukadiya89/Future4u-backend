@@ -3,6 +3,7 @@ from django.contrib import admin
 from subscription.models import (
     Discount,
     PaymentSubscription,
+    PromoCode,
     Subscription,
     SubscriptionFeature,
     SubscriptionInvoice,
@@ -121,3 +122,26 @@ class DiscountAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Discount, DiscountAdmin)
+
+
+class PromoCodeAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "code",
+        "discount_type",
+        "value",
+        "is_active",
+        "valid_from",
+        "valid_to",
+        "usage_limit",
+        "used_count",
+    )
+    list_filter = ("discount_type", "is_active")
+    search_fields = ("code",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related("subscription")
+
+
+admin.site.register(PromoCode, PromoCodeAdmin)

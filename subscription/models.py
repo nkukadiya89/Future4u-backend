@@ -278,3 +278,54 @@ class Discount(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
+
+
+class PromoCode(models.Model):
+    code = models.CharField(max_length=25, unique=True)
+
+    discount_type = models.CharField(
+        choices=[("percent", "Percent"), ("flat", "Flat")], max_length=10
+    )
+    value = models.FloatField()
+
+    subscription = models.ForeignKey(
+        Subscription, on_delete=models.CASCADE, null=True, blank=True
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    valid_from = models.DateTimeField()
+    valid_to = models.DateTimeField()
+
+    usage_limit = models.IntegerField(null=True, blank=True)
+    used_count = models.IntegerField(default=0)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="promo_code_created",
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="promo_code_updated",
+    )
+    deleted = models.BooleanField(default=False)
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="promo_code_deleted",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.code
+
+    class Meta:
+        db_table = "promo_code"

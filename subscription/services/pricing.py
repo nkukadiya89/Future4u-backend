@@ -2,7 +2,7 @@
 
 from django.utils.timezone import now
 
-from subscription.models import Discount
+from subscription.models import Discount, PromoCode
 
 
 def get_applicable_discount(subscription):
@@ -36,23 +36,41 @@ def get_applicable_discount(subscription):
     )
 
 
-def calculate_price(subscription):
+def calculate_price(subscription, promo_code=None):
     price = subscription.price
+    discount = 0
     discount_obj = get_applicable_discount(subscription)
 
-    if not discount_obj:
-        return {
-            "price": price,
-            "discount": 0,
-            "final_price": price,
-        }
+    if discount_obj:
+        if discount_obj.discount_type == "percent":
+            discount += (price * discount_obj.value) / 100
+        else:
+            discount += discount_obj.value
+    promocode = (
+        PromoCode.objects.filter(code=promo_code).first() if promo_code else None
+    )
 
-    if discount_obj.discount_type == "percent":
-        discount = (price * discount_obj.value) / 100
-    else:
-        discount = discount_obj.value
+    if promocode:
+        if promocode.subscription and promocode.subscription != subscription:
+            raise Exception("Invalid promo for this plan")
+
+        if not promocode.is_active:
+            raise Exception("Promo inactive")
+
+        if not (promocode.valid_from <= now() <= promocode.valid_to):
+            raise Exception("Promo expired")
+
+        if promocode.usage_limit and promocode.used_count >= promocode.usage_limit:
+            raise Exception("Promo usage exceeded")
+
+        if promocode.discount_type == "percent":
+            discount += (price * promocode.value) / 100
+        else:
+            discount += promocode.value
 
     final_price = max(price - discount, 0)
+    promocode.used_count += 1
+    promocode.save()
 
     return {
         "price": price,

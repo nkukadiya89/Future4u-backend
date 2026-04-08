@@ -100,6 +100,7 @@ class PaymentSubscriptionViewSet(ModelViewSet):
     @action(detail=False, methods=["post"], url_path="create-order")
     def create_order(self, request):
         subscription_id = request.data.get("subscription_id")
+        promo_code_str = request.data.get("promo_code")
         user = request.user
 
         try:
@@ -108,7 +109,7 @@ class PaymentSubscriptionViewSet(ModelViewSet):
             return Response(
                 {"success": False, "message": "Invalid subscription"}, status=400
             )
-        pricing = calculate_price(subscription)
+        pricing = calculate_price(subscription, promo_code_str)
 
         amount = pricing["price"]
         discount = pricing["discount"]
