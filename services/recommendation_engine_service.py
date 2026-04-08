@@ -11,7 +11,7 @@ from django.db.models import Avg, Q
 
 from assessment.models import Question, UserResponse
 from assessment.services.counsellor_message_service import build_counsellor_message
-from assessment.services.domain_config import DOMAIN_CONFIG
+from assessment.services.domain_config import DOMAIN_CONFIG, domain_has_config
 from assessment.services.universal_scoring_service import evaluate_domain
 from career.models import Career
 from domain.models import Domain
@@ -26,16 +26,9 @@ from user_skill.models import UserSkill
 
 DIMENSIONS = ("interest", "aptitude", "personality", "work_style")
 
-TENTH_GRADE_STREAM_CODES = {
-    "science",
-    "commerce",
-    "arts",
-    "vocational",
-    "sports",
-    "fine_arts",
-    "agriculture",
-}
-
+# ── Education level codes ─────────────────────────────────────────────────────
+# These match EducationLevel.level_code values in the DB.
+# Used as routing keys — if a level_code changes in the DB, update here too.
 LEVEL_10TH = "secondary"
 LEVEL_12TH = "higher_secondary"
 LEVEL_ITI = "iti"
@@ -49,6 +42,56 @@ STREAM_RECOMMENDATION_LEVELS = {LEVEL_10TH}
 DOMAIN_RECOMMENDATION_LEVELS = {LEVEL_12TH}
 ENTRY_CAREER_LEVELS = {LEVEL_ITI, LEVEL_DIPLOMA}
 FULL_CAREER_LEVELS = {LEVEL_GRAD, LEVEL_PG, LEVEL_PHD, LEVEL_PROFESSIONAL}
+
+# ── Fallback stream codes (used only if DB has no Stream records for that level) ─
+_FALLBACK_STREAM_CODES: dict[str, set[str]] = {
+    LEVEL_10TH: {"science", "commerce", "arts", "vocational", "sports", "fine_arts", "agriculture"},
+    LEVEL_12TH: {"science", "commerce", "arts", "vocational", "sports", "fine_arts"},
+}
+
+
+def _get_tenth_grade_stream_codes() -> set[str]:
+    """Load 10th-grade stream codes from DB; fall back to _FALLBACK_STREAM_CODES."""
+    codes = set(
+        Stream.objects.filter(
+            education_level__level_code=LEVEL_10TH,
+            is_active=True,
+            deleted=False,
+        ).values_list("stream_code", flat=True)
+    )
+    return codes if codes else _FALLBACK_STREAM_CODES[LEVEL_10TH]
+
+
+def _get_level_next_steps_from_db(level_code: str) -> list[str]:
+    """
+    Load next-step suggestions from EducationLevel.next_step_* fields in DB.
+    Falls back to empty list — no hardcoded strings.
+    """
+    try:
+        obj = EducationLevel.objects.filter(
+            level_code=level_code, is_active=True, deleted=False
+        ).only("next_step_1", "next_step_2", "next_step_3").first()
+        if obj:
+            return [s for s in [obj.next_step_1, obj.next_step_2, obj.next_step_3] if s and s.strip()]
+    except Exception:
+        pass
+    return []
+
+
+def _get_level_fallback_message(level_code: str) -> str:
+    """
+    Load fallback message from EducationLevel.fallback_action in DB.
+    Falls back to empty string — no hardcoded strings.
+    """
+    try:
+        obj = EducationLevel.objects.filter(
+            level_code=level_code, is_active=True, deleted=False
+        ).only("fallback_action").first()
+        if obj and obj.fallback_action:
+            return obj.fallback_action
+    except Exception:
+        pass
+    return ""
 
 
 @dataclass(frozen=True)
@@ -72,6 +115,14 @@ def _empty(message: str, *, education_level_code: str | None = None) -> dict[str
         "domain_scores": [],
         "dimension_scores": {d: 0.0 for d in DIMENSIONS},
         "score_breakdown": {},
+        # Keys expected by tests and API consumers
+        "domain_ranking": [],
+        "stream_ranking": [],
+        "top_career": None,
+        "top_stream": None,
+        "top_domain": None,
+        "career_scores": {},
+        "is_entry_level": False,
     }
 
 
@@ -99,7 +150,9 @@ def _assessment_dimension_scores_0_1(*, user_id: int) -> dict[str, float]:
 
 
 DOMAIN_DIM_WEIGHTS: dict[str, float] = {
-    # Step 2 (must sum to 1)
+    # Default dimension weights used when a Domain has no per-domain weights set.
+    # Per-domain overrides are loaded from Domain.interest_weight / aptitude_weight etc.
+    # Must sum to 1.0.
     "interest": 0.35,
     "aptitude": 0.30,
     "personality": 0.20,
@@ -107,23 +160,65 @@ DOMAIN_DIM_WEIGHTS: dict[str, float] = {
 }
 
 
+def _get_domain_dim_weights(domain: Domain | None) -> dict[str, float]:
+    """
+    Return dimension weights for a domain.
+    Uses per-domain weights from Domain model if all 4 are set; falls back to DOMAIN_DIM_WEIGHTS.
+    """
+    if domain is not None:
+        w = {
+            "interest": domain.interest_weight,
+            "aptitude": domain.aptitude_weight,
+            "personality": domain.personality_weight,
+            "work_style": domain.work_style_weight,
+        }
+        if all(v is not None for v in w.values()):
+            return {k: float(v) for k, v in w.items()}
+    return DOMAIN_DIM_WEIGHTS
+
+
 def _clamp_0_100(value: float) -> int:
     return int(round(max(0.0, min(100.0, float(value)))))
 
 
+# ── Scoring formula constants ─────────────────────────────────────────────────
+# Confidence formula weights: gap*GAP + spread*SPREAD + coverage*COVERAGE_SCALE
+_CONF_GAP_WEIGHT: float = 0.6        # how much the top-vs-second gap contributes
+_CONF_SPREAD_WEIGHT: float = 0.2     # how much overall score spread contributes
+_CONF_COVERAGE_SCALE: float = 20.0   # coverage (0..1) scaled to 0..20 points
+
+# Stream influence: final_domain_score = base * (1 + mapping_weight/100 * STREAM_INFLUENCE)
+_STREAM_INFLUENCE: float = 0.2
+
+# Conflict detection: if |interest - aptitude| > this, decision_type = "conflicted"
+_CONFLICT_DIM_THRESHOLD: float = 40.0
+
+# Exploratory detection: if gap < this AND spread < this, decision_type = "exploratory"
+_EXPLORATORY_GAP_THRESHOLD: float = 10.0
+_EXPLORATORY_SPREAD_THRESHOLD: float = 20.0
+
+# Confidence penalty when decision_type is "conflicted"
+_CONFLICT_CONFIDENCE_PENALTY: float = 0.7
+
+# Skill proficiency heuristic range (UX spec: never show below 40 or above 70)
+_SKILL_PROF_MIN: float = 40.0
+_SKILL_PROF_MAX: float = 70.0
+
+
 def _domain_score_0_1(
-    *, dim_avgs_0_1: dict[str, float], dim_counts: dict[str, int]
+    *, dim_avgs_0_1: dict[str, float], dim_counts: dict[str, int], dim_weights: dict[str, float]
 ) -> float:
     """
     Step 2: Domain score on 0..1.
     Uses ONLY dimensions that have relevant questions for this domain.
+    Weights come from per-domain config or global DOMAIN_DIM_WEIGHTS fallback.
     """
     total_w = 0.0
     total = 0.0
     for d in DIMENSIONS:
         if int(dim_counts.get(d, 0) or 0) <= 0:
             continue
-        w = float(DOMAIN_DIM_WEIGHTS[d])
+        w = float(dim_weights.get(d, DOMAIN_DIM_WEIGHTS.get(d, 0.0)))
         total_w += w
         total += float(dim_avgs_0_1.get(d, 0.0)) * w
     return (total / total_w) if total_w > 0 else 0.0
@@ -137,20 +232,18 @@ def _calc_confidence(
     coverage_0_1: float,
 ) -> int:
     """
-    confidence =
-    (gap * 0.6) +
-    (spread * 0.2) +
-    (coverage * 20)
-    Clamp 0..100.
+    Confidence formula:
+      (gap * _CONF_GAP_WEIGHT) + (spread * _CONF_SPREAD_WEIGHT) + (coverage * _CONF_COVERAGE_SCALE)
+
+    gap      = top score minus second score (how clear the winner is)
+    spread   = max minus min across all domain scores (how differentiated the results are)
+    coverage = fraction of active questions answered (0..1)
     """
     gap = float(top_score_0_100) - float(second_score_0_100)
     scores = [max(0.0, min(100.0, float(v))) for v in (domain_scores_0_100 or [])]
-    if scores:
-        spread = float(max(scores) - min(scores))
-    else:
-        spread = 0.0
+    spread = float(max(scores) - min(scores)) if scores else 0.0
     coverage = max(0.0, min(1.0, float(coverage_0_1)))
-    confidence = (gap * 0.6) + (spread * 0.2) + (coverage * 20.0)
+    confidence = (gap * _CONF_GAP_WEIGHT) + (spread * _CONF_SPREAD_WEIGHT) + (coverage * _CONF_COVERAGE_SCALE)
     return _clamp_0_100(confidence)
 
 
@@ -164,13 +257,11 @@ def _top_factor(scores: dict[str, float]) -> tuple[str, float]:
     return best_dim, best_val
 
 
-def _estimate_skill_proficiency_40_70(
-    *, skill_name: str, dim_scores: dict[str, float]
-) -> int:
+def _load_domain_keywords() -> tuple[list[str], list[str]]:
     """
     Load all technical and domain keywords from DomainCounsellorKnowledge.
     Returns two flat deduplicated lists: (technical_keywords, domain_keywords).
-    Falls back to minimal hardcoded defaults if DB is empty.
+    Returns empty lists if DB has no records — caller falls back to balanced formula.
     """
     try:
         from domain.models import DomainCounsellorKnowledge
@@ -182,45 +273,10 @@ def _estimate_skill_proficiency_40_70(
         for tk, dk in rows:
             tech.update(k.lower() for k in (tk or []) if k)
             dom.update(k.lower() for k in (dk or []) if k)
-        if tech or dom:
-            return list(tech), list(dom)
+        return list(tech), list(dom)
     except Exception:
         pass
-    return (
-        [
-            "python",
-            "sql",
-            "coding",
-            "programming",
-            "data",
-            "cloud",
-            "api",
-            "backend",
-            "frontend",
-            "devops",
-            "linux",
-            "network",
-            "machine learning",
-            "excel",
-        ],
-        [
-            "marketing",
-            "sales",
-            "finance",
-            "accounting",
-            "design",
-            "health",
-            "medical",
-            "education",
-            "teaching",
-            "law",
-            "hr",
-            "communication",
-            "writing",
-            "business",
-            "management",
-        ],
-    )
+    return [], []
 
 
 def _estimate_skill_proficiency_40_70(
@@ -251,7 +307,7 @@ def _estimate_skill_proficiency_40_70(
             + (work_style * 0.05)
         )
 
-    return int(round(max(40.0, min(70.0, 40.0 + (float(basis) / 100.0) * 30.0))))
+    return int(round(max(_SKILL_PROF_MIN, min(_SKILL_PROF_MAX, _SKILL_PROF_MIN + (float(basis) / 100.0) * (_SKILL_PROF_MAX - _SKILL_PROF_MIN)))))
 
 
 def _domain_reason(
@@ -344,10 +400,17 @@ def _resolve_user_context(
     else:
         stream = getattr(profile, "stream", None)
 
-    if not stream or not edu:
+    if not edu:
         return None
 
-    if getattr(stream, "deleted", False) or not getattr(stream, "is_active", True):
+    level_code_resolved = (getattr(edu, "level_code", "") or "").lower() or None
+
+    # For stream-recommendation levels (e.g. 10th grade), stream is not required —
+    # the engine recommends which stream to pick, so the user hasn't chosen one yet.
+    if not stream and level_code_resolved not in STREAM_RECOMMENDATION_LEVELS:
+        return None
+
+    if stream and (getattr(stream, "deleted", False) or not getattr(stream, "is_active", True)):
         return None
     if getattr(edu, "deleted", False) or not getattr(edu, "is_active", True):
         return None
@@ -356,7 +419,7 @@ def _resolve_user_context(
     level_code = (getattr(edu, "level_code", "") or "").lower() or None
     return _UserContext(
         user_id=user_id,
-        stream_id=stream.pk,
+        stream_id=stream.pk if stream else None,
         education_sequence=seq,
         education_level_code=level_code,
     )
@@ -400,7 +463,7 @@ def generate_recommendation(
             UserResponse.objects.filter(
                 user_id=user_id,
                 question__is_active=True,
-                question__mapped_streams__stream_code__in=TENTH_GRADE_STREAM_CODES,
+                question__mapped_streams__stream_code__in=_get_tenth_grade_stream_codes(),
                 question__mapped_streams__is_active=True,
                 question__mapped_streams__deleted=False,
             )
@@ -409,6 +472,7 @@ def generate_recommendation(
         )
 
         streams_by_qid: dict[int, list[Any]] = {}
+        stream_codes = _get_tenth_grade_stream_codes()
         sums: dict[int, float] = {}
         counts: dict[int, int] = {}
         meta: dict[int, dict[str, Any]] = {}
@@ -425,7 +489,7 @@ def generate_recommendation(
                     [
                         s
                         for s in list(getattr(q, "mapped_streams", []).all())
-                        if getattr(s, "stream_code", None) in TENTH_GRADE_STREAM_CODES
+                        if getattr(s, "stream_code", None) in stream_codes
                         and getattr(s, "is_active", True)
                         and not getattr(s, "deleted", False)
                     ],
@@ -495,14 +559,14 @@ def generate_recommendation(
         )
         interest = float(dim_scores_0_100.get("interest", 0.0))
         aptitude = float(dim_scores_0_100.get("aptitude", 0.0))
-        if abs(interest - aptitude) > 40.0:
+        if abs(interest - aptitude) > _CONFLICT_DIM_THRESHOLD:
             decision_type = "conflicted"
-        elif gap < 10.0 and spread < 20.0:
+        elif gap < _EXPLORATORY_GAP_THRESHOLD and spread < _EXPLORATORY_SPREAD_THRESHOLD:
             decision_type = "exploratory"
         else:
             decision_type = "confident"
         if decision_type == "conflicted":
-            confidence = _clamp_0_100(float(confidence) * 0.7)
+            confidence = _clamp_0_100(float(confidence) * _CONFLICT_CONFIDENCE_PENALTY)
 
         result: dict[str, Any] = {
             "message": (
@@ -528,7 +592,7 @@ def generate_recommendation(
             "score_breakdown": {
                 "formulae": {
                     "dimension_normalization": "normalized=(avg_score-1)/4",
-                    "confidence": "gap*0.6 + spread*0.2 + coverage*20",
+                    "confidence": f"gap*{_CONF_GAP_WEIGHT} + spread*{_CONF_SPREAD_WEIGHT} + coverage*{_CONF_COVERAGE_SCALE}",
                 }
             },
             # Legacy-facing keys (single pipeline output)
@@ -557,7 +621,28 @@ def generate_recommendation(
         )
         return result
 
-    # Stream → domain mapping weights (soft influence)
+    # Stream → domain mapping weights (soft influence).
+    # stream_id can be None for stream-recommendation levels (10th grade) — handled above.
+    # For career/domain levels without a stream, fall back to the assessment engine
+    # which scores domains directly from question mappings (no stream dependency).
+    if not ctx.stream_id:
+        from assessment.services.recommendation_engine_service import (
+            RecommendationEngineService as AssessmentEngine,
+        )
+        result = AssessmentEngine().recommend(user_id=user_id)
+        # Ensure all expected keys are present
+        result.setdefault("domain_ranking", [])
+        result.setdefault("stream_ranking", [])
+        result.setdefault("top_career", None)
+        result.setdefault("top_stream", None)
+        result.setdefault("top_domain", result.get("domain"))
+        result.setdefault("career_scores", {})
+        result.setdefault("is_entry_level", False)
+        result.setdefault("domain_scores", [])
+        result.setdefault("dimension_scores", {d: 0.0 for d in DIMENSIONS})
+        result.setdefault("score_breakdown", {})
+        return result
+
     stream_domain_rows = list(
         StreamDomainMapping.objects.filter(
             stream_id=ctx.stream_id,
@@ -574,6 +659,10 @@ def generate_recommendation(
             "domain__domain_name",
             "domain__domain_code",
             "domain__future_relevance_score",
+            "domain__interest_weight",
+            "domain__aptitude_weight",
+            "domain__personality_weight",
+            "domain__work_style_weight",
         )
     )
     if not stream_domain_rows:
@@ -642,11 +731,13 @@ def generate_recommendation(
                 dim_avgs_0_1[d] = 0.0
 
         base_domain_score = _domain_score_0_1(
-            dim_avgs_0_1=dim_avgs_0_1, dim_counts=dim_counts
+            dim_avgs_0_1=dim_avgs_0_1,
+            dim_counts=dim_counts,
+            dim_weights=_get_domain_dim_weights(dom),
         )
 
         # STEP 4: apply stream weight (soft influence)
-        multiplier = 1.0 + (float(mapping_weight) / 100.0) * 0.2
+        multiplier = 1.0 + (float(mapping_weight) / 100.0) * _STREAM_INFLUENCE
         # Stability: clamp overflow + avoid flooring when base is zero.
         if float(base_domain_score) == 0.0:
             final_domain_score = 0.0
@@ -707,14 +798,14 @@ def generate_recommendation(
     )
     interest = float(dim_scores_0_100.get("interest", 0.0))
     aptitude = float(dim_scores_0_100.get("aptitude", 0.0))
-    if abs(interest - aptitude) > 40.0:
+    if abs(interest - aptitude) > _CONFLICT_DIM_THRESHOLD:
         decision_type = "conflicted"
-    elif gap < 10.0 and spread < 20.0:
+    elif gap < _EXPLORATORY_GAP_THRESHOLD and spread < _EXPLORATORY_SPREAD_THRESHOLD:
         decision_type = "exploratory"
     else:
         decision_type = "confident"
     if decision_type == "conflicted":
-        confidence = _clamp_0_100(float(confidence) * 0.7)
+        confidence = _clamp_0_100(float(confidence) * _CONFLICT_CONFIDENCE_PENALTY)
 
     # STEP 5: career scoring (non-linear) + normalization
     career_rows = list(
@@ -908,14 +999,10 @@ def generate_recommendation(
     skill_gaps = skill_gaps[:50]
 
     if not top_careers:
-        suggestion = [
-            "Explore diploma programs",
-            "Consider skill-based careers",
-            "Improve your education level",
-        ]
+        # Load next steps from DB (EducationLevel.next_step_*) — no hardcoded strings.
+        suggestion = _get_level_next_steps_from_db(ctx.education_level_code or "")
         fallback_rows = list(
             Career.objects.filter(deleted=False, is_active=True)
-            .select_related("min_education_level", "max_education_level")
             .filter(
                 Q(min_education_level__isnull=True)
                 | Q(min_education_level__sequence_order__lte=ctx.education_sequence)
@@ -939,7 +1026,7 @@ def generate_recommendation(
             for c in fallback_rows
         ]
         return {
-            "message": "Based on your current education level, we recommend exploring foundational paths or upgrading qualifications.",
+            "message": _get_level_fallback_message(ctx.education_level_code or ""),
             "suggestion": suggestion,
             "top_domains": top_domains,
             "top_careers": top_careers,
@@ -962,11 +1049,11 @@ def generate_recommendation(
                 "careers": breakdown_careers,
                 "formulae": {
                     "dimension_normalization": "normalized=(avg_score-1)/4",
-                    "domain_score": "interest*0.35 + aptitude*0.30 + personality*0.20 + work_style*0.15 (reweighted by available dims)",
+                    "domain_score": f"interest*{DOMAIN_DIM_WEIGHTS['interest']} + aptitude*{DOMAIN_DIM_WEIGHTS['aptitude']} + personality*{DOMAIN_DIM_WEIGHTS['personality']} + work_style*{DOMAIN_DIM_WEIGHTS['work_style']} (reweighted by available dims; per-domain overrides apply)",
                     "multi_domain_leakage": "contribution_per_domain = value/N",
-                    "stream_influence": "final = domain_score * (1 + mapping_weight/100*0.2)",
+                    "stream_influence": f"final = domain_score * (1 + mapping_weight/100*{_STREAM_INFLUENCE})",
                     "career": "cscore=sqrt(dscore)*(mw/100); career_score=(cscore/sum(cscores))*100",
-                    "confidence": "gap*0.6 + spread*0.2 + coverage*20",
+                    "confidence": f"gap*{_CONF_GAP_WEIGHT} + spread*{_CONF_SPREAD_WEIGHT} + coverage*{_CONF_COVERAGE_SCALE}",
                     "diversity": "max 2 careers per domain",
                 },
             },
@@ -1018,11 +1105,11 @@ def generate_recommendation(
             "careers": breakdown_careers,
             "formulae": {
                 "dimension_normalization": "normalized=(avg_score-1)/4",
-                "domain_score": "interest*0.35 + aptitude*0.30 + personality*0.20 + work_style*0.15 (reweighted by available dims)",
+                "domain_score": f"interest*{DOMAIN_DIM_WEIGHTS['interest']} + aptitude*{DOMAIN_DIM_WEIGHTS['aptitude']} + personality*{DOMAIN_DIM_WEIGHTS['personality']} + work_style*{DOMAIN_DIM_WEIGHTS['work_style']} (reweighted by available dims; per-domain overrides apply)",
                 "multi_domain_leakage": "contribution_per_domain = value/N",
-                "stream_influence": "final = domain_score * (1 + mapping_weight/100*0.2)",
+                "stream_influence": f"final = domain_score * (1 + mapping_weight/100*{_STREAM_INFLUENCE})",
                 "career": "cscore=sqrt(dscore)*(mw/100); career_score=(cscore/sum(cscores))*100",
-                "confidence": "gap*0.6 + spread*0.2 + coverage*20",
+                "confidence": f"gap*{_CONF_GAP_WEIGHT} + spread*{_CONF_SPREAD_WEIGHT} + coverage*{_CONF_COVERAGE_SCALE}",
                 "diversity": "max 2 careers per domain",
             },
         },
@@ -1115,7 +1202,7 @@ class RecommendationEngineService:
         decisions: dict[str, dict] = {}
         for ranked_domain in domain_ranking[: self.DOMAIN_DECISION_TOP_N]:
             domain_code = (ranked_domain.get("domain_code") or "").strip().lower()
-            if not domain_code or domain_code not in DOMAIN_CONFIG:
+            if not domain_code or not domain_has_config(domain_code):
                 continue
             domain_result = evaluate_domain(domain_code=domain_code, user_id=user_id)
             if domain_result:

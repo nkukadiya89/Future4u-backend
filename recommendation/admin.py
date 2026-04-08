@@ -9,10 +9,7 @@ from django.shortcuts import render
 from django.urls import path
 
 from assessment.models import Option, Question, UserResponse
-from services.recommendation_engine_service import (
-    RecommendationEngineService,
-    TENTH_GRADE_STREAM_CODES,
-)
+from services.recommendation_engine_service import RecommendationEngineService
 from education_level.models import EducationLevel
 from stream.models import Stream
 
