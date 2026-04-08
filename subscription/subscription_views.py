@@ -16,10 +16,12 @@ from rest_framework.viewsets import ModelViewSet
 
 from subscription.serializers_new import (
     PaymentSubscriptionSerializer,
+    SubscriptionAPISerializer,
     SubscriptionInvoiceSerializer,
     SubscriptionSerializer,
     UserSubscriptionSerializer,
 )
+from subscription.services.pricing import calculate_price
 
 from .models import (
     PaymentSubscription,
@@ -31,7 +33,7 @@ from .models import (
 
 class SubscriptionViewSet(ModelViewSet):
     queryset = Subscription.objects.filter(is_active=True)
-    serializer_class = SubscriptionSerializer
+    serializer_class = SubscriptionAPISerializer
 
 
 class UserSubscriptionViewSet(ModelViewSet):
@@ -106,12 +108,15 @@ class PaymentSubscriptionViewSet(ModelViewSet):
             return Response(
                 {"success": False, "message": "Invalid subscription"}, status=400
             )
+        pricing = calculate_price(subscription)
 
-        amount = subscription.price
+        amount = pricing["price"]
+        discount = pricing["discount"]
+        final_amount = pricing["final_price"]
         # create razorpay order
         order = self.client.order.create(
             {
-                "amount": int(amount * 100),  # in paise
+                "amount": int(final_amount * 100),  # in paise
                 "currency": "INR",
                 "payment_capture": 1,
             }
@@ -122,7 +127,8 @@ class PaymentSubscriptionViewSet(ModelViewSet):
             user=user,
             subscription=subscription,
             amount=amount,
-            final_amount=amount,
+            discount_amount=discount,
+            final_amount=final_amount,
             status="pending",
             razorpay_order_id=order["id"],
             currency="INR",
@@ -133,7 +139,7 @@ class PaymentSubscriptionViewSet(ModelViewSet):
                 "success": True,
                 "data": {
                     "order_id": order["id"],
-                    "amount": amount,
+                    "amount": final_amount,
                     "payment_id": payment.id,
                     "key": config("RAZORPAY_KEY_ID"),
                 },
@@ -154,20 +160,34 @@ class SubscriptionInvoiceViewSet(ModelViewSet):
 
         with transaction.atomic():
             # generate invoice number here (use FinancialYearModel)
+            get_current_year = FinancialYearModel.get_current_financial_year()
+
             last_invoice = (
                 SubscriptionInvoice.objects.select_for_update()
                 .filter(invoice_type="final")
+                .filter(
+                    created_at__range=(
+                        get_current_year.start_date,
+                        get_current_year.end_date,
+                    )
+                )
                 .order_by("-id")
                 .first()
             )
 
-            next_number = (
-                (int(last_invoice.invoice_number) + 1)
+            # invoice_number is in format 0001/25-26, 0002/25-26, ... reset every financial year i.e 0001/26-27 for next year
+            last_number = (
+                int(last_invoice.invoice_number.split("/")[0])
                 if last_invoice and last_invoice.invoice_number
-                else 1
+                else 0
             )
 
-            invoice.invoice_number = str(next_number).zfill(4)
+            next_number = (int(last_number) + 1) if last_invoice and last_number else 1
+            next_number_str = (
+                str(next_number).zfill(4) + f"/{get_current_year.financial_year}"
+            )
+
+            invoice.invoice_number = next_number_str
             invoice.invoice_type = "final"
             invoice.save()
 
@@ -241,4 +261,5 @@ def razorpay_webhook(request):
             user_sub.is_active = True
             user_sub.save()
 
+    return HttpResponse(status=200)
     return HttpResponse(status=200)

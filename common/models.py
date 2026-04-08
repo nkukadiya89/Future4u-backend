@@ -1,8 +1,9 @@
 from datetime import date
+
 from django.conf import settings
 from django.db import models
-from django.utils.timezone import now
 from django.utils import timezone
+from django.utils.timezone import now
 
 
 # Create your models here.
@@ -34,6 +35,12 @@ class FinancialYearModel(models.Model):
 
     class Meta:
         db_table = "financial_year"
+
+    def get_current_financial_year(self):
+        today = date.today()
+        return FinancialYearModel.objects.filter(
+            start_date__lte=today, end_date__gte=today, deleted=False
+        ).first()
 
 
 class BaseModule(models.Model):

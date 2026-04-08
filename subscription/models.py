@@ -179,7 +179,7 @@ class PaymentSubscription(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.company.name} - {self.final_amount} - {self.status}"
+        return f"{self.user.first_name} - {self.final_amount} - {self.status}"
 
 
 class SubscriptionInvoice(models.Model):
@@ -236,3 +236,45 @@ class SubscriptionInvoice(models.Model):
 
     def __str__(self):
         return f"{self.invoice_number or 'Proforma'}"
+
+
+class Discount(models.Model):
+    name = models.CharField(max_length=100)
+
+    subscription = models.ForeignKey(
+        Subscription, on_delete=models.CASCADE, null=True, blank=True
+    )  # null = global discount
+
+    discount_type = models.CharField(
+        choices=[("percent", "Percent"), ("flat", "Flat")], max_length=10
+    )
+    value = models.FloatField()
+
+    is_active = models.BooleanField(default=True)
+
+    valid_from = models.DateTimeField(null=True, blank=True)
+    valid_to = models.DateTimeField(null=True, blank=True)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="discount_created",
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="discount_updated",
+    )
+    deleted = models.BooleanField(default=False)
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="discount_deleted",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
