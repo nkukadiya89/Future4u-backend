@@ -36,10 +36,13 @@ class SubscriptionFeatureAdmin(admin.ModelAdmin):
         "id",
         "subscription__package_name",
         "feature_name",
+        "feature_code",
+        "value",
+        "is_unlimited",
         "is_core",
         "is_enabled",
     )
-    list_filter = ("is_enabled", "is_core")
+    list_filter = ("is_enabled", "is_core", "is_unlimited")
     search_fields = (
         "subscription__user__username",
         "subscription__user__email",

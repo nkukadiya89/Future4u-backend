@@ -36,7 +36,7 @@ def get_applicable_discount(subscription):
     )
 
 
-def calculate_price(subscription, promo_code=None):
+def calculate_price(subscription, promocode=None):
     price = subscription.price
     discount = 0
     discount_obj = get_applicable_discount(subscription)
@@ -46,9 +46,7 @@ def calculate_price(subscription, promo_code=None):
             discount += (price * discount_obj.value) / 100
         else:
             discount += discount_obj.value
-    promocode = (
-        PromoCode.objects.filter(code=promo_code).first() if promo_code else None
-    )
+    promo_code_applied = False
 
     if promocode:
         if promocode.subscription and promocode.subscription != subscription:
@@ -65,15 +63,16 @@ def calculate_price(subscription, promo_code=None):
 
         if promocode.discount_type == "percent":
             discount += (price * promocode.value) / 100
+            promo_code_applied = True
         else:
             discount += promocode.value
+            promo_code_applied = True
 
     final_price = max(price - discount, 0)
-    promocode.used_count += 1
-    promocode.save()
 
     return {
         "price": price,
         "discount": discount,
         "final_price": final_price,
+        "promo_code_applied": promo_code_applied,
     }

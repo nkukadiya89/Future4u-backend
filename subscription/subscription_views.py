@@ -25,6 +25,7 @@ from subscription.services.pricing import calculate_price
 
 from .models import (
     PaymentSubscription,
+    PromoCode,
     Subscription,
     SubscriptionInvoice,
     UserSubscription,
@@ -109,11 +110,22 @@ class PaymentSubscriptionViewSet(ModelViewSet):
             return Response(
                 {"success": False, "message": "Invalid subscription"}, status=400
             )
-        pricing = calculate_price(subscription, promo_code_str)
+        promocode = (
+            PromoCode.objects.filter(code=promo_code_str).first()
+            if promo_code_str
+            else None
+        )
+
+        pricing = calculate_price(subscription, promocode)
 
         amount = pricing["price"]
         discount = pricing["discount"]
         final_amount = pricing["final_price"]
+        promocode_applied = pricing.get("promo_code_applied", False)
+
+        if promocode_applied and promocode:
+            promocode.used_count += 1
+            promocode.save()
         # create razorpay order
         order = self.client.order.create(
             {
@@ -133,6 +145,7 @@ class PaymentSubscriptionViewSet(ModelViewSet):
             status="pending",
             razorpay_order_id=order["id"],
             currency="INR",
+            promocode=promocode.code if promocode else None,
         )
 
         return Response(

@@ -41,12 +41,24 @@ class Subscription(models.Model):
     def __str__(self):
         return self.package_name
 
+    class Meta:
+        ordering = ["-created_at"]
+
 
 class SubscriptionFeature(models.Model):
     subscription = models.ForeignKey(
         Subscription, on_delete=models.CASCADE, related_name="features"
     )
-    feature_name = models.CharField(max_length=150)
+    feature_name = models.CharField(
+        max_length=150, verbose_name="Feature Name", null=True, blank=True
+    )
+    feature_code = models.CharField(
+        max_length=50, verbose_name="Unique code for feature", null=True, blank=True
+    )
+
+    value = models.CharField(max_length=100, null=True, blank=True)
+    is_unlimited = models.BooleanField(default=False)
+
     is_core = models.BooleanField(default=False)
     is_enabled = models.BooleanField(default=True)
 
@@ -76,6 +88,9 @@ class SubscriptionFeature(models.Model):
 
     def __str__(self):
         return f"{self.subscription.package_name} - {self.feature_name}"
+
+    class Meta:
+        ordering = ["-created_at"]
 
 
 class UserSubscription(models.Model):
@@ -113,6 +128,49 @@ class UserSubscription(models.Model):
 
     def __str__(self):
         return f"{self.company.name} - {self.subscription.package_name}"
+
+    class Meta:
+        ordering = ["-start_date"]
+
+
+class FeatureUsage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    feature_code = models.CharField(max_length=50)
+
+    used = models.IntegerField(default=0)
+
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
+
+    last_used_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="feature_usage_created",
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="feature_usage_updated",
+    )
+    deleted = models.BooleanField(default=False)
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="feature_usage_deleted",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.first_name} - {self.feature_code} - {self.used}"
+
+    class Meta:
+        ordering = ["-last_used_at"]
 
 
 # Getting active Subscription for a company:
@@ -153,6 +211,7 @@ class PaymentSubscription(models.Model):
     payment_method = models.CharField(max_length=30, null=True, blank=True)
 
     payment_date = models.DateTimeField(null=True, blank=True)
+    promocode = models.CharField(max_length=25, null=True, blank=True)
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -180,6 +239,9 @@ class PaymentSubscription(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} - {self.final_amount} - {self.status}"
+
+    class Meta:
+        ordering = ["-created_at"]
 
 
 class SubscriptionInvoice(models.Model):
@@ -237,6 +299,9 @@ class SubscriptionInvoice(models.Model):
     def __str__(self):
         return f"{self.invoice_number or 'Proforma'}"
 
+    class Meta:
+        ordering = ["-created_at"]
+
 
 class Discount(models.Model):
     name = models.CharField(max_length=100)
@@ -278,6 +343,12 @@ class Discount(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ["-created_at"]
 
 
 class PromoCode(models.Model):
@@ -329,3 +400,4 @@ class PromoCode(models.Model):
 
     class Meta:
         db_table = "promo_code"
+        ordering = ["-created_at"]
