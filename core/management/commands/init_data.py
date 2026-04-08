@@ -99,7 +99,8 @@ class Command(BaseCommand):
             self.load_stream_report_meta()
             self.load_domain_counsellor_knowledge()
             self.load_stream_counsellor_knowledge()
-            self.load_subscription()
+            self.load_domain_scoring_config()
+            # self.load_subscription()  # TODO: fix field mismatch with current Subscription model
 
     # Super User Create
     def create_super_user(self):
@@ -713,6 +714,20 @@ class Command(BaseCommand):
             serializer_class=EducationLevelSerializer,
             importer=education_level_service.bulk_import_levels,
         )
+        # Seed fallback messages and next steps from the same CSV
+        from education_level.models import EducationLevel
+        from core.management.commands._master_import_utils import load_csv_rows
+        for row in load_csv_rows(file_path):
+            code = (row.get("level_code") or "").strip().lower()
+            if not code:
+                continue
+            EducationLevel.objects.filter(level_code=code).update(
+                fallback_insight=(row.get("fallback_insight") or "").strip(),
+                fallback_action=(row.get("fallback_action") or "").strip(),
+                next_step_1=(row.get("next_step_1") or "").strip(),
+                next_step_2=(row.get("next_step_2") or "").strip(),
+                next_step_3=(row.get("next_step_3") or "").strip(),
+            )
 
     def load_streams(self):
         self.stdout.write("Loading Streams...")
@@ -823,6 +838,7 @@ class Command(BaseCommand):
                     "degrees": (row.get("degrees") or "").strip(),
                     "careers": (row.get("careers") or "").strip(),
                     "note": (row.get("note") or "").strip(),
+                    "direction_why": (row.get("direction_why") or "").strip(),
                     "how_to_choose_hint": (row.get("how_to_choose_hint") or "").strip(),
                     "next_step_1": (row.get("next_step_1") or "").strip(),
                     "next_step_2": (row.get("next_step_2") or "").strip(),
@@ -916,6 +932,33 @@ class Command(BaseCommand):
                     "action": (row.get("action") or "").strip(),
                     "tension": (row.get("tension") or "").strip(),
                 },
+            )
+
+    def load_domain_scoring_config(self):
+        self.stdout.write("Loading Domain Scoring Config...")
+        import json
+        from domain.models import DomainScoringConfig
+        from core.management.commands._master_import_utils import load_csv_rows
+        file_path = path.join(
+            settings.BASE_DIR, "core", "management", "source", "domain_scoring_config.csv"
+        )
+        if not path.exists(file_path):
+            self.stdout.write(self.style.WARNING("domain_scoring_config.csv not found — skipping."))
+            return
+        rows = load_csv_rows(file_path)
+        for row in rows:
+            code = (row.get("domain_code") or "").strip().lower()
+            raw = (row.get("config") or "").strip()
+            if not code or not raw:
+                continue
+            try:
+                config = json.loads(raw)
+            except json.JSONDecodeError as e:
+                self.stdout.write(self.style.ERROR(f"Invalid JSON for {code}: {e}"))
+                continue
+            DomainScoringConfig.objects.update_or_create(
+                domain_code=code,
+                defaults={"config": config, "is_active": True},
             )
 
     # Subscription Create
