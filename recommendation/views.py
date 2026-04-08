@@ -72,6 +72,8 @@ class RecommendationListAPIView(APIView):
             "top_domain": cached.get("top_domain") or cached.get("domain"),
             "top_stream": cached.get("top_stream"),
             "confidence": cached.get("confidence", 0),
+            "stream_ranking": cached.get("stream_ranking") or [],
+            "domain_ranking": cached.get("domain_ranking") or [],
         }
         # Clean up nulls — only include top_stream for secondary, top_domain for others
         if data["education_level"] == "secondary":

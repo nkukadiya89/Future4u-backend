@@ -114,6 +114,35 @@ class ApiAssessmentSubmitViewSet(viewsets.GenericViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
+        # Auto-save education_level and stream to profile if provided alongside responses.
+        # This lets the frontend send everything in one call instead of two.
+        education_level_id = request.data.get("education_level")
+        stream_id = request.data.get("stream")
+        if education_level_id or stream_id:
+            from user_profile.models import UserProfile
+            from education_level.models import EducationLevel
+            from stream.models import Stream
+            profile, _ = UserProfile.objects.get_or_create(user=request.user)
+            if education_level_id:
+                try:
+                    edu = EducationLevel.objects.get(id=education_level_id, is_active=True, deleted=False)
+                    profile.education_level = edu
+                except EducationLevel.DoesNotExist:
+                    return Response(
+                        {"success": False, "message": {"education_level": "Invalid education level."}, "data": {}},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            if stream_id:
+                try:
+                    stream = Stream.objects.get(id=stream_id, is_active=True, deleted=False)
+                    profile.stream = stream
+                except Stream.DoesNotExist:
+                    return Response(
+                        {"success": False, "message": {"stream": "Invalid stream."}, "data": {}},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            profile.save()
+
         ser = self.get_serializer(data=request.data)
         if not ser.is_valid():
             return Response(
