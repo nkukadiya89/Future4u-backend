@@ -14,6 +14,13 @@ class Domain(MasterBaseModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     domain_code = models.CharField(max_length=64)
     domain_name = models.CharField(max_length=255)
+    domain_category = models.CharField(
+        max_length=64,
+        blank=True,
+        default="",
+        db_index=True,
+        help_text="Broad category e.g. healthcare, technology, government, creative_arts",
+    )
     parent = models.ForeignKey(
         "self",
         null=True,

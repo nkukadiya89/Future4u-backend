@@ -8,12 +8,64 @@ from country.models import Country
 from state.models import State
 
 
-# Business Setting Database Model
 class UserProfile(models.Model):
+
+    class Role(models.TextChoices):
+        STUDENT = "student", "Student"
+        PARENT = "parent", "Parent / Guardian"
+        PROFESSIONAL = "professional", "Working Professional"
+        INSTITUTE = "institute", "Institute / Course Provider"
+        CORPORATE = "corporate", "Corporate / Employer"
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="profile",
+    )
+    role = models.CharField(
+        max_length=20,
+        choices=Role.choices,
+        null=True,
+        blank=True,
+        help_text="User role selected during onboarding",
+    )
+    language = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        help_text="Preferred language e.g. english, hindi, gujarati",
+    )
+    medium = models.CharField(
+        max_length=20,
+        choices=[
+            ("english", "English"),
+            ("hindi", "Hindi"),
+            ("gujarati", "Gujarati"),
+        ],
+        null=True,
+        blank=True,
+        help_text="Instruction medium of student's school",
+    )
+    country = models.ForeignKey(
+        Country,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="user_profiles",
+    )
+    state = models.ForeignKey(
+        State,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="user_profiles",
+    )
+    city = models.ForeignKey(
+        City,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="user_profiles",
     )
     education_level = models.ForeignKey(
         "education_level.EducationLevel",

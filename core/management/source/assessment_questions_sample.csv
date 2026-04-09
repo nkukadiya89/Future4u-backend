@@ -128,7 +128,7 @@ work_style,"Do you thrive in fast-paced startup environments more than large cor
 interest,"Are you interested in law, policy, or legal technology?",scale,legaltech|ai_ethics,,4,1,graduation,,22,Very interested,Interested,Somewhat,Not really,Not at all
 interest,"Do you enjoy teaching, mentoring, or building educational products?",scale,edtech,,4,1,graduation,,23,Very much,Quite a bit,Somewhat,Not really,Not at all
 interest,"Are you interested in agriculture, food technology, or agritech?",scale,agritech|foodtech,,4,1,graduation,,24,Very interested,Interested,Somewhat,Not really,Not at all
-interest,"Do you want to serve in the defense forces or work in defense technology?",scale,defense_tech,,4,1,graduation,,25,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Do you want to serve in the defense forces or work in defense technology?",scale,defense_armed_forces|defense_tech,,4,1,graduation,,25,Very much,Quite a bit,Somewhat,Not really,Not at all
 interest,"Are you interested in aviation, aerospace, or pilot training?",scale,space_tech,,4,1,graduation,,26,Very interested,Interested,Somewhat,Not really,Not at all
 interest,"How passionate are you about climate change, sustainability, or renewable energy?",scale,climate_tech|renewable_energy,,4,1,graduation,,27,Extremely passionate,Very passionate,Somewhat,Not very,Not at all
 interest,"Are you interested in mental health, wellness, or psychology?",scale,mental_health,,4,1,graduation,,28,Very interested,Interested,Somewhat,Not really,Not at all
@@ -177,3 +177,25 @@ interest,"Do you want to pivot into cybersecurity or information security?",scal
 aptitude,"How quickly can you learn and apply new tools or technologies in your work?",scale,cloud_computing|devops,,4,1,professional,,16,Very quickly,Quickly,At a moderate pace,Slowly,Very slowly
 work_style,"Do you prefer self-paced online learning over attending full-time courses?",scale,edtech|creator_economy,,3,1,professional,,17,Strongly prefer self-paced,Prefer self-paced,No preference,Prefer structured,Strongly prefer structured
 personality,"How important is building a professional network in your career growth?",scale,hrtech|marketing|entrepreneurship,,3,1,professional,,18,Extremely important,Very important,Somewhat important,Not very important,Not important
+
+# ==============================================================
+# GRADUATION — Non-tech domain questions (added for coverage)
+# ==============================================================
+
+interest,"Are you drawn to medicine, becoming a doctor, or working in clinical healthcare?",scale,mbbs_medicine|nursing|physiotherapy,,5,1,graduation,,29,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in pharmacy, drug dispensing, or pharmaceutical sciences?",scale,pharmacy|pharma,,4,1,graduation,,30,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to pursue civil services, IAS, IPS, or government administration?",scale,upsc_civil_services|state_govt_services,,5,1,graduation,,31,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in working in a government bank or public sector financial institution?",scale,banking_govt|banking_finance,,4,1,graduation,,32,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to become a Chartered Accountant or work in accounting and audit?",scale,ca_accounting,,5,1,graduation,,33,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in law, litigation, or becoming a lawyer?",scale,law_practice|legaltech,,5,1,graduation,,34,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you enjoy teaching and want to build a career in school or college education?",scale,teaching_school|higher_education,,4,1,graduation,,35,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in civil, mechanical, or electrical engineering (non-software)?",scale,civil_engineering|mechanical_engineering|electrical_engineering,,4,1,graduation,,36,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in traditional farming, crop science, or veterinary science?",scale,agriculture_farming|veterinary,,4,1,graduation,,37,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Are you interested in fine arts, architecture, or performing arts as a career?",scale,fine_arts_design|architecture|performing_arts,,4,1,graduation,,38,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Do you want to become a professional athlete or pursue a career in sports coaching?",scale,professional_sports|sports_coaching,,5,1,graduation,,39,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in journalism, mass media, or working in news and broadcasting?",scale,journalism_media|creator_economy,,4,1,graduation,,40,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in social work, community development, or NGO sector?",scale,social_work|psychology_counselling,,4,1,graduation,,41,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in hotel management, hospitality, or the tourism industry?",scale,hotel_management|traveltech,,4,1,graduation,,42,Very interested,Interested,Somewhat,Not really,Not at all
+personality,"Do you feel a strong sense of duty towards serving the nation or public service?",scale,upsc_civil_services|defense_armed_forces|police_law_enforcement,,4,1,graduation,,43,Very strongly,Strongly,Somewhat,Not really,Not at all
+aptitude,"How strong are your verbal reasoning and general knowledge skills?",scale,upsc_civil_services|law_practice|journalism_media,,4,1,graduation,,44,Very strong,Strong,Average,Below average,Weak
+work_style,"Do you prefer a stable government job with a pension over a private sector career?",scale,upsc_civil_services|banking_govt|teaching_school,,3,1,graduation,,45,Strongly prefer government,Prefer government,No preference,Prefer private,Strongly prefer private
