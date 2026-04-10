@@ -1,9 +1,5 @@
 dimension,question_text,question_type,mapped_domains,mapped_streams,signal_strength,is_active,education_level,target_stream,sequence_order,option_1,option_2,option_3,option_4,option_5
 
-# ==============================================================
-# SECONDARY — 10th Grade
-# Goal: Recommend which stream to pick for 11th/12th
-# ==============================================================
 
 interest,"When you have free time, do you find yourself reading about science, technology, or how things work?",scale,,science,4,1,secondary,,10,Definitely yes,Usually yes,Sometimes,Rarely,Not really
 interest,"Do you enjoy solving maths problems or puzzles even when they are not part of homework?",scale,,science,5,1,secondary,,11,Definitely yes,Usually yes,Sometimes,Rarely,Not really
@@ -32,11 +28,7 @@ interest,"Do you enjoy farming, gardening, or working with nature and plants?",s
 aptitude,"Do you understand how seasons, weather, and soil affect crops or plants?",scale,,agriculture,3,1,secondary,,71,Very well,Fairly well,Somewhat,Not really,Not at all
 work_style,"Would you prefer working outdoors in fields over sitting in an office?",scale,,agriculture,3,1,secondary,,72,Strongly prefer outdoors,Prefer outdoors,No preference,Prefer indoors,Strongly prefer indoors
 
-# ==============================================================
-# HIGHER SECONDARY — 12th Grade
-# ==============================================================
 
-# --- Science stream ---
 interest,"After 12th, are you more drawn towards engineering and technology or medicine and biology?",mcq,robotics|healthtech|biotech,,4,1,higher_secondary,science,10,Engineering and technology,Medicine and biology,Both equally,Not sure yet,,
 aptitude,"How comfortable are you with programming or writing code?",scale,cloud_computing|devops,,5,1,higher_secondary,science,11,Very comfortable,Comfortable,Somewhat,Not very,Not at all
 aptitude,"Do you enjoy physics and mechanics more than chemistry and biology?",mcq,robotics|ev_mobility|renewable_energy,,4,1,higher_secondary,science,12,Yes much more,Slightly more,About equal,Slightly less,No much less
@@ -45,7 +37,6 @@ personality,"Do you enjoy researching and discovering new things rather than app
 work_style,"Do you prefer solving well-defined technical problems with clear answers?",scale,cloud_computing|cybersecurity,,3,1,higher_secondary,science,15,Strongly prefer,Prefer,No preference,Prefer open-ended,Strongly prefer open-ended
 interest,"Are you interested in cybersecurity, ethical hacking, or protecting digital systems?",scale,cybersecurity,,4,1,higher_secondary,science,16,Very interested,Interested,Somewhat,Not really,Not at all
 
-# --- Commerce stream ---
 interest,"Are you more interested in finance and investment or in building and running a business?",mcq,fintech|entrepreneurship,,4,1,higher_secondary,commerce,10,Finance and investment,Building a business,Both equally,Not sure yet,,
 aptitude,"How comfortable are you with analysing financial data and making business decisions?",scale,fintech|supply_chain,,4,1,higher_secondary,commerce,11,Very comfortable,Comfortable,Somewhat,Not very,Not at all
 aptitude,"Do you find it easy to understand profit, loss, and financial statements?",scale,fintech|insurance_tech,,4,1,higher_secondary,commerce,12,Very easy,Easy,Okay,A bit hard,Very hard
@@ -53,32 +44,24 @@ personality,"Do you enjoy convincing people, negotiating, or selling ideas?",sca
 work_style,"Do you see yourself working in a corporate environment or running your own venture?",mcq,hrtech|entrepreneurship,,3,1,higher_secondary,commerce,14,Corporate environment,My own venture,Either works,Not sure yet,,
 interest,"Are you interested in digital marketing, social media, or brand building?",scale,digital_marketing|marketing,,4,1,higher_secondary,commerce,15,Very interested,Interested,Somewhat,Not really,Not at all
 
-# --- Arts / Humanities stream ---
 interest,"Which area interests you most for your college degree?",mcq,legaltech|creator_economy|edtech,,5,1,higher_secondary,arts,10,Law and justice,Journalism and media,Teaching and education,Social work and policy,Not sure yet
 aptitude,"How strong are your writing and communication skills?",scale,creator_economy|legaltech,,4,1,higher_secondary,arts,11,Very strong,Strong,Average,Below average,Weak
 personality,"Do you care deeply about social issues and want to create change through your career?",scale,ai_ethics|legaltech,,3,1,higher_secondary,arts,12,Very much,Quite a bit,Somewhat,Not really,Not at all
 work_style,"Do you prefer roles that involve research, writing, and communication over technical work?",scale,creator_economy|edtech,,3,1,higher_secondary,arts,13,Strongly prefer,Prefer,No preference,Prefer technical,Strongly prefer technical
 interest,"Are you interested in psychology, counselling, or understanding human behaviour?",scale,mental_health,,4,1,higher_secondary,arts,14,Very interested,Interested,Somewhat,Not really,Not at all
 
-# --- Vocational stream ---
 interest,"Which trade or skill area are you most interested in pursuing further?",mcq,manufacturing|renewable_energy|iot,,5,1,higher_secondary,vocational,10,Electrical or mechanical trades,IT and computer hardware,Construction and civil work,Not sure yet,,
 aptitude,"How good are you at reading technical diagrams and following step-by-step instructions?",scale,manufacturing|robotics,,4,1,higher_secondary,vocational,11,Very good,Good,Okay,Not very good,Not good
 work_style,"Do you prefer getting certified and starting work quickly over spending years in college?",scale,manufacturing|iot,,3,1,higher_secondary,vocational,12,Strongly prefer,Prefer,No preference,Prefer college,Strongly prefer college
 
-# --- Sports stream ---
 interest,"What is your primary goal in sports?",mcq,sports_tech,,5,1,higher_secondary,sports,10,Become a professional athlete,Become a coach or trainer,Work in sports science or fitness,Sports management or media,Not sure yet
 aptitude,"How long have you been training seriously in your sport?",mcq,sports_tech,,5,1,higher_secondary,sports,11,More than 3 years,1 to 3 years,Less than 1 year,Just starting,,
 interest,"Are you interested in sports science, physiotherapy, or fitness training?",scale,sports_tech|mental_health,,4,1,higher_secondary,sports,12,Very interested,Interested,Somewhat,Not really,Not at all
 
-# --- Fine Arts stream ---
 interest,"Which creative field do you want to pursue in college?",mcq,ar_vr|gaming|fashiontech|creator_economy,,5,1,higher_secondary,fine_arts,10,Design and animation,Fashion and styling,Performing arts and film,Fine arts and painting,Not sure yet
 aptitude,"How consistently can you produce original creative work?",scale,ar_vr|fashiontech,,4,1,higher_secondary,fine_arts,11,Very consistently,Consistently,Sometimes,Rarely,Not yet
 work_style,"Do you prefer creative freedom over structured corporate environments?",scale,creator_economy|ar_vr,,3,1,higher_secondary,fine_arts,12,Strongly prefer creative freedom,Prefer creative freedom,No preference,Prefer structure,Strongly prefer structure
 
-# ==============================================================
-# ITI / VOCATIONAL — Entry-level career
-# Top domains: manufacturing, renewable_energy, iot, construction_tech
-# ==============================================================
 
 background,"Which trade or course are you currently enrolled in or have completed?",mcq,manufacturing|renewable_energy|iot|construction_tech,,3,1,iti,,5,Electrical,Mechanical,IT and computer,Civil and construction,Other
 interest,"How much do you enjoy the hands-on practical work in your trade?",scale,manufacturing|renewable_energy,,5,1,iti,,10,Very much,Quite a bit,Somewhat,Not really,Not at all
@@ -91,10 +74,6 @@ work_style,"Do you prefer working on-site in workshops or factories over office 
 interest,"Are you interested in computers, networking, or IT support?",scale,iot|cloud_computing,,3,1,iti,,17,Very interested,Interested,Somewhat,Not really,Not at all
 aptitude,"Can you set up, troubleshoot, or repair computers and networks?",scale,iot|cybersecurity,,3,1,iti,,18,Yes easily,Usually yes,Sometimes,Rarely,Not yet
 
-# ==============================================================
-# DIPLOMA — Entry-to-mid career
-# Top domains: robotics, iot, manufacturing, traveltech, fashiontech
-# ==============================================================
 
 background,"What is your diploma specialisation?",mcq,manufacturing|iot|traveltech|fashiontech,,3,1,diploma,,5,Mechanical or Civil Engineering,Electronics or Electrical,Computer Science or IT,Hotel Management or Hospitality,Design or Fashion
 interest,"How much do you enjoy the technical or practical aspects of your diploma course?",scale,manufacturing|iot|robotics,,5,1,diploma,,10,Very much,Quite a bit,Somewhat,Not really,Not at all
@@ -106,11 +85,6 @@ interest,"Do you enjoy fashion design, interior design, or visual styling?",scal
 personality,"Do you enjoy coordinating teams and managing projects?",scale,supply_chain|hrtech,,3,1,diploma,,16,Very much,Quite a bit,Somewhat,Not really,Not at all
 work_style,"Do you prefer applied technical work over pure academic theory?",scale,manufacturing|iot|robotics,,4,1,diploma,,17,Strongly prefer applied,Prefer applied,No preference,Prefer theory,Strongly prefer theory
 
-# ==============================================================
-# GRADUATION — Full career recommendations
-# Top domains vary by answers: fintech, healthtech, digital_marketing, entrepreneurship etc.
-# ai_data is one option, not the default
-# ==============================================================
 
 background,"What is your current or completed degree field?",mcq,fintech|healthtech|legaltech|edtech|entrepreneurship,,3,1,graduation,,5,Engineering or Technology,Business or Commerce,Science,Arts or Humanities,Other
 interest,"How passionate are you about building software or working with technology?",scale,cloud_computing|devops,,4,1,graduation,,10,Extremely passionate,Very passionate,Somewhat,Not very,Not at all
@@ -128,15 +102,11 @@ work_style,"Do you thrive in fast-paced startup environments more than large cor
 interest,"Are you interested in law, policy, or legal technology?",scale,legaltech|ai_ethics,,4,1,graduation,,22,Very interested,Interested,Somewhat,Not really,Not at all
 interest,"Do you enjoy teaching, mentoring, or building educational products?",scale,edtech,,4,1,graduation,,23,Very much,Quite a bit,Somewhat,Not really,Not at all
 interest,"Are you interested in agriculture, food technology, or agritech?",scale,agritech|foodtech,,4,1,graduation,,24,Very interested,Interested,Somewhat,Not really,Not at all
-interest,"Do you want to serve in the defense forces or work in defense technology?",scale,defense_tech,,4,1,graduation,,25,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Do you want to serve in the defense forces or work in defense technology?",scale,defense_armed_forces|defense_tech,,4,1,graduation,,25,Very much,Quite a bit,Somewhat,Not really,Not at all
 interest,"Are you interested in aviation, aerospace, or pilot training?",scale,space_tech,,4,1,graduation,,26,Very interested,Interested,Somewhat,Not really,Not at all
 interest,"How passionate are you about climate change, sustainability, or renewable energy?",scale,climate_tech|renewable_energy,,4,1,graduation,,27,Extremely passionate,Very passionate,Somewhat,Not very,Not at all
 interest,"Are you interested in mental health, wellness, or psychology?",scale,mental_health,,4,1,graduation,,28,Very interested,Interested,Somewhat,Not really,Not at all
 
-# ==============================================================
-# POST GRADUATION — Advanced / specialist career
-# Top domains: biotech, quantum, ai_ethics, fintech, edtech
-# ==============================================================
 
 background,"What was your graduation specialisation?",mcq,biotech|fintech|legaltech|edtech|quantum,,3,1,post_graduation,,5,Engineering or Computer Science,Business or Management,Life Sciences or Medicine,Social Sciences or Law,Other
 interest,"Do you want to lead research or go deep into a specialist domain?",scale,biotech|quantum|nanotech,,5,1,post_graduation,,10,Definitely lead research,Lean towards research,Open to both,Lean towards industry,Definitely industry roles
@@ -150,10 +120,6 @@ interest,"Do you want to move into senior product strategy or business leadershi
 personality,"Do you enjoy mentoring junior professionals and building high-performing teams?",scale,edtech|hrtech,,4,1,post_graduation,,18,Very much,Quite a bit,Somewhat,Not really,Not at all
 work_style,"Do you prefer deep specialisation over being a broad generalist?",scale,biotech|quantum,,4,1,post_graduation,,19,Strongly prefer specialisation,Prefer specialisation,No preference,Prefer generalist,Strongly prefer generalist
 
-# ==============================================================
-# DOCTORATE (PhD)
-# Top domains: biotech, nanotech, quantum, ai_data, edtech
-# ==============================================================
 
 background,"What is your PhD research area?",mcq,biotech|quantum|nanotech|legaltech|edtech,,3,1,doctorate,,5,Computer Science or AI,Life Sciences or Medicine,Physical Sciences or Engineering,Social Sciences or Humanities,Other
 interest,"Is your primary goal to stay in academia or transition to industry?",mcq,edtech|entrepreneurship|fintech,,4,1,doctorate,,10,Stay in academia,Transition to industry,Consulting or advisory,Start my own venture,Still deciding
@@ -162,10 +128,6 @@ aptitude,"How strong is your ability to translate complex research into practica
 interest,"Are you interested in working with startups or corporates to commercialise your research?",scale,entrepreneurship|fintech,,4,1,doctorate,,13,Very interested,Interested,Somewhat,Not really,Not at all
 work_style,"Do you prefer working in research labs or R&D departments over client-facing roles?",scale,biotech|nanotech|quantum,,5,1,doctorate,,14,Strongly prefer research,Prefer research,No preference,Prefer client-facing,Strongly prefer client-facing
 
-# ==============================================================
-# PROFESSIONAL CERTIFICATION — Upskilling / career pivot
-# Top domains: cloud_computing, digital_marketing, devops, cybersecurity
-# ==============================================================
 
 background,"What is your current professional background?",mcq,cloud_computing|digital_marketing|fintech|hrtech|supply_chain,,3,1,professional,,5,Technology or Engineering,Finance or Business,Marketing or Sales,Operations or Supply Chain,Other
 interest,"What is your primary goal right now?",mcq,cloud_computing|digital_marketing|entrepreneurship|cybersecurity,,5,1,professional,,10,Upskill in my current domain,Pivot to a completely new field,Move into leadership or management,Start my own business,Improve my earning potential
@@ -177,3 +139,127 @@ interest,"Do you want to pivot into cybersecurity or information security?",scal
 aptitude,"How quickly can you learn and apply new tools or technologies in your work?",scale,cloud_computing|devops,,4,1,professional,,16,Very quickly,Quickly,At a moderate pace,Slowly,Very slowly
 work_style,"Do you prefer self-paced online learning over attending full-time courses?",scale,edtech|creator_economy,,3,1,professional,,17,Strongly prefer self-paced,Prefer self-paced,No preference,Prefer structured,Strongly prefer structured
 personality,"How important is building a professional network in your career growth?",scale,hrtech|marketing|entrepreneurship,,3,1,professional,,18,Extremely important,Very important,Somewhat important,Not very important,Not important
+
+
+interest,"Are you drawn to medicine, becoming a doctor, or working in clinical healthcare?",scale,mbbs_medicine|nursing|physiotherapy,,5,1,graduation,,29,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in pharmacy, drug dispensing, or pharmaceutical sciences?",scale,pharmacy|pharma,,4,1,graduation,,30,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to pursue civil services, IAS, IPS, or government administration?",scale,upsc_civil_services|state_govt_services,,5,1,graduation,,31,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in working in a government bank or public sector financial institution?",scale,banking_govt|banking_finance,,4,1,graduation,,32,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to become a Chartered Accountant or work in accounting and audit?",scale,ca_accounting,,5,1,graduation,,33,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in law, litigation, or becoming a lawyer?",scale,law_practice|legaltech,,5,1,graduation,,34,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you enjoy teaching and want to build a career in school or college education?",scale,teaching_school|higher_education,,4,1,graduation,,35,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in civil, mechanical, or electrical engineering (non-software)?",scale,civil_engineering|mechanical_engineering|electrical_engineering,,4,1,graduation,,36,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in traditional farming, crop science, or veterinary science?",scale,agriculture_farming|veterinary,,4,1,graduation,,37,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Are you interested in fine arts, architecture, or performing arts as a career?",scale,fine_arts_design|architecture|performing_arts,,4,1,graduation,,38,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Do you want to become a professional athlete or pursue a career in sports coaching?",scale,professional_sports|sports_coaching,,5,1,graduation,,39,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in journalism, mass media, or working in news and broadcasting?",scale,journalism_media|creator_economy,,4,1,graduation,,40,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in social work, community development, or NGO sector?",scale,social_work|psychology_counselling,,4,1,graduation,,41,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in hotel management, hospitality, or the tourism industry?",scale,hotel_management|traveltech,,4,1,graduation,,42,Very interested,Interested,Somewhat,Not really,Not at all
+personality,"Do you feel a strong sense of duty towards serving the nation or public service?",scale,upsc_civil_services|defense_armed_forces|police_law_enforcement,,4,1,graduation,,43,Very strongly,Strongly,Somewhat,Not really,Not at all
+aptitude,"How strong are your verbal reasoning and general knowledge skills?",scale,upsc_civil_services|law_practice|journalism_media,,4,1,graduation,,44,Very strong,Strong,Average,Below average,Weak
+work_style,"Do you prefer a stable government job with a pension over a private sector career?",scale,upsc_civil_services|banking_govt|teaching_school,,3,1,graduation,,45,Strongly prefer government,Prefer government,No preference,Prefer private,Strongly prefer private
+
+interest,"Are you drawn to understanding the human body and want to spend your career diagnosing and treating illness?",scale,mbbs_medicine|nursing|physiotherapy,,5,1,graduation,,46,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Do you want to work directly with patients in a hospital or clinical setting every day?",scale,mbbs_medicine|nursing|physiotherapy|dentistry,,5,1,graduation,,47,Very much,Quite a bit,Somewhat,Not really,Not at all
+aptitude,"How comfortable are you with biology chemistry and the science behind how the human body works?",scale,mbbs_medicine|pharmacy|biotech,,4,1,graduation,,48,Very comfortable,Comfortable,Somewhat,Not very,Not at all
+interest,"Are you interested in dentistry and oral health as a career?",scale,dentistry,,5,1,graduation,,49,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you believe in traditional medicine like Ayurveda or Homeopathy and want to practice it?",scale,ayurveda_homeopathy,,4,1,graduation,,50,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in physical rehabilitation helping people recover from injury or surgery?",scale,physiotherapy,,5,1,graduation,,51,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you enjoy working with physical structures like buildings bridges roads and infrastructure?",scale,civil_engineering|construction_tech|architecture,,4,1,graduation,,52,Very much,Quite a bit,Somewhat,Not really,Not at all
+aptitude,"How comfortable are you with structural analysis load calculations and engineering drawings?",scale,civil_engineering|mechanical_engineering,,4,1,graduation,,53,Very comfortable,Comfortable,Somewhat,Not very,Not at all
+interest,"Are you interested in designing machines engines or mechanical systems?",scale,mechanical_engineering|manufacturing|ev_mobility,,4,1,graduation,,54,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you enjoy working with electrical circuits power systems or electronics?",scale,electrical_engineering|iot|robotics,,4,1,graduation,,55,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in chemical processes industrial production or working in a process plant?",scale,chemical_engineering|pharma,,4,1,graduation,,56,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in veterinary science and care for animals?",scale,veterinary,,5,1,graduation,,57,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in horticulture floriculture or working with plants and crops professionally?",scale,horticulture|agriculture_farming,,4,1,graduation,,58,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in food science food processing or food product development?",scale,foodtech,,4,1,graduation,,59,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Are you interested in architecture building design or urban planning?",scale,architecture|urban_tech|construction_tech,,4,1,graduation,,60,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Do you enjoy fashion design textile creation or working in the fashion industry?",scale,fashion_design|fashiontech,,4,1,graduation,,61,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Are you drawn to fine arts illustration graphic design or visual creative work?",scale,fine_arts_design|ar_vr,,4,1,graduation,,62,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Do you want to pursue performing arts music dance or theatre as a career?",scale,performing_arts,,5,1,graduation,,63,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in psychology counselling or supporting people with mental health challenges?",scale,psychology_counselling|mental_health,,5,1,graduation,,64,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in social development community welfare or the NGO sector?",scale,social_work,,4,1,graduation,,65,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in pure sciences like physics chemistry or mathematics at a research level?",scale,pure_sciences|biotech|nanotech,,4,1,graduation,,66,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in space technology aviation or aerospace engineering?",scale,space_tech,,5,1,graduation,,67,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in smart cities urban technology or sustainable urban planning?",scale,urban_tech|climate_tech,,4,1,graduation,,68,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in insurance risk management or actuarial science?",scale,insurance_tech,,4,1,graduation,,69,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Are you interested in state government services or district administration?",scale,state_govt_services|upsc_civil_services,,4,1,graduation,,70,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Do you want to work in medical devices biomedical engineering or healthcare technology?",scale,med_devices|healthtech,,4,1,graduation,,71,Very interested,Interested,Somewhat,Not really,Not at all
+personality,"Do you have strong manual dexterity and enjoy precise hands-on technical or clinical work?",scale,dentistry|physiotherapy|electrician_trades,,3,1,graduation,,72,Very much,Quite a bit,Somewhat,Not really,Not at all
+work_style,"Do you prefer working outdoors or in physical environments over sitting at a desk?",scale,civil_engineering|agriculture_farming|horticulture,,3,1,graduation,,73,Strongly prefer outdoors,Prefer outdoors,No preference,Prefer indoors,Strongly prefer indoors
+personality,"Do you feel a strong calling to serve and help people in vulnerable situations?",scale,social_work|nursing|psychology_counselling,,3,1,graduation,,74,Very strongly,Strongly,Somewhat,Not really,Not at all
+aptitude,"How strong are your creative and visual design skills?",scale,architecture|fashion_design|fine_arts_design,,4,1,graduation,,75,Very strong,Strong,Average,Below average,Weak
+
+interest,"Do you enjoy learning about how the human body works and want to help sick people?",scale,mbbs_medicine|nursing,,4,1,secondary,,73,Very much,Quite a bit,Sometimes,Rarely,Not at all
+interest,"Do you enjoy cooking experimenting with food or learning about nutrition?",scale,foodtech,,3,1,secondary,,74,Very much,Quite a bit,Sometimes,Rarely,Not at all
+interest,"Do you enjoy taking care of animals or are you interested in animal science?",scale,veterinary,,4,1,secondary,,75,Very much,Quite a bit,Sometimes,Rarely,Not at all
+interest,"Do you enjoy building things with your hands like models structures or DIY projects?",scale,civil_engineering|mechanical_engineering|electrician_trades,,4,1,secondary,,76,Very much,Quite a bit,Sometimes,Rarely,Not at all
+interest,"Are you interested in traditional medicine like Ayurveda yoga or natural healing?",scale,ayurveda_homeopathy,,3,1,secondary,,77,Very much,Quite a bit,Sometimes,Rarely,Not at all
+
+interest,"Are you interested in medicine and want to become a doctor dentist or pharmacist?",scale,mbbs_medicine|dentistry|pharmacy,,5,1,higher_secondary,science,17,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in civil mechanical or electrical engineering after graduation?",scale,civil_engineering|mechanical_engineering|electrical_engineering,,4,1,higher_secondary,science,18,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Are you interested in chemical engineering or working in process industries like pharma or oil?",scale,chemical_engineering|pharma,,4,1,higher_secondary,science,19,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in space technology defense research or aerospace?",scale,space_tech|defense_tech,,4,1,higher_secondary,science,20,Very interested,Interested,Somewhat,Not really,Not at all
+
+interest,"Do you want to become a Chartered Accountant or work in accounting and audit?",scale,ca_accounting,,5,1,higher_secondary,commerce,16,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in insurance risk management or actuarial science?",scale,insurance_tech,,3,1,higher_secondary,commerce,17,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in supply chain logistics or operations management?",scale,supply_chain,,3,1,higher_secondary,commerce,18,Very interested,Interested,Somewhat,Not really,Not at all
+
+interest,"Do you want to become a lawyer or work in the legal profession?",scale,law_practice|legaltech,,5,1,higher_secondary,arts,15,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in psychology counselling or understanding mental health?",scale,psychology_counselling|mental_health,,4,1,higher_secondary,arts,16,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in social development community welfare or the NGO sector?",scale,social_work,,4,1,higher_secondary,arts,17,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in government services like IAS IPS or state civil services?",scale,upsc_civil_services|state_govt_services,,5,1,higher_secondary,arts,18,Very much,Quite a bit,Somewhat,Not really,Not at all
+
+interest,"Are you interested in traditional farming crop science or agricultural practice?",scale,agriculture_farming,,5,1,higher_secondary,agriculture,10,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Do you want to use technology to improve farming like drones sensors or precision agriculture?",scale,agritech,,4,1,higher_secondary,agriculture,11,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Are you interested in horticulture floriculture or greenhouse farming?",scale,horticulture,,4,1,higher_secondary,agriculture,12,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Do you want to work in veterinary science and care for farm or domestic animals?",scale,veterinary,,4,1,higher_secondary,agriculture,13,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Are you interested in food technology food processing or food safety?",scale,foodtech,,3,1,higher_secondary,agriculture,14,Very interested,Interested,Somewhat,Not really,Not at all
+
+interest,"Are you interested in plumbing water supply systems or civil construction work?",scale,plumbing_civil_trades|construction_tech,,5,1,iti,,19,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Are you interested in beauty therapy hair styling or wellness services?",scale,beauty_wellness,,4,1,iti,,20,Very much,Quite a bit,Somewhat,Not really,Not at all
+
+interest,"Are you interested in architecture interior design or building construction?",scale,architecture|construction_tech,,4,1,diploma,,18,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in food technology hotel management or hospitality services?",scale,foodtech|hotel_management,,4,1,diploma,,19,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in beauty wellness or personal care services?",scale,beauty_wellness,,4,1,diploma,,20,Very much,Quite a bit,Somewhat,Not really,Not at all
+
+interest,"Do you want to specialise in clinical medicine surgery or a medical specialty?",scale,mbbs_medicine|med_devices,,5,1,post_graduation,,20,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in advanced research in pure sciences physics chemistry or mathematics?",scale,pure_sciences|nanotech|quantum,,5,1,post_graduation,,21,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in urban planning smart cities or sustainable development?",scale,urban_tech|climate_tech,,4,1,post_graduation,,22,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in space technology aerospace or defense research at an advanced level?",scale,space_tech|defense_tech,,4,1,post_graduation,,23,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to specialise in psychology clinical counselling or mental health research?",scale,psychology_counselling|mental_health,,5,1,post_graduation,,24,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in blockchain decentralised systems or Web3 technology?",scale,blockchain,,4,1,graduation,,76,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to work in business management operations or corporate strategy?",scale,business_management,,4,1,graduation,,77,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you interested in IT hardware computer networking or technical support?",scale,it_hardware_support,,4,1,graduation,,78,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Do you want to teach physical education coach sports or work in fitness instruction?",scale,physical_education|sports_coaching,,4,1,graduation,,79,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Are you fascinated by quantum mechanics and the idea of computers that work on quantum principles?",scale,quantum,,5,1,graduation,,80,Very much,Quite a bit,Somewhat,Not really,Not at all
+aptitude,"How comfortable are you with advanced mathematics linear algebra and complex physics concepts?",scale,quantum|nanotech|pure_sciences,,5,1,graduation,,81,Very comfortable,Comfortable,Somewhat,Not very,Not at all
+interest,"Are you interested in nanotechnology and working at the scale of atoms and molecules?",scale,nanotech,,5,1,graduation,,82,Very much,Quite a bit,Somewhat,Not really,Not at all
+interest,"Do you want to build augmented reality or virtual reality experiences and immersive technology?",scale,ar_vr|gaming,,5,1,graduation,,83,Very interested,Interested,Somewhat,Not really,Not at all
+aptitude,"How strong are your 3D spatial thinking and visual design skills?",scale,ar_vr|architecture|fine_arts_design,,4,1,graduation,,84,Very strong,Strong,Average,Below average,Weak
+interest,"Are you interested in blockchain technology decentralised systems or cryptocurrency?",scale,blockchain,,5,1,graduation,,85,Very interested,Interested,Somewhat,Not really,Not at all
+aptitude,"How comfortable are you with cryptography distributed systems and consensus algorithms?",scale,blockchain|cybersecurity,,4,1,graduation,,86,Very comfortable,Comfortable,Somewhat,Not very,Not at all
+interest,"Do you want to work in fashion technology using digital tools like 3D design or smart textiles?",scale,fashiontech|fashion_design,,5,1,graduation,,87,Very interested,Interested,Somewhat,Not really,Not at all
+interest,"Are you drawn to the idea of working on cutting-edge research that most people have never heard of?",scale,quantum|nanotech|space_tech|defense_tech,,3,1,graduation,,88,Very much,Quite a bit,Somewhat,Not really,Not at all
+personality,"Do you have the patience to work on problems that may take years to solve with no guaranteed outcome?",scale,quantum|nanotech|pure_sciences|biotech,,4,1,graduation,,89,Definitely yes,Usually yes,Sometimes,Rarely,Not really
+personality,"Do you feel a strong sense of duty to serve the nation and contribute to public welfare?",scale,upsc_civil_services|defense_armed_forces|police_law_enforcement,,5,1,graduation,,90,Very strongly,Strongly,Somewhat,Not really,Not at all
+personality,"Are you comfortable with authority structures hierarchy and following institutional rules?",scale,defense_armed_forces|banking_govt|upsc_civil_services,,4,1,graduation,,91,Very comfortable,Comfortable,Neutral,Uncomfortable,Very uncomfortable
+aptitude,"How strong is your general knowledge current affairs and awareness of national and global events?",scale,upsc_civil_services|state_govt_services|journalism_media,,5,1,graduation,,92,Very strong,Strong,Average,Below average,Weak
+aptitude,"How good are you at writing structured analytical essays and presenting arguments clearly?",scale,upsc_civil_services|law_practice|journalism_media,,5,1,graduation,,93,Very good,Good,Average,Below average,Weak
+personality,"Do you prefer long-term stability and a predictable career path over high-risk high-reward options?",scale,upsc_civil_services|banking_govt|teaching_school,,4,1,graduation,,94,Strongly prefer stability,Prefer stability,No preference,Prefer risk,Strongly prefer risk
+personality,"Do you enjoy being in positions of authority and making decisions that affect many people?",scale,upsc_civil_services|defense_armed_forces|police_law_enforcement,,4,1,graduation,,95,Very much,Quite a bit,Somewhat,Not really,Not at all
+aptitude,"How well can you memorise and recall large amounts of factual information under exam pressure?",scale,upsc_civil_services|state_govt_services|banking_govt,,4,1,graduation,,96,Very well,Well,Okay,Not very well,Poorly
+work_style,"Do you prefer working independently on deep focused tasks over collaborating in a team?",scale,pure_sciences|quantum|nanotech,,4,1,graduation,,97,Strongly prefer independent,Prefer independent,No preference,Prefer team,Strongly prefer team
+work_style,"Do you prefer a structured 9-to-5 work environment over flexible but unpredictable hours?",scale,banking_govt|teaching_school|ca_accounting,,3,1,graduation,,98,Strongly prefer structured,Prefer structured,No preference,Prefer flexible,Strongly prefer flexible
+work_style,"Would you rather work in a large established organisation than a small fast-moving startup?",scale,banking_finance|civil_engineering|manufacturing,,3,1,graduation,,99,Strongly prefer large org,Prefer large org,No preference,Prefer startup,Strongly prefer startup
+work_style,"Do you prefer working on long-term projects that take months or years over short quick tasks?",scale,civil_engineering|architecture|biotech|pharma,,4,1,graduation,,100,Strongly prefer long-term,Prefer long-term,No preference,Prefer short tasks,Strongly prefer short tasks
+work_style,"Do you prefer working outdoors or in the field over sitting at a desk in an office?",scale,civil_engineering|agriculture_farming|horticulture|electrician_trades,,4,1,graduation,,101,Strongly prefer outdoors,Prefer outdoors,No preference,Prefer indoors,Strongly prefer indoors
+work_style,"Do you prefer roles where your performance is clearly measurable over roles with subjective evaluation?",scale,fintech|data_engineering|ca_accounting,,3,1,graduation,,102,Strongly prefer measurable,Prefer measurable,No preference,Prefer subjective,Strongly prefer subjective
+work_style,"Would you rather work directly with people every day than work primarily with data or machines?",scale,nursing|social_work|hotel_management|teaching_school,,4,1,graduation,,103,Strongly prefer people,Prefer people,No preference,Prefer data/machines,Strongly prefer data/machines
+work_style,"Do you prefer creative open-ended work over following defined processes and procedures?",scale,fine_arts_design|fashion_design|performing_arts|creator_economy,,4,1,graduation,,104,Strongly prefer creative,Prefer creative,No preference,Prefer process,Strongly prefer process
+work_style,"Are you comfortable being on-call or working irregular hours when situations demand it?",scale,mbbs_medicine|nursing|defense_armed_forces|police_law_enforcement,,4,1,graduation,,105,Very comfortable,Comfortable,Neutral,Uncomfortable,Very uncomfortable
+work_style,"Do you prefer working in a high-pressure fast-paced environment over a calm steady one?",scale,banking_finance|entrepreneurship|professional_sports,,3,1,graduation,,106,Strongly prefer high-pressure,Prefer high-pressure,No preference,Prefer calm,Strongly prefer calm
+work_style,"Would you rather have a job with high social impact even if it pays less than a high-paying low-impact role?",scale,social_work|teaching_school|psychology_counselling|mental_health,,4,1,graduation,,107,Strongly prefer impact,Prefer impact,No preference,Prefer pay,Strongly prefer pay
+work_style,"Do you prefer working with physical materials and tools over working with information and ideas?",scale,electrician_trades|plumbing_civil_trades|manufacturing|civil_engineering,,4,1,graduation,,108,Strongly prefer physical,Prefer physical,No preference,Prefer information,Strongly prefer information
+work_style,"Do you prefer roles where you can specialise deeply in one area over roles that require broad generalist skills?",scale,quantum|nanotech|pharma|ca_accounting,,3,1,graduation,,109,Strongly prefer specialist,Prefer specialist,No preference,Prefer generalist,Strongly prefer generalist
+work_style,"Would you rather work in a government or public sector organisation than a private company?",scale,upsc_civil_services|banking_govt|defense_armed_forces|teaching_school,,4,1,graduation,,110,Strongly prefer government,Prefer government,No preference,Prefer private,Strongly prefer private

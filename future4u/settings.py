@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     "user_skill",
     "user_profile",
     "recommendation",
+    "language_master",
 ]
 
 MIDDLEWARE = [

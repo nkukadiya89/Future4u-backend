@@ -9573,7 +9573,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"education_level\": \"{{education_level_id}}\",\n  \"stream\": \"{{stream_id}}\"\n}"
+              "raw": "{\n  \"role\": \"student\",\n  \"language\": [\n    \"english\",\n    \"hindi\"\n  ],\n  \"medium\": \"english\",\n  \"country\": \"{{country_id}}\",\n  \"state\": \"{{state_id}}\",\n  \"city\": \"{{city_id}}\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"stream\": \"{{stream_id}}\",\n  \"science_track\": \"pcm\",\n  \"interest_categories\": [\n    \"technology\",\n    \"healthcare\"\n  ],\n  \"career_goal\": \"study_further\",\n  \"parent_support_level\": \"very_supportive\",\n  \"user_concerns\": [\n    \"high_education_cost\",\n    \"future_demand\"\n  ],\n  \"career_values\": [\n    \"high_salary_potential\",\n    \"growth_and_learning\"\n  ],\n  \"platform_goals\": [\n    \"career_clarity\",\n    \"course_recommendations\"\n  ]\n}"
             }
           },
           "response": []
@@ -9605,7 +9605,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"stream\": \"{{stream_id}}\"\n}"
+              "raw": "{\n  \"role\": \"student\",\n  \"science_track\": \"pcm\",\n  \"career_goal\": \"study_further\",\n  \"parent_support_level\": \"very_supportive\",\n  \"user_concerns\": [\n    \"high_education_cost\"\n  ],\n  \"career_values\": [\n    \"growth_and_learning\"\n  ],\n  \"platform_goals\": [\n    \"career_clarity\"\n  ],\n  \"interest_categories\": [\n    \"technology\"\n  ],\n  \"language\": [\n    \"english\"\n  ],\n  \"medium\": \"english\"\n}"
             }
           },
           "response": []
@@ -10168,7 +10168,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data\",\n  \"parent_acceptance_level\": 5,\n  \"future_relevance_score\": 95,\n  \"description\": \"High growth domain\",\n  \"is_active\": true,\n  \"interest_weight\": 0.2,\n  \"aptitude_weight\": 0.5,\n  \"personality_weight\": 0.1,\n  \"work_style_weight\": 0.2\n}"
+              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"parent_acceptance_level\": 2,\n  \"future_relevance_score\": 95,\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true,\n  \"interest_weight\": 0.35,\n  \"aptitude_weight\": 0.35,\n  \"personality_weight\": 0.15,\n  \"work_style_weight\": 0.15\n}"
             }
           },
           "response": []
@@ -10201,7 +10201,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data (updated)\",\n  \"parent_acceptance_level\": 5,\n  \"future_relevance_score\": 95,\n  \"description\": \"High growth domain\",\n  \"is_active\": true,\n  \"interest_weight\": 0.2,\n  \"aptitude_weight\": 0.5,\n  \"personality_weight\": 0.1,\n  \"work_style_weight\": 0.2\n}"
+              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"parent_acceptance_level\": 2,\n  \"future_relevance_score\": 95,\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true,\n  \"interest_weight\": 0.35,\n  \"aptitude_weight\": 0.35,\n  \"personality_weight\": 0.15,\n  \"work_style_weight\": 0.15\n}"
             }
           },
           "response": []
@@ -10234,7 +10234,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain_name\": \"AI & Data\",\n  \"interest_weight\": 0.2,\n  \"aptitude_weight\": 0.5,\n  \"personality_weight\": 0.1,\n  \"work_style_weight\": 0.2\n}"
+              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"parent_acceptance_level\": 2,\n  \"future_relevance_score\": 95,\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true,\n  \"interest_weight\": 0.35,\n  \"aptitude_weight\": 0.35,\n  \"personality_weight\": 0.15,\n  \"work_style_weight\": 0.15\n}"
             }
           },
           "response": []
@@ -13340,6 +13340,420 @@
             }
           },
           "response": []
+        }
+      ]
+    },
+    {
+      "name": "language_master",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/languages/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "languages",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                }
+              ]
+            },
+            "response": []
+          }
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/languages/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "languages",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Spanish\",\n  \"code\": \"ES\",\n  \"description\": \"Spanish language\",\n  \"is_active\": true\n}"
+            },
+            "response": []
+          }
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/languages/{{language_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "languages",
+                "{{language_id}}",
+                ""
+              ]
+            },
+            "response": []
+          }
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/languages/{{language_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "languages",
+                "{{language_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description\"\n}"
+            },
+            "response": []
+          }
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/languages/{{language_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "languages",
+                "{{language_id}}",
+                ""
+              ]
+            },
+            "response": []
+          }
+        },
+        {
+          "name": "change-status (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/languages/{{language_id}}/change-status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "languages",
+                "{{language_id}}",
+                "change-status",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": false\n}"
+            },
+            "response": []
+          }
+        },
+        {
+          "name": "dropdown (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/languages/dropdown/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "languages",
+                "dropdown",
+                ""
+              ]
+            },
+            "response": []
+          }
+        },
+        {
+          "name": "archived list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/languages/archived/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "languages",
+                "archived",
+                ""
+              ]
+            },
+            "response": []
+          }
+        },
+        {
+          "name": "bulk-archive (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/languages/bulk-archive/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "languages",
+                "bulk-archive",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\n    \"{{language_id}}\"\n  ]\n}"
+            },
+            "response": []
+          }
+        },
+        {
+          "name": "bulk-restore (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/languages/bulk-restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "languages",
+                "bulk-restore",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\n    \"{{language_id}}\"\n  ]\n}"
+            },
+            "response": []
+          }
+        },
+        {
+          "name": "bulk-upload CSV (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/languages/bulk-upload/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "languages",
+                "bulk-upload",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "response": []
+          }
+        },
+        {
+          "name": "sample-csv (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/languages/sample-csv/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "languages",
+                "sample-csv",
+                ""
+              ]
+            },
+            "response": []
+          }
+        },
+        {
+          "name": "import-logs (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/languages/import-logs/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "languages",
+                "import-logs",
+                ""
+              ]
+            },
+            "response": []
+          }
         }
       ]
     }

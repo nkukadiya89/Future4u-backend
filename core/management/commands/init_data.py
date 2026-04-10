@@ -8,6 +8,8 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now
 
+from language_master.serializers import LanguageSerializer
+from language_master.services import language_service
 from business_category.models import BusinessCategory
 from career.serializers import CareerSerializer
 from career.services import career_service
@@ -100,6 +102,7 @@ class Command(BaseCommand):
             self.load_domain_counsellor_knowledge()
             self.load_stream_counsellor_knowledge()
             self.load_domain_scoring_config()
+            self.load_language_master()
             # self.load_subscription()  # TODO: fix field mismatch with current Subscription model
 
     # Super User Create
@@ -960,6 +963,17 @@ class Command(BaseCommand):
                 domain_code=code,
                 defaults={"config": config, "is_active": True},
             )
+
+    def load_language_master(self):
+        self.stdout.write("Loading Language Master...")
+        file_path = path.join(
+            settings.BASE_DIR, "core", "management", "source", "language_master_sample.csv"
+        )
+        self._bulk_import_from_csv(
+            file_path=file_path,
+            serializer_class=LanguageSerializer,
+            importer=language_service.bulk_import_languages,
+        )
 
     # Subscription Create
     subscription_data = [

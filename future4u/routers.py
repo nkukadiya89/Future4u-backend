@@ -28,9 +28,12 @@ except ModuleNotFoundError:
     domain_router = None
 
 
+from language_master.routers import language_router
+
 future4u_router = routers.DefaultRouter()
 
 future4u_router.registry.extend(activity_log_router.registry)
+future4u_router.registry.extend(language_router.registry)
 future4u_router.registry.extend(assessment_router.registry)
 future4u_router.registry.extend(bussiness_category_router.registry)
 future4u_router.registry.extend(career_router.registry)
