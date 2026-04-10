@@ -29,12 +29,122 @@ class UserProfile(models.Model):
         blank=True,
         help_text="User role selected during onboarding",
     )
-    language = models.CharField(
-        max_length=20,
+    language = models.ManyToManyField(
+        "language_master.Language",
+        blank=True,
+        related_name="user_profiles",
+        help_text="Preferred languages selected from Language master",
+    )
+
+    class CareerGoal(models.TextChoices):
+        STUDY_FURTHER = "study_further", "Study Further"
+        FIND_JOB = "find_job", "Find a Job"
+        INTERNSHIP = "internship", "Internship"
+        SKILL_DEVELOPMENT = "skill_development", "Skill Development"
+        NOT_SURE = "not_sure", "Not Sure Yet"
+
+    career_goal = models.CharField(
+        max_length=30,
+        choices=CareerGoal.choices,
         null=True,
         blank=True,
-        help_text="Preferred language e.g. english, hindi, gujarati",
+        help_text="Career direction selected during onboarding",
     )
+
+    class ScienceTrack(models.TextChoices):
+        PCM = "pcm", "PCM (Physics, Chemistry, Maths)"
+        PCB = "pcb", "PCB (Physics, Chemistry, Biology)"
+        PCMB = "pcmb", "PCMB (All four)"
+
+    science_track = models.CharField(
+        max_length=10,
+        choices=ScienceTrack.choices,
+        null=True,
+        blank=True,
+        help_text="Science sub-track — only relevant when stream is science",
+    )
+
+    class ParentSupportLevel(models.TextChoices):
+        VERY_SUPPORTIVE = "very_supportive", "Very Supportive"
+        SOMEWHAT_SUPPORTIVE = "somewhat_supportive", "Somewhat Supportive"
+        NEUTRAL = "neutral", "Neutral"
+        SOMEWHAT_RESTRICTIVE = "somewhat_restrictive", "Somewhat Restrictive"
+        VERY_RESTRICTIVE = "very_restrictive", "Very Restrictive"
+
+    parent_support_level = models.CharField(
+        max_length=25,
+        choices=ParentSupportLevel.choices,
+        null=True,
+        blank=True,
+        help_text="How supportive parents are of career choices — used to weight parent_acceptance_level in recommendations",
+    )
+    user_concerns = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Concerns selected during onboarding e.g. ['job_security', 'high_education_cost']",
+    )
+
+    class CareerValue(models.TextChoices):
+        HIGH_SALARY = "high_salary_potential", "High Salary Potential"
+        JOB_SECURITY = "job_security_stability", "Job Security and Stability"
+        CREATIVITY = "creativity_innovation", "Creativity and Innovation"
+        WORK_LIFE_BALANCE = "work_life_balance", "Work Life Balance"
+        SOCIAL_IMPACT = "social_impact", "Making an Impact on Society"
+        GROWTH = "growth_and_learning", "Opportunities to Grow and Learn"
+
+    career_values = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="What user values in a career e.g. ['high_salary_potential', 'work_life_balance']",
+    )
+
+    class PlatformGoal(models.TextChoices):
+        CAREER_CLARITY = "career_clarity", "Career Clarity"
+        COURSE_RECOMMENDATIONS = "course_recommendations", "Course Recommendations"
+        JOB_INTERNSHIP = "job_internship_opportunities", "Job / Internship Opportunities"
+        PARENT_CONFIDENCE = "parent_confidence", "Parent Confidence"
+
+    platform_goals = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="What user wants from the platform e.g. ['career_clarity', 'course_recommendations']",
+    )
+
+    class InterestCategory(models.TextChoices):
+        TECHNOLOGY = "technology", "Technology / Coding"
+        HEALTHCARE = "healthcare", "Healthcare"
+        BUSINESS_MANAGEMENT = "business_management", "Business Management"
+        AGRICULTURE = "agriculture", "Agriculture / Food"
+        CREATIVE_DESIGN = "creative_design", "Creative / Design"
+        SPORTS_FITNESS = "sports_fitness", "Sports / Fitness"
+        GOVERNMENT = "government", "Government / Public Service"
+        ENGINEERING = "engineering", "Engineering"
+        FINANCE = "finance", "Finance"
+        EDUCATION = "education", "Education"
+        LAW = "law", "Law"
+        SCIENCE_RESEARCH = "science_research", "Science & Research"
+        SOCIAL_WELFARE = "social_welfare", "Social Welfare"
+        HOSPITALITY = "hospitality", "Hospitality"
+        VOCATIONAL = "vocational", "Vocational / Trades"
+
+    interest_categories = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Broad interest categories e.g. ['technology', 'healthcare', 'government']",
+    )
+
+    class UserConcern(models.TextChoices):
+        JOB_SECURITY = "job_security", "Job Security"
+        FUTURE_DEMAND = "future_demand", "Future Demand"
+        WRONG_CHOICE = "wrong_career_choice", "Wrong Career Choice"
+        EDUCATION_COST = "high_education_cost", "High Education Cost"
+        LIMITED_GUIDANCE = "limited_guidance", "Limited Guidance"
+    interest_categories = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Broad interest categories e.g. ['technology', 'healthcare', 'government']",
+    )
+
     medium = models.CharField(
         max_length=20,
         choices=[

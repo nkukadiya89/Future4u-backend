@@ -68,6 +68,8 @@ PARENT_ACCEPTANCE = {
     "it_hardware_support": 3,
     "urban_tech": 3,
     "physical_education": 3,
+    "business_management": 3,
+    "entrepreneurship": 3,
 
     # MODERATE (2) — Tech fields, digital, social work
     "ai_data": 2,
@@ -79,9 +81,7 @@ PARENT_ACCEPTANCE = {
     "blockchain": 2,
     "ai_ethics": 2,
     "edtech": 2,
-    "business_management": 2,
     "ecommerce": 2,
-    "entrepreneurship": 2,
     "agritech": 2,
     "climate_tech": 2,
     "traveltech": 2,

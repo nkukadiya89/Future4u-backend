@@ -84,9 +84,31 @@ class ApiAssessmentQuestionsViewSet(mixins.ListModelMixin, viewsets.GenericViewS
 
     def list(self, request, *args, **kwargs):
         qs = self.get_queryset()
+
+        # dimension filter — load one dimension at a time for progressive UI
+        dimension = request.query_params.get("dimension")
+        if dimension:
+            qs = qs.filter(dimension=dimension)
+
+        # signal_strength filter — default 4 (high signal only), frontend can lower to 3 for more questions
+        try:
+            min_signal = int(request.query_params.get("min_signal", 4))
+        except (ValueError, TypeError):
+            min_signal = 4
+        qs = qs.filter(signal_strength__gte=min_signal)
+
+        # optional hard limit per request — defaults to 5 per dimension (20 total across 4 dimensions)
+        try:
+            limit = int(request.query_params.get("limit")) if request.query_params.get("limit") else 5
+        except (ValueError, TypeError):
+            limit = 5
         grouped = {}
         for q in qs:
             grouped.setdefault(q.dimension, []).append(q)
+
+        # apply limit per dimension (not total)
+        grouped = {dim: items[:limit] for dim, items in grouped.items()}
+
         data = {
             dim: self.get_serializer(items, many=True).data
             for dim, items in grouped.items()
@@ -255,7 +277,7 @@ class ApiAssessmentSubmitViewSet(viewsets.GenericViewSet):
             UserResponse.objects.bulk_create(to_create, ignore_conflicts=True)
         if to_update:
             UserResponse.objects.bulk_update(
-                to_update, ["selected_option", "score_value"]
+                to_update, ["selected_option_id", "score_value"]
             )
 
         # Invalidate per-user recommendations cache (safe, no-op if cache backend unavailable)

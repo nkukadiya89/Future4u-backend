@@ -1,0 +1,6 @@
+{% extends "admin/change_list.html" %}
+{% block object-tools-items %}
+  <li><a href="{% url 'admin:language_master_language_upload' %}" class="button">Upload CSV</a></li>
+  <li><a href="{% url 'admin:language_master_language_sample_csv' %}" class="button">Download Sample CSV</a></li>
+  {{ block.super }}
+{% endblock %}

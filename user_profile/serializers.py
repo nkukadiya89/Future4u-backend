@@ -2,6 +2,22 @@ from rest_framework import serializers
 
 from user_profile.models import BusinessSetting, UserProfile
 
+# Derive valid sets directly from model TextChoices — single source of truth
+VALID_CONCERNS = {c.value for c in UserProfile.UserConcern}
+VALID_INTEREST_CATEGORIES = {c.value for c in UserProfile.InterestCategory}
+VALID_CAREER_VALUES = {c.value for c in UserProfile.CareerValue}
+VALID_PLATFORM_GOALS = {c.value for c in UserProfile.PlatformGoal}
+
+
+def validate_json_choices(value, valid_set, field_name):
+    if not isinstance(value, list):
+        raise serializers.ValidationError({field_name: "Must be a list."})
+    invalid = [v for v in value if v not in valid_set]
+    if invalid:
+        raise serializers.ValidationError({field_name: f"Invalid values: {invalid}. Allowed: {sorted(valid_set)}"})
+    return value
+
+
 
 class UserProfileSerializer(serializers.ModelSerializer):
     education_level_code = serializers.CharField(
@@ -25,6 +41,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
     city_name = serializers.CharField(
         source="city.name", read_only=True, default=None
     )
+    language = serializers.SerializerMethodField()
+
+    def get_language(self, obj):
+        return [{"id": str(l.id), "name": l.name, "code": l.code} for l in obj.language.all()]
 
     class Meta:
         model = UserProfile
@@ -37,13 +57,52 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "city", "city_name",
             "education_level", "education_level_code", "education_level_name",
             "stream", "stream_code", "stream_name",
+            "interest_categories",
+            "career_goal",
+            "science_track",
+            "parent_support_level",
+            "user_concerns",
+            "career_values",
+            "platform_goals",
         ]
 
 
 class UserProfileUpsertSerializer(serializers.ModelSerializer):
+    language = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=__import__('language_master.models', fromlist=['Language']).Language.objects.filter(is_active=True, deleted=False),
+        required=False,
+    )
+
     class Meta:
         model = UserProfile
-        fields = ["role", "language", "medium", "country", "state", "city", "education_level", "stream"]
+        fields = ["role", "language", "medium", "country", "state", "city", "education_level", "stream", "interest_categories", "career_goal", "science_track", "parent_support_level", "user_concerns", "career_values", "platform_goals"]
+
+    def validate_user_concerns(self, value):
+        return validate_json_choices(value, VALID_CONCERNS, "user_concerns")
+
+    def validate_interest_categories(self, value):
+        return validate_json_choices(value, VALID_INTEREST_CATEGORIES, "interest_categories")
+
+    def validate_career_values(self, value):
+        return validate_json_choices(value, VALID_CAREER_VALUES, "career_values")
+
+    def validate_platform_goals(self, value):
+        return validate_json_choices(value, VALID_PLATFORM_GOALS, "platform_goals")
+
+    def update(self, instance, validated_data):
+        language = validated_data.pop("language", None)
+        instance = super().update(instance, validated_data)
+        if language is not None:
+            instance.language.set(language)
+        return instance
+
+    def create(self, validated_data):
+        language = validated_data.pop("language", None)
+        instance = super().create(validated_data)
+        if language is not None:
+            instance.language.set(language)
+        return instance
 
 
 class BusinessSettingSerializer(serializers.ModelSerializer):

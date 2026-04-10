@@ -1,0 +1,10 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>Upload Languages CSV</h1>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <p><input type="file" name="file" accept=".csv" required></p>
+  <p><input type="submit" value="Upload"></p>
+</form>
+<p><a href="{% url 'admin:language_master_language_sample_csv' %}">Download sample CSV</a></p>
+{% endblock %}

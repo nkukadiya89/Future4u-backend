@@ -46,6 +46,7 @@ class DomainAdmin(BaseAdmin):
     list_display = (
         "domain_code",
         "domain_name",
+        "domain_category",
         "parent",
         "is_active",
         "deleted",
@@ -58,8 +59,8 @@ class DomainAdmin(BaseAdmin):
         "row_actions",
     )
     list_display_links = ("domain_code", "domain_name")
-    search_fields = ("domain_code", "domain_name")
-    list_filter = ("is_active", "deleted", "parent")
+    search_fields = ("domain_code", "domain_name", "domain_category")
+    list_filter = ("is_active", "deleted", "domain_category", "parent")
     list_select_related = ("parent",)
     ordering = ("-created_at",)
     raw_id_fields = ("parent", "created_by", "updated_by")
@@ -78,6 +79,7 @@ class DomainAdmin(BaseAdmin):
                 "fields": (
                     "domain_code",
                     "domain_name",
+                    "domain_category",
                     "parent",
                     "parent_acceptance_level",
                     "future_relevance_score",
@@ -250,7 +252,7 @@ class DomainAdmin(BaseAdmin):
             n += 1
         self.message_user(request, f"{n} domain(s) restored.")
 
-from domain.models import DomainScoringConfig
+from domain.models import DomainScoringConfig, DomainReportMeta, DomainCounsellorKnowledge, StreamReportMeta
 
 
 @admin.register(DomainScoringConfig)
@@ -259,3 +261,36 @@ class DomainScoringConfigAdmin(admin.ModelAdmin):
     list_filter = ("is_active",)
     search_fields = ("domain_code",)
     ordering = ("domain_code",)
+
+
+@admin.register(DomainReportMeta)
+class DomainReportMetaAdmin(admin.ModelAdmin):
+    list_display = ("domain_code", "note")
+    search_fields = ("domain_code",)
+    ordering = ("domain_code",)
+    fieldsets = (
+        (None, {"fields": ("domain_code", "degrees", "careers", "note", "direction_why", "how_to_choose_hint")}),
+        ("Next Steps", {"fields": ("next_step_1", "next_step_2", "next_step_3")}),
+    )
+
+
+@admin.register(DomainCounsellorKnowledge)
+class DomainCounsellorKnowledgeAdmin(admin.ModelAdmin):
+    list_display = ("domain_code",)
+    search_fields = ("domain_code",)
+    ordering = ("domain_code",)
+    fieldsets = (
+        (None, {"fields": ("domain_code", "insight", "tradeoff", "action", "tension")}),
+        ("Keywords", {"fields": ("technical_keywords", "domain_keywords")}),
+    )
+
+
+@admin.register(StreamReportMeta)
+class StreamReportMetaAdmin(admin.ModelAdmin):
+    list_display = ("stream_code", "note")
+    search_fields = ("stream_code",)
+    ordering = ("stream_code",)
+    fieldsets = (
+        (None, {"fields": ("stream_code", "why", "subjects", "careers", "note")}),
+        ("Next Steps", {"fields": ("next_step_1", "next_step_2", "next_step_3")}),
+    )

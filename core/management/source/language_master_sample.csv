@@ -1,0 +1,16 @@
+name,code,description,is_active
+English,EN,English language - global lingua franca,1
+Hindi,HI,Hindi - official language of India,1
+Gujarati,GU,Gujarati - language of Gujarat state,1
+Marathi,MR,Marathi - language of Maharashtra state,1
+Tamil,TA,Tamil - language of Tamil Nadu state,1
+Telugu,TE,Telugu - language of Andhra Pradesh and Telangana,1
+Kannada,KN,Kannada - language of Karnataka state,1
+Bengali,BN,Bengali - language of West Bengal state,1
+Punjabi,PA,Punjabi - language of Punjab state,1
+Odia,OR,Odia - language of Odisha state,1
+Malayalam,ML,Malayalam - language of Kerala state,1
+Urdu,UR,Urdu - widely spoken across India,1
+Spanish,ES,Spanish - second most spoken language globally,1
+French,FR,French - widely spoken in Europe and Africa,1
+Arabic,AR,Arabic - official language of Arab world,1
