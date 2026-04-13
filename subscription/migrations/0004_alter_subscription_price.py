@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('subscription', '0003_remove_paymentsubscriptionitem_payment_subscription_and_more'),
+        (
+            "subscription",
+            "0003_remove_paymentsubscriptionitem_payment_subscription_and_more",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='subscription',
-            name='price',
-            field=models.IntegerField(db_column='subscription_price'),
+            model_name="subscription",
+            name="price",
+            field=models.IntegerField(db_column="subscription_price"),
         ),
     ]

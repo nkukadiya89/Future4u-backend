@@ -99,7 +99,11 @@ class ApiAssessmentQuestionsViewSet(mixins.ListModelMixin, viewsets.GenericViewS
 
         # optional hard limit per request — defaults to 5 per dimension (20 total across 4 dimensions)
         try:
-            limit = int(request.query_params.get("limit")) if request.query_params.get("limit") else 5
+            limit = (
+                int(request.query_params.get("limit"))
+                if request.query_params.get("limit")
+                else 5
+            )
         except (ValueError, TypeError):
             limit = 5
         grouped = {}
@@ -144,23 +148,36 @@ class ApiAssessmentSubmitViewSet(viewsets.GenericViewSet):
             from user_profile.models import UserProfile
             from education_level.models import EducationLevel
             from stream.models import Stream
+
             profile, _ = UserProfile.objects.get_or_create(user=request.user)
             if education_level_id:
                 try:
-                    edu = EducationLevel.objects.get(id=education_level_id, is_active=True, deleted=False)
+                    edu = EducationLevel.objects.get(
+                        id=education_level_id, is_active=True, deleted=False
+                    )
                     profile.education_level = edu
                 except EducationLevel.DoesNotExist:
                     return Response(
-                        {"success": False, "message": {"education_level": "Invalid education level."}, "data": {}},
+                        {
+                            "success": False,
+                            "message": {"education_level": "Invalid education level."},
+                            "data": {},
+                        },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
             if stream_id:
                 try:
-                    stream = Stream.objects.get(id=stream_id, is_active=True, deleted=False)
+                    stream = Stream.objects.get(
+                        id=stream_id, is_active=True, deleted=False
+                    )
                     profile.stream = stream
                 except Stream.DoesNotExist:
                     return Response(
-                        {"success": False, "message": {"stream": "Invalid stream."}, "data": {}},
+                        {
+                            "success": False,
+                            "message": {"stream": "Invalid stream."},
+                            "data": {},
+                        },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
             profile.save()

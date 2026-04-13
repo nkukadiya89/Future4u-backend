@@ -146,7 +146,9 @@ class DomainReportMeta(models.Model):
     degrees = models.TextField(blank=True, help_text="Pipe-separated degree options")
     careers = models.TextField(blank=True, help_text="Pipe-separated career titles")
     note = models.CharField(max_length=512, blank=True)
-    direction_why = models.TextField(blank=True, help_text="One-liner: why this field suits the user")
+    direction_why = models.TextField(
+        blank=True, help_text="One-liner: why this field suits the user"
+    )
     how_to_choose_hint = models.CharField(max_length=512, blank=True)
     next_step_1 = models.TextField(blank=True)
     next_step_2 = models.TextField(blank=True)
@@ -233,9 +235,12 @@ class DomainScoringConfig(models.Model):
     DB-driven scoring config per domain (dimensions, careers, rules).
     Loaded via: python manage.py init_data
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     domain_code = models.CharField(max_length=64, unique=True, db_index=True)
-    config = models.JSONField(default=dict, help_text="Full scoring config for this domain")
+    config = models.JSONField(
+        default=dict, help_text="Full scoring config for this domain"
+    )
     is_active = models.BooleanField(default=True)
 
     class Meta:

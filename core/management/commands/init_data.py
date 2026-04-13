@@ -8,8 +8,6 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now
 
-from language_master.serializers import LanguageSerializer
-from language_master.services import language_service
 from business_category.models import BusinessCategory
 from career.serializers import CareerSerializer
 from career.services import career_service
@@ -23,6 +21,8 @@ from domain_skill_mapping.serializers import DomainSkillMappingSerializer
 from domain_skill_mapping.services import domain_skill_mapping_service
 from education_level.serializers import EducationLevelSerializer
 from education_level.services import education_level_service
+from language_master.serializers import LanguageSerializer
+from language_master.services import language_service
 from skill.serializers import SkillSerializer
 from skill.services import skill_service
 from state.models import State
@@ -65,9 +65,16 @@ class Command(BaseCommand):
 
         parser.add_argument("--groups", type=bool, help="Create Groups")
         parser.add_argument("--user", type=bool, help="Create Super User")
+        parser.add_argument(
+            "--subscription", type=bool, help="Subscription plans data to be seeded"
+        )
 
     def handle(self, *args, **kwargs):
         self.stdout.write("Initialise..")
+        if kwargs["subscription"]:
+            self.load_subscription()
+            return
+
         if (
             kwargs["country"] is None
             and kwargs["zone_name"] is None
@@ -78,6 +85,7 @@ class Command(BaseCommand):
             and kwargs["assessment"] is None
             and kwargs["groups"] is None
             and kwargs["user"] is None
+            and kwargs["subscription"] is None
         ):
             admin_user = self.create_super_user()
             self.create_custom_groups(admin_user=admin_user)
@@ -103,7 +111,7 @@ class Command(BaseCommand):
             self.load_stream_counsellor_knowledge()
             self.load_domain_scoring_config()
             self.load_language_master()
-            # self.load_subscription()  # TODO: fix field mismatch with current Subscription model
+            self.load_subscription()  # TODO: fix field mismatch with current Subscription model
 
     # Super User Create
     def create_super_user(self):
@@ -718,8 +726,9 @@ class Command(BaseCommand):
             importer=education_level_service.bulk_import_levels,
         )
         # Seed fallback messages and next steps from the same CSV
-        from education_level.models import EducationLevel
         from core.management.commands._master_import_utils import load_csv_rows
+        from education_level.models import EducationLevel
+
         for row in load_csv_rows(file_path):
             code = (row.get("level_code") or "").strip().lower()
             if not code:
@@ -940,13 +949,21 @@ class Command(BaseCommand):
     def load_domain_scoring_config(self):
         self.stdout.write("Loading Domain Scoring Config...")
         import json
-        from domain.models import DomainScoringConfig
+
         from core.management.commands._master_import_utils import load_csv_rows
+        from domain.models import DomainScoringConfig
+
         file_path = path.join(
-            settings.BASE_DIR, "core", "management", "source", "domain_scoring_config.csv"
+            settings.BASE_DIR,
+            "core",
+            "management",
+            "source",
+            "domain_scoring_config.csv",
         )
         if not path.exists(file_path):
-            self.stdout.write(self.style.WARNING("domain_scoring_config.csv not found — skipping."))
+            self.stdout.write(
+                self.style.WARNING("domain_scoring_config.csv not found — skipping.")
+            )
             return
         rows = load_csv_rows(file_path)
         for row in rows:
@@ -967,7 +984,11 @@ class Command(BaseCommand):
     def load_language_master(self):
         self.stdout.write("Loading Language Master...")
         file_path = path.join(
-            settings.BASE_DIR, "core", "management", "source", "language_master_sample.csv"
+            settings.BASE_DIR,
+            "core",
+            "management",
+            "source",
+            "language_master_sample.csv",
         )
         self._bulk_import_from_csv(
             file_path=file_path,
@@ -978,7 +999,7 @@ class Command(BaseCommand):
     # Subscription Create
     subscription_data = [
         {
-            "package_name": "Essential",
+            "package_name": "Explorer",
             "subscription_type": "subscription",
             "subscription_price": 2800.0,
             "subscription_discount": 0.0,
@@ -986,36 +1007,33 @@ class Command(BaseCommand):
             "plan_price": 26800.0,
             "duration_days": 365,
             "description": (
-                "Easily control your connected lights anytime, anywhere. "
-                "Instantly switch lights on or off with a single tap for quick manual control."
+                "Begin your career journey with essential self-discovery tools. "
+                "Explore career domains, take aptitude assessments, and gain clarity on your strengths and interests."
             ),
             "status": True,
             "core_features": [
-                {"feature_name": "light_on_off", "feature_status": True},
-                {"feature_name": "set_schedule", "feature_status": True},
-                {"feature_name": "meter_consumption_report", "feature_status": False},
-                {"feature_name": "energy_saving_report", "feature_status": False},
-                {"feature_name": "switch_notification", "feature_status": False},
-                {"feature_name": "advanced_time_schedule", "feature_status": False},
-                {"feature_name": "vacant_sites_light_off", "feature_status": False},
-                {"feature_name": "campaign_tracking_system", "feature_status": False},
-                {"feature_name": "voice_light_control", "feature_status": False},
-                {"feature_name": "camera_live_room", "feature_status": False},
-                {"feature_name": "photo_video_with_gps", "feature_status": False},
+                {"feature_name": "career_assessment", "feature_status": True},
+                {"feature_name": "domain_exploration", "feature_status": True},
+                {"feature_name": "skill_gap_analysis", "feature_status": False},
+                {"feature_name": "career_roadmap", "feature_status": False},
+                {"feature_name": "counsellor_session", "feature_status": False},
+                {"feature_name": "resume_builder", "feature_status": False},
+                {"feature_name": "job_recommendations", "feature_status": False},
+                {"feature_name": "learning_resources", "feature_status": False},
+                {"feature_name": "mock_interview", "feature_status": False},
+                {"feature_name": "mentorship_access", "feature_status": False},
+                {"feature_name": "premium_counsellor", "feature_status": False},
             ],
             "subscription_feature": [
-                {
-                    "feature_name": "Smart Light Control (on/off)",
-                    "feature_status": True,
-                },
-                {"feature_name": "Automated Scheduling", "feature_status": True},
-                {"feature_name": "Energy Consumption Reports", "feature_status": True},
-                {"feature_name": "Power & Usage Report", "feature_status": True},
-                {"feature_name": "Real-Time Issue Alerts", "feature_status": True},
+                {"feature_name": "Career Aptitude Assessment", "feature_status": True},
+                {"feature_name": "Domain & Stream Exploration", "feature_status": True},
+                {"feature_name": "Basic Career Reports", "feature_status": True},
+                {"feature_name": "Career Interest Profiling", "feature_status": True},
+                {"feature_name": "Progress Tracking Dashboard", "feature_status": True},
             ],
         },
         {
-            "package_name": "Advanced",
+            "package_name": "Career Builder",
             "subscription_type": "subscription",
             "subscription_price": 6000.0,
             "subscription_discount": 0.0,
@@ -1023,44 +1041,35 @@ class Command(BaseCommand):
             "plan_price": 30000.0,
             "duration_days": 365,
             "description": (
-                "Easily control your connected lights anytime, anywhere. "
-                "Instantly switch lights on or off with a single tap for quick manual control."
+                "Accelerate your career growth with in-depth guidance, skill gap analysis, "
+                "and a personalized career roadmap crafted by expert counsellors."
             ),
             "status": True,
             "core_features": [
-                {"feature_name": "light_on_off", "feature_status": True},
-                {"feature_name": "set_schedule", "feature_status": True},
-                {"feature_name": "meter_consumption_report", "feature_status": True},
-                {"feature_name": "energy_saving_report", "feature_status": False},
-                {"feature_name": "switch_notification", "feature_status": False},
-                {"feature_name": "advanced_time_schedule", "feature_status": False},
-                {"feature_name": "vacant_sites_light_off", "feature_status": False},
-                {"feature_name": "campaign_tracking_system", "feature_status": False},
-                {"feature_name": "voice_light_control", "feature_status": False},
-                {"feature_name": "camera_live_room", "feature_status": False},
-                {"feature_name": "photo_video_with_gps", "feature_status": False},
+                {"feature_name": "career_assessment", "feature_status": True},
+                {"feature_name": "domain_exploration", "feature_status": True},
+                {"feature_name": "skill_gap_analysis", "feature_status": True},
+                {"feature_name": "career_roadmap", "feature_status": True},
+                {"feature_name": "counsellor_session", "feature_status": True},
+                {"feature_name": "resume_builder", "feature_status": True},
+                {"feature_name": "job_recommendations", "feature_status": False},
+                {"feature_name": "learning_resources", "feature_status": False},
+                {"feature_name": "mock_interview", "feature_status": False},
+                {"feature_name": "mentorship_access", "feature_status": False},
+                {"feature_name": "premium_counsellor", "feature_status": False},
             ],
             "subscription_feature": [
-                {
-                    "feature_name": "Smart Light Control (on/off)",
-                    "feature_status": True,
-                },
-                {"feature_name": "Automated Scheduling", "feature_status": True},
-                {"feature_name": "Energy Consumption Reports", "feature_status": True},
-                {"feature_name": "Power & Usage Report", "feature_status": True},
-                {"feature_name": "Real-Time Issue Alerts", "feature_status": True},
-                {
-                    "feature_name": "Advanced Campaign Scheduling",
-                    "feature_status": True,
-                },
-                {
-                    "feature_name": "Auto Light-Off for Vacant Sites",
-                    "feature_status": True,
-                },
+                {"feature_name": "Career Aptitude Assessment", "feature_status": True},
+                {"feature_name": "Domain & Stream Exploration", "feature_status": True},
+                {"feature_name": "Skill Gap Analysis", "feature_status": True},
+                {"feature_name": "Personalized Career Roadmap", "feature_status": True},
+                {"feature_name": "Live Counsellor Sessions", "feature_status": True},
+                {"feature_name": "Resume Builder", "feature_status": True},
+                {"feature_name": "Detailed Career Reports", "feature_status": True},
             ],
         },
         {
-            "package_name": "Vision Pro",
+            "package_name": "Career Pro",
             "subscription_type": "subscription",
             "subscription_price": 8000.0,
             "subscription_discount": 0.0,
@@ -1068,47 +1077,38 @@ class Command(BaseCommand):
             "plan_price": 32000.0,
             "duration_days": 365,
             "description": (
-                "Easily control your connected lights anytime, anywhere. "
-                "Instantly switch lights on or off with a single tap for quick manual control."
+                "Unlock your full career potential with premium counselling, mentorship access, "
+                "AI-powered job recommendations, mock interviews, and comprehensive career intelligence."
             ),
             "status": True,
             "core_features": [
-                {"feature_name": "light_on_off", "feature_status": True},
-                {"feature_name": "set_schedule", "feature_status": True},
-                {"feature_name": "meter_consumption_report", "feature_status": True},
-                {"feature_name": "energy_saving_report", "feature_status": False},
-                {"feature_name": "switch_notification", "feature_status": False},
-                {"feature_name": "advanced_time_schedule", "feature_status": False},
-                {"feature_name": "vacant_sites_light_off", "feature_status": False},
-                {"feature_name": "campaign_tracking_system", "feature_status": False},
-                {"feature_name": "voice_light_control", "feature_status": False},
-                {"feature_name": "camera_live_room", "feature_status": False},
-                {"feature_name": "photo_video_with_gps", "feature_status": False},
+                {"feature_name": "career_assessment", "feature_status": True},
+                {"feature_name": "domain_exploration", "feature_status": True},
+                {"feature_name": "skill_gap_analysis", "feature_status": True},
+                {"feature_name": "career_roadmap", "feature_status": True},
+                {"feature_name": "counsellor_session", "feature_status": True},
+                {"feature_name": "resume_builder", "feature_status": True},
+                {"feature_name": "job_recommendations", "feature_status": True},
+                {"feature_name": "learning_resources", "feature_status": True},
+                {"feature_name": "mock_interview", "feature_status": True},
+                {"feature_name": "mentorship_access", "feature_status": True},
+                {"feature_name": "premium_counsellor", "feature_status": True},
             ],
             "subscription_feature": [
+                {"feature_name": "Career Aptitude Assessment", "feature_status": True},
+                {"feature_name": "Domain & Stream Exploration", "feature_status": True},
+                {"feature_name": "Skill Gap Analysis", "feature_status": True},
+                {"feature_name": "Personalized Career Roadmap", "feature_status": True},
+                {"feature_name": "Live Counsellor Sessions", "feature_status": True},
+                {"feature_name": "Resume Builder", "feature_status": True},
                 {
-                    "feature_name": "Smart Light Control (on/off)",
+                    "feature_name": "AI-Powered Job Recommendations",
                     "feature_status": True,
                 },
-                {"feature_name": "Automated Scheduling", "feature_status": True},
-                {"feature_name": "Energy Consumption Reports", "feature_status": True},
-                {"feature_name": "Power & Usage Report", "feature_status": True},
-                {"feature_name": "Real-Time Issue Alerts", "feature_status": True},
-                {
-                    "feature_name": "Advanced Campaign Scheduling",
-                    "feature_status": True,
-                },
-                {
-                    "feature_name": "Auto Light-Off for Vacant Sites",
-                    "feature_status": True,
-                },
-                {"feature_name": "Client Campaign Tracking", "feature_status": True},
-                {
-                    "feature_name": "Voice-Activated Light Control",
-                    "feature_status": True,
-                },
-                {"feature_name": "Live Camera Monitoring", "feature_status": True},
-                {"feature_name": "Smart Photo & Video Capture", "feature_status": True},
+                {"feature_name": "Curated Learning Resources", "feature_status": True},
+                {"feature_name": "Mock Interview Practice", "feature_status": True},
+                {"feature_name": "Mentorship Access", "feature_status": True},
+                {"feature_name": "Premium Career Counselling", "feature_status": True},
             ],
         },
     ]

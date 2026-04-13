@@ -20,7 +20,9 @@ class LanguageAdminForm(forms.ModelForm):
         if not value:
             raise forms.ValidationError("Code may not be blank.")
         exclude_pk = self.instance.pk if self.instance and self.instance.pk else None
-        if language_service.case_insensitive_code_exists(code=value, exclude_pk=exclude_pk):
+        if language_service.case_insensitive_code_exists(
+            code=value, exclude_pk=exclude_pk
+        ):
             raise forms.ValidationError(f"Language with code '{value}' already exists.")
         return value
 
@@ -61,7 +63,9 @@ class LanguageAdmin(BaseAdmin):
     def sample_csv_view(self, request):
         data = language_service.sample_csv_bytes()
         resp = HttpResponse(data, content_type="text/csv; charset=utf-8")
-        resp["Content-Disposition"] = 'attachment; filename="language_master_sample.csv"'
+        resp["Content-Disposition"] = (
+            'attachment; filename="language_master_sample.csv"'
+        )
         return resp
 
     def upload_view(self, request):
@@ -74,8 +78,11 @@ class LanguageAdmin(BaseAdmin):
                     " ".join(errs) if errs else "No rows to import.",
                     level=messages.ERROR,
                 )
-                return HttpResponseRedirect(reverse("admin:language_master_language_upload"))
+                return HttpResponseRedirect(
+                    reverse("admin:language_master_language_upload")
+                )
             from user.models import User
+
             user = request.user
             result = language_service.bulk_import_languages(
                 user=user,
@@ -83,9 +90,16 @@ class LanguageAdmin(BaseAdmin):
                 serializer_class=LanguageSerializer,
                 context={"request": request},
             )
-            self.message_user(request, f"Imported {result['success_count']}, failed {result['error_count']}.")
-            return HttpResponseRedirect(reverse("admin:language_master_language_changelist"))
-        return render(request, "admin/language_master/language/upload_languages.html", {})
+            self.message_user(
+                request,
+                f"Imported {result['success_count']}, failed {result['error_count']}.",
+            )
+            return HttpResponseRedirect(
+                reverse("admin:language_master_language_changelist")
+            )
+        return render(
+            request, "admin/language_master/language/upload_languages.html", {}
+        )
 
     def save_model(self, request, obj, form, change):
         obj.save(user=request.user)

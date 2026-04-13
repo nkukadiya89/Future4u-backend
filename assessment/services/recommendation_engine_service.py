@@ -30,7 +30,15 @@ FULL_CAREER_LEVELS = {LEVEL_GRAD, LEVEL_PG, LEVEL_PHD, LEVEL_PROFESSIONAL}
 
 # ── Fallback stream codes (used only if DB has no Stream records for that level) ─
 _FALLBACK_STREAM_CODES: dict[str, set[str]] = {
-    LEVEL_10TH: {"science", "commerce", "arts", "vocational", "sports", "fine_arts", "agriculture"},
+    LEVEL_10TH: {
+        "science",
+        "commerce",
+        "arts",
+        "vocational",
+        "sports",
+        "fine_arts",
+        "agriculture",
+    },
     LEVEL_12TH: {"science", "commerce", "arts", "vocational", "sports", "fine_arts"},
 }
 
@@ -38,6 +46,7 @@ _FALLBACK_STREAM_CODES: dict[str, set[str]] = {
 def _get_stream_codes_for_level(level_code: str) -> set[str]:
     """Load active stream codes for a given education level from DB. Falls back to _FALLBACK_STREAM_CODES."""
     from stream.models import Stream
+
     codes = set(
         Stream.objects.filter(
             education_level__level_code=level_code,
@@ -54,10 +63,15 @@ def _get_education_level_sequence(level_code: str) -> int:
     Falls back to 0 if not found, which safely skips career-level filtering.
     """
     from education_level.models import EducationLevel
+
     try:
-        obj = EducationLevel.objects.filter(
-            level_code__iexact=level_code, is_active=True, deleted=False
-        ).only("sequence_order").first()
+        obj = (
+            EducationLevel.objects.filter(
+                level_code__iexact=level_code, is_active=True, deleted=False
+            )
+            .only("sequence_order")
+            .first()
+        )
         if obj:
             return int(obj.sequence_order)
     except Exception:
@@ -124,7 +138,9 @@ class RecommendationEngineService:
         rows = (
             UserResponse.objects.filter(
                 user_id=user_id,
-                question__mapped_streams__stream_code__in=_get_stream_codes_for_level(LEVEL_10TH),
+                question__mapped_streams__stream_code__in=_get_stream_codes_for_level(
+                    LEVEL_10TH
+                ),
                 question__mapped_streams__is_active=True,
                 question__mapped_streams__deleted=False,
             )
@@ -407,7 +423,9 @@ class RecommendationEngineService:
             career = mapping.career
             # Skip careers that require a higher education level than the user has
             if career.min_education_level:
-                min_seq = int(getattr(career.min_education_level, "sequence_order", 0) or 0)
+                min_seq = int(
+                    getattr(career.min_education_level, "sequence_order", 0) or 0
+                )
                 if user_level_seq > 0 and min_seq > user_level_seq:
                     continue
             key = career.career_code or str(career.id)

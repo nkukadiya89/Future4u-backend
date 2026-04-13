@@ -45,7 +45,15 @@ FULL_CAREER_LEVELS = {LEVEL_GRAD, LEVEL_PG, LEVEL_PHD, LEVEL_PROFESSIONAL}
 
 # ── Fallback stream codes (used only if DB has no Stream records for that level) ─
 _FALLBACK_STREAM_CODES: dict[str, set[str]] = {
-    LEVEL_10TH: {"science", "commerce", "arts", "vocational", "sports", "fine_arts", "agriculture"},
+    LEVEL_10TH: {
+        "science",
+        "commerce",
+        "arts",
+        "vocational",
+        "sports",
+        "fine_arts",
+        "agriculture",
+    },
     LEVEL_12TH: {"science", "commerce", "arts", "vocational", "sports", "fine_arts"},
 }
 
@@ -68,11 +76,19 @@ def _get_level_next_steps_from_db(level_code: str) -> list[str]:
     Falls back to empty list — no hardcoded strings.
     """
     try:
-        obj = EducationLevel.objects.filter(
-            level_code=level_code, is_active=True, deleted=False
-        ).only("next_step_1", "next_step_2", "next_step_3").first()
+        obj = (
+            EducationLevel.objects.filter(
+                level_code=level_code, is_active=True, deleted=False
+            )
+            .only("next_step_1", "next_step_2", "next_step_3")
+            .first()
+        )
         if obj:
-            return [s for s in [obj.next_step_1, obj.next_step_2, obj.next_step_3] if s and s.strip()]
+            return [
+                s
+                for s in [obj.next_step_1, obj.next_step_2, obj.next_step_3]
+                if s and s.strip()
+            ]
     except Exception:
         pass
     return []
@@ -84,9 +100,13 @@ def _get_level_fallback_message(level_code: str) -> str:
     Falls back to empty string — no hardcoded strings.
     """
     try:
-        obj = EducationLevel.objects.filter(
-            level_code=level_code, is_active=True, deleted=False
-        ).only("fallback_action").first()
+        obj = (
+            EducationLevel.objects.filter(
+                level_code=level_code, is_active=True, deleted=False
+            )
+            .only("fallback_action")
+            .first()
+        )
         if obj and obj.fallback_action:
             return obj.fallback_action
     except Exception:
@@ -183,9 +203,9 @@ def _clamp_0_100(value: float) -> int:
 
 # ── Scoring formula constants ─────────────────────────────────────────────────
 # Confidence formula weights: gap*GAP + spread*SPREAD + coverage*COVERAGE_SCALE
-_CONF_GAP_WEIGHT: float = 0.6        # how much the top-vs-second gap contributes
-_CONF_SPREAD_WEIGHT: float = 0.2     # how much overall score spread contributes
-_CONF_COVERAGE_SCALE: float = 20.0   # coverage (0..1) scaled to 0..20 points
+_CONF_GAP_WEIGHT: float = 0.6  # how much the top-vs-second gap contributes
+_CONF_SPREAD_WEIGHT: float = 0.2  # how much overall score spread contributes
+_CONF_COVERAGE_SCALE: float = 20.0  # coverage (0..1) scaled to 0..20 points
 
 # Stream influence: final_domain_score = base * (1 + mapping_weight/100 * STREAM_INFLUENCE)
 _STREAM_INFLUENCE: float = 0.2
@@ -206,7 +226,10 @@ _SKILL_PROF_MAX: float = 70.0
 
 
 def _domain_score_0_1(
-    *, dim_avgs_0_1: dict[str, float], dim_counts: dict[str, int], dim_weights: dict[str, float]
+    *,
+    dim_avgs_0_1: dict[str, float],
+    dim_counts: dict[str, int],
+    dim_weights: dict[str, float],
 ) -> float:
     """
     Step 2: Domain score on 0..1.
@@ -243,7 +266,11 @@ def _calc_confidence(
     scores = [max(0.0, min(100.0, float(v))) for v in (domain_scores_0_100 or [])]
     spread = float(max(scores) - min(scores)) if scores else 0.0
     coverage = max(0.0, min(1.0, float(coverage_0_1)))
-    confidence = (gap * _CONF_GAP_WEIGHT) + (spread * _CONF_SPREAD_WEIGHT) + (coverage * _CONF_COVERAGE_SCALE)
+    confidence = (
+        (gap * _CONF_GAP_WEIGHT)
+        + (spread * _CONF_SPREAD_WEIGHT)
+        + (coverage * _CONF_COVERAGE_SCALE)
+    )
     return _clamp_0_100(confidence)
 
 
@@ -307,7 +334,18 @@ def _estimate_skill_proficiency_40_70(
             + (work_style * 0.05)
         )
 
-    return int(round(max(_SKILL_PROF_MIN, min(_SKILL_PROF_MAX, _SKILL_PROF_MIN + (float(basis) / 100.0) * (_SKILL_PROF_MAX - _SKILL_PROF_MIN)))))
+    return int(
+        round(
+            max(
+                _SKILL_PROF_MIN,
+                min(
+                    _SKILL_PROF_MAX,
+                    _SKILL_PROF_MIN
+                    + (float(basis) / 100.0) * (_SKILL_PROF_MAX - _SKILL_PROF_MIN),
+                ),
+            )
+        )
+    )
 
 
 def _domain_reason(
@@ -410,7 +448,9 @@ def _resolve_user_context(
     if not stream and level_code_resolved not in STREAM_RECOMMENDATION_LEVELS:
         return None
 
-    if stream and (getattr(stream, "deleted", False) or not getattr(stream, "is_active", True)):
+    if stream and (
+        getattr(stream, "deleted", False) or not getattr(stream, "is_active", True)
+    ):
         return None
     if getattr(edu, "deleted", False) or not getattr(edu, "is_active", True):
         return None
@@ -561,7 +601,9 @@ def generate_recommendation(
         aptitude = float(dim_scores_0_100.get("aptitude", 0.0))
         if abs(interest - aptitude) > _CONFLICT_DIM_THRESHOLD:
             decision_type = "conflicted"
-        elif gap < _EXPLORATORY_GAP_THRESHOLD and spread < _EXPLORATORY_SPREAD_THRESHOLD:
+        elif (
+            gap < _EXPLORATORY_GAP_THRESHOLD and spread < _EXPLORATORY_SPREAD_THRESHOLD
+        ):
             decision_type = "exploratory"
         else:
             decision_type = "confident"
@@ -629,6 +671,7 @@ def generate_recommendation(
         from assessment.services.recommendation_engine_service import (
             RecommendationEngineService as AssessmentEngine,
         )
+
         result = AssessmentEngine().recommend(user_id=user_id)
         # Ensure all expected keys are present
         result.setdefault("domain_ranking", [])

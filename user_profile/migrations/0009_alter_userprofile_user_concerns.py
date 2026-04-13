@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user_profile', '0008_career_values_platform_goals'),
+        ("user_profile", "0008_career_values_platform_goals"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userprofile',
-            name='user_concerns',
-            field=models.JSONField(blank=True, default=list, help_text="Concerns selected during onboarding e.g. ['job_security', 'high_education_cost']"),
+            model_name="userprofile",
+            name="user_concerns",
+            field=models.JSONField(
+                blank=True,
+                default=list,
+                help_text="Concerns selected during onboarding e.g. ['job_security', 'high_education_cost']",
+            ),
         ),
     ]

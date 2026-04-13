@@ -2,30 +2,42 @@
 Counsellor Report Service — fully DB-driven.
 Content comes from DomainReportMeta, StreamReportMeta, and EducationLevel.
 """
+
 from __future__ import annotations
 
 
 def _get_domain_meta(domain_code: str) -> dict:
     try:
         from domain.models import DomainReportMeta
+
         obj = DomainReportMeta.objects.filter(domain_code=domain_code).first()
         if obj and obj.degrees:
             return {
                 "degrees": obj.degrees_list(),
                 "careers": obj.careers_list(),
                 "note": obj.note,
-                "direction_why": obj.direction_why if hasattr(obj, "direction_why") else "",
+                "direction_why": (
+                    obj.direction_why if hasattr(obj, "direction_why") else ""
+                ),
                 "how_to_choose_hint": obj.how_to_choose_hint,
                 "next_steps": obj.next_steps(),
             }
     except Exception:
         pass
-    return {"degrees": [], "careers": [], "note": "", "direction_why": "", "how_to_choose_hint": "", "next_steps": []}
+    return {
+        "degrees": [],
+        "careers": [],
+        "note": "",
+        "direction_why": "",
+        "how_to_choose_hint": "",
+        "next_steps": [],
+    }
 
 
 def _get_stream_meta(stream_code: str) -> dict:
     try:
         from domain.models import StreamReportMeta
+
         obj = StreamReportMeta.objects.filter(stream_code=stream_code).first()
         if obj and obj.why:
             return {
@@ -43,11 +55,20 @@ def _get_stream_meta(stream_code: str) -> dict:
 def _get_level_next_steps(level_code: str) -> list[str]:
     try:
         from education_level.models import EducationLevel
-        obj = EducationLevel.objects.filter(
-            level_code=level_code, is_active=True, deleted=False
-        ).only("next_step_1", "next_step_2", "next_step_3").first()
+
+        obj = (
+            EducationLevel.objects.filter(
+                level_code=level_code, is_active=True, deleted=False
+            )
+            .only("next_step_1", "next_step_2", "next_step_3")
+            .first()
+        )
         if obj:
-            return [s for s in [obj.next_step_1, obj.next_step_2, obj.next_step_3] if s.strip()]
+            return [
+                s
+                for s in [obj.next_step_1, obj.next_step_2, obj.next_step_3]
+                if s.strip()
+            ]
     except Exception:
         pass
     return []
@@ -56,7 +77,12 @@ def _get_level_next_steps(level_code: str) -> list[str]:
 def _direction_why(domain_name: str, confidence: int, domain_code: str) -> str:
     try:
         from domain.models import DomainReportMeta
-        obj = DomainReportMeta.objects.filter(domain_code=domain_code).only("direction_why").first()
+
+        obj = (
+            DomainReportMeta.objects.filter(domain_code=domain_code)
+            .only("direction_why")
+            .first()
+        )
         if obj and hasattr(obj, "direction_why") and obj.direction_why:
             if confidence >= 55:
                 return obj.direction_why
@@ -110,13 +136,26 @@ def _build_stream_report(recommendation: dict) -> dict | None:
         code = entry.get("stream_code", "")
         name = entry.get("stream_name", code)
         meta = _get_stream_meta(code)
-        top_options.append({"name": name, "subjects": meta["subjects"], "careers": meta["careers"], "note": meta["note"]})
+        top_options.append(
+            {
+                "name": name,
+                "subjects": meta["subjects"],
+                "careers": meta["careers"],
+                "note": meta["note"],
+            }
+        )
 
     if len(top_options) >= 3:
         a, b, c = top_options[0]["name"], top_options[1]["name"], top_options[2]["name"]
-        ha = _get_stream_meta(stream_ranking[0].get("stream_code", "")).get("how_to_choose_hint", "")
-        hb = _get_stream_meta(stream_ranking[1].get("stream_code", "")).get("how_to_choose_hint", "")
-        hc = _get_stream_meta(stream_ranking[2].get("stream_code", "")).get("how_to_choose_hint", "")
+        ha = _get_stream_meta(stream_ranking[0].get("stream_code", "")).get(
+            "how_to_choose_hint", ""
+        )
+        hb = _get_stream_meta(stream_ranking[1].get("stream_code", "")).get(
+            "how_to_choose_hint", ""
+        )
+        hc = _get_stream_meta(stream_ranking[2].get("stream_code", "")).get(
+            "how_to_choose_hint", ""
+        )
         if ha and hb and hc:
             how_to_choose = f"Go with {a} if {ha.rstrip('.')}. Pick {b} if {hb.rstrip('.')}. Choose {c} if {hc.rstrip('.')}."
         else:
@@ -159,13 +198,15 @@ def build_counsellor_report(recommendation: dict) -> dict | None:
         code = entry.get("domain_code", "")
         name = entry.get("domain_name", code)
         meta = _get_domain_meta(code)
-        top_options.append({
-            "name": name,
-            "degrees": meta["degrees"],
-            "careers": meta["careers"],
-            "note": meta["note"],
-            "how_to_choose_hint": meta["how_to_choose_hint"],
-        })
+        top_options.append(
+            {
+                "name": name,
+                "degrees": meta["degrees"],
+                "careers": meta["careers"],
+                "note": meta["note"],
+                "how_to_choose_hint": meta["how_to_choose_hint"],
+            }
+        )
 
     how_to_choose = _how_to_choose(top_options)
     for opt in top_options:
@@ -179,7 +220,10 @@ def build_counsellor_report(recommendation: dict) -> dict | None:
         next_steps = _get_level_next_steps(education_level or "")
 
     return {
-        "direction": {"name": top_name, "why": _direction_why(top_name, confidence, top_code)},
+        "direction": {
+            "name": top_name,
+            "why": _direction_why(top_name, confidence, top_code),
+        },
         "top_options": top_options,
         "how_to_choose": how_to_choose,
         "next_steps": next_steps,

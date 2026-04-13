@@ -101,7 +101,10 @@ class UserProfile(models.Model):
     class PlatformGoal(models.TextChoices):
         CAREER_CLARITY = "career_clarity", "Career Clarity"
         COURSE_RECOMMENDATIONS = "course_recommendations", "Course Recommendations"
-        JOB_INTERNSHIP = "job_internship_opportunities", "Job / Internship Opportunities"
+        JOB_INTERNSHIP = (
+            "job_internship_opportunities",
+            "Job / Internship Opportunities",
+        )
         PARENT_CONFIDENCE = "parent_confidence", "Parent Confidence"
 
     platform_goals = models.JSONField(
@@ -139,6 +142,7 @@ class UserProfile(models.Model):
         WRONG_CHOICE = "wrong_career_choice", "Wrong Career Choice"
         EDUCATION_COST = "high_education_cost", "High Education Cost"
         LIMITED_GUIDANCE = "limited_guidance", "Limited Guidance"
+
     interest_categories = models.JSONField(
         default=list,
         blank=True,

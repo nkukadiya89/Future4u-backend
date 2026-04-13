@@ -7,36 +7,71 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('city', '0003_initial'),
-        ('country', '0002_initial'),
-        ('state', '0002_initial'),
-        ('user_profile', '0002_userprofile'),
+        ("city", "0003_initial"),
+        ("country", "0002_initial"),
+        ("state", "0002_initial"),
+        ("user_profile", "0002_userprofile"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='city',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='user_profiles', to='city.city'),
+            model_name="userprofile",
+            name="city",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="user_profiles",
+                to="city.city",
+            ),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='country',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='user_profiles', to='country.country'),
+            model_name="userprofile",
+            name="country",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="user_profiles",
+                to="country.country",
+            ),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='language',
-            field=models.CharField(blank=True, help_text='Preferred language e.g. english, hindi, gujarati', max_length=20, null=True),
+            model_name="userprofile",
+            name="language",
+            field=models.CharField(
+                blank=True,
+                help_text="Preferred language e.g. english, hindi, gujarati",
+                max_length=20,
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='role',
-            field=models.CharField(blank=True, choices=[('student', 'Student'), ('parent', 'Parent / Guardian'), ('professional', 'Working Professional'), ('institute', 'Institute / Course Provider'), ('corporate', 'Corporate / Employer')], help_text='User role selected during onboarding', max_length=20, null=True),
+            model_name="userprofile",
+            name="role",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("student", "Student"),
+                    ("parent", "Parent / Guardian"),
+                    ("professional", "Working Professional"),
+                    ("institute", "Institute / Course Provider"),
+                    ("corporate", "Corporate / Employer"),
+                ],
+                help_text="User role selected during onboarding",
+                max_length=20,
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='state',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='user_profiles', to='state.state'),
+            model_name="userprofile",
+            name="state",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="user_profiles",
+                to="state.state",
+            ),
         ),
     ]

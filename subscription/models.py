@@ -9,7 +9,7 @@ from user.models import User
 class Subscription(models.Model):
     package_name = models.CharField(max_length=100)
     # price = models.FloatField()
-    price = models.IntegerField(db_column='subscription_price')
+    price = models.IntegerField(db_column="subscription_price")
     duration_days = models.IntegerField()
     description = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)

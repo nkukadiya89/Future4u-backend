@@ -2,15 +2,16 @@
 Counsellor messages — DB-driven. All content comes from DomainCounsellorKnowledge
 and StreamCounsellorKnowledge. Hardcoded dicts are removed.
 """
+
 from __future__ import annotations
 
 # ── Confidence label thresholds ───────────────────────────────────────────────
 # These define the UX copy shown to users based on their confidence score (0-100).
 # Adjust here if the scoring formula changes.
-CONFIDENCE_STRONG = 72       # "Strong match"
-CONFIDENCE_GOOD = 55         # "Good match" — also used as the strong/weak branch point
-CONFIDENCE_MODERATE = 38     # "Moderate match"
-CONFIDENCE_EARLY = 20        # "Early signal"
+CONFIDENCE_STRONG = 72  # "Strong match"
+CONFIDENCE_GOOD = 55  # "Good match" — also used as the strong/weak branch point
+CONFIDENCE_MODERATE = 38  # "Moderate match"
+CONFIDENCE_EARLY = 20  # "Early signal"
 
 # Tie threshold: two stream/domain scores within this many points are considered tied
 SCORE_TIE_MARGIN = 5
@@ -24,7 +25,12 @@ def _domain_display(code: str) -> str:
     clean = _clean(code)
     try:
         from domain.models import Domain
-        obj = Domain.objects.filter(domain_code=clean, deleted=False).only("domain_name").first()
+
+        obj = (
+            Domain.objects.filter(domain_code=clean, deleted=False)
+            .only("domain_name")
+            .first()
+        )
         if obj and obj.domain_name:
             return obj.domain_name
     except Exception:
@@ -36,7 +42,12 @@ def _stream_display(code: str) -> str:
     clean = _clean(code)
     try:
         from stream.models import Stream
-        obj = Stream.objects.filter(stream_code=clean, deleted=False).only("stream_name").first()
+
+        obj = (
+            Stream.objects.filter(stream_code=clean, deleted=False)
+            .only("stream_name")
+            .first()
+        )
         if obj and obj.stream_name:
             return obj.stream_name
     except Exception:
@@ -48,7 +59,12 @@ def _career_display(code: str) -> str:
     clean = _clean(code)
     try:
         from career.models import Career
-        obj = Career.objects.filter(career_code=clean, deleted=False).only("career_name").first()
+
+        obj = (
+            Career.objects.filter(career_code=clean, deleted=False)
+            .only("career_name")
+            .first()
+        )
         if obj and obj.career_name:
             return obj.career_name
     except Exception:
@@ -61,9 +77,12 @@ def _dk(code: str) -> tuple:
     clean = _clean(code)
     try:
         from domain.models import DomainCounsellorKnowledge
+
         obj = (
             DomainCounsellorKnowledge.objects.filter(domain_code=clean).first()
-            or DomainCounsellorKnowledge.objects.filter(domain_code="__default__").first()
+            or DomainCounsellorKnowledge.objects.filter(
+                domain_code="__default__"
+            ).first()
         )
         if obj and obj.insight:
             return obj.as_tuple()
@@ -77,9 +96,12 @@ def _sk(code: str) -> tuple:
     clean = _clean(code)
     try:
         from domain.models import StreamCounsellorKnowledge
+
         obj = (
             StreamCounsellorKnowledge.objects.filter(stream_code=clean).first()
-            or StreamCounsellorKnowledge.objects.filter(stream_code="__default__").first()
+            or StreamCounsellorKnowledge.objects.filter(
+                stream_code="__default__"
+            ).first()
         )
         if obj and obj.insight:
             return obj.as_tuple()
@@ -89,10 +111,14 @@ def _sk(code: str) -> tuple:
 
 
 def _confidence_label(confidence: int) -> str:
-    if confidence >= CONFIDENCE_STRONG: return "Strong match"
-    if confidence >= CONFIDENCE_GOOD: return "Good match"
-    if confidence >= CONFIDENCE_MODERATE: return "Moderate match"
-    if confidence >= CONFIDENCE_EARLY: return "Early signal"
+    if confidence >= CONFIDENCE_STRONG:
+        return "Strong match"
+    if confidence >= CONFIDENCE_GOOD:
+        return "Good match"
+    if confidence >= CONFIDENCE_MODERATE:
+        return "Moderate match"
+    if confidence >= CONFIDENCE_EARLY:
+        return "Early signal"
     return "Not enough data yet"
 
 
@@ -100,17 +126,25 @@ def _get_level_fallback(level_code: str) -> tuple[str, str]:
     """Load fallback insight/action from EducationLevel DB record."""
     try:
         from education_level.models import EducationLevel
-        obj = EducationLevel.objects.filter(
-            level_code=level_code, is_active=True, deleted=False
-        ).only("fallback_insight", "fallback_action").first()
+
+        obj = (
+            EducationLevel.objects.filter(
+                level_code=level_code, is_active=True, deleted=False
+            )
+            .only("fallback_insight", "fallback_action")
+            .first()
+        )
         if obj and obj.fallback_insight:
             return (obj.fallback_insight, obj.fallback_action or "")
     except Exception:
         pass
-    return _LEVEL_FALLBACK.get(level_code, (
-        "We need a few more answers before we can give you something useful.",
-        "Finish the assessment and we'll give you a personalised career direction.",
-    ))
+    return _LEVEL_FALLBACK.get(
+        level_code,
+        (
+            "We need a few more answers before we can give you something useful.",
+            "Finish the assessment and we'll give you a personalised career direction.",
+        ),
+    )
 
 
 def build_counsellor_message(
@@ -138,7 +172,9 @@ def build_counsellor_message(
 
     # ── 10th grade — stream ──────────────────────────────────────────────────
     if recommendation_type == "stream":
-        code = top_stream or (stream_ranking[0].get("stream_code") if stream_ranking else None)
+        code = top_stream or (
+            stream_ranking[0].get("stream_code") if stream_ranking else None
+        )
         if not code:
             return _no_data_message(level_code)
         k = _sk(code)
@@ -146,7 +182,9 @@ def build_counsellor_message(
         top_score = stream_ranking[0].get("score", 0) if stream_ranking else 0
         second = stream_ranking[1] if len(stream_ranking) > 1 else None
         tied = second and abs(top_score - second.get("score", 0)) <= SCORE_TIE_MARGIN
-        second_label = _stream_display(second.get("stream_code", "")) if second else None
+        second_label = (
+            _stream_display(second.get("stream_code", "")) if second else None
+        )
 
         if tied and second_label:
             insight = (
@@ -182,7 +220,9 @@ def build_counsellor_message(
 
     # ── 12th grade — college domain ──────────────────────────────────────────
     if recommendation_type == "college_domain":
-        code = top_domain or (domain_ranking[0].get("domain_code") if domain_ranking else None)
+        code = top_domain or (
+            domain_ranking[0].get("domain_code") if domain_ranking else None
+        )
         if not code:
             return _no_data_message(level_code)
         k = _dk(code)
@@ -219,7 +259,11 @@ def build_counsellor_message(
         second_label = second.get("domain_name") if second else None
         override_note = ""
 
-        label = f"You seem built for {career_label}" if career_label else f"{domain_label} looks like your space"
+        label = (
+            f"You seem built for {career_label}"
+            if career_label
+            else f"{domain_label} looks like your space"
+        )
 
         if level_code in ("iti", "diploma"):
             if strong:
@@ -236,13 +280,21 @@ def build_counsellor_message(
                     + f"{override_note}. The signal is still forming — try something practical before committing."
                 )
                 action = f"Find a short project or apprenticeship in {domain_label} first. Hands-on time will tell you more than any assessment."
-                tension = f"The real call: go deeper in {domain_label} now, or explore {second_label} first?" if second_label else k[3]
+                tension = (
+                    f"The real call: go deeper in {domain_label} now, or explore {second_label} first?"
+                    if second_label
+                    else k[3]
+                )
 
         elif level_code in ("post_graduation", "doctorate", "professional"):
             if strong:
                 insight = (
                     f"{domain_label} is where your answers land most consistently"
-                    + (f" — {career_label} is the clearest role fit" if career_label else "")
+                    + (
+                        f" — {career_label} is the clearest role fit"
+                        if career_label
+                        else ""
+                    )
                     + f"{override_note}. At this level, going deep beats staying broad. {k[0]}"
                 )
                 action = k[2]
@@ -260,7 +312,11 @@ def build_counsellor_message(
             if strong:
                 insight = (
                     f"{domain_label} came through most consistently across your answers"
-                    + (f", pointing to {career_label} as the best-fit role" if career_label else "")
+                    + (
+                        f", pointing to {career_label} as the best-fit role"
+                        if career_label
+                        else ""
+                    )
                     + f"{override_note}. {k[0]}"
                 )
                 action = k[2]
@@ -272,7 +328,11 @@ def build_counsellor_message(
                     + f"{override_note}. A moderate signal at graduation level usually means not enough real exposure yet — not a wrong fit."
                 )
                 action = f"One internship or project in {domain_label} will sharpen this signal fast."
-                tension = f"The real question: commit to {domain_label} now, or explore {second_label} first to be sure?" if second_label else k[3]
+                tension = (
+                    f"The real question: commit to {domain_label} now, or explore {second_label} first to be sure?"
+                    if second_label
+                    else k[3]
+                )
 
         return {
             "label": label,

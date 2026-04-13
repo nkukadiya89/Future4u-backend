@@ -8,9 +8,11 @@ admin.site.register(BusinessSetting)
 
 class MultiSelectWidget(forms.CheckboxSelectMultiple):
     """Renders a JSONField as a multi-select checkbox list."""
+
     def format_value(self, value):
         if isinstance(value, str):
             import json
+
             try:
                 value = json.loads(value)
             except (ValueError, TypeError):
@@ -27,6 +29,7 @@ class MultiSelectField(forms.MultipleChoiceField):
     def prepare_value(self, value):
         if isinstance(value, str):
             import json
+
             try:
                 return json.loads(value)
             except (ValueError, TypeError):
@@ -35,10 +38,18 @@ class MultiSelectField(forms.MultipleChoiceField):
 
 
 class UserProfileAdminForm(forms.ModelForm):
-    interest_categories = MultiSelectField(choices=UserProfile.InterestCategory.choices, required=False)
-    user_concerns = MultiSelectField(choices=UserProfile.UserConcern.choices, required=False)
-    career_values = MultiSelectField(choices=UserProfile.CareerValue.choices, required=False)
-    platform_goals = MultiSelectField(choices=UserProfile.PlatformGoal.choices, required=False)
+    interest_categories = MultiSelectField(
+        choices=UserProfile.InterestCategory.choices, required=False
+    )
+    user_concerns = MultiSelectField(
+        choices=UserProfile.UserConcern.choices, required=False
+    )
+    career_values = MultiSelectField(
+        choices=UserProfile.CareerValue.choices, required=False
+    )
+    platform_goals = MultiSelectField(
+        choices=UserProfile.PlatformGoal.choices, required=False
+    )
 
     class Meta:
         model = UserProfile
@@ -49,28 +60,64 @@ class UserProfileAdminForm(forms.ModelForm):
 class UserProfileAdmin(admin.ModelAdmin):
     form = UserProfileAdminForm
     list_display = (
-        "user", "role", "education_level", "stream", "science_track", "medium",
-        "country", "state", "city",
-        "career_goal", "parent_support_level",
-        "get_language", "get_interest_categories", "get_user_concerns",
-        "get_career_values", "get_platform_goals",
+        "user",
+        "role",
+        "education_level",
+        "stream",
+        "science_track",
+        "medium",
+        "country",
+        "state",
+        "city",
+        "career_goal",
+        "parent_support_level",
+        "get_language",
+        "get_interest_categories",
+        "get_user_concerns",
+        "get_career_values",
+        "get_platform_goals",
     )
     search_fields = ("user__email", "user__first_name", "user__last_name")
-    list_filter = ("role", "career_goal", "science_track", "parent_support_level", "medium")
+    list_filter = (
+        "role",
+        "career_goal",
+        "science_track",
+        "parent_support_level",
+        "medium",
+    )
     readonly_fields = ("user",)
     raw_id_fields = ("user", "country", "state", "city")
     autocomplete_fields = ("education_level", "stream")
     filter_horizontal = ("language",)
-    list_select_related = ("user", "education_level", "stream", "country", "state", "city")
+    list_select_related = (
+        "user",
+        "education_level",
+        "stream",
+        "country",
+        "state",
+        "city",
+    )
 
     fieldsets = (
         ("Identity", {"fields": ("user", "role")}),
-        ("Education", {"fields": ("education_level", "stream", "science_track", "medium")}),
+        (
+            "Education",
+            {"fields": ("education_level", "stream", "science_track", "medium")},
+        ),
         ("Location & Language", {"fields": ("language", "country", "state", "city")}),
-        ("Onboarding", {"fields": (
-            "interest_categories", "career_goal", "parent_support_level",
-            "user_concerns", "career_values", "platform_goals",
-        )}),
+        (
+            "Onboarding",
+            {
+                "fields": (
+                    "interest_categories",
+                    "career_goal",
+                    "parent_support_level",
+                    "user_concerns",
+                    "career_values",
+                    "platform_goals",
+                )
+            },
+        ),
     )
 
     @admin.display(description="Languages")

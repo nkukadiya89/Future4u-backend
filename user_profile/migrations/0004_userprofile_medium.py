@@ -6,16 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user_profile', '0003_add_role_language_location'),
+        ("user_profile", "0003_add_role_language_location"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='medium',
+            model_name="userprofile",
+            name="medium",
             field=models.CharField(
                 blank=True,
-                choices=[('english', 'English'), ('hindi', 'Hindi'), ('gujarati', 'Gujarati')],
+                choices=[
+                    ("english", "English"),
+                    ("hindi", "Hindi"),
+                    ("gujarati", "Gujarati"),
+                ],
                 help_text="Instruction medium of student's school",
                 max_length=20,
                 null=True,

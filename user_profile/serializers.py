@@ -14,9 +14,10 @@ def validate_json_choices(value, valid_set, field_name):
         raise serializers.ValidationError({field_name: "Must be a list."})
     invalid = [v for v in value if v not in valid_set]
     if invalid:
-        raise serializers.ValidationError({field_name: f"Invalid values: {invalid}. Allowed: {sorted(valid_set)}"})
+        raise serializers.ValidationError(
+            {field_name: f"Invalid values: {invalid}. Allowed: {sorted(valid_set)}"}
+        )
     return value
-
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -38,25 +39,35 @@ class UserProfileSerializer(serializers.ModelSerializer):
     state_name = serializers.CharField(
         source="state.name", read_only=True, default=None
     )
-    city_name = serializers.CharField(
-        source="city.name", read_only=True, default=None
-    )
+    city_name = serializers.CharField(source="city.name", read_only=True, default=None)
     language = serializers.SerializerMethodField()
 
     def get_language(self, obj):
-        return [{"id": str(l.id), "name": l.name, "code": l.code} for l in obj.language.all()]
+        return [
+            {"id": str(l.id), "name": l.name, "code": l.code}
+            for l in obj.language.all()
+        ]
 
     class Meta:
         model = UserProfile
         fields = [
-            "id", "user",
+            "id",
+            "user",
             "role",
-            "language", "medium",
-            "country", "country_name",
-            "state", "state_name",
-            "city", "city_name",
-            "education_level", "education_level_code", "education_level_name",
-            "stream", "stream_code", "stream_name",
+            "language",
+            "medium",
+            "country",
+            "country_name",
+            "state",
+            "state_name",
+            "city",
+            "city_name",
+            "education_level",
+            "education_level_code",
+            "education_level_name",
+            "stream",
+            "stream_code",
+            "stream_name",
             "interest_categories",
             "career_goal",
             "science_track",
@@ -70,19 +81,39 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserProfileUpsertSerializer(serializers.ModelSerializer):
     language = serializers.PrimaryKeyRelatedField(
         many=True,
-        queryset=__import__('language_master.models', fromlist=['Language']).Language.objects.filter(is_active=True, deleted=False),
+        queryset=__import__(
+            "language_master.models", fromlist=["Language"]
+        ).Language.objects.filter(is_active=True, deleted=False),
         required=False,
     )
 
     class Meta:
         model = UserProfile
-        fields = ["role", "language", "medium", "country", "state", "city", "education_level", "stream", "interest_categories", "career_goal", "science_track", "parent_support_level", "user_concerns", "career_values", "platform_goals"]
+        fields = [
+            "role",
+            "language",
+            "medium",
+            "country",
+            "state",
+            "city",
+            "education_level",
+            "stream",
+            "interest_categories",
+            "career_goal",
+            "science_track",
+            "parent_support_level",
+            "user_concerns",
+            "career_values",
+            "platform_goals",
+        ]
 
     def validate_user_concerns(self, value):
         return validate_json_choices(value, VALID_CONCERNS, "user_concerns")
 
     def validate_interest_categories(self, value):
-        return validate_json_choices(value, VALID_INTEREST_CATEGORIES, "interest_categories")
+        return validate_json_choices(
+            value, VALID_INTEREST_CATEGORIES, "interest_categories"
+        )
 
     def validate_career_values(self, value):
         return validate_json_choices(value, VALID_CAREER_VALUES, "career_values")

@@ -252,7 +252,13 @@ class DomainAdmin(BaseAdmin):
             n += 1
         self.message_user(request, f"{n} domain(s) restored.")
 
-from domain.models import DomainScoringConfig, DomainReportMeta, DomainCounsellorKnowledge, StreamReportMeta
+
+from domain.models import (
+    DomainScoringConfig,
+    DomainReportMeta,
+    DomainCounsellorKnowledge,
+    StreamReportMeta,
+)
 
 
 @admin.register(DomainScoringConfig)
@@ -269,7 +275,19 @@ class DomainReportMetaAdmin(admin.ModelAdmin):
     search_fields = ("domain_code",)
     ordering = ("domain_code",)
     fieldsets = (
-        (None, {"fields": ("domain_code", "degrees", "careers", "note", "direction_why", "how_to_choose_hint")}),
+        (
+            None,
+            {
+                "fields": (
+                    "domain_code",
+                    "degrees",
+                    "careers",
+                    "note",
+                    "direction_why",
+                    "how_to_choose_hint",
+                )
+            },
+        ),
         ("Next Steps", {"fields": ("next_step_1", "next_step_2", "next_step_3")}),
     )
 

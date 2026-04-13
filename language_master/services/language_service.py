@@ -145,7 +145,9 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
             )
             for h in reader.fieldnames
         ]
-        missing = sorted(REQUIRED_IMPORT_HEADERS - set(h for h in normalized_headers if h))
+        missing = sorted(
+            REQUIRED_IMPORT_HEADERS - set(h for h in normalized_headers if h)
+        )
         if missing:
             return [], [f"Missing required headers: {', '.join(missing)}"]
         out_rows = []
@@ -160,7 +162,9 @@ def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
 
 
 @transaction.atomic
-def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict) -> LanguageImportBatch:
+def bulk_import_rows(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> LanguageImportBatch:
     batch = LanguageImportBatch.objects.create(created_by=user, total_rows=len(rows))
     imported = 0
     errors: list[LanguageImportError] = []
@@ -171,22 +175,32 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
         row_code = (row.get("code") or "").strip().lower()
         if row_code:
             if row_code in seen_codes:
-                errors.append(LanguageImportError(
-                    batch=batch, row_number=idx,
-                    message=f"Duplicate code in upload: {row_code}"[:500],
-                    row_data=row,
-                ))
+                errors.append(
+                    LanguageImportError(
+                        batch=batch,
+                        row_number=idx,
+                        message=f"Duplicate code in upload: {row_code}"[:500],
+                        row_data=row,
+                    )
+                )
                 continue
             seen_codes.add(row_code)
 
-        existing = Language.objects.filter(code__iexact=row_code).first() if row_code else None
-        ser = serializer_class(instance=existing, data=row, partial=bool(existing), context=context)
+        existing = (
+            Language.objects.filter(code__iexact=row_code).first() if row_code else None
+        )
+        ser = serializer_class(
+            instance=existing, data=row, partial=bool(existing), context=context
+        )
         if not ser.is_valid():
-            errors.append(LanguageImportError(
-                batch=batch, row_number=idx,
-                message=json.dumps(ser.errors)[:500],
-                row_data=row,
-            ))
+            errors.append(
+                LanguageImportError(
+                    batch=batch,
+                    row_number=idx,
+                    message=json.dumps(ser.errors)[:500],
+                    row_data=row,
+                )
+            )
             continue
         try:
             with transaction.atomic():
@@ -197,14 +211,25 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
                     obj.deleted_by = None
                     obj.updated_by = user
                     obj.updated_at = timezone.now()
-                    obj.save(update_fields=["deleted", "deleted_at", "deleted_by", "updated_by", "updated_at"])
+                    obj.save(
+                        update_fields=[
+                            "deleted",
+                            "deleted_at",
+                            "deleted_by",
+                            "updated_by",
+                            "updated_at",
+                        ]
+                    )
                 imported += 1
         except Exception as e:
-            errors.append(LanguageImportError(
-                batch=batch, row_number=idx,
-                message=str(e)[:500],
-                row_data=row,
-            ))
+            errors.append(
+                LanguageImportError(
+                    batch=batch,
+                    row_number=idx,
+                    message=str(e)[:500],
+                    row_data=row,
+                )
+            )
 
     if errors:
         LanguageImportError.objects.bulk_create(errors)
@@ -215,8 +240,12 @@ def bulk_import_rows(*, user, rows: list[dict], serializer_class, context: dict)
     return batch
 
 
-def bulk_import_languages(*, user, rows: list[dict], serializer_class, context: dict) -> dict[str, Any]:
-    batch = bulk_import_rows(user=user, rows=rows, serializer_class=serializer_class, context=context)
+def bulk_import_languages(
+    *, user, rows: list[dict], serializer_class, context: dict
+) -> dict[str, Any]:
+    batch = bulk_import_rows(
+        user=user, rows=rows, serializer_class=serializer_class, context=context
+    )
     err_qs = LanguageImportError.objects.filter(batch=batch).order_by("row_number")
     return {
         "success_count": batch.imported_count,
@@ -230,7 +259,9 @@ def bulk_import_languages(*, user, rows: list[dict], serializer_class, context: 
 
 
 def import_batches_queryset():
-    return LanguageImportBatch.objects.select_related("created_by").order_by("-created_at")
+    return LanguageImportBatch.objects.select_related("created_by").order_by(
+        "-created_at"
+    )
 
 
 def sample_csv_bytes() -> bytes:

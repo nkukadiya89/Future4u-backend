@@ -7,6 +7,7 @@ Scale: 1 = low (risky in Indian parent eyes)
 
 Based on Indian parent mindset, especially Gujarat context.
 """
+
 from django.db import migrations
 
 
@@ -25,7 +26,6 @@ PARENT_ACCEPTANCE = {
     "ca_accounting": 5,
     "banking_finance": 5,
     "teaching_school": 5,
-
     # VERY HIGH (4) — Engineering, Law, Veterinary, Physiotherapy
     "civil_engineering": 4,
     "mechanical_engineering": 4,
@@ -44,7 +44,6 @@ PARENT_ACCEPTANCE = {
     "med_devices": 4,
     "fintech": 4,
     "police_law_enforcement": 4,
-
     # HIGH (3) — Tech-adjacent, agriculture, hospitality, niche engineering
     "nanotech": 3,
     "quantum": 3,
@@ -70,7 +69,6 @@ PARENT_ACCEPTANCE = {
     "physical_education": 3,
     "business_management": 3,
     "entrepreneurship": 3,
-
     # MODERATE (2) — Tech fields, digital, social work
     "ai_data": 2,
     "data_engineering": 2,
@@ -92,7 +90,6 @@ PARENT_ACCEPTANCE = {
     "social_work": 2,
     "psychology_counselling": 2,
     "beauty_wellness": 2,
-
     # LOW (1) — Non-traditional, seen as risky by Indian parents
     "gaming": 1,
     "creator_economy": 1,
@@ -110,9 +107,7 @@ PARENT_ACCEPTANCE = {
 def calibrate(apps, schema_editor):
     Domain = apps.get_model("domain", "Domain")
     for code, level in PARENT_ACCEPTANCE.items():
-        Domain.objects.filter(domain_code=code).update(
-            parent_acceptance_level=level
-        )
+        Domain.objects.filter(domain_code=code).update(parent_acceptance_level=level)
 
 
 def reverse_calibrate(apps, schema_editor):

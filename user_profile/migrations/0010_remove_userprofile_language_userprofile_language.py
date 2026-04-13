@@ -6,18 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('language_master', '0001_initial'),
-        ('user_profile', '0009_alter_userprofile_user_concerns'),
+        ("language_master", "0001_initial"),
+        ("user_profile", "0009_alter_userprofile_user_concerns"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='userprofile',
-            name='language',
+            model_name="userprofile",
+            name="language",
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='language',
-            field=models.ManyToManyField(blank=True, help_text='Preferred languages selected from Language master', related_name='user_profiles', to='language_master.language'),
+            model_name="userprofile",
+            name="language",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Preferred languages selected from Language master",
+                related_name="user_profiles",
+                to="language_master.language",
+            ),
         ),
     ]
