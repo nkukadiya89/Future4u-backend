@@ -110,13 +110,7 @@ class PaymentSubscriptionViewSet(ModelViewSet):
             return Response(
                 {"success": False, "message": "Invalid subscription"}, status=400
             )
-        promocode = (
-            PromoCode.objects.filter(code=promo_code_str).first()
-            if promo_code_str
-            else None
-        )
-
-        pricing = calculate_price(subscription, promocode)
+        pricing = calculate_price(subscription)
 
         amount = pricing["price"]
         discount = pricing["discount"]
