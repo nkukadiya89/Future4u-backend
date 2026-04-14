@@ -1,5 +1,6 @@
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from business_category.tests import User
@@ -10,7 +11,13 @@ from user.user_type_serializers import RegisterSerializer
 
 class AuthViewSet(viewsets.ViewSet):
 
-    @action(detail=False, methods=["post"], url_path="register")
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="register",
+        permission_classes=[AllowAny],
+        authentication_classes=[],
+    )
     def register(self, request):
         serializer = RegisterSerializer(data=request.data)
 
@@ -29,7 +36,13 @@ class AuthViewSet(viewsets.ViewSet):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=["post"], url_path="verify-success")
+    @action(
+        detail=False,
+        methods=["post"],
+        permission_classes=[AllowAny],
+        authentication_classes=[],
+        url_path="verify-success",
+    )
     def verify_success(self, request):
         email = request.data.get("email")
         otp = request.data.get("otp")
@@ -77,7 +90,13 @@ class AuthViewSet(viewsets.ViewSet):
         )
 
     # forget password flow
-    @action(detail=False, methods=["post"], url_path="forgot-password")
+    @action(
+        detail=False,
+        methods=["post"],
+        permission_classes=[AllowAny],
+        authentication_classes=[],
+        url_path="forgot-password",
+    )
     def forgot_password(self, request):
         email = request.data.get("email")
 
