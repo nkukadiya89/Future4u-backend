@@ -36,7 +36,7 @@ def send_inactive_email(subject, template, data):
 
     msg = MIMEMultipart()
     msg.set_unixfrom("author")
-    msg["From"] = "OutdoorX <" + config("ADMIN_EMAIL") + ">"
+    msg["From"] = "Future4U <" + config("ADMIN_EMAIL") + ">"
     msg["To"] = employee_email
     msg["Subject"] = subject
 
@@ -44,7 +44,7 @@ def send_inactive_email(subject, template, data):
     msg.attach(part2)
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    url = os.path.join(BASE_DIR, "static/images/e-switch-h-final.png")
+    url = os.path.join(BASE_DIR, "static/images/f4u-h-final.png")
 
     img_data = open(url, "rb").read()
     msImage = MIMEImage(img_data)

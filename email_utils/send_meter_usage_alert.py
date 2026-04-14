@@ -90,9 +90,7 @@ def send_meter_usage_alert_email(
                     BASE_DIR = os.path.dirname(
                         os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
                     )
-                    logo_path = os.path.join(
-                        BASE_DIR, "static/images/e-switch-h-final.png"
-                    )
+                    logo_path = os.path.join(BASE_DIR, "static/images/f4u-h-final.png")
                     with open(logo_path, "rb") as image_file:
                         img_data = image_file.read()
 

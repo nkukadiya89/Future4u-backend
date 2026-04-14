@@ -263,7 +263,7 @@ class ResetPasswordViewSet(ModelViewSet):
             #     employee_instance=employee_instance,
             # )
             send_success_mail(
-                "Register Succcess, Welcome to OutdoorX!",
+                "Register Succcess, Welcome to Future4U!",
                 "register-success.html",
                 context,
             )
@@ -275,7 +275,7 @@ class ResetPasswordViewSet(ModelViewSet):
         else:
             context = {"name": user.first_name, "email": user.email}
             send_confirm_mail(
-                "OutdoorX Password Change Notification",
+                "Future4U Password Change Notification",
                 "password-changed-confirmation.html",
                 context,
             )
@@ -428,7 +428,7 @@ class ForgotPasswordViewSet(ModelViewSet):
             #     employee_instance=employee_instance,
             # )
             send_success_mail(
-                "Register Succcess, Welcome to OutdoorX!",
+                "Register Succcess, Welcome to Future4U!",
                 "register-success.html",
                 context,
             )
@@ -440,7 +440,7 @@ class ForgotPasswordViewSet(ModelViewSet):
         else:
             context = {"name": user.first_name, "email": user.email}
             send_confirm_mail(
-                "OutdoorX Password Change Notification",
+                "Future4U Password Change Notification",
                 "password-changed-confirmation.html",
                 context,
             )

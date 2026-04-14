@@ -23,7 +23,7 @@ class ResendPasswordResetViewSet(ModelViewSet):
     def send_email_thread(self, context):
         """Send email in background thread"""
         send_mail(
-            "OutdoorX Security Alert For Reset Your Password",
+            "Future4U Security Alert For Reset Your Password",
             "reset-pass.html",
             context,
         )

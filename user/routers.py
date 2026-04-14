@@ -1,3 +1,5 @@
+from rest_framework.routers import DefaultRouter, path
+
 from user.email_phone_verify import VerifiedOTPViewSet
 from user.group_and_permission import (
     AssignPermissionGroupViewSet,
@@ -10,6 +12,7 @@ from user.group_and_permission import (
     PermissionViewSet,
 )
 from user.resend_password_reset import ResendPasswordResetViewSet
+from user.user_type_views import AuthViewSet
 from user.views import (
     ForgetPasswordViewSet,
     ForgotPasswordViewSet,
@@ -21,7 +24,6 @@ from user.views import (
     VerifyEmailOtpAndGiveTokenViewset,
     VerifyOtpViewSet,
 )
-from rest_framework.routers import DefaultRouter
 
 user_router = DefaultRouter()
 user_router.register(
@@ -82,3 +84,5 @@ user_router.register(
     AssignPermissionGroupViewSet,
     basename="assign_permission_group",
 )
+
+user_router.register("auth", AuthViewSet, basename="auth")

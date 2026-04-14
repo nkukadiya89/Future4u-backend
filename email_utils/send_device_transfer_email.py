@@ -45,7 +45,7 @@ def send_device_transfer_request_email(subject, template, data):
     recipient_email = data["email"]
 
     msg = MIMEMultipart()
-    msg["From"] = "OutdoorX <" + config("ADMIN_EMAIL") + ">"
+    msg["From"] = "Future4U <" + config("ADMIN_EMAIL") + ">"
 
     msg["To"] = recipient_email
     msg["Subject"] = subject
@@ -55,7 +55,7 @@ def send_device_transfer_request_email(subject, template, data):
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     try:
-        url = os.path.join(BASE_DIR, "static/images/e-switch-h-final.png")
+        url = os.path.join(BASE_DIR, "static/images/f4u-h-final.png")
         with open(url, "rb") as image_file:
             img_data = image_file.read()
         msImage = MIMEImage(img_data)

@@ -23,7 +23,7 @@ class SendOTPViewSet(ModelViewSet):
         message = (
             f"Dear Customer, your OTP is {otp}. "
             f"Please enter it to verify your mobile number. Your OTP will "
-            f"expire in 10 minutes. Team OutdoorX"
+            f"expire in 10 minutes. Team Future4U"
         )
         instance_id = config("INSTANCE_ID")
         access_token = config("ACCESS_TOKEN")

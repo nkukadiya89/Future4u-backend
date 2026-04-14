@@ -80,6 +80,15 @@ class User(AbstractUser):
     password_last_changed = models.DateTimeField(null=True)
     keep_me_logged_in = models.BooleanField(default=False)
     full_name = models.CharField(max_length=201, null=True, blank=True, db_index=True)
+    country = models.ForeignKey(
+        "country.Country", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    states = models.ForeignKey(
+        "state.State", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    city = models.ForeignKey(
+        "city.City", on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     objects = UserManager()
 
@@ -244,5 +253,4 @@ class EmailPhoneVerify(models.Model):
         return f"{self.phone_number} - {self.phone_verified}"
 
     class Meta:
-        db_table = "email_phone_verify"
         db_table = "email_phone_verify"

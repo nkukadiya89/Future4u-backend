@@ -158,7 +158,7 @@ class Command(BaseCommand):
     # Role Family Create
     role_family_data = [
         {
-            "family_name": "OutdoorX Family",
+            "family_name": "Future4U Family",
             "created_by": 1,
             "updated_by": 1,
         },

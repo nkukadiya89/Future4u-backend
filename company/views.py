@@ -130,7 +130,7 @@ class CreateCompanyAccountViewSet(viewsets.ViewSet):
     def send_email(self, user, context):
         if user:
             send_mail(
-                "OutdoorX Security Alert For Create New Password",
+                "Future4U Security Alert For Create New Password",
                 "reset-pass.html",
                 context,
             )
@@ -225,7 +225,7 @@ class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
     def send_email(self, user, context):
         if user:
             send_mail(
-                "OutdoorX Security Alert For Create New Password",
+                "Future4U Security Alert For Create New Password",
                 "reset-pass.html",
                 context,
             )
@@ -1491,7 +1491,7 @@ class EnquiryViewSet(ModelViewSet):
         context["email"] = recipient_email
 
         send_mail(
-            "New Enquiry Received - OutdoorX",
+            "New Enquiry Received - Future4U",
             "enquiry-notification.html",
             context,
         )

@@ -72,7 +72,7 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
     def send_email(self, user, context):
         if user:
             send_mail(
-                "OutdoorX Security Alert For Reset Your Password",
+                "Future4U Security Alert For Reset Your Password",
                 "reset-pass.html",
                 context,
             )
@@ -552,7 +552,7 @@ class EmployeeStatusViewSet(EmployeeSearchOrdering, ModelViewSet):
     def send_email(self, user, context):
         if user:
             send_mail(
-                "OutdoorX Security Alert For Create New Password",
+                "Future4U Security Alert For Create New Password",
                 "reset-pass.html",
                 context,
             )
@@ -635,7 +635,7 @@ class EmployeeStatusViewSet(EmployeeSearchOrdering, ModelViewSet):
                     #     request_user,
                     # )
                     send_inactive_email(
-                        "Important Notice: Your OutdoorX Account Has Been Deactivated",
+                        "Important Notice: Your Future4U Account Has Been Deactivated",
                         "user-inactive-email.html",
                         data,
                     )

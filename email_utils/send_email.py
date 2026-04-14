@@ -60,7 +60,8 @@ def send_mail(subject, template, data):
         token = generate_token(data["email"], 30)
         context["login_url"] = app_url + "login"
         context["verify_link"] = app_url + "verify-success/"
-        context["token"] = token
+        context["verification_code"] = data["otp"]
+        context["email"] = data["email"]
     elif template == "reset-pass.html":
         # Reset password flow link
         context["path"] = app_url + "reset-password/"
@@ -75,72 +76,6 @@ def send_mail(subject, template, data):
         if isinstance(token_value, (bytes, bytearray)):
             token_value = token_value.decode("utf-8")
         context["token"] = str(token_value)
-    elif template == "device-config-status-update.html":
-        # Device configuration status update
-        context.update(
-            {
-                "device_name": data.get("device_name", "N/A"),
-                "new_status": data.get("new_status", "Updated"),
-                "updated_by": data.get("updated_by", "System"),
-                "updated_at": data.get("updated_at", "Just now"),
-                "login_url": data.get("login_url", app_url + "login"),
-            }
-        )
-
-        # Create custom message content for EmailLog
-        custom_message_content = "Device configuration status has been updated.\n"
-        if data.get("device_name"):
-            custom_message_content += f"Device: {data.get('device_name')},\n"
-        if data.get("new_status"):
-            custom_message_content += f"Status: {data.get('new_status')},\n"
-        if data.get("updated_by"):
-            custom_message_content += f"Updated By: {data.get('updated_by')}\n"
-        if data.get("company_name"):
-            custom_message_content += f"Company: {data.get('company_name')},\n"
-    elif template == "device-transfer-status-update.html":
-        # Device transfer status update
-        context.update(
-            {
-                "device_name": data.get("device_name", "N/A"),
-                "new_status": data.get("new_status", "Updated"),
-                # "updated_by": data.get("updated_by", "System"),
-                # "updated_at": data.get("updated_at", "Just now"),
-                "login_url": data.get("login_url", app_url + "login"),
-            }
-        )
-
-        # Create custom message content for EmailLog
-        custom_message_content = "Device transfer status has been updated.\n"
-        if data.get("device_name"):
-            custom_message_content += f"Device: {data.get('device_name')},\n"
-        if data.get("new_status"):
-            custom_message_content += f"Status: {data.get('new_status')},\n"
-        if data.get("updated_by"):
-            custom_message_content += f"Updated By: {data.get('updated_by')}\n"
-        if data.get("company_name"):
-            custom_message_content += f"Company: {data.get('company_name')},\n"
-    elif template == "campaign-id-generated.html":
-        # Campaign ID generated
-        context.update(
-            {
-                "campaign_id": data.get("campaign_id", "N/A"),
-                "generated_date": data.get("generated_date", "N/A"),
-                "end_client_name": data.get("end_client_name", "N/A"),
-            }
-        )
-    elif template == "enquiry-notification.html":
-        # Enquiry Notification
-        context.update(
-            {
-                "name": data.get("name", "N/A"),
-                "email": data.get("email", "N/A"),
-                "enquirer_email": data.get("enquirer_email", "N/A"),
-                "phone": data.get("phone", "N/A"),
-                "message": data.get("message", "N/A"),
-                "company_name": data.get("company_name", "N/A"),
-                "company_email": data.get("company_email", "N/A"),
-            }
-        )
 
     html_body = render_to_string(template, context)
 
@@ -148,14 +83,14 @@ def send_mail(subject, template, data):
 
     msg = MIMEMultipart()
     msg.set_unixfrom("author")
-    msg["From"] = "OutdoorX <" + config("ADMIN_EMAIL") + ">"
+    msg["From"] = "Future4U <" + config("ADMIN_EMAIL") + ">"
     msg["To"] = to_email
     msg["Subject"] = subject
     part2 = MIMEText(html_body, "html")
     msg.attach(part2)
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    url = os.path.join(BASE_DIR, "static/images/e-switch-h-final.png")
+    url = os.path.join(BASE_DIR, "static/images/f4u-h-final.png")
     img_data = open(url, "rb").read()
     msImage = MIMEImage(img_data)
     msImage.add_header("Content-ID", "<image1>")

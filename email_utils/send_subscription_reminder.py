@@ -71,17 +71,17 @@ def send_subscription_reminder_email(
 
         # Choose template based on days until end
         if reminder_days == 5:
-            subject = "Your OutdoorX Subscription Ends in 5 Days - Renewal Reminder"
+            subject = "Your Future4U Subscription Ends in 5 Days - Renewal Reminder"
             template_name = "subscription_reminder_day5.html"
         elif reminder_days == 4:
-            subject = "Your OutdoorX Subscription Ends in 4 Days - Renewal Reminder"
+            subject = "Your Future4U Subscription Ends in 4 Days - Renewal Reminder"
             template_name = "subscription_reminder_day4.html"
         elif reminder_days == 3:
-            subject = "Urgent: Your OutdoorX Subscription Ends in 3 Days - Renew Now"
+            subject = "Urgent: Your Future4U Subscription Ends in 3 Days - Renew Now"
             template_name = "subscription_reminder_day3.html"
         elif reminder_days == 2:
             subject = (
-                "Final Notice: Your OutdoorX Subscription Ends in 2 Days - Act Now"
+                "Final Notice: Your Future4U Subscription Ends in 2 Days - Act Now"
             )
             template_name = "subscription_reminder_day2.html"
         else:

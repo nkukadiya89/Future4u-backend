@@ -27,7 +27,7 @@ def send_demo_request_update(subject, template, data):
     super_admin_email = config("INIT_EMAIL")
 
     msg = MIMEMultipart()
-    msg["From"] = "OutdoorX <" + config("ADMIN_EMAIL") + ">"
+    msg["From"] = "Future4U <" + config("ADMIN_EMAIL") + ">"
 
     msg["To"] = ", ".join([super_admin_email, recipient_email])
 
@@ -37,7 +37,7 @@ def send_demo_request_update(subject, template, data):
     msg.attach(part2)
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    url = os.path.join(BASE_DIR, "static/images/e-switch-h-final.png")
+    url = os.path.join(BASE_DIR, "static/images/f4u-h-final.png")
 
     with open(url, "rb") as image_file:
         img_data = image_file.read()

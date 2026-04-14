@@ -4,12 +4,12 @@ from datetime import timedelta
 from email.mime.image import MIMEImage
 
 from decouple import config
+from device_config.models import DeviceConfiguration
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
-from device_config.models import DeviceConfiguration
 from utils.email_logger import log_email_failed, log_email_sent
 
 logger = logging.getLogger(__name__)
@@ -125,7 +125,7 @@ def send_device_offline_notification(device, hours_offline=2):
         superadmin_email = EmailMultiAlternatives(
             subject=subject,
             body=superadmin_text,
-            from_email="OutdoorX <{}>".format(config("ADMIN_EMAIL")),
+            from_email="Future4U <{}>".format(config("ADMIN_EMAIL")),
             to=[super_admin_email],
         )
 
@@ -134,7 +134,7 @@ def send_device_offline_notification(device, hours_offline=2):
 
         # Attach logo image
         logo_path = os.path.join(
-            settings.BASE_DIR, "static", "images", "e-switch-h-final.png"
+            settings.BASE_DIR, "static", "images", "f4u-h-final.png"
         )
         if os.path.exists(logo_path):
             with open(logo_path, "rb") as image_file:
@@ -160,7 +160,7 @@ def send_device_offline_notification(device, hours_offline=2):
                 super_admin_email,
                 subject,
                 str(e),
-                "OutdoorX <{}>".format(config("ADMIN_EMAIL")),
+                "Future4U <{}>".format(config("ADMIN_EMAIL")),
                 email_type="device_offline_notification",
                 related_partner_company=device.partner_company,
             )
@@ -183,7 +183,7 @@ def send_device_offline_notification(device, hours_offline=2):
             partner_email_msg = EmailMultiAlternatives(
                 subject=subject,
                 body=partner_text,
-                from_email="OutdoorX <{}>".format(config("ADMIN_EMAIL")),
+                from_email="Future4U <{}>".format(config("ADMIN_EMAIL")),
                 to=[partner_company_email],
             )
 
@@ -192,7 +192,7 @@ def send_device_offline_notification(device, hours_offline=2):
 
             # Attach logo image
             logo_path = os.path.join(
-                settings.BASE_DIR, "static", "images", "e-switch-h-final.png"
+                settings.BASE_DIR, "static", "images", "f4u-h-final.png"
             )
             if os.path.exists(logo_path):
                 with open(logo_path, "rb") as image_file:
@@ -218,7 +218,7 @@ def send_device_offline_notification(device, hours_offline=2):
                     partner_company_email,
                     subject,
                     str(e),
-                    "OutdoorX <{}>".format(config("ADMIN_EMAIL")),
+                    "Future4U <{}>".format(config("ADMIN_EMAIL")),
                     email_type="device_offline_notification",
                     related_partner_company=device.partner_company,
                 )

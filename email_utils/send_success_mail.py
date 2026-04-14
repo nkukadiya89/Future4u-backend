@@ -18,7 +18,7 @@ def send_confirm_mail(subject, template, data):
     recipient_email = data["email"]
 
     msg = MIMEMultipart()
-    msg["From"] = "OutdoorX <" + config("ADMIN_EMAIL") + ">"
+    msg["From"] = "Future4U <" + config("ADMIN_EMAIL") + ">"
     msg["To"] = recipient_email
     msg["Subject"] = subject
 
@@ -26,7 +26,7 @@ def send_confirm_mail(subject, template, data):
     msg.attach(part2)
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    url = os.path.join(BASE_DIR, "static/images/e-switch-h-final.png")
+    url = os.path.join(BASE_DIR, "static/images/f4u-h-final.png")
     with open(url, "rb") as image_file:
         img_data = image_file.read()
     msImage = MIMEImage(img_data)
@@ -85,7 +85,7 @@ def send_success_mail(subject, template, data):
     to_emails = [email for email in to_emails if email is not None]
 
     msg = MIMEMultipart()
-    msg["From"] = "OutdoorX <" + config("ADMIN_EMAIL") + ">"
+    msg["From"] = "Future4U <" + config("ADMIN_EMAIL") + ">"
     msg["To"] = ", ".join(to_emails)
     msg["Subject"] = subject
 
@@ -93,7 +93,7 @@ def send_success_mail(subject, template, data):
     msg.attach(part2)
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    url = os.path.join(BASE_DIR, "static/images/e-switch-h-final.png")
+    url = os.path.join(BASE_DIR, "static/images/f4u-h-final.png")
 
     with open(url, "rb") as image_file:
         img_data = image_file.read()
