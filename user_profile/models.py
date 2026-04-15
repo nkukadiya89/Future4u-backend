@@ -277,3 +277,259 @@ class BusinessSetting(models.Model):
 
     class Meta:
         db_table = "business_setting"
+
+
+
+class Profile(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profiles")
+
+    title = models.CharField(max_length=150)  # "Career Switch Plan", etc.
+
+    # Location
+    country = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+
+    completion_percentage = models.IntegerField(default=0)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="profile_created",
+    )
+    created_at = models.DateTimeField(default=now)
+
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="profile_updated",
+    )
+    updated_at = models.DateTimeField(default=now)
+
+    deleted = models.BooleanField(default=False)
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="profile_deleted",
+    )
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Profile<{self.id} - {self.title}>"
+    
+    class Meta:
+        db_table = "profile"
+        ordering = ["-created_at"]
+
+
+class ProfessionalProfile(models.Model):
+    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="professional")
+
+    # About
+    employment_type = models.CharField(max_length=50)  # salaried / self-employed / freelancer / job seeker
+
+    # Current Role
+    current_job_title = models.CharField(max_length=150, null=True, blank=True)
+    current_industry = models.CharField(max_length=100, null=True, blank=True)
+    company_size = models.CharField(max_length=50, null=True, blank=True)
+
+    # Experience & Education
+    years_of_experience = models.IntegerField(null=True, blank=True)
+    highest_education = models.CharField(max_length=150, null=True, blank=True)
+
+    # Career Goals
+    career_goal = models.CharField(max_length=100)  # promotion / switch / startup etc.
+
+    # Constraints (multi-select → separate table better)
+    # storing as JSON for speed initially
+    constraints = models.JSONField(default=list, blank=True)
+
+    # Work Preferences
+    work_mode = models.CharField(max_length=50, null=True, blank=True)  # remote/hybrid/office
+    work_structure = models.CharField(max_length=50, null=True, blank=True)  # fixed/flexible
+
+    # Industries
+    preferred_industries = models.JSONField(default=list, blank=True)
+
+    # Values
+    career_values = models.JSONField(default=list, blank=True)
+
+    # Salary
+    expected_salary_range = models.CharField(max_length=50, null=True, blank=True)
+
+    # Timeline
+    transition_timeline = models.CharField(max_length=50, null=True, blank=True)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="professional_profile_created",
+    )
+    created_at = models.DateTimeField(default=now)
+
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="professional_profile_updated",
+    )
+    updated_at = models.DateTimeField(default=now)
+
+    deleted = models.BooleanField(default=False)
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="professional_profile_deleted",
+    )
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"ProfessionalProfile<{self.id} - {self.profile.title}>"
+
+    class Meta:
+        db_table = "professional_profile"
+        ordering = ["-created_at"]
+
+
+class ParentProfile(models.Model):
+    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="parent")
+
+    relation = models.CharField(max_length=50)  # mother/father/guardian
+
+    # Child Info
+    child_name = models.CharField(max_length=150)
+    child_education_level = models.CharField(max_length=100)
+    stream = models.CharField(max_length=100, null=True, blank=True)
+    academic_performance = models.CharField(max_length=50, null=True, blank=True)
+
+    # Interests
+    child_interests = models.JSONField(default=list, blank=True)
+
+    # Parent behavior
+    support_level = models.CharField(max_length=50)
+
+    # Child future plan
+    child_goal = models.CharField(max_length=100)
+
+    # Parent expectations
+    parent_expectations = models.JSONField(default=list, blank=True)
+
+    # Concerns
+    concerns = models.JSONField(default=list, blank=True)
+
+    # Constraints
+    constraints = models.JSONField(default=list, blank=True)
+
+    # Awareness
+    career_awareness = models.CharField(max_length=50)
+
+    # Decision style
+    decision_style = models.CharField(max_length=50)
+
+    # Values
+    values = models.JSONField(default=list, blank=True)
+
+    created_at = models.DateTimeField(default=now)
+
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="parent_profile_updated",
+    )
+    updated_at = models.DateTimeField(default=now)
+
+    deleted = models.BooleanField(default=False)
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="parent_profile_deleted",
+    )
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"ParentProfile<{self.id} - {self.profile.title}>"
+
+    class Meta:
+        db_table = "parent_profile"
+        ordering = ["-created_at"]
+
+
+class CorporateProfile(models.Model):
+    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="corporate")
+
+    # Organization Type
+    organization_type = models.CharField(max_length=100)  # HR / CEO / etc.
+
+    # Company Info
+    company_name = models.CharField(max_length=200)
+    industry = models.CharField(max_length=100)
+    company_size = models.CharField(max_length=50)
+
+    # Hiring Intent
+    hiring_purpose = models.JSONField(default=list, blank=True)
+
+    # Hiring Requirements
+    roles_hiring_for = models.JSONField(default=list, blank=True)
+    experience_level = models.CharField(max_length=50)
+
+    # Skills needed
+    required_skills = models.JSONField(default=list, blank=True)
+
+    # Training needs
+    training_needs = models.JSONField(default=list, blank=True)
+
+    # Target candidates
+    target_candidates = models.JSONField(default=list, blank=True)
+
+    # Engagement model
+    engagement_model = models.JSONField(default=list, blank=True)
+
+    # Timeline & Budget
+    hiring_timeline = models.CharField(max_length=50)
+    budget_range = models.CharField(max_length=50)
+
+    # Company values
+    company_values = models.JSONField(default=list, blank=True)
+
+    # Challenges
+    challenges = models.JSONField(default=list, blank=True)
+
+    # Goals
+    goals = models.JSONField(default=list, blank=True)
+
+    created_at = models.DateTimeField(default=now)
+
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="corporate_profile_updated",
+    )
+    updated_at = models.DateTimeField(default=now)
+
+    deleted = models.BooleanField(default=False)
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="corporate_profile_deleted",
+    )
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"CorporateProfile<{self.id} - {self.profile.title}>"
+
+    class Meta:
+        db_table = "corporate_profile"
+        ordering = ["-created_at"]
