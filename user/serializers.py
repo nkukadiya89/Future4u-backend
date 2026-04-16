@@ -55,7 +55,9 @@ class VerifyAccountSerializer(serializers.ModelSerializer):
     def validate(self, data):
         email = data["email"]
         query = User.objects.filter(email=email).first()
-        if data["otp"] != str(query.otp):  # type: ignore
+        if query is None:
+            raise serializers.ValidationError("User not found")
+        if data.get("otp") != str(query.otp):  # type: ignore
             raise serializers.ValidationError("OTP is incorrect")
         return data
 
@@ -73,8 +75,10 @@ class VerifyOTPSerializer(serializers.Serializer):
 
     def validate(self, data):
         email = data["email"]
-        query = User.objects.get(email=email)
-        if data["otp"] != str(query.otp):
+        query = User.objects.filter(email=email).first()
+        if query is None:
+            raise serializers.ValidationError("User not found")
+        if data.get("otp") != str(query.otp):
             raise serializers.ValidationError("OTP is incorrect")
         return data
 

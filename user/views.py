@@ -1,7 +1,8 @@
 import json
 import random
 import threading
-from datetime import datetime
+
+from django.utils import timezone
 
 from django.contrib.auth import logout
 from django.core.exceptions import MultipleObjectsReturned
@@ -173,7 +174,7 @@ class ResetPasswordViewSet(ModelViewSet):
 
             password1 = res_data.get("password1", None)
             password2 = res_data.get("password2", None)
-            if password1 and password2 is None:
+            if password1 is None or password2 is None:
                 return Response(
                     {"success": False, "message": "Provide valid Password"},
                     status=status.HTTP_401_UNAUTHORIZED,
@@ -196,11 +197,11 @@ class ResetPasswordViewSet(ModelViewSet):
                 company.is_active = True
                 company.save()
 
-        user.set_password(password1 and password2)
-        user.is_active = True
-        user.password_last_changed = datetime.now()
-        user.status = "active"
-        user.save()
+            user.set_password(password1)
+            user.is_active = True
+            user.password_last_changed = timezone.now()
+            user.status = "active"
+            user.save()
 
         if user.last_login is None:
             context = {
@@ -209,24 +210,24 @@ class ResetPasswordViewSet(ModelViewSet):
             }
 
             send_success_mail(
-                "Register Succcess, Welcome to Future4U!",
+                "Registration successful",
                 "register-success.html",
                 context,
             )
             return Response(
-                {"success": True, "message": "Password Successfully change"},
+                {"success": True, "message": "Password changed successfully"},
                 status=status.HTTP_200_OK,
             )
 
         else:
             context = {"name": user.first_name, "email": user.email}
             send_confirm_mail(
-                "Future4U Password Change Notification",
+                "OutdoorX Password Change Notification",
                 "password-changed-confirmation.html",
                 context,
             )
             return Response(
-                {"success": True, "message": "Password Successfully change"},
+                {"success": True, "message": "Password changed successfully"},
                 status=status.HTTP_200_OK,
             )
 
@@ -299,11 +300,11 @@ class ForgotPasswordViewSet(ModelViewSet):
                 company.is_active = True
                 company.save()
 
-        user.set_password(new_password)
-        user.is_active = True
-        user.password_last_changed = datetime.now()
-        user.status = "active"
-        user.save()
+            user.set_password(new_password)
+            user.is_active = True
+            user.password_last_changed = timezone.now()
+            user.status = "active"
+            user.save()
 
         if user.last_login is None:
             context = {
@@ -312,12 +313,12 @@ class ForgotPasswordViewSet(ModelViewSet):
             }
 
             send_success_mail(
-                "Register Succcess, Welcome to Future4U!",
+                "Registration successful",
                 "register-success.html",
                 context,
             )
             return Response(
-                {"success": True, "message": "Password Successfully change"},
+                {"success": True, "message": "Password changed successfully"},
                 status=status.HTTP_200_OK,
             )
 

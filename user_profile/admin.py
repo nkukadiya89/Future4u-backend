@@ -38,6 +38,9 @@ class MultiSelectField(forms.MultipleChoiceField):
 
 
 class UserProfileAdminForm(forms.ModelForm):
+    career_goal = MultiSelectField(
+        choices=UserProfile.CareerGoal.choices, required=False
+    )
     interest_categories = MultiSelectField(
         choices=UserProfile.InterestCategory.choices, required=False
     )
@@ -61,7 +64,6 @@ class UserProfileAdmin(admin.ModelAdmin):
     form = UserProfileAdminForm
     list_display = (
         "user",
-        "role",
         "education_level",
         "stream",
         "science_track",
@@ -69,7 +71,7 @@ class UserProfileAdmin(admin.ModelAdmin):
         "country",
         "state",
         "city",
-        "career_goal",
+        "get_career_goal",
         "parent_support_level",
         "get_language",
         "get_interest_categories",
@@ -79,14 +81,21 @@ class UserProfileAdmin(admin.ModelAdmin):
     )
     search_fields = ("user__email", "user__first_name", "user__last_name")
     list_filter = (
-        "role",
-        "career_goal",
         "science_track",
         "parent_support_level",
         "medium",
     )
-    readonly_fields = ("user",)
+    readonly_fields = ("user", "get_role")
     raw_id_fields = ("user", "country", "state", "city")
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ("user", "get_role")
+        return ("get_role",)
+
+    @admin.display(description="Role")
+    def get_role(self, obj):
+        return obj.user.role if obj.user else "-"
     autocomplete_fields = ("education_level", "stream")
     filter_horizontal = ("language",)
     list_select_related = (
@@ -99,7 +108,7 @@ class UserProfileAdmin(admin.ModelAdmin):
     )
 
     fieldsets = (
-        ("Identity", {"fields": ("user", "role")}),
+        ("Identity", {"fields": ("user", "get_role")}),
         (
             "Education",
             {"fields": ("education_level", "stream", "science_track", "medium")},
@@ -123,6 +132,10 @@ class UserProfileAdmin(admin.ModelAdmin):
     @admin.display(description="Languages")
     def get_language(self, obj):
         return ", ".join(obj.language.values_list("name", flat=True)) or "-"
+
+    @admin.display(description="Career Goal")
+    def get_career_goal(self, obj):
+        return ", ".join(obj.career_goal) if obj.career_goal else "-"
 
     @admin.display(description="Interests")
     def get_interest_categories(self, obj):

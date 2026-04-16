@@ -10,24 +10,10 @@ from state.models import State
 
 class UserProfile(models.Model):
 
-    class Role(models.TextChoices):
-        STUDENT = "student", "Student"
-        PARENT = "parent", "Parent / Guardian"
-        PROFESSIONAL = "working_professional", "Working Professional"
-        INSTITUTE = "institute", "Institute / Course Provider"
-        CORPORATE = "corporate", "Corporate / Employer"
-
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="profile",
-    )
-    role = models.CharField(
-        max_length=20,
-        choices=Role.choices,
-        null=True,
-        blank=True,
-        help_text="User role selected during onboarding",
     )
     language = models.ManyToManyField(
         "language_master.Language",
@@ -43,12 +29,10 @@ class UserProfile(models.Model):
         SKILL_DEVELOPMENT = "skill_development", "Skill Development"
         NOT_SURE = "not_sure", "Not Sure Yet"
 
-    career_goal = models.CharField(
-        max_length=30,
-        choices=CareerGoal.choices,
-        null=True,
+    career_goal = models.JSONField(
+        default=list,
         blank=True,
-        help_text="Career direction selected during onboarding",
+        help_text="Career directions selected during onboarding e.g. ['study_further', 'skill_development']",
     )
 
     class ScienceTrack(models.TextChoices):
@@ -77,11 +61,6 @@ class UserProfile(models.Model):
         null=True,
         blank=True,
         help_text="How supportive parents are of career choices — used to weight parent_acceptance_level in recommendations",
-    )
-    user_concerns = models.JSONField(
-        default=list,
-        blank=True,
-        help_text="Concerns selected during onboarding e.g. ['job_security', 'high_education_cost']",
     )
 
     class CareerValue(models.TextChoices):
@@ -143,10 +122,10 @@ class UserProfile(models.Model):
         EDUCATION_COST = "high_education_cost", "High Education Cost"
         LIMITED_GUIDANCE = "limited_guidance", "Limited Guidance"
 
-    interest_categories = models.JSONField(
+    user_concerns = models.JSONField(
         default=list,
         blank=True,
-        help_text="Broad interest categories e.g. ['technology', 'healthcare', 'government']",
+        help_text="Concerns selected during onboarding e.g. ['job_security', 'high_education_cost']",
     )
 
     medium = models.CharField(

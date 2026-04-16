@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from business_category.tests import User
+from user.models import User
 from email_utils.send_email import generate_token, send_mail
 from user.services.registration_service import send_registration_email
 from user.user_type_serializers import RegisterSerializer
