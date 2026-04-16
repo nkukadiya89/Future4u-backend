@@ -1,7 +1,8 @@
 import json
 import random
 import threading
-from datetime import datetime
+
+from django.utils import timezone
 
 from django.contrib.auth import logout
 from django.core.exceptions import MultipleObjectsReturned
@@ -173,7 +174,7 @@ class ResetPasswordViewSet(ModelViewSet):
 
             password1 = res_data.get("password1", None)
             password2 = res_data.get("password2", None)
-            if password1 and password2 is None:
+            if password1 is None or password2 is None:
                 return Response(
                     {"success": False, "message": "Provide valid Password"},
                     status=status.HTTP_401_UNAUTHORIZED,
@@ -196,91 +197,37 @@ class ResetPasswordViewSet(ModelViewSet):
                 company.is_active = True
                 company.save()
 
-        user.set_password(password1 and password2)
-        user.is_active = True
-        user.password_last_changed = datetime.now()
-        user.status = "active"
-        user.save()
+            user.set_password(password1)
+            user.is_active = True
+            user.password_last_changed = timezone.now()
+            user.status = "active"
+            user.save()
 
         if user.last_login is None:
             context = {
                 "name": user.first_name,
                 "email": user.email,
-                "company": user.company.name if user.company else None,
-                "employee": user.employee.first_name if user.employee else None,
             }
 
-            employee_id = (
-                User.objects.filter(employee=user.employee.id).first()
-                if user.employee
-                else None
-            )
-            company_id = None
-
-            # Determine the company_id only if the employee is not set or
-            # doesn't have an associated company
-            if not employee_id:
-                company_id = (
-                    User.objects.filter(
-                        company=user.company.id,
-                        employee__isnull=True,
-                    ).first()
-                    if user.company
-                    else None
-                )
-
-            # partner_company / end_client routing removed
-
-            # emp_id = None
-            # company_name = None
-            # name = None
-            # email = None
-            # phone = None
-
-            # if company_id:
-            #     phone = company_id.company.phone
-            #     company_name = company_id.company.name
-            #     name = company_id.company.first_name
-            #     email = company_id.company.email
-
-            # elif employee_id:
-            #     phone = employee_id.employee.phone
-            #     emp_id = employee_id.employee.id
-            #     name = employee_id.employee.first_name
-            #     email = employee_id.employee.email
-
-            # company_instance = Company.objects.filter(email=email).first()
-            # employee_instance = Employee.objects.filter(email=email).first()
-
-            # whatsapp_messages = WhatsappMessages("register_success", phone, company_name, name, email)
-            # whatsapp_messages.send_register_success(
-            #     to=phone,
-            #     company_name=company_name,
-            #     employee_Id=emp_id,
-            #     name=name,
-            #     email=email,
-            #     company_instance=company_instance,
-            #     employee_instance=employee_instance,
-            # )
             send_success_mail(
-                "Register Succcess, Welcome to Future4U!",
+                "Registration successful",
                 "register-success.html",
                 context,
             )
             return Response(
-                {"success": True, "message": "Password Successfully change"},
+                {"success": True, "message": "Password changed successfully"},
                 status=status.HTTP_200_OK,
             )
 
         else:
             context = {"name": user.first_name, "email": user.email}
             send_confirm_mail(
-                "Future4U Password Change Notification",
+                "OutdoorX Password Change Notification",
                 "password-changed-confirmation.html",
                 context,
             )
             return Response(
-                {"success": True, "message": "Password Successfully change"},
+                {"success": True, "message": "Password changed successfully"},
                 status=status.HTTP_200_OK,
             )
 
@@ -353,99 +300,25 @@ class ForgotPasswordViewSet(ModelViewSet):
                 company.is_active = True
                 company.save()
 
-        user.set_password(new_password)
-        user.is_active = True
-        user.password_last_changed = datetime.now()
-        user.status = "active"
-        user.save()
+            user.set_password(new_password)
+            user.is_active = True
+            user.password_last_changed = timezone.now()
+            user.status = "active"
+            user.save()
 
         if user.last_login is None:
             context = {
                 "name": user.first_name,
                 "email": user.email,
-                "company": user.company.name if user.company else None,
-                "employee": user.employee.first_name if user.employee else None,
             }
 
-            employee_id = (
-                User.objects.filter(employee=user.employee.id).first()
-                if user.employee
-                else None
-            )
-            company_id = None
-
-            # Determine the company_id only if the employee is not set or
-            # doesn't have an associated company
-            if not employee_id:
-                company_id = (
-                    User.objects.filter(
-                        company=user.company.id,
-                        employee__isnull=True,
-                    ).first()
-                    if user.company
-                    else None
-                )
-
-            if not company_id:
-                employee_id = (
-                    User.objects.filter(
-                        employee=user.employee.id,
-                        company__isnull=True,
-                    ).first()
-                    if user.employee
-                    else None
-                )
-
-            # emp_id = None
-            # company_name = None
-            # name = None
-            # email = None
-            # phone = None
-
-            # if company_id:
-            #     phone = company_id.company.phone
-            #     company_name = company_id.company.name
-            #     name = company_id.company.first_name
-            #     email = company_id.company.email
-
-            # elif employee_id:
-            #     phone = employee_id.employee.phone
-            #     emp_id = employee_id.employee.id
-            #     name = employee_id.employee.first_name
-            #     email = employee_id.employee.email
-
-            # company_instance = Company.objects.filter(email=email).first()
-            # employee_instance = Employee.objects.filter(email=email).first()
-
-            # whatsapp_messages = WhatsappMessages("register_success", phone, company_name, name, email)
-            # whatsapp_messages.send_register_success(
-            #     to=phone,
-            #     company_name=company_name,
-            #     employee_Id=emp_id,
-            #     name=name,
-            #     email=email,
-            #     company_instance=company_instance,
-            #     employee_instance=employee_instance,
-            # )
             send_success_mail(
-                "Register Succcess, Welcome to Future4U!",
+                "Registration successful",
                 "register-success.html",
                 context,
             )
             return Response(
-                {"success": True, "message": "Password Successfully change"},
-                status=status.HTTP_200_OK,
-            )
-
-        else:
-            context = {"name": user.first_name, "email": user.email}
-            send_confirm_mail(
-                "Future4U Password Change Notification",
-                "password-changed-confirmation.html",
-                context,
-            )
-            return Response(
-                {"success": True, "message": "Password Successfully change"},
+                {"success": True, "message": "Password changed successfully"},
                 status=status.HTTP_200_OK,
             )
 
@@ -514,32 +387,15 @@ class LoginWithEmailOtpViewset(ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            if data["whatsapp_verified"] is True:
-                number = request.data["phone"]
-                otp = int(random.randint(1000, 9000))
-
-                user = get_object_or_404(User, phone=number)
-                user.otp = otp
-                user.whatsapp_verified = True
-                user.save()
-
-                return Response(
-                    {
-                        "success": True,
-                        "message": "Otp sent successfully",
-                        "whatsapp_verified": user.whatsapp_verified,
-                    },
-                    status=status.HTTP_201_CREATED,
-                )
-
-            else:
-                return Response(
-                    {
-                        "success": False,
-                        "message": f"Whatsapp Verified {data['whatsapp_verified']}",
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            # WhatsApp verification logic removed - field no longer exists
+            # TODO: Implement alternative phone verification method
+            return Response(
+                {
+                    "success": False,
+                    "message": "WhatsApp verification temporarily disabled",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         else:
             return Response(
@@ -589,23 +445,18 @@ class VerifyEmailOtpAndGiveTokenViewset(ModelViewSet):
 
                     company_profile_perc = 0
                     company_profile_count = None
+                    # Company subscription logic removed - users are now standalone
                     company_active_subscription = None
-                    if user.company:
-                        company_active_subscription = (
-                            Company.objects.filter(id=user.company_id)
-                            .values_list("active_subscription", flat=True)
-                            .first()
-                        )
+                    # TODO: Implement alternative subscription management
 
                     # Fetching permissions and groups
                     permission_data = get_user_permissions(user)
                     group_permission_data = get_user_group_permissions(user)
                     group_data = get_user_groups(user)
 
-                    # Determine company info
+                    # Company info logic removed - users are now standalone
                     company_id = None
-                    if user.company:
-                        company_id = user.company.id
+                    # TODO: Implement alternative user identification
 
                     user_data = {
                         "user_id": user.id,
@@ -615,7 +466,7 @@ class VerifyEmailOtpAndGiveTokenViewset(ModelViewSet):
                         "phone": user.phone,
                         "company": company_id,
                         "active_subscription": company_active_subscription,
-                        "role": group_data,
+                        "role": user.role,
                         "permission": permission_data,
                         "group_permission": group_permission_data,
                         "company_profile_count": company_profile_count,

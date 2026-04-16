@@ -50,35 +50,31 @@ class User(AbstractUser):
         ("active", "active"),
         ("inactive", "inactive"),
     )
-    username = models.CharField(max_length=60, null=True)
+
+    class Role(models.TextChoices):
+        STUDENT = "student", "Student"
+        PARENT = "parent", "Parent / Guardian"
+        PROFESSIONAL = "working_professional", "Working Professional"
+        SCHOOL_COLLEGE = "school_college", "School / College"
+        INSTITUTE = "institute", "Institute / Course Provider"
+        CORPORATE = "corporate", "Corporate / Employer"
+    username = models.CharField(max_length=60, null=True,blank=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100, default="")
-    about_me = models.CharField(max_length=100, null=True)
-    last_login = models.DateTimeField(_("last login"), null=True)
+    about_me = models.CharField(max_length=100, null=True, blank=True)
+    last_login = models.DateTimeField(_("last login"), null=True, blank=True)
     email = models.EmailField(_("email address"), unique=True)
-    profile_image = models.CharField(max_length=250, null=True)
-    otp = models.IntegerField(null=True)
-    whatsapp_otp = models.IntegerField(null=True)
-    whatsapp_verified = models.BooleanField(default=False)
-    designation = models.CharField(max_length=30, null=True)
-    phone = models.CharField(max_length=15, null=True)
-    message = models.CharField(max_length=200, default="")
+    profile_image = models.CharField(max_length=250, null=True, blank=True)
+    otp = models.IntegerField(null=True, blank=True)
+    designation = models.CharField(max_length=30, null=True, blank=True)
+    phone = models.CharField(max_length=15, null=True, blank=True)
     is_active = models.BooleanField(default=False)
     status = models.CharField(choices=STATUS_CHOICES, default="Pending", max_length=25)
-    role = models.CharField(max_length=15, null=True)
-    aadhar_card = models.CharField(max_length=12, null=True)
-    pancard = models.CharField(max_length=10, null=True)
-    emergency_contact = models.CharField(max_length=15, null=True)
-    current_address = models.CharField(max_length=150, null=True)
-    permanent_address = models.CharField(max_length=150, null=True)
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.STUDENT)
     email_verified = models.BooleanField(default=False)
-    phone_verified = models.BooleanField(default=False)
-    company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, null=True)
-    employee = models.ForeignKey(
-        "employee.Employee", on_delete=models.DO_NOTHING, null=True
-    )
-    password_last_changed = models.DateTimeField(null=True)
+    password_last_changed = models.DateTimeField(null=True, blank=True)
     keep_me_logged_in = models.BooleanField(default=False)
+    terms_accepted = models.BooleanField(default=False, help_text="User accepted Terms & Conditions")
     full_name = models.CharField(max_length=201, null=True, blank=True, db_index=True)
     country = models.ForeignKey(
         "country.Country", on_delete=models.SET_NULL, null=True, blank=True

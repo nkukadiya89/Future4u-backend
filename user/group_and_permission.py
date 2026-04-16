@@ -468,15 +468,9 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
         # Get all groups the user belongs to
         user_groups = Group.objects.filter(user=login_user).values_list("id", flat=True)
 
-        # Determine which admin group to exclude based on user type
-        if login_user.company:  # Assuming company field exists on User model
-            exclude_group_names = ["Company Admin"]
-        elif hasattr(
-            login_user, "partner_company"
-        ):  # Adjust based on your actual model
-            exclude_group_names = ["Partner Company Admin"]
-        else:
-            exclude_group_names = ["EndClient Admin"]
+        # Company logic removed - users are now standalone
+        # TODO: Implement alternative group exclusion logic
+        exclude_group_names = []  # No exclusion for now
 
         # Get user's custom groups, excluding the admin role specific to their type
         user_custom_groups = CustomGroup.objects.filter(

@@ -21,6 +21,7 @@ def validate_json_choices(value, valid_set, field_name):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    role = serializers.CharField(source="user.role", read_only=True)
     education_level_code = serializers.CharField(
         source="education_level.level_code", read_only=True, default=None
     )
@@ -90,7 +91,6 @@ class UserProfileUpsertSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = [
-            "role",
             "language",
             "medium",
             "country",
