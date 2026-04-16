@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from datetime import timedelta
-
 from pathlib import Path
 
 from decouple import config
@@ -31,6 +30,21 @@ DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = [
     h.strip() for h in config("ALLOWED_HOSTS", default="localhost,127.0.0.1").split(",")
+]
+
+# ── CORS Configuration ────────────────────────────────────────────────────────
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in config(
+        "CORS_ALLOWED_ORIGINS", default="http://localhost:3000,http://127.0.0.1:3000"
+    ).split(",")
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in config(
+        "CSRF_TRUSTED_ORIGINS", default="http://localhost:3000,http://127.0.0.1:3000"
+    ).split(",")
 ]
 
 # ── Security headers (safe in both dev and prod) ──────────────────────────────
