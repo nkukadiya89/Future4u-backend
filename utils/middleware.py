@@ -17,7 +17,7 @@ class PasswordChangeMiddleware:
             # company_id = request.user.company.id  # Removed - User no longer has company field
             # TODO: Implement alternative company identification logic
             today_date = date.today()
-            
+
             if request.user.password_last_changed:
                 password_last_changed = request.user.password_last_changed.date()
                 days_since_password_changed = (today_date - password_last_changed).days

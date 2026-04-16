@@ -96,6 +96,7 @@ class UserProfileAdmin(admin.ModelAdmin):
     @admin.display(description="Role")
     def get_role(self, obj):
         return obj.user.role if obj.user else "-"
+
     autocomplete_fields = ("education_level", "stream")
     filter_horizontal = ("language",)
     list_select_related = (

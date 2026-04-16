@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0009_alter_user_role'),
+        ("user", "0009_alter_user_role"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='terms_accepted',
-            field=models.BooleanField(default=False, help_text='User accepted Terms & Conditions'),
+            model_name="user",
+            name="terms_accepted",
+            field=models.BooleanField(
+                default=False, help_text="User accepted Terms & Conditions"
+            ),
         ),
     ]

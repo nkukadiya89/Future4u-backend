@@ -258,9 +258,10 @@ class BusinessSetting(models.Model):
         db_table = "business_setting"
 
 
-
 class Profile(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profiles")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profiles"
+    )
 
     title = models.CharField(max_length=150)  # "Career Switch Plan", etc.
 
@@ -299,17 +300,21 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"Profile<{self.id} - {self.title}>"
-    
+
     class Meta:
         db_table = "profile"
         ordering = ["-created_at"]
 
 
 class ProfessionalProfile(models.Model):
-    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="professional")
+    profile = models.OneToOneField(
+        Profile, on_delete=models.CASCADE, related_name="professional"
+    )
 
     # About
-    employment_type = models.CharField(max_length=50)  # salaried / self-employed / freelancer / job seeker
+    employment_type = models.CharField(
+        max_length=50
+    )  # salaried / self-employed / freelancer / job seeker
 
     # Current Role
     current_job_title = models.CharField(max_length=150, null=True, blank=True)
@@ -328,8 +333,12 @@ class ProfessionalProfile(models.Model):
     constraints = models.JSONField(default=list, blank=True)
 
     # Work Preferences
-    work_mode = models.CharField(max_length=50, null=True, blank=True)  # remote/hybrid/office
-    work_structure = models.CharField(max_length=50, null=True, blank=True)  # fixed/flexible
+    work_mode = models.CharField(
+        max_length=50, null=True, blank=True
+    )  # remote/hybrid/office
+    work_structure = models.CharField(
+        max_length=50, null=True, blank=True
+    )  # fixed/flexible
 
     # Industries
     preferred_industries = models.JSONField(default=list, blank=True)
@@ -378,7 +387,9 @@ class ProfessionalProfile(models.Model):
 
 
 class ParentProfile(models.Model):
-    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="parent")
+    profile = models.OneToOneField(
+        Profile, on_delete=models.CASCADE, related_name="parent"
+    )
 
     relation = models.CharField(max_length=50)  # mother/father/guardian
 
@@ -444,7 +455,9 @@ class ParentProfile(models.Model):
 
 
 class CorporateProfile(models.Model):
-    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name="corporate")
+    profile = models.OneToOneField(
+        Profile, on_delete=models.CASCADE, related_name="corporate"
+    )
 
     # Organization Type
     organization_type = models.CharField(max_length=100)  # HR / CEO / etc.

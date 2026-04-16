@@ -38,32 +38,46 @@ class RegisterSerializer(serializers.ModelSerializer):
         ]
 
     def validate_password(self, value):
-        if not re.search(r'[A-Z]', value):
-            raise serializers.ValidationError("Password must contain at least 1 uppercase letter.")
+        if not re.search(r"[A-Z]", value):
+            raise serializers.ValidationError(
+                "Password must contain at least 1 uppercase letter."
+            )
         if not re.search(r'[!@#$%^&*(),.?":{}|<>]', value):
-            raise serializers.ValidationError("Password must contain at least 1 special character.")
-        if not re.search(r'[0-9]', value):
-            raise serializers.ValidationError("Password must contain at least 1 number.")
+            raise serializers.ValidationError(
+                "Password must contain at least 1 special character."
+            )
+        if not re.search(r"[0-9]", value):
+            raise serializers.ValidationError(
+                "Password must contain at least 1 number."
+            )
         return value
 
     def validate_terms_accepted(self, value):
         if not value:
-            raise serializers.ValidationError("You must accept the Terms & Conditions to create an account.")
+            raise serializers.ValidationError(
+                "You must accept the Terms & Conditions to create an account."
+            )
         return value
 
     def validate_terms_accepted(self, value):
         if not value:
-            raise serializers.ValidationError("You must accept the Terms & Conditions to create an account.")
+            raise serializers.ValidationError(
+                "You must accept the Terms & Conditions to create an account."
+            )
         return value
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("An account with this email already exists.")
+            raise serializers.ValidationError(
+                "An account with this email already exists."
+            )
         return value
 
     def validate(self, data):
         if data.get("password") != data.get("confirm_password"):
-            raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
+            raise serializers.ValidationError(
+                {"confirm_password": "Passwords do not match."}
+            )
 
         country_id = data.pop("country", None)
         state_id = data.pop("state", None)

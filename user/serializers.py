@@ -167,7 +167,7 @@ class UserDetailsSerializer(serializers.ModelSerializer):
 
         # Company logic removed - users are now standalone
         # TODO: Implement alternative role identification
-        
+
         # Remove employee references since User model doesn't have employee field
         assign_site_employee = []
 

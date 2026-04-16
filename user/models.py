@@ -58,7 +58,8 @@ class User(AbstractUser):
         SCHOOL_COLLEGE = "school_college", "School / College"
         INSTITUTE = "institute", "Institute / Course Provider"
         CORPORATE = "corporate", "Corporate / Employer"
-    username = models.CharField(max_length=60, null=True,blank=True)
+
+    username = models.CharField(max_length=60, null=True, blank=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100, default="")
     about_me = models.CharField(max_length=100, null=True, blank=True)
@@ -74,7 +75,9 @@ class User(AbstractUser):
     email_verified = models.BooleanField(default=False)
     password_last_changed = models.DateTimeField(null=True, blank=True)
     keep_me_logged_in = models.BooleanField(default=False)
-    terms_accepted = models.BooleanField(default=False, help_text="User accepted Terms & Conditions")
+    terms_accepted = models.BooleanField(
+        default=False, help_text="User accepted Terms & Conditions"
+    )
     full_name = models.CharField(max_length=201, null=True, blank=True, db_index=True)
     country = models.ForeignKey(
         "country.Country", on_delete=models.SET_NULL, null=True, blank=True
