@@ -43,7 +43,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         if role not in valid_roles:
             raise serializers.ValidationError("Invalid role selected")
-
+        
         errors = {}
 
         country = Country.objects.filter(id=country_id).first()
@@ -70,8 +70,23 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = validated_data.pop("password")
 
-        user = User.objects.create(**validated_data)
-        user.set_password(password)
+        # Use UserManager.create_user() instead of direct create()
+        # This ensures proper password hashing and prevents database creation on validation errors
+        user = User.objects.create_user(
+            email=validated_data.get("email"),
+            password=password,
+            first_name=validated_data.get("first_name"),
+            last_name=validated_data.get("last_name"),
+            phone=validated_data.get("phone"),
+            role=validated_data.get("role"),
+            country=validated_data.get("country"),
+            states=validated_data.get("states"),  # Use the mapped field
+            city=validated_data.get("city"),
+            about_me=validated_data.get("about_me"),
+            designation=validated_data.get("designation"),
+            profile_image=validated_data.get("profile_image"),
+        )
+        
         user.is_active = True
         user.save()
 

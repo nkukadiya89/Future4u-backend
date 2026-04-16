@@ -13,7 +13,7 @@ class UserProfile(models.Model):
     class Role(models.TextChoices):
         STUDENT = "student", "Student"
         PARENT = "parent", "Parent / Guardian"
-        PROFESSIONAL = "professional", "Working Professional"
+        PROFESSIONAL = "working_professional", "Working Professional"
         INSTITUTE = "institute", "Institute / Course Provider"
         CORPORATE = "corporate", "Corporate / Employer"
 

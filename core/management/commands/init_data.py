@@ -192,7 +192,7 @@ class Command(BaseCommand):
             )
             return []
         role_family = []
-
+    
         for data in self.role_family_data:
             roles_family, created = RoleFamily.objects.update_or_create(
                 family_name=data["family_name"],

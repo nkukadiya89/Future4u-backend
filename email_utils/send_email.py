@@ -103,10 +103,19 @@ def send_mail(subject, template, data):
         msImage1.add_header("Content-ID", "<image2>")
         msg.attach(msImage1)
 
+    email_password = config("EMAIL_PASSWORD", default=None)
+    if not email_password:
+        # Development mode: skip actual email sending
+        print(f"[DEV MODE] Email not sent (EMAIL_PASSWORD not configured)")
+        print(f"To: {to_email}")
+        print(f"Subject: {subject}")
+        print(f"Template: {template}")
+        return HttpResponse("Mail Send (Dev Mode)", status=200)
+
     mail_server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
     mail_server.ehlo()
 
-    mail_server.login(config("ADMIN_EMAIL"), config("EMAIL_PASSWORD"))
+    mail_server.login(config("ADMIN_EMAIL"), email_password)
 
     try:
         mail_server.sendmail(config("ADMIN_EMAIL"), msg["To"], msg.as_string())

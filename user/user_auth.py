@@ -119,62 +119,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 }
             )
 
-        if user.company_id:
-            company = user.company
-            if not company or not company.is_active:
-                raise AuthenticationFailed(
-                    {
-                        "success": False,
-                        "message": "The associated company is not active. Login is not allowed.",
-                    }
-                )
-
-            # Check if company_expiry_date is expired
-            company_details = (
-                Company.objects.filter(id=user.company_id)
-                .values("active_subscription", "expiry_date", "days_to_expire")
-                .first()
-                or {}
-            )
-            company_expiry_date = company_details.get("expiry_date")
-            if company_expiry_date and company_expiry_date < timezone.now().date():
-                # Get all users associated with this company
-                company_users = User.objects.filter(company_id=user.company_id)
-
-                # Get employee IDs from users who have employee relationship
-                company_employee_ids = company_users.filter(
-                    employee_id__isnull=False
-                ).values_list("employee_id", flat=True)
-
-                # Deactivate employees
-                Employee.objects.filter(id__in=company_employee_ids).update(
-                    status="inactive"
-                )
-
-                # Deactivate only employee users, NOT company admin users
-                User.objects.filter(employee_id__in=company_employee_ids).update(
-                    is_active=False, status="inactive"
-                )
-
-        elif user.employee_id:
-            employee = user.employee
-            if not employee or not employee.company or not employee.company.is_active:
-                raise AuthenticationFailed(
-                    {
-                        "success": False,
-                        "message": "The associated employee's company is not active. Login is not allowed.",
-                    }
-                )
-
-            # Check if employee is active
-            if employee.status == "inactive":
-                raise AuthenticationFailed(
-                    {
-                        "success": False,
-                        "message": "Employee account is inactive. Please contact administrator.",
-                    }
-                )
-
         attrs["email"] = user.email
         try:
             token = super(CustomTokenObtainPairSerializer, self).validate(attrs)
@@ -202,33 +146,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         group_permission_data = get_user_group_permissions(user)
         group_data = get_user_groups(user)
 
-        company_role = None
-        company_expiry_date = None
-        company_active_subscription = None
-        company_days_to_expire = None
-
-        # Check if user is Company Admin
-        is_company_admin = any(
-            group.get("name") == "Company Admin" for group in group_data
-        )
-
-        if user.company_id and is_company_admin:
-            company_role = Group.objects.get(name="Company Admin").name
-
-            # Get fresh company details after potential updates
-            company_details = (
-                Company.objects.filter(id=user.company_id)
-                .values("active_subscription", "expiry_date", "days_to_expire")
-                .first()
-                or {}
-            )
-
-            company_active_subscription = company_details.get(
-                "active_subscription", None
-            )
-            company_expiry_date = company_details.get("expiry_date", None)
-            company_days_to_expire = company_details.get("days_to_expire", None)
-
         token.update(
             {
                 "userData": {
@@ -237,21 +154,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                     "first_name": user.first_name,
                     "last_name": user.last_name,
                     "phone": user.phone,
-                    "company": user.company_id if is_company_admin else None,
-                    "company_name": (
-                        user.company.name
-                        if (user.company and is_company_admin)
-                        else None
-                    ),
-                    "active_subscription": (
-                        company_active_subscription if is_company_admin else None
-                    ),
-                    "expiry_date": company_expiry_date if is_company_admin else None,
-                    "days_to_expire": (
-                        company_days_to_expire if is_company_admin else None
-                    ),
-                    "role": group_data,
-                    "company_role": company_role,
+                    "role": user.role,
                     "permission": permission_data,
                     "group_permission": group_permission_data,
                     "keep_me_logged_in": keep_me_logged,

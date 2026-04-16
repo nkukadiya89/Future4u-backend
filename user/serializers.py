@@ -82,12 +82,11 @@ class VerifyOTPSerializer(serializers.Serializer):
 class LoginWithEmailOtpSerializer(serializers.Serializer):
     email = serializers.EmailField(required=False, allow_null=True)
     otp_method = serializers.CharField(required=True)
-    whatsapp_verified = serializers.BooleanField()
     phone = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
         model = User
-        fields = ["email", "phone", "otp_method", "whatsapp_verified"]
+        fields = ["email", "phone", "otp_method"]
 
 
 class VerifyLoginWithEmailOtpSerializer(serializers.Serializer):
@@ -162,15 +161,13 @@ class UserDetailsSerializer(serializers.ModelSerializer):
         company_role = None
         vendor_role = None
 
-        if instance.company:
-            company_role = Group.objects.get(name="Company Admin").name
-            ret["company_profile_count"] = company_profile_counts
-            ret["company_profile_perc"] = company_profile_perc
-
+        # Company logic removed - users are now standalone
+        # TODO: Implement alternative role identification
+        
         # Remove employee references since User model doesn't have employee field
         assign_site_employee = []
 
-        ret["company"] = instance.company.id if instance.company else None
+        # ret["company"] = instance.company.id if instance.company else None  # Removed
         ret["assign_site_employee"] = assign_site_employee
         ret["role"] = get_user_groups(instance)
 
