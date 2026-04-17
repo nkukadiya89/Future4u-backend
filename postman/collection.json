@@ -13369,7 +13369,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"student@example.com\",\n  \"password\": \"Test@123\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"User\",\n  \"phone\": \"9876543210\",\n  \"role\": \"student\",\n  \"country\": 1,\n  \"state\": 1,\n  \"city\": 1\n}"
+              "raw": "{\n  \"email\": \"student@example.com\",\n  \"password\": \"Test@123\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"User\",\n  \"phone\": \"9876543210\",\n  \"user_type\": \"student\",\n  \"country\": 1,\n  \"state\": 1,\n  \"city\": 1\n}"
             }
           },
           "response": []

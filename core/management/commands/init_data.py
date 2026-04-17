@@ -75,6 +75,49 @@ class Command(BaseCommand):
             self.load_subscription()
             return
 
+        # Handle specific flags
+        if kwargs["groups"]:
+            admin_user = User.objects.filter(is_superuser=True).first() or User.objects.first()
+            self.create_custom_groups(admin_user=admin_user)
+            return
+
+        if kwargs["user"]:
+            self.create_super_user()
+            return
+
+        if kwargs["country"]:
+            self.load_country()
+            self.load_state()
+            self.load_city()
+            if CityArea is not None:
+                self.load_city_area()
+            return
+
+        if kwargs["zone_name"]:
+            self.load_state()
+            return
+
+        if kwargs["domain"]:
+            self.load_domain_master()
+            return
+
+        if kwargs["education_level"]:
+            self.load_education_levels()
+            return
+
+        if kwargs["skill"]:
+            self.load_skills()
+            return
+
+        if kwargs["career"]:
+            self.load_careers()
+            return
+
+        if kwargs["assessment"]:
+            self.load_assessment_questions()
+            return
+
+        # If no specific flags, run all initialization
         if (
             kwargs["country"] is None
             and kwargs["zone_name"] is None
@@ -128,7 +171,7 @@ class Command(BaseCommand):
             profile_image="null",
             designation="Super Admin",
             phone="9639639630",
-            role="student",
+            user_type=User.Role.SUPER_ADMIN,
             status="active",
             email_verified=True,
             terms_accepted=True,
@@ -209,25 +252,39 @@ class Command(BaseCommand):
             )
             return
 
+        # Create groups for each Role type
         super_admin_group, _ = CustomGroup.objects.update_or_create(
             name="Super Admin",
             defaults={"group_name": "Super Admin", "created_by": user},
         )
-        company_admin_group, _ = CustomGroup.objects.update_or_create(
-            name="Company Admin",
-            defaults={"group_name": "Company Admin"},
+        student_group, _ = CustomGroup.objects.update_or_create(
+            name="Student",
+            defaults={"group_name": "Student", "created_by": user},
         )
-        partner_admin_group, _ = CustomGroup.objects.update_or_create(
-            name="Partner Company Admin",
-            defaults={"group_name": "Partner Company Admin"},
+        parent_group, _ = CustomGroup.objects.update_or_create(
+            name="Parent",
+            defaults={"group_name": "Parent", "created_by": user},
         )
-        end_client_admin_group, _ = CustomGroup.objects.update_or_create(
-            name="EndClient Admin",
-            defaults={"group_name": "EndClient Admin"},
+        professional_group, _ = CustomGroup.objects.update_or_create(
+            name="Professional",
+            defaults={"group_name": "Professional", "created_by": user},
+        )
+        school_college_group, _ = CustomGroup.objects.update_or_create(
+            name="School College",
+            defaults={"group_name": "School College", "created_by": user},
+        )
+        institute_group, _ = CustomGroup.objects.update_or_create(
+            name="Institute",
+            defaults={"group_name": "Institute", "created_by": user},
+        )
+        corporate_group, _ = CustomGroup.objects.update_or_create(
+            name="Corporate",
+            defaults={"group_name": "Corporate", "created_by": user},
         )
 
         self.stdout.write("Custom Groups Created!.......")
 
+        # Super Admin Permissions - Full system access
         super_admin_permissions = [
             "activity_log|Can view activity log",
             "business_category|Can add business category",
@@ -250,73 +307,42 @@ class Command(BaseCommand):
             "country|Can change country",
             "country|Can delete country",
             "country|Can view country",
-            "employee|Can add employee",
-            "employee|Can change employee",
-            "employee|Can delete employee",
-            "employee|Can view employee",
+            "domain|Can add domain",
+            "domain|Can change domain",
+            "domain|Can delete domain",
+            "domain|Can view domain",
+            "education_level|Can add education level",
+            "education_level|Can change education level",
+            "education_level|Can delete education level",
+            "education_level|Can view education level",
             "faq|Can add faq",
             "faq|Can change faq",
             "faq|Can delete faq",
             "faq|Can view faq",
-            # "meter_config|Can add meter config",
-            # "meter_config|Can change meter config",
-            # "meter_config|Can delete meter config",
-            # "meter_config|Can view meter config",
-            # "notification_templates|Can add notification templates",
-            # "notification_templates|Can change notification templates",
-            # "notification_templates|Can delete notification templates",
-            # "notification_templates|Can view notification templates",
-            "partner_company|Can add partner company",
-            "partner_company|Can add partner company document",
-            "partner_company|Can change partner company",
-            "partner_company|Can change partner company document",
-            "partner_company|Can delete partner company",
-            "partner_company|Can delete partner company document",
-            "partner_company|Can view partner company",
-            "partner_company|Can view partner company document",
-            # "request_demo|Can change request demo",
-            # "request_demo|Can delete request demo",
-            # "request_demo|Can view request demo",
-            # "sim_master|Can add sim",
-            # "sim_master|Can change sim",
-            # "sim_master|Can delete sim",
-            # "sim_master|Can view sim",
-            # "sim_recharge_log|Can add sim recharge log",
-            # "sim_recharge_log|Can change sim recharge log",
-            # "sim_recharge_log|Can delete sim recharge log",
-            # "sim_recharge_log|Can view sim recharge log",
+            "skill|Can add skill",
+            "skill|Can change skill",
+            "skill|Can delete skill",
+            "skill|Can view skill",
+            "career|Can add career",
+            "career|Can change career",
+            "career|Can delete career",
+            "career|Can view career",
             "state|Can add state",
             "state|Can change state",
             "state|Can delete state",
             "state|Can view state",
-            # "site_location|Can change site location",
+            "stream|Can add stream",
+            "stream|Can change stream",
+            "stream|Can delete stream",
+            "stream|Can view stream",
             "subscription|Can add subscription",
             "subscription|Can change subscription",
             "subscription|Can delete subscription",
             "subscription|Can view subscription",
-            "subscription|Can add stripe charge",
             "subscription|Can add subscription feature",
-            "subscription|Can add subscription invoice",
-            "subscription|Can change stripe charge",
             "subscription|Can change subscription feature",
-            "subscription|Can change subscription invoice",
-            "subscription|Can delete stripe charge",
             "subscription|Can delete subscription feature",
-            "subscription|Can delete subscription invoice",
             "subscription|Can view subscription feature",
-            "subscription|Can view subscription invoice",
-            # "ticket_category|Can add ticket category",
-            # "ticket_category|Can change ticket category",
-            # "ticket_category|Can delete ticket category",
-            # "ticket_category|Can view ticket category",
-            # "support_ticket|Can add ticket",
-            # "support_ticket|Can change ticket",
-            # "support_ticket|Can delete ticket",
-            # "support_ticket|Can view ticket",
-            # "support_ticket|Can add ticket comment",
-            # "support_ticket|Can change ticket comment",
-            # "support_ticket|Can delete ticket comment",
-            # "support_ticket|Can view ticket comment",
             "user|Can add custom group",
             "user|Can change auth group permissions model",
             "user|Can change custom group",
@@ -328,112 +354,93 @@ class Command(BaseCommand):
             "user|Can view user",
             "user_profile|Can change business setting",
             "user_profile|Can view business setting",
+            "assessment|Can add assessment",
+            "assessment|Can change assessment",
+            "assessment|Can delete assessment",
+            "assessment|Can view assessment",
         ]
 
-        company_admin_permissions = [
-            "activity_log|Can view activity log",
-            # "campaign|Can add campaign",
-            # "campaign|Can change campaign",
-            # "campaign|Can delete campaign",
-            # "campaign|Can view campaign",
-            "company|Can change company",
-            "company|Can view company",
-            # "site_location|Can add site location",
-            # "site_location|Can change site location",
-            # "site_location|Can delete site location",
-            # "site_location|Can view site location",
-            "employee|Can add employee",
-            "employee|Can change employee",
-            "employee|Can delete employee",
-            "employee|Can view employee",
-            "subscription|Can view subscription",
-            "subscription|Can view payment subscription",
-            "subscription|Can view payment subscription item",
-            "subscription|Can view subscription invoice",
-            "subscription|Can view subscription feature",
-            # "sim_recharge_log|Can add sim recharge log",
-            # "sim_recharge_log|Can change sim recharge log",
-            # "sim_recharge_log|Can delete sim recharge log",
-            # "sim_recharge_log|Can view sim recharge log",
-            # "support_ticket|Can add ticket",
-            # "support_ticket|Can change ticket",
-            # "support_ticket|Can delete ticket",
-            # "support_ticket|Can view ticket",
-            # "support_ticket|Can add ticket comment",
-            # "support_ticket|Can change ticket comment",
-            # "support_ticket|Can delete ticket comment",
-            # "support_ticket|Can view ticket comment",
-            "user_profile|Can change business setting",
-            "user_profile|Can view business setting",
-            "user|Can add custom group",
-            "user|Can change auth group permissions model",
-            "user|Can change custom group",
-            "user|Can change user",
-            "user|Can delete auth group permissions model",
-            "user|Can delete custom group",
-            "user|Can view auth group permissions model",
-            "user|Can view custom group",
-        ]
-
-        partner_admin_permissions = [
-            "activity_log|Can view activity log",
-            "employee|Can add employee",
-            "employee|Can change employee",
-            "employee|Can delete employee",
-            "employee|Can view employee",
-            "partner_company|Can change partner company",
-            "partner_company|Can change partner company document",
-            "partner_company|Can delete partner company document",
-            "partner_company|Can view partner company",
-            "partner_company|Can view partner company document",
-            "user|Can add custom group",
-            "user|Can change auth group permissions model",
-            "user|Can change custom group",
-            "user|Can change user",
-            "user|Can delete auth group permissions model",
-            "user|Can delete custom group",
-            "user|Can view auth group permissions model",
-            "user|Can view custom group",
+        # Student Permissions - View own data, assessments, recommendations
+        student_permissions = [
+            "assessment|Can view assessment",
+            "career|Can view career",
+            "domain|Can view domain",
+            "education_level|Can view education level",
+            "skill|Can view skill",
+            "stream|Can view stream",
             "user|Can view user",
-            "user_profile|Can change business setting",
-            "user_profile|Can view business setting",
         ]
 
-        end_client_admin_permissions = [
-            "activity_log|Can view activity log",
-            "end_client|Can change end client",
-            "end_client|Can view end client",
-            "employee|Can add employee",
-            "employee|Can change employee",
-            "employee|Can delete employee",
-            "employee|Can view employee",
-            # "support_ticket|Can add ticket",
-            # "support_ticket|Can change ticket",
-            # "support_ticket|Can delete ticket",
-            # "support_ticket|Can view ticket",
-            # "support_ticket|Can add ticket comment",
-            # "support_ticket|Can change ticket comment",
-            # "support_ticket|Can delete ticket comment",
-            # "support_ticket|Can view ticket comment",
-            "user_profile|Can change business setting",
-            "user_profile|Can view business setting",
-            "user|Can add custom group",
-            "user|Can change auth group permissions model",
-            "user|Can change custom group",
+        # Parent Permissions - View linked child's data
+        parent_permissions = [
+            "assessment|Can view assessment",
+            "career|Can view career",
+            "domain|Can view domain",
+            "education_level|Can view education level",
+            "skill|Can view skill",
+            "stream|Can view stream",
+            "user|Can view user",
+        ]
+
+        # Professional Permissions - View career resources, update own profile
+        professional_permissions = [
+            "assessment|Can view assessment",
+            "career|Can view career",
+            "domain|Can view domain",
+            "education_level|Can view education level",
+            "skill|Can view skill",
+            "stream|Can view stream",
             "user|Can change user",
-            "user|Can delete auth group permissions model",
-            "user|Can delete custom group",
-            "user|Can view auth group permissions model",
-            "user|Can view custom group",
+            "user|Can view user",
         ]
 
+        # School/College Permissions - Manage their students
+        school_college_permissions = [
+            "assessment|Can view assessment",
+            "career|Can view career",
+            "domain|Can view domain",
+            "education_level|Can view education level",
+            "skill|Can view skill",
+            "stream|Can view stream",
+            "user|Can view user",
+        ]
+
+        # Institute Permissions - Manage courses, grade students
+        institute_permissions = [
+            "assessment|Can add assessment",
+            "assessment|Can change assessment",
+            "assessment|Can view assessment",
+            "career|Can view career",
+            "domain|Can view domain",
+            "education_level|Can view education level",
+            "skill|Can view skill",
+            "stream|Can view stream",
+            "user|Can view user",
+        ]
+
+        # Corporate Permissions - Post jobs, view candidates
+        corporate_permissions = [
+            "assessment|Can view assessment",
+            "career|Can view career",
+            "domain|Can view domain",
+            "education_level|Can view education level",
+            "skill|Can view skill",
+            "stream|Can view stream",
+            "user|Can view user",
+        ]
+
+        # Assign superuser to Super Admin group
         assign_group_super_admin = CustomGroup.objects.get(name="Super Admin")
         assign_group_super_admin.user_set.add(user)
 
+        # Assign permissions to groups
         self.assign_permissions(super_admin_group, super_admin_permissions)
-        self.assign_permissions(company_admin_group, company_admin_permissions)
-        self.assign_permissions(partner_admin_group, partner_admin_permissions)
-        self.assign_permissions(end_client_admin_group, end_client_admin_permissions)
+        self.assign_permissions(student_group, student_permissions)
+        self.assign_permissions(parent_group, parent_permissions)
+        self.assign_permissions(professional_group, professional_permissions)
+        self.assign_permissions(school_college_group, school_college_permissions)
+        self.assign_permissions(institute_group, institute_permissions)
+        self.assign_permissions(corporate_group, corporate_permissions)
 
     def assign_permissions(self, group, permissions):
         for permission_name in permissions:

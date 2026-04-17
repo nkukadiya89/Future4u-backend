@@ -58,6 +58,7 @@ class User(AbstractUser):
         SCHOOL_COLLEGE = "school_college", "School / College"
         INSTITUTE = "institute", "Institute / Course Provider"
         CORPORATE = "corporate", "Corporate / Employer"
+        SUPER_ADMIN = "super_admin", "Super Admin"
 
     username = models.CharField(max_length=60, null=True, blank=True)
     first_name = models.CharField(max_length=100)
@@ -69,9 +70,9 @@ class User(AbstractUser):
     otp = models.IntegerField(null=True, blank=True)
     designation = models.CharField(max_length=30, null=True, blank=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     status = models.CharField(choices=STATUS_CHOICES, default="Pending", max_length=25)
-    role = models.CharField(max_length=20, choices=Role.choices, default=Role.STUDENT)
+    user_type = models.CharField(max_length=20, choices=Role.choices, default=Role.STUDENT)
     email_verified = models.BooleanField(default=False)
     password_last_changed = models.DateTimeField(null=True, blank=True)
     keep_me_logged_in = models.BooleanField(default=False)
@@ -80,7 +81,7 @@ class User(AbstractUser):
     )
     full_name = models.CharField(max_length=201, null=True, blank=True, db_index=True)
     country = models.ForeignKey(
-        "country.Country", on_delete=models.SET_NULL, null=True, blank=True,default=1
+        "country.Country", on_delete=models.SET_NULL, null=True, blank=True
     )
     states = models.ForeignKey(
         "state.State", on_delete=models.SET_NULL, null=True, blank=True
@@ -101,6 +102,31 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         self.full_name = f"{self.first_name} {self.last_name}".strip()
         super().save(*args, **kwargs)
+        
+        self.assign_group_based_on_role()
+
+    def assign_group_based_on_role(self):
+        """Assign user to corresponding group based on user_type"""
+        role_group_mapping = {
+            self.Role.STUDENT: "Student",
+            self.Role.PARENT: "Parent",
+            self.Role.PROFESSIONAL: "Professional",
+            self.Role.SCHOOL_COLLEGE: "School College",
+            self.Role.INSTITUTE: "Institute",
+            self.Role.CORPORATE: "Corporate",
+            self.Role.SUPER_ADMIN: "Super Admin",
+        }
+        
+        group_name = role_group_mapping.get(self.user_type)
+        if group_name:
+            try:
+                group = CustomGroup.objects.get(name=group_name)
+                self.groups.remove(*CustomGroup.objects.filter(
+                    name__in=role_group_mapping.values()
+                ))
+                self.groups.add(group)
+            except CustomGroup.DoesNotExist:
+                pass
 
     @property
     def full_name_property(self):

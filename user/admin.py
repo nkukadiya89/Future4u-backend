@@ -7,8 +7,8 @@ from user.models import CustomGroup, EmailPhoneVerify, RoleFamily, User
 
 
 class UserAdmin(BaseUserAdmin):
-    list_display = ("email", "first_name", "last_name", "role", "is_active", "is_staff")
-    list_filter = ("is_active", "is_staff", "role", "status")
+    list_display = ("email", "first_name", "last_name", "user_type", "is_active", "is_staff")
+    list_filter = ("is_active", "is_staff", "user_type", "status")
     search_fields = ("email", "first_name", "last_name")
     ordering = ("-id",)
 
@@ -23,7 +23,7 @@ class UserAdmin(BaseUserAdmin):
             "Additional info",
             {
                 "fields": (
-                    "role",
+                    "user_type",
                     "status",
                     "email_verified",
                     "otp",
@@ -67,7 +67,7 @@ class UserAdmin(BaseUserAdmin):
                     "country",
                     "states",
                     "city",
-                    "role",
+                    "user_type",
                     "status",
                     "email_verified",
                     "otp",

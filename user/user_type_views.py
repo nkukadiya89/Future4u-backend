@@ -29,7 +29,7 @@ class AuthViewSet(viewsets.ViewSet):
                 {
                     "message": "User registered successfully",
                     "user_id": user.id,  # type: ignore
-                    "role": user.role,  # type: ignore
+                    "user_type": user.user_type,  # type: ignore
                 },
                 status=status.HTTP_201_CREATED,
             )

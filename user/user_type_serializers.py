@@ -13,7 +13,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
     confirm_password = serializers.CharField(write_only=True)
     terms_accepted = serializers.BooleanField(write_only=True)
-    role = serializers.ChoiceField(
+    user_type = serializers.ChoiceField(
         choices=[(r.value, r.label) for r in User.Role],
         required=True,
     )
@@ -31,7 +31,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "phone",
-            "role",
+            "user_type",
             "country",
             "state",
             "city",
