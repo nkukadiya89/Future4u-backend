@@ -154,7 +154,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                     "first_name": user.first_name,
                     "last_name": user.last_name,
                     "phone": user.phone,
-                    "role": user.role,
+                    "user_type": user.user_type,
                     "permission": permission_data,
                     "group_permission": group_permission_data,
                     "keep_me_logged_in": keep_me_logged,

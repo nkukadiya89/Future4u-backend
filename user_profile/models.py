@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils.timezone import now
-
+from django.contrib.postgres.fields import ArrayField
 from city.models import City
 from company.models import Company
 from country.models import Country
@@ -29,11 +29,12 @@ class UserProfile(models.Model):
         SKILL_DEVELOPMENT = "skill_development", "Skill Development"
         NOT_SURE = "not_sure", "Not Sure Yet"
 
-    career_goal = models.JSONField(
+    career_goal = ArrayField(
+        models.CharField(max_length=50,choices=CareerGoal.choices),
         default=list,
+        null=True,
         blank=True,
-        help_text="Career directions selected during onboarding e.g. ['study_further', 'skill_development']",
-    )
+    )   
 
     class ScienceTrack(models.TextChoices):
         PCM = "pcm", "PCM (Physics, Chemistry, Maths)"
@@ -45,7 +46,6 @@ class UserProfile(models.Model):
         choices=ScienceTrack.choices,
         null=True,
         blank=True,
-        help_text="Science sub-track — only relevant when stream is science",
     )
 
     class ParentSupportLevel(models.TextChoices):
@@ -54,15 +54,14 @@ class UserProfile(models.Model):
         NEUTRAL = "neutral", "Neutral"
         SOMEWHAT_RESTRICTIVE = "somewhat_restrictive", "Somewhat Restrictive"
         VERY_RESTRICTIVE = "very_restrictive", "Very Restrictive"
-
+    
     parent_support_level = models.CharField(
         max_length=25,
         choices=ParentSupportLevel.choices,
         null=True,
         blank=True,
-        help_text="How supportive parents are of career choices — used to weight parent_acceptance_level in recommendations",
     )
-
+    
     class CareerValue(models.TextChoices):
         HIGH_SALARY = "high_salary_potential", "High Salary Potential"
         JOB_SECURITY = "job_security_stability", "Job Security and Stability"
@@ -71,10 +70,11 @@ class UserProfile(models.Model):
         SOCIAL_IMPACT = "social_impact", "Making an Impact on Society"
         GROWTH = "growth_and_learning", "Opportunities to Grow and Learn"
 
-    career_values = models.JSONField(
+    career_values = ArrayField(
+        models.CharField(max_length=50, choices=CareerValue.choices),
         default=list,
+        null=True,
         blank=True,
-        help_text="What user values in a career e.g. ['high_salary_potential', 'work_life_balance']",
     )
 
     class PlatformGoal(models.TextChoices):
@@ -86,10 +86,11 @@ class UserProfile(models.Model):
         )
         PARENT_CONFIDENCE = "parent_confidence", "Parent Confidence"
 
-    platform_goals = models.JSONField(
+    platform_goals = ArrayField(
+        models.CharField(max_length=50, choices=PlatformGoal.choices),
         default=list,
+        null=True,
         blank=True,
-        help_text="What user wants from the platform e.g. ['career_clarity', 'course_recommendations']",
     )
 
     class InterestCategory(models.TextChoices):
@@ -109,8 +110,10 @@ class UserProfile(models.Model):
         HOSPITALITY = "hospitality", "Hospitality"
         VOCATIONAL = "vocational", "Vocational / Trades"
 
-    interest_categories = models.JSONField(
+    interest_categories = ArrayField(
+        models.CharField(max_length=50, choices=InterestCategory.choices),
         default=list,
+        null=True,
         blank=True,
         help_text="Broad interest categories e.g. ['technology', 'healthcare', 'government']",
     )
@@ -122,10 +125,11 @@ class UserProfile(models.Model):
         EDUCATION_COST = "high_education_cost", "High Education Cost"
         LIMITED_GUIDANCE = "limited_guidance", "Limited Guidance"
 
-    user_concerns = models.JSONField(
+    user_concerns = ArrayField(
+        models.CharField(max_length=50, choices=UserConcern.choices),
         default=list,
+        null=True,
         blank=True,
-        help_text="Concerns selected during onboarding e.g. ['job_security', 'high_education_cost']",
     )
 
     medium = models.CharField(

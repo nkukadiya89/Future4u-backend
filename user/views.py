@@ -466,7 +466,7 @@ class VerifyEmailOtpAndGiveTokenViewset(ModelViewSet):
                         "phone": user.phone,
                         "company": company_id,
                         "active_subscription": company_active_subscription,
-                        "role": user.role,
+                        "user_type": user.user_type,
                         "permission": permission_data,
                         "group_permission": group_permission_data,
                         "company_profile_count": company_profile_count,
