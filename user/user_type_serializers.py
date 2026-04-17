@@ -106,21 +106,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         password = validated_data.pop("password")
         terms_accepted = validated_data.pop("terms_accepted", False)
 
-        user = User.objects.create_user(
-            email=validated_data.get("email"),
-            password=password,
-            first_name=validated_data.get("first_name"),
-            last_name=validated_data.get("last_name"),
-            phone=validated_data.get("phone"),
-            role=validated_data.get("role"),
-            country=validated_data.get("country"),
-            states=validated_data.get("states"),
-            city=validated_data.get("city"),
-            about_me=validated_data.get("about_me"),
-            designation=validated_data.get("designation"),
-            profile_image=validated_data.get("profile_image"),
-        )
-
+        user = User.objects.create(**validated_data)
+        user.set_password(password)
         user.is_active = True
         user.terms_accepted = terms_accepted
         user.save()

@@ -80,7 +80,7 @@ class User(AbstractUser):
     )
     full_name = models.CharField(max_length=201, null=True, blank=True, db_index=True)
     country = models.ForeignKey(
-        "country.Country", on_delete=models.SET_NULL, null=True, blank=True
+        "country.Country", on_delete=models.SET_NULL, null=True, blank=True,default=1
     )
     states = models.ForeignKey(
         "state.State", on_delete=models.SET_NULL, null=True, blank=True
