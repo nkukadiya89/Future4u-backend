@@ -71,7 +71,7 @@ class User(AbstractUser):
     designation = models.CharField(max_length=30, null=True, blank=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
     is_active = models.BooleanField(default=True)
-    status = models.CharField(choices=STATUS_CHOICES, default="Pending", max_length=25)
+    status = models.CharField(choices=STATUS_CHOICES, default="pending", max_length=25)
     user_type = models.CharField(max_length=20, choices=Role.choices, default=Role.STUDENT)
     email_verified = models.BooleanField(default=False)
     password_last_changed = models.DateTimeField(null=True, blank=True)
@@ -100,10 +100,12 @@ class User(AbstractUser):
         ordering = ["-id"]
 
     def save(self, *args, **kwargs):
+        skip_group_assignment = kwargs.pop('skip_group_assignment', False)
         self.full_name = f"{self.first_name} {self.last_name}".strip()
         super().save(*args, **kwargs)
         
-        self.assign_group_based_on_role()
+        if not skip_group_assignment:
+            self.assign_group_based_on_role()
 
     def assign_group_based_on_role(self):
         """Assign user to corresponding group based on user_type"""

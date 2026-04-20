@@ -130,13 +130,13 @@ class Command(BaseCommand):
             and kwargs["user"] is None
             and kwargs["subscription"] is None
         ):
+            self.load_business_category()
             admin_user = self.create_super_user()
             self.create_custom_groups(admin_user=admin_user)
             self.create_role_family(admin_user=admin_user)
-            self.load_business_category()
-            self.load_country()
-            self.load_state()
-            self.load_city()
+            self.load_country(admin_user=admin_user)
+            self.load_state(admin_user=admin_user)
+            self.load_city(admin_user=admin_user)
             if CityArea is not None:
                 self.load_city_area()
             self.load_domain_master()
@@ -168,7 +168,7 @@ class Command(BaseCommand):
             first_name="Future4u",
             last_name="Admin",
             about_me="Admin",
-            profile_image="null",
+            profile_image=None,
             designation="Super Admin",
             phone="9639639630",
             user_type=User.Role.SUPER_ADMIN,
@@ -486,8 +486,9 @@ class Command(BaseCommand):
         self.stdout.write("Business Category data uploaded.")
 
     # Country Upload CSV
-    def load_country(self):
+    def load_country(self, admin_user=None):
         self.stdout.write("Loading Country...")
+        created_by_user = admin_user or User.objects.filter(is_superuser=True).first()
         file_path = path.join(
             settings.BASE_DIR, "core", "management", "source", "countrie.csv"
         )
@@ -501,7 +502,7 @@ class Command(BaseCommand):
                         unicode=row["unicode"],
                         country_flag=row["flag"],
                         phone_code=row["phone_code"],
-                        created_by=User.objects.get(id=row["created_by"]),
+                        created_by=created_by_user,
                     )
                     for row in reader
                 ],
@@ -510,8 +511,9 @@ class Command(BaseCommand):
         self.stdout.write("Country data uploaded.")
 
     # State Upload CSV
-    def load_state(self):
+    def load_state(self, admin_user=None):
         self.stdout.write("Loading State...")
+        created_by_user = admin_user or User.objects.filter(is_superuser=True).first()
         file_path = path.join(
             settings.BASE_DIR, "core", "management", "source", "state.csv"
         )
@@ -520,13 +522,12 @@ class Command(BaseCommand):
             states_to_create = []
             for row in reader:
                 try:
-                    # Get country by name and use its ID
                     country = Country.objects.get(name=row["country_name"])
                     states_to_create.append(
                         State(
                             name=row["name"],
                             country_id=country.id,
-                            created_by=User.objects.get(id=row["created_by"]),
+                            created_by=created_by_user,
                         )
                     )
                 except Country.DoesNotExist:
@@ -547,8 +548,9 @@ class Command(BaseCommand):
         self.stdout.write("State data uploaded successfully.")
 
     # City Upload CSV
-    def load_city(self):
+    def load_city(self, admin_user=None):
         self.stdout.write("Loading City....")
+        created_by_user = admin_user or User.objects.filter(is_superuser=True).first()
         file_path = path.join(
             settings.BASE_DIR, "core", "management", "source", "city.csv"
         )
@@ -579,7 +581,7 @@ class Command(BaseCommand):
                             name=row["name"].strip(),
                             state=state,
                             country=state.country,
-                            created_by=User.objects.get(id=row["created_by"]),
+                            created_by=created_by_user,
                         )
                     )
 

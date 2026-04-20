@@ -59,13 +59,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             )
         return value
 
-    def validate_terms_accepted(self, value):
-        if not value:
-            raise serializers.ValidationError(
-                "You must accept the Terms & Conditions to create an account."
-            )
-        return value
-
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError(
