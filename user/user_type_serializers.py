@@ -101,7 +101,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         user = User.objects.create(**validated_data)
         user.set_password(password)
-        user.is_active = True
+        user.is_active = True  # TODO: set to False when email verification is enabled
         user.terms_accepted = terms_accepted
         user.save()
 

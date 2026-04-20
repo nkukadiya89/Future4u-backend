@@ -390,7 +390,6 @@ class Command(BaseCommand):
             "education_level|Can view education level",
             "skill|Can view skill",
             "stream|Can view stream",
-            "user|Can change user",
             "user|Can view user",
         ]
 
