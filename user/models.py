@@ -1,7 +1,10 @@
+import os
+
 from django.contrib.auth.models import AbstractUser, BaseUserManager, Group
 from django.db import models
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
+from django.core.files.storage import default_storage
 
 from company.models import Company
 from future4u import settings
@@ -72,7 +75,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     status = models.CharField(choices=STATUS_CHOICES, default="pending", max_length=25)
-    user_type = models.CharField(max_length=20, choices=Role.choices, default=Role.STUDENT)
+    user_type = models.CharField(max_length=20, choices=Role.choices)
     email_verified = models.BooleanField(default=False)
     password_last_changed = models.DateTimeField(null=True, blank=True)
     keep_me_logged_in = models.BooleanField(default=False)
@@ -133,6 +136,34 @@ class User(AbstractUser):
     @property
     def full_name_property(self):
         return f"{self.first_name} {self.last_name}".strip()
+
+    def upload_profile_image(self, profile_image_file):
+        allowed_types = [".jpg", ".jpeg", ".png"]
+        error_list = []
+
+        file_extension = os.path.splitext(profile_image_file.name)[1].lower()
+        if file_extension not in allowed_types:
+            return f"Invalid file type: {file_extension}. Allowed types are {', '.join(allowed_types)}."
+
+        current_value = getattr(self, "profile_image", None)
+
+        try:
+            if current_value:
+                if default_storage.exists(current_value):
+                    default_storage.delete(current_value)
+
+            filename = f"profile_images/{self.id}_{profile_image_file.name}"
+
+            path = default_storage.save(filename, profile_image_file)
+            self.profile_image = path
+        except Exception as e:
+            print(f"Error uploading file: {str(e)}")
+            error_list.append("profile_image")
+
+        self.save(skip_group_assignment=True)
+
+        if error_list:
+            return f"Error processing files: {error_list}"
 
 
 class AuthGroupModel(models.Model):
