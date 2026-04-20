@@ -26,9 +26,6 @@ class UserCreationForm(BaseUserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].required = False
-        self.fields['username'].allow_blank = True
-        if self.instance and not self.instance.username:
-            self.instance.username = self.cleaned_data.get("email", "") or ""
 
     def clean_username(self):
         username = self.cleaned_data.get("username")
