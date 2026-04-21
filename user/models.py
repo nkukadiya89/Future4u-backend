@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.files.storage import default_storage
 
 from company.models import Company
-from future4u import settings
+from django.conf import settings
 from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
 
 
