@@ -62,12 +62,16 @@ def upload_file_to_bucket(
 
     s3_file = f"{folder_name}" + str(p_value) + "_" + file_name + file_type
 
-    # Validate file size (limit: 50MB)
+    # Validate file size (limit from settings)
+    from django.conf import settings
+    max_size_mb = getattr(settings, 'MAX_UPLOAD_FILE_SIZE_MB', 50)
+    max_size_kb = max_size_mb * 1024
+    
     file_size = os.path.getsize(tempfile) / 1000
-    if file_size > 51200:  # 50MB = 50 * 1024 KB = 51200 KB
+    if file_size > max_size_kb:
         remove(tempfile)
         raise serializers.ValidationError(
-            "File size too large. Maximum allowed size is 50MB."
+            f"File size too large. Maximum allowed size is {max_size_mb}MB."
         )
 
     # Upload to S3
@@ -115,11 +119,17 @@ def upload_doc_file(upload_file, allowed_type, folder_name, p_value, file_name=N
     s3_file = f"{folder_name}" + str(p_value) + "_" + file_name + file_type
 
     aws_file_url = f"http://{BUCKET}.s3.{REGION_NAME}.amazonaws.com/{s3_file}"
+    
+    # Validate file size (limit from settings)
+    from django.conf import settings
+    max_size_mb = getattr(settings, 'MAX_UPLOAD_FILE_SIZE_MB', 50)
+    max_size_kb = max_size_mb * 1024
+    
     file_size = os.path.getsize(tempfile) / 1000
-    if file_size > 51200:  # 50MB = 50 * 1024 KB = 51200 KB
+    if file_size > max_size_kb:
         remove(tempfile)
         raise serializers.ValidationError(
-            "File size too large. Maximum allowed size is 50MB."
+            f"File size too large. Maximum allowed size is {max_size_mb}MB."
         )
 
     s3.upload_file(

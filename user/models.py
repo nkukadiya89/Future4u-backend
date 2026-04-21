@@ -140,11 +140,10 @@ class User(AbstractUser):
 
     def upload_profile_image(self, profile_image_file):
         allowed_types = [".jpg", ".jpeg", ".png"]
-        error_list = []
 
         file_extension = os.path.splitext(profile_image_file.name)[1].lower()
         if file_extension not in allowed_types:
-            return f"Invalid file type: {file_extension}. Allowed types are {', '.join(allowed_types)}."
+            raise ValueError(f"Invalid file type: {file_extension}. Allowed types are {', '.join(allowed_types)}.")
 
         current_value = getattr(self, "profile_image", None)
 
@@ -161,9 +160,10 @@ class User(AbstractUser):
             )
             self.profile_image = aws_file_url
             self.save(update_fields=["profile_image"])
-        except Exception as e:
-            print("Upload Error:", str(e))
+        except ValueError:
             raise
+        except Exception as e:
+            raise Exception(f"Failed to upload profile image: {str(e)}")
 
 
 class AuthGroupModel(models.Model):
