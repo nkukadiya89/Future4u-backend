@@ -8,6 +8,7 @@ from django.core.files.storage import default_storage
 
 from company.models import Company
 from future4u import settings
+from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
 
 
 class UserManager(BaseUserManager):
@@ -149,21 +150,20 @@ class User(AbstractUser):
 
         try:
             if current_value:
-                if default_storage.exists(current_value):
-                    default_storage.delete(current_value)
+                delete_uploaded_file(current_value)
 
-            filename = f"profile_images/{self.id}_{profile_image_file.name}"
-
-            path = default_storage.save(filename, profile_image_file)
-            self.profile_image = path
+            aws_file_url, presigned_url = upload_file_to_bucket(
+                profile_image_file,
+                allowed_types,
+                "ProfileImage/",
+                self.id,
+                None,
+            )
+            self.profile_image = aws_file_url
+            self.save(update_fields=["profile_image"])
         except Exception as e:
-            print(f"Error uploading file: {str(e)}")
-            error_list.append("profile_image")
-
-        self.save(skip_group_assignment=True)
-
-        if error_list:
-            return f"Error processing files: {error_list}"
+            print("Upload Error:", str(e))
+            raise
 
 
 class AuthGroupModel(models.Model):

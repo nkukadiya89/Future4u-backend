@@ -46,7 +46,7 @@ def upload_file_to_bucket(
         file_name = timezone.now().strftime("%Y%m%d_%H%M%S")
 
     # File path for temporary storage
-    tempfile = settings.MEDIA_ROOT + file_name + file_type
+    tempfile = str(settings.MEDIA_ROOT / (file_name + file_type))
 
     # Handle image files
     if file_type.lower() in [".jpg", ".jpeg", ".png"]:

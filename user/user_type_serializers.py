@@ -25,7 +25,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         except json.JSONDecodeError:
             raise serializers.ValidationError({"data": "Invalid JSON format"})
 
-        # Extract fields from JSON
         password = json_data.get("password")
         confirm_password = json_data.get("confirm_password")
         terms_accepted = json_data.get("terms_accepted")
@@ -38,7 +37,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         state_id = json_data.get("state")
         city_id = json_data.get("city")
 
-        # Validate required fields
         errors = {}
         if not email:
             errors["email"] = "This field is required."
@@ -62,7 +60,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         if errors:
             raise serializers.ValidationError(errors)
 
-        # Validate password
         if not re.search(r"[A-Z]", password):
             errors["password"] = "Password must contain at least 1 uppercase letter."
         if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
@@ -72,19 +69,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         if len(password) < 8:
             errors["password"] = "Password must be at least 8 characters."
 
-        # Validate password match
         if password != confirm_password:
             errors["confirm_password"] = "Passwords do not match."
 
-        # Validate email uniqueness
         if User.objects.filter(email=email).exists():
             errors["email"] = "An account with this email already exists."
 
-        # Validate terms accepted
         if not terms_accepted:
             errors["terms_accepted"] = "You must accept the Terms & Conditions to create an account."
 
-        # Validate country, state, city
         country = Country.objects.filter(id=country_id).first()
         if not country:
             errors["country"] = "Invalid country id"
@@ -95,7 +88,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         if not city:
             errors["city"] = "Invalid city id"
 
-        # Validate user_type
         valid_user_types = [r.value for r in User.Role]
         if user_type not in valid_user_types:
             errors["user_type"] = f"Invalid user_type. Must be one of: {', '.join(valid_user_types)}"
@@ -103,7 +95,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         if errors:
             raise serializers.ValidationError(errors)
 
-        # Return validated data
         data["validated_data"] = {
             "email": email,
             "first_name": first_name,
@@ -116,13 +107,13 @@ class RegisterSerializer(serializers.ModelSerializer):
             "password": password,
             "terms_accepted": terms_accepted,
         }
-        data["profile_image_file"] = data.get("profile_image")
+        data["profile_image_file"] = self.context["request"].FILES.get("profile_image")
         return data
 
     @transaction.atomic
     def create(self, validated_data):
         validated_data_inner = validated_data.get("validated_data", {})
-        profile_image_file = validated_data.get("profile_image")
+        profile_image_file = validated_data.get("profile_image_file")
 
         password = validated_data_inner.pop("password")
         terms_accepted = validated_data_inner.pop("terms_accepted")
