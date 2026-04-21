@@ -8,18 +8,21 @@ from user.models import CustomGroup, EmailPhoneVerify, RoleFamily, User
 
 
 class UserChangeForm(BaseUserChangeForm):
+    username = forms.CharField(required=False, max_length=60)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['username'].required = False
-        self.fields['username'].allow_blank = True
         if self.instance and not self.instance.username:
-            self.instance.username = self.instance.email or ""
+            self.instance.username = ""
 
     def clean_username(self):
         username = self.cleaned_data.get("username")
         if not username:
             return self.instance.email if self.instance.email else ""
         return username
+
+    def clean_password(self):
+        return self.initial.get("password") or ""
 
 
 class UserCreationForm(BaseUserCreationForm):

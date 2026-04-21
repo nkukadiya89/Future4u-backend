@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 
 from user.models import User
-from email_utils.send_email import generate_token, send_mail
+from email_utils.send_email import generate_token, send_mail, decode_token
 from user.services.registration_service import send_registration_email
 from user.user_type_serializers import RegisterSerializer
 
@@ -109,8 +109,13 @@ class AuthViewSet(viewsets.ViewSet):
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
-        # Generate a password reset token and send it via email
-        # token valid for 1 day
+        # Check if user is active
+        if not user.is_active:
+            return Response(
+                {"error": "User not active"}, status=status.HTTP_401_UNAUTHORIZED
+            )
+
+
         token = generate_token(user.email, 1)
         send_mail("Password Reset Request", "reset-pass.html", {"token": token, "name": user.first_name, "email": user.email})  # type: ignore
 
@@ -119,10 +124,46 @@ class AuthViewSet(viewsets.ViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @action(detail=False, methods=["post"], url_path="reset-password/")
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="reset-password",
+        permission_classes=[AllowAny],
+        authentication_classes=[],
+    )
     def reset_password(self, request):
-        email = request.data.get("email")
+        token = request.data.get("token")
         new_password = request.data.get("new_password")
+        re_enter_password = request.data.get("re_enter_password")
+
+        if not token:
+            return Response(
+                {"error": "Token is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not new_password or not re_enter_password:
+            return Response(
+                {"error": "new_password and re_enter_password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if new_password != re_enter_password:
+            return Response(
+                {"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            payload = decode_token(token)
+        except Exception:
+            return Response(
+                {"error": "Invalid or expired token"}, status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        email = payload.get("email")
+        if not email:
+            return Response(
+                {"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED
+            )
 
         try:
             user = User.objects.get(email=email)  # type: ignore

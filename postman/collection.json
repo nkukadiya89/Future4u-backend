@@ -13462,7 +13462,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"new_password\": \"{{new_password}}\"\n}",
+              "raw": "{\n  \"token\": \"{{reset_token}}\",\n  \"new_password\": \"{{new_password}}\",\n  \"re_enter_password\": \"{{new_password}}\"\n}",
               "options": {"raw": {"language": "json"}}
             }
           },
