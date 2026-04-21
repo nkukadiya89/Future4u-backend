@@ -7,14 +7,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('country', '0002_initial'),
-        ('user', '0016_alter_user_status'),
+        ("country", "0002_initial"),
+        ("user", "0016_alter_user_status"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='country',
-            field=models.ForeignKey(blank=True, default=1, null=True, on_delete=django.db.models.deletion.SET_NULL, to='country.country'),
+            model_name="user",
+            name="country",
+            field=models.ForeignKey(
+                blank=True,
+                default=1,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="country.country",
+            ),
         ),
     ]

@@ -28,7 +28,7 @@ class UserChangeForm(BaseUserChangeForm):
 class UserCreationForm(BaseUserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['username'].required = False
+        self.fields["username"].required = False
 
     def clean_username(self):
         username = self.cleaned_data.get("username")
@@ -38,18 +38,38 @@ class UserCreationForm(BaseUserCreationForm):
         return username
 
 
-
 class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
-    list_display = ("email", "first_name", "last_name", "user_type", "is_active", "is_staff")
+    list_display = (
+        "email",
+        "first_name",
+        "last_name",
+        "user_type",
+        "is_active",
+        "is_staff",
+    )
     list_filter = ("is_active", "is_staff", "user_type", "status")
     search_fields = ("email", "first_name", "last_name")
     ordering = ("-id",)
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Personal info", {"fields": ("username", "first_name", "last_name", "full_name", "phone", "profile_image", "about_me", "designation")}),
+        (
+            "Personal info",
+            {
+                "fields": (
+                    "username",
+                    "first_name",
+                    "last_name",
+                    "full_name",
+                    "phone",
+                    "profile_image",
+                    "about_me",
+                    "designation",
+                )
+            },
+        ),
         (
             "Location",
             {"fields": ("country", "states", "city")},
@@ -79,7 +99,10 @@ class UserAdmin(BaseUserAdmin):
                 )
             },
         ),
-        ("Important dates", {"fields": ("last_login", "date_joined", "password_last_changed")}),
+        (
+            "Important dates",
+            {"fields": ("last_login", "date_joined", "password_last_changed")},
+        ),
     )
 
     add_fieldsets = (

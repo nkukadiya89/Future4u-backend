@@ -21,7 +21,7 @@ class AuthViewSet(viewsets.ViewSet):
         authentication_classes=[],
     )
     def register(self, request):
-        serializer = RegisterSerializer(data=request.data, context = {"request":request})
+        serializer = RegisterSerializer(data=request.data, context={"request": request})
 
         if serializer.is_valid():
             user = serializer.save()
@@ -115,7 +115,6 @@ class AuthViewSet(viewsets.ViewSet):
                 {"error": "User not active"}, status=status.HTTP_401_UNAUTHORIZED
             )
 
-
         token = generate_token(user.email, 1)
         send_mail("Password Reset Request", "reset-pass.html", {"token": token, "name": user.first_name, "email": user.email})  # type: ignore
 
@@ -156,7 +155,8 @@ class AuthViewSet(viewsets.ViewSet):
             payload = decode_token(token)
         except Exception:
             return Response(
-                {"error": "Invalid or expired token"}, status=status.HTTP_401_UNAUTHORIZED
+                {"error": "Invalid or expired token"},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
         email = payload.get("email")

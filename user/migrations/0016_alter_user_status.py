@@ -6,13 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0015_alter_user_country'),
+        ("user", "0015_alter_user_country"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='status',
-            field=models.CharField(choices=[('pending', 'pending'), ('active', 'active'), ('inactive', 'inactive')], default='pending', max_length=25),
+            model_name="user",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("pending", "pending"),
+                    ("active", "active"),
+                    ("inactive", "inactive"),
+                ],
+                default="pending",
+                max_length=25,
+            ),
         ),
     ]
