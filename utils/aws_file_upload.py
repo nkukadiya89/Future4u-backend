@@ -46,7 +46,7 @@ def upload_file_to_bucket(
         file_name = timezone.now().strftime("%Y%m%d_%H%M%S")
 
     # File path for temporary storage
-    tempfile = settings.MEDIA_ROOT + file_name + file_type
+    tempfile = str(settings.MEDIA_ROOT / (file_name + file_type))
 
     # Handle image files
     if file_type.lower() in [".jpg", ".jpeg", ".png"]:
@@ -64,7 +64,7 @@ def upload_file_to_bucket(
 
     # Validate file size (limit: 50MB)
     file_size = os.path.getsize(tempfile) / 1000
-    if file_size > 51200:  # 50MB = 50 * 1024 KB = 51200 KB
+    if file_size > 51200:
         remove(tempfile)
         raise serializers.ValidationError(
             "File size too large. Maximum allowed size is 50MB."
@@ -115,8 +115,9 @@ def upload_doc_file(upload_file, allowed_type, folder_name, p_value, file_name=N
     s3_file = f"{folder_name}" + str(p_value) + "_" + file_name + file_type
 
     aws_file_url = f"http://{BUCKET}.s3.{REGION_NAME}.amazonaws.com/{s3_file}"
+
     file_size = os.path.getsize(tempfile) / 1000
-    if file_size > 51200:  # 50MB = 50 * 1024 KB = 51200 KB
+    if file_size > 51200:
         remove(tempfile)
         raise serializers.ValidationError(
             "File size too large. Maximum allowed size is 50MB."

@@ -28,6 +28,46 @@
       "enabled": true
     },
     {
+      "key": "new_password",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "otp",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "first_name",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "last_name",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "phone",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "country_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "state_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "city_id",
+      "value": "",
+      "enabled": true
+    },
+    {
       "key": "education_level_id",
       "value": "",
       "enabled": true

@@ -130,13 +130,13 @@ class Command(BaseCommand):
             and kwargs["user"] is None
             and kwargs["subscription"] is None
         ):
+            self.load_business_category()
             admin_user = self.create_super_user()
             self.create_custom_groups(admin_user=admin_user)
             self.create_role_family(admin_user=admin_user)
-            self.load_business_category()
-            self.load_country()
-            self.load_state()
-            self.load_city()
+            self.load_country(admin_user=admin_user)
+            self.load_state(admin_user=admin_user)
+            self.load_city(admin_user=admin_user)
             if CityArea is not None:
                 self.load_city_area()
             self.load_domain_master()
@@ -168,7 +168,7 @@ class Command(BaseCommand):
             first_name="Future4u",
             last_name="Admin",
             about_me="Admin",
-            profile_image="null",
+            profile_image=None,
             designation="Super Admin",
             phone="9639639630",
             user_type=User.Role.SUPER_ADMIN,
@@ -283,82 +283,12 @@ class Command(BaseCommand):
         )
 
         self.stdout.write("Custom Groups Created!.......")
+        all_permissions = Permission.objects.all()
+        super_admin_group.permissions.set(all_permissions)    
 
-        # Super Admin Permissions - Full system access
-        super_admin_permissions = [
-            "activity_log|Can view activity log",
-            "business_category|Can add business category",
-            "business_category|Can change business category",
-            "business_category|Can delete business category",
-            "business_category|Can view business category",
-            "city|Can add city",
-            "city|Can change city",
-            "city|Can delete city",
-            "city|Can view city",
-            "city_areas|Can add city area",
-            "city_areas|Can change city area",
-            "city_areas|Can delete city area",
-            "city_areas|Can view city area",
-            "company|Can add company",
-            "company|Can change company",
-            "company|Can delete company",
-            "company|Can view company",
-            "country|Can add country",
-            "country|Can change country",
-            "country|Can delete country",
-            "country|Can view country",
-            "domain|Can add domain",
-            "domain|Can change domain",
-            "domain|Can delete domain",
-            "domain|Can view domain",
-            "education_level|Can add education level",
-            "education_level|Can change education level",
-            "education_level|Can delete education level",
-            "education_level|Can view education level",
-            "faq|Can add faq",
-            "faq|Can change faq",
-            "faq|Can delete faq",
-            "faq|Can view faq",
-            "skill|Can add skill",
-            "skill|Can change skill",
-            "skill|Can delete skill",
-            "skill|Can view skill",
-            "career|Can add career",
-            "career|Can change career",
-            "career|Can delete career",
-            "career|Can view career",
-            "state|Can add state",
-            "state|Can change state",
-            "state|Can delete state",
-            "state|Can view state",
-            "stream|Can add stream",
-            "stream|Can change stream",
-            "stream|Can delete stream",
-            "stream|Can view stream",
-            "subscription|Can add subscription",
-            "subscription|Can change subscription",
-            "subscription|Can delete subscription",
-            "subscription|Can view subscription",
-            "subscription|Can add subscription feature",
-            "subscription|Can change subscription feature",
-            "subscription|Can delete subscription feature",
-            "subscription|Can view subscription feature",
-            "user|Can add custom group",
-            "user|Can change auth group permissions model",
-            "user|Can change custom group",
-            "user|Can change user",
-            "user|Can delete auth group permissions model",
-            "user|Can delete custom group",
-            "user|Can view auth group permissions model",
-            "user|Can view custom group",
-            "user|Can view user",
-            "user_profile|Can change business setting",
-            "user_profile|Can view business setting",
-            "assessment|Can add assessment",
-            "assessment|Can change assessment",
-            "assessment|Can delete assessment",
-            "assessment|Can view assessment",
-        ]
+        self.stdout.write(
+            self.style.SUCCESS(f"Super Admin Group Assigned Full Access({all_permissions.count()} Permissions)")
+        )
 
         # Student Permissions - View own data, assessments, recommendations
         student_permissions = [
@@ -390,7 +320,6 @@ class Command(BaseCommand):
             "education_level|Can view education level",
             "skill|Can view skill",
             "stream|Can view stream",
-            "user|Can change user",
             "user|Can view user",
         ]
 
@@ -430,11 +359,11 @@ class Command(BaseCommand):
         ]
 
         # Assign superuser to Super Admin group
-        assign_group_super_admin = CustomGroup.objects.get(name="Super Admin")
-        assign_group_super_admin.user_set.add(user)
+        if user.is_superuser:
+            assign_group_super_admin = CustomGroup.objects.get(name="Super Admin")
+            assign_group_super_admin.user_set.add(user)
 
         # Assign permissions to groups
-        self.assign_permissions(super_admin_group, super_admin_permissions)
         self.assign_permissions(student_group, student_permissions)
         self.assign_permissions(parent_group, parent_permissions)
         self.assign_permissions(professional_group, professional_permissions)
@@ -452,7 +381,7 @@ class Command(BaseCommand):
                 )
                 group.permissions.add(permission_obj)
                 self.stdout.write(
-                    f"Assigned {app_label and codename} permission to {group.name} group"
+                    f"Assigned {app_label}.{codename} permission to {group.name} group"
                 )
             except Permission.DoesNotExist:
                 self.stdout.write(
@@ -486,8 +415,9 @@ class Command(BaseCommand):
         self.stdout.write("Business Category data uploaded.")
 
     # Country Upload CSV
-    def load_country(self):
+    def load_country(self, admin_user=None):
         self.stdout.write("Loading Country...")
+        created_by_user = admin_user or User.objects.filter(is_superuser=True).first()
         file_path = path.join(
             settings.BASE_DIR, "core", "management", "source", "countrie.csv"
         )
@@ -501,7 +431,7 @@ class Command(BaseCommand):
                         unicode=row["unicode"],
                         country_flag=row["flag"],
                         phone_code=row["phone_code"],
-                        created_by=User.objects.get(id=row["created_by"]),
+                        created_by=created_by_user,
                     )
                     for row in reader
                 ],
@@ -510,8 +440,9 @@ class Command(BaseCommand):
         self.stdout.write("Country data uploaded.")
 
     # State Upload CSV
-    def load_state(self):
+    def load_state(self, admin_user=None):
         self.stdout.write("Loading State...")
+        created_by_user = admin_user or User.objects.filter(is_superuser=True).first()
         file_path = path.join(
             settings.BASE_DIR, "core", "management", "source", "state.csv"
         )
@@ -520,13 +451,12 @@ class Command(BaseCommand):
             states_to_create = []
             for row in reader:
                 try:
-                    # Get country by name and use its ID
                     country = Country.objects.get(name=row["country_name"])
                     states_to_create.append(
                         State(
                             name=row["name"],
                             country_id=country.id,
-                            created_by=User.objects.get(id=row["created_by"]),
+                            created_by=created_by_user,
                         )
                     )
                 except Country.DoesNotExist:
@@ -547,8 +477,9 @@ class Command(BaseCommand):
         self.stdout.write("State data uploaded successfully.")
 
     # City Upload CSV
-    def load_city(self):
+    def load_city(self, admin_user=None):
         self.stdout.write("Loading City....")
+        created_by_user = admin_user or User.objects.filter(is_superuser=True).first()
         file_path = path.join(
             settings.BASE_DIR, "core", "management", "source", "city.csv"
         )
@@ -579,7 +510,7 @@ class Command(BaseCommand):
                             name=row["name"].strip(),
                             state=state,
                             country=state.country,
-                            created_by=User.objects.get(id=row["created_by"]),
+                            created_by=created_by_user,
                         )
                     )
 

@@ -1,10 +1,14 @@
+import os
+
 from django.contrib.auth.models import AbstractUser, BaseUserManager, Group
 from django.db import models
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
+from django.core.files.storage import default_storage
 
 from company.models import Company
-from future4u import settings
+from django.conf import settings
+from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
 
 
 class UserManager(BaseUserManager):
@@ -70,9 +74,9 @@ class User(AbstractUser):
     otp = models.IntegerField(null=True, blank=True)
     designation = models.CharField(max_length=30, null=True, blank=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
-    is_active = models.BooleanField(default=True)
-    status = models.CharField(choices=STATUS_CHOICES, default="Pending", max_length=25)
-    user_type = models.CharField(max_length=20, choices=Role.choices, default=Role.STUDENT)
+    is_active = models.BooleanField(default=False)
+    status = models.CharField(choices=STATUS_CHOICES, default="pending", max_length=25)
+    user_type = models.CharField(max_length=20, choices=Role.choices)
     email_verified = models.BooleanField(default=False)
     password_last_changed = models.DateTimeField(null=True, blank=True)
     keep_me_logged_in = models.BooleanField(default=False)
@@ -100,10 +104,12 @@ class User(AbstractUser):
         ordering = ["-id"]
 
     def save(self, *args, **kwargs):
+        skip_group_assignment = kwargs.pop('skip_group_assignment', False)
         self.full_name = f"{self.first_name} {self.last_name}".strip()
         super().save(*args, **kwargs)
         
-        self.assign_group_based_on_role()
+        if not skip_group_assignment:
+            self.assign_group_based_on_role()
 
     def assign_group_based_on_role(self):
         """Assign user to corresponding group based on user_type"""
@@ -131,6 +137,33 @@ class User(AbstractUser):
     @property
     def full_name_property(self):
         return f"{self.first_name} {self.last_name}".strip()
+
+    def upload_profile_image(self, profile_image_file):
+        allowed_types = [".jpg", ".jpeg", ".png"]
+
+        file_extension = os.path.splitext(profile_image_file.name)[1].lower()
+        if file_extension not in allowed_types:
+            raise ValueError(f"Invalid file type: {file_extension}. Allowed types are {', '.join(allowed_types)}.")
+
+        current_value = getattr(self, "profile_image", None)
+
+        try:
+            if current_value:
+                delete_uploaded_file(current_value)
+
+            aws_file_url, presigned_url = upload_file_to_bucket(
+                profile_image_file,
+                allowed_types,
+                "ProfileImage/",
+                self.id,
+                None,
+            )
+            self.profile_image = aws_file_url
+            self.save(update_fields=["profile_image"])
+        except ValueError:
+            raise
+        except Exception as e:
+            raise Exception(f"Failed to upload profile image: {str(e)}")
 
 
 class AuthGroupModel(models.Model):

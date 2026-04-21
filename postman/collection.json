@@ -13350,26 +13350,27 @@
           "name": "register (POST)",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [],
             "url": {
               "raw": "{{base_url}}/auth/register/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "register",
-                ""
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register", ""]
             },
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"student@example.com\",\n  \"password\": \"Test@123\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"User\",\n  \"phone\": \"9876543210\",\n  \"user_type\": \"student\",\n  \"country\": 1,\n  \"state\": 1,\n  \"city\": 1\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"email\":\"{{user_email}}\",\"password\":\"{{user_password}}\",\"confirm_password\":\"{{user_password}}\",\"terms_accepted\":true,\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"user_type\":\"student\",\"country\":{{country_id}},\"state\":{{state_id}},\"city\":{{city_id}}}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
             }
           },
           "response": []
@@ -13378,26 +13379,34 @@
           "name": "verify-success (POST)",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key": "Content-Type", "value": "application/json"}],
             "url": {
               "raw": "{{base_url}}/auth/verify-success/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "verify-success",
-                ""
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["auth", "verify-success", ""]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"student@example.com\",\n  \"otp\": \"123456\"\n}"
+              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"otp\": \"{{otp}}\"\n}",
+              "options": {"raw": {"language": "json"}}
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get-token (POST)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {
+              "raw": "{{base_url}}/get-token/",
+              "host": ["{{base_url}}"],
+              "path": ["get-token", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}",
+              "options": {"raw": {"language": "json"}}
             }
           },
           "response": []
@@ -13407,29 +13416,18 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{access_token}}"}
             ],
             "url": {
               "raw": "{{base_url}}/auth/change-password/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "change-password",
-                ""
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["auth", "change-password", ""]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"current_password\": \"OldPass@123\",\n  \"new_password\": \"NewPass@123\"\n}"
+              "raw": "{\n  \"current_password\": \"{{user_password}}\",\n  \"new_password\": \"{{new_password}}\"\n}",
+              "options": {"raw": {"language": "json"}}
             }
           },
           "response": []
@@ -13438,26 +13436,16 @@
           "name": "forgot-password (POST)",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key": "Content-Type", "value": "application/json"}],
             "url": {
               "raw": "{{base_url}}/auth/forgot-password/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "forgot-password",
-                ""
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["auth", "forgot-password", ""]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"student@example.com\"\n}"
+              "raw": "{\n  \"email\": \"{{user_email}}\"\n}",
+              "options": {"raw": {"language": "json"}}
             }
           },
           "response": []
@@ -13466,26 +13454,16 @@
           "name": "reset-password (POST)",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key": "Content-Type", "value": "application/json"}],
             "url": {
               "raw": "{{base_url}}/auth/reset-password/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "reset-password",
-                ""
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["auth", "reset-password", ""]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"student@example.com\",\n  \"new_password\": \"NewPass@123\"\n}"
+              "raw": "{\n  \"token\": \"{{reset_token}}\",\n  \"new_password\": \"{{new_password}}\",\n  \"re_enter_password\": \"{{new_password}}\"\n}",
+              "options": {"raw": {"language": "json"}}
             }
           },
           "response": []

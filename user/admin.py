@@ -1,12 +1,47 @@
+from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.forms import UserChangeForm as BaseUserChangeForm
+from django.contrib.auth.forms import UserCreationForm as BaseUserCreationForm
 
 from user.models import CustomGroup, EmailPhoneVerify, RoleFamily, User
 
-# Register your models here.
+
+class UserChangeForm(BaseUserChangeForm):
+    username = forms.CharField(required=False, max_length=60)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and not self.instance.username:
+            self.instance.username = ""
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if not username:
+            return self.instance.email if self.instance.email else ""
+        return username
+
+    def clean_password(self):
+        return self.initial.get("password") or ""
+
+
+class UserCreationForm(BaseUserCreationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].required = False
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if not username:
+            email = self.cleaned_data.get("email")
+            return email if email else ""
+        return username
+
 
 
 class UserAdmin(BaseUserAdmin):
+    form = UserChangeForm
+    add_form = UserCreationForm
     list_display = ("email", "first_name", "last_name", "user_type", "is_active", "is_staff")
     list_filter = ("is_active", "is_staff", "user_type", "status")
     search_fields = ("email", "first_name", "last_name")
