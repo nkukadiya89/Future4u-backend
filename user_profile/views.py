@@ -10,10 +10,12 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
 
 from activity_log.models import ActivityLog
-from user_profile.models import BusinessSetting, UserProfile
+from user_profile.models import BusinessSetting, StudentProfile, UserProfile
 from user_profile.serializers import (
     BusinessSettingInfoSerializer,
     BusinessSettingSerializer,
+    StudentProfileSerializer,
+    StudentProfileUpsertSerializer,
     UserProfileSerializer,
     UserProfileUpsertSerializer,
 )
@@ -317,6 +319,7 @@ class BusinessSettingViewSet(ModelViewSet):
 
 class UserProfileViewSet(ModelViewSet):
     """
+    Base profile endpoint ONLY for Super Admin
     Endpoints:
     - GET   /api/profile/
     - POST  /api/profile/
@@ -334,11 +337,17 @@ class UserProfileViewSet(ModelViewSet):
     throttle_classes = [PerUserBurstRateThrottle]
 
     def get_queryset(self):
-        return UserProfile.objects.filter(user=self.request.user).select_related(
-            "education_level", "stream"
-        )
+        # Only Super Admin can access UserProfile
+        if self.request.user.user_type != self.request.user.Role.SUPER_ADMIN:
+            return UserProfile.objects.none()
+        return UserProfile.objects.filter(user=self.request.user).select_related("user")
 
     def list(self, request, *args, **kwargs):
+        if request.user.user_type != request.user.Role.SUPER_ADMIN:
+            return Response(
+                {"success": False, "message": "Only Super Admin can access this endpoint"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
         data = UserProfileSerializer(profile).data
         return Response(
@@ -347,6 +356,12 @@ class UserProfileViewSet(ModelViewSet):
         )
 
     def create(self, request, *args, **kwargs):
+        # Only Super Admin can access UserProfile
+        if request.user.user_type != request.user.Role.SUPER_ADMIN:
+            return Response(
+                {"success": False, "message": "Only Super Admin can access this endpoint"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
         ser = UserProfileUpsertSerializer(profile, data=request.data, partial=True)
         if not ser.is_valid():
@@ -366,6 +381,12 @@ class UserProfileViewSet(ModelViewSet):
         )
 
     def partial_update(self, request, *args, **kwargs):
+        # Only Super Admin can access UserProfile
+        if request.user.user_type != request.user.Role.SUPER_ADMIN:
+            return Response(
+                {"success": False, "message": "Only Super Admin can access this endpoint"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
         ser = UserProfileUpsertSerializer(profile, data=request.data, partial=True)
         if not ser.is_valid():
@@ -384,6 +405,81 @@ class UserProfileViewSet(ModelViewSet):
                 "success": True,
                 "status": True,
                 "message": "Profile updated",
+                "data": out,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class StudentProfileViewSet(ModelViewSet):
+    """
+    Student-specific profile endpoint
+    Endpoints:
+    - GET   /api/student-profile/
+    - POST  /api/student-profile/
+    - PATCH /api/student-profile/
+    """
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    http_method_names = ["get", "post", "patch", "head", "options"]
+    from utils.throttles import (
+        PerUserBurstRateThrottle,
+    )
+
+    throttle_classes = [PerUserBurstRateThrottle]
+
+    def get_queryset(self):
+        return StudentProfile.objects.filter(user=self.request.user).select_related(
+            "user__country", "user__states", "user__city", "education_level", "stream"
+        )
+
+    def list(self, request, *args, **kwargs):
+        profile, _ = StudentProfile.objects.get_or_create(user=request.user)
+        data = StudentProfileSerializer(profile).data
+        return Response(
+            {"success": True, "status": True, "message": "", "data": data},
+            status=status.HTTP_200_OK,
+        )
+
+    def create(self, request, *args, **kwargs):
+        profile, _ = StudentProfile.objects.get_or_create(user=request.user)
+        ser = StudentProfileUpsertSerializer(profile, data=request.data, partial=True)
+        if not ser.is_valid():
+            return Response(
+                {"success": False, "status": False, "message": ser.errors, "data": {}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        ser.save()
+        try:
+            cache.delete(recommendation_key(request.user.id))
+        except Exception:
+            pass
+        out = StudentProfileSerializer(profile).data
+        return Response(
+            {"success": True, "status": True, "message": "Student profile saved", "data": out},
+            status=status.HTTP_200_OK,
+        )
+
+    def partial_update(self, request, *args, **kwargs):
+        profile, _ = StudentProfile.objects.get_or_create(user=request.user)
+        ser = StudentProfileUpsertSerializer(profile, data=request.data, partial=True)
+        if not ser.is_valid():
+            return Response(
+                {"success": False, "status": False, "message": ser.errors, "data": {}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        ser.save()
+        try:
+            cache.delete(recommendation_key(request.user.id))
+        except Exception:
+            pass
+        out = StudentProfileSerializer(profile).data
+        return Response(
+            {
+                "success": True,
+                "status": True,
+                "message": "Student profile updated",
                 "data": out,
             },
             status=status.HTTP_200_OK,

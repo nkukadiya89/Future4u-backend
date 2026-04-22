@@ -9,6 +9,7 @@ from state.models import State
 
 
 class UserProfile(models.Model):
+    """Base profile for Super Admin with language preference"""
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -22,20 +23,31 @@ class UserProfile(models.Model):
         help_text="Preferred languages selected from Language master",
     )
 
-    class CareerGoal(models.TextChoices):
-        STUDY_FURTHER = "study_further", "Study Further"
-        FIND_JOB = "find_job", "Find a Job"
-        INTERNSHIP = "internship", "Internship"
-        SKILL_DEVELOPMENT = "skill_development", "Skill Development"
-        NOT_SURE = "not_sure", "Not Sure Yet"
+    def __str__(self):
+        return f"Profile<{self.user_id}>"
 
-    career_goal = ArrayField(
-        models.CharField(max_length=50,choices=CareerGoal.choices),
-        default=list,
-        null=True,
+    class Meta:
+        db_table = "user_profile"
+
+
+class StudentProfile(models.Model):
+    """Student-specific profile with common and educational details"""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="student_profile",
+    )
+
+    # Common fields
+    language = models.ManyToManyField(
+        "language_master.Language",
         blank=True,
-    )   
+        related_name="student_profiles",
+        help_text="Preferred languages selected from Language master",
+    )
 
+    # Student-specific fields
     class ScienceTrack(models.TextChoices):
         PCM = "pcm", "PCM (Physics, Chemistry, Maths)"
         PCB = "pcb", "PCB (Physics, Chemistry, Biology)"
@@ -46,90 +58,7 @@ class UserProfile(models.Model):
         choices=ScienceTrack.choices,
         null=True,
         blank=True,
-    )
-
-    class ParentSupportLevel(models.TextChoices):
-        VERY_SUPPORTIVE = "very_supportive", "Very Supportive"
-        SOMEWHAT_SUPPORTIVE = "somewhat_supportive", "Somewhat Supportive"
-        NEUTRAL = "neutral", "Neutral"
-        SOMEWHAT_RESTRICTIVE = "somewhat_restrictive", "Somewhat Restrictive"
-        VERY_RESTRICTIVE = "very_restrictive", "Very Restrictive"
-    
-    parent_support_level = models.CharField(
-        max_length=25,
-        choices=ParentSupportLevel.choices,
-        null=True,
-        blank=True,
-    )
-    
-    class CareerValue(models.TextChoices):
-        HIGH_SALARY = "high_salary_potential", "High Salary Potential"
-        JOB_SECURITY = "job_security_stability", "Job Security and Stability"
-        CREATIVITY = "creativity_innovation", "Creativity and Innovation"
-        WORK_LIFE_BALANCE = "work_life_balance", "Work Life Balance"
-        SOCIAL_IMPACT = "social_impact", "Making an Impact on Society"
-        GROWTH = "growth_and_learning", "Opportunities to Grow and Learn"
-
-    career_values = ArrayField(
-        models.CharField(max_length=50, choices=CareerValue.choices),
-        default=list,
-        null=True,
-        blank=True,
-    )
-
-    class PlatformGoal(models.TextChoices):
-        CAREER_CLARITY = "career_clarity", "Career Clarity"
-        COURSE_RECOMMENDATIONS = "course_recommendations", "Course Recommendations"
-        JOB_INTERNSHIP = (
-            "job_internship_opportunities",
-            "Job / Internship Opportunities",
-        )
-        PARENT_CONFIDENCE = "parent_confidence", "Parent Confidence"
-
-    platform_goals = ArrayField(
-        models.CharField(max_length=50, choices=PlatformGoal.choices),
-        default=list,
-        null=True,
-        blank=True,
-    )
-
-    class InterestCategory(models.TextChoices):
-        TECHNOLOGY = "technology", "Technology / Coding"
-        HEALTHCARE = "healthcare", "Healthcare"
-        BUSINESS_MANAGEMENT = "business_management", "Business Management"
-        AGRICULTURE = "agriculture", "Agriculture / Food"
-        CREATIVE_DESIGN = "creative_design", "Creative / Design"
-        SPORTS_FITNESS = "sports_fitness", "Sports / Fitness"
-        GOVERNMENT = "government", "Government / Public Service"
-        ENGINEERING = "engineering", "Engineering"
-        FINANCE = "finance", "Finance"
-        EDUCATION = "education", "Education"
-        LAW = "law", "Law"
-        SCIENCE_RESEARCH = "science_research", "Science & Research"
-        SOCIAL_WELFARE = "social_welfare", "Social Welfare"
-        HOSPITALITY = "hospitality", "Hospitality"
-        VOCATIONAL = "vocational", "Vocational / Trades"
-
-    interest_categories = ArrayField(
-        models.CharField(max_length=50, choices=InterestCategory.choices),
-        default=list,
-        null=True,
-        blank=True,
-        help_text="Broad interest categories e.g. ['technology', 'healthcare', 'government']",
-    )
-
-    class UserConcern(models.TextChoices):
-        JOB_SECURITY = "job_security", "Job Security"
-        FUTURE_DEMAND = "future_demand", "Future Demand"
-        WRONG_CHOICE = "wrong_career_choice", "Wrong Career Choice"
-        EDUCATION_COST = "high_education_cost", "High Education Cost"
-        LIMITED_GUIDANCE = "limited_guidance", "Limited Guidance"
-
-    user_concerns = ArrayField(
-        models.CharField(max_length=50, choices=UserConcern.choices),
-        default=list,
-        null=True,
-        blank=True,
+        help_text="Science track selection for students",
     )
 
     medium = models.CharField(
@@ -143,47 +72,31 @@ class UserProfile(models.Model):
         blank=True,
         help_text="Instruction medium of student's school",
     )
-    country = models.ForeignKey(
-        Country,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="user_profiles",
-    )
-    state = models.ForeignKey(
-        State,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="user_profiles",
-    )
-    city = models.ForeignKey(
-        City,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="user_profiles",
-    )
+
     education_level = models.ForeignKey(
         "education_level.EducationLevel",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="user_profiles",
+        related_name="student_profiles",
     )
+
     stream = models.ForeignKey(
         "stream.Stream",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="user_profiles",
+        related_name="student_profiles",
     )
 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
-        return f"Profile<{self.user_id}>"
+        return f"StudentProfile<{self.user_id}>"
 
     class Meta:
-        db_table = "user_profile"
+        db_table = "student_profile"
 
 
 class BusinessSetting(models.Model):
@@ -267,9 +180,8 @@ class Profile(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profiles"
     )
 
-    title = models.CharField(max_length=150)  # "Career Switch Plan", etc.
+    title = models.CharField(max_length=150)  
 
-    # Location
     country = models.CharField(max_length=100, null=True, blank=True)
     state = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)

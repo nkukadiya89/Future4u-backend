@@ -9512,6 +9512,64 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "user-detail (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-detail/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user-detail",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "user-detail (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-detail/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user-detail",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"first_name\": \"John\", \"last_name\": \"Doe\", \"phone\": \"1234567890\", \"about_me\": \"Student\", \"designation\": \"Student\"}"
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -9606,6 +9664,98 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"role\": \"student\",\n  \"science_track\": \"pcm\",\n  \"career_goal\": \"study_further\",\n  \"parent_support_level\": \"very_supportive\",\n  \"user_concerns\": [\n    \"high_education_cost\"\n  ],\n  \"career_values\": [\n    \"growth_and_learning\"\n  ],\n  \"platform_goals\": [\n    \"career_clarity\"\n  ],\n  \"interest_categories\": [\n    \"technology\"\n  ],\n  \"language\": [\n    \"english\"\n  ],\n  \"medium\": \"english\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "student-profile (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/student-profile/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "student-profile",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "student-profile (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/student-profile/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "student-profile",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"language\": [\"{{language_id}}\"], \"country\": \"{{country_id}}\", \"state\": \"{{state_id}}\", \"city\": \"{{city_id}}\", \"science_track\": \"pcm\", \"medium\": \"english\", \"education_level\": \"{{education_level_id}}\", \"stream\": \"{{stream_id}}\"}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "student-profile (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/student-profile/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "student-profile",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"science_track\": \"pcmb\", \"medium\": \"hindi\"}"
             }
           },
           "response": []
@@ -13353,8 +13503,14 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/auth/register/",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register",
+                ""
+              ]
             },
             "body": {
               "mode": "formdata",
@@ -13379,16 +13535,31 @@
           "name": "verify-success (POST)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/verify-success/",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "verify-success", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "verify-success",
+                ""
+              ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"otp\": \"{{otp}}\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": []
@@ -13397,16 +13568,30 @@
           "name": "get-token (POST)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/get-token/",
-              "host": ["{{base_url}}"],
-              "path": ["get-token", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get-token",
+                ""
+              ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"username\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": []
@@ -13416,18 +13601,34 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Content-Type", "value": "application/json"},
-              {"key": "Authorization", "value": "Bearer {{access_token}}"}
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/auth/change-password/",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "change-password", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "change-password",
+                ""
+              ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"current_password\": \"{{user_password}}\",\n  \"new_password\": \"{{new_password}}\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": []
@@ -13436,16 +13637,31 @@
           "name": "forgot-password (POST)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/forgot-password/",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "forgot-password", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password",
+                ""
+              ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{user_email}}\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": []
@@ -13454,16 +13670,31 @@
           "name": "reset-password (POST)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/reset-password/",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "reset-password", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password",
+                ""
+              ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"token\": \"{{reset_token}}\",\n  \"new_password\": \"{{new_password}}\",\n  \"re_enter_password\": \"{{new_password}}\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": []

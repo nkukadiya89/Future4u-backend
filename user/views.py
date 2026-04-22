@@ -41,12 +41,36 @@ class UserDetailsViewSet(ModelViewSet):
     serializer_class = UserDetailsSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+    http_method_names = ["get", "post", "patch", "head", "options"]
+
+    def get_queryset(self):
+        return User.objects.filter(id=self.request.user.id)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.serializer_class(instance)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+    def list(self, request, *args, **kwargs):
+        serializer = self.serializer_class(request.user)
+        return Response(
+            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.serializer_class(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"success": True, "message": "User details updated", "data": serializer.data},
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
         )
 
 
