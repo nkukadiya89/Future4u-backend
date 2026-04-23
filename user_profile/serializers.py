@@ -83,11 +83,11 @@ class StudentProfileSerializer(serializers.ModelSerializer):
     )
     language = serializers.SerializerMethodField()
     # Location fields from User model
-    country = serializers.IntegerField(source="user.country", read_only=True, default=None)
+    country = serializers.IntegerField(source="user.country.id", read_only=True, default=None)
     country_name = serializers.CharField(source="user.country.name", read_only=True, default=None)
-    state = serializers.IntegerField(source="user.states", read_only=True, default=None)
+    state = serializers.IntegerField(source="user.states.id", read_only=True, default=None)
     state_name = serializers.CharField(source="user.states.name", read_only=True, default=None)
-    city = serializers.IntegerField(source="user.city", read_only=True, default=None)
+    city = serializers.IntegerField(source="user.city.id", read_only=True, default=None)
     city_name = serializers.CharField(source="user.city.name", read_only=True, default=None)
 
     def get_language(self, obj):
