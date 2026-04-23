@@ -443,8 +443,11 @@ class StudentProfileViewSet(ModelViewSet):
         )
 
     def create(self, request, *args, **kwargs):
-        profile, _ = StudentProfile.objects.get_or_create(user=request.user)
-        ser = StudentProfileUpsertSerializer(profile, data=request.data, partial=True)
+        profile, created = StudentProfile.objects.get_or_create(user=request.user)
+        ser = StudentProfileUpsertSerializer(
+            profile, data=request.data, partial=True,
+            context={"skip_updated_at": created}
+        )
         if not ser.is_valid():
             return Response(
                 {"success": False, "status": False, "message": ser.errors, "data": {}},

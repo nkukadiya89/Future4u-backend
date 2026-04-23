@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from django.utils.timezone import now
 from user_profile.models import BusinessSetting, StudentProfile, UserProfile
 
 
@@ -117,13 +117,28 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             "stream",
             "stream_code",
             "stream_name",
+            "career_direction",
+            "education",
+            "skills",
+            "projects",
+            "internships",
+            "certifications",
+            "achievements",
+            "extra_activities",
+            "additional_insights",
+            "linkdin_url",
+            "github_url",
+            "portfolio",
             "created_at",
             "updated_at",
         ]
 
+    def update(self, instance, validated_data):
+        instance.updated_at = now()
+        return super().update(instance, validated_data)
+
 
 class StudentProfileUpsertSerializer(serializers.ModelSerializer):
-    """Student profile upsert serializer with language and educational fields"""
     language = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=__import__(
@@ -140,10 +155,24 @@ class StudentProfileUpsertSerializer(serializers.ModelSerializer):
             "medium",
             "education_level",
             "stream",
+            "career_direction",
+            "education",
+            "skills",
+            "projects",
+            "internships",
+            "certifications",
+            "achievements",
+            "extra_activities",
+            "additional_insights",
+            "linkdin_url",
+            "github_url",
+            "portfolio",
         ]
 
     def update(self, instance, validated_data):
         language = validated_data.pop("language", None)
+        if not self.context.get("skip_updated_at"):
+            instance.updated_at = now()
         instance = super().update(instance, validated_data)
         if language is not None:
             instance.language.set(language)

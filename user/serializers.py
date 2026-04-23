@@ -178,10 +178,6 @@ class UserDetailsSerializer(serializers.ModelSerializer):
         company_role = None
         vendor_role = None
 
-        # Company logic removed - users are now standalone
-        # TODO: Implement alternative role identification
-
-        # Remove employee references since User model doesn't have employee field
         assign_site_employee = []
 
         # ret["company"] = instance.company.id if instance.company else None  # Removed

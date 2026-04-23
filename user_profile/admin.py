@@ -112,5 +112,45 @@ class StudentProfileAdmin(admin.ModelAdmin):
             "Education",
             {"fields": ("education_level", "stream", "science_track", "medium")},
         ),
+        (
+            "Career Direction",
+            {"fields": ("career_direction",)},
+        ),
+        (
+            "Education Details",
+            {"fields": ("education",)},
+        ),
+        (
+            "Skills",
+            {"fields": ("skills",)},
+        ),
+        (
+            "Projects",
+            {"fields": ("projects",)},
+        ),
+        (
+            "Internships",
+            {"fields": ("internships",)},
+        ),
+        (
+            "Certifications",
+            {"fields": ("certifications",)},
+        ),
+        (
+            "Achievements",
+            {"fields": ("achievements",)},
+        ),
+        (
+            "Extra Activities",
+            {"fields": ("extra_activities",)},
+        ),
+        (
+            "Additional Insights",
+            {"fields": ("additional_insights",)},
+        ),
+        (
+            "Social Links",
+            {"fields": ("linkdin_url", "github_url", "portfolio")},
+        ),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )

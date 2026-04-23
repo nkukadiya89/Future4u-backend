@@ -88,7 +88,19 @@ class StudentProfile(models.Model):
         blank=True,
         related_name="student_profiles",
     )
-
+    career_direction = models.JSONField(default=list, blank=True, null=True)
+    education = models.JSONField(default=list, blank=True, null=True)
+    skills = models.JSONField(default=list, null=True, blank=True)
+    projects = models.JSONField(default=list, null=True,blank=True)
+    internships = models.JSONField(default=list, null=True, blank=True)
+    certifications = models.JSONField(default=list, null=True, blank=True)
+    achievements = models.JSONField(default=list, null=True, blank=True)
+    extra_activities = models.JSONField(default=list, null=True, blank=True)
+    additional_insights = models.JSONField(default=list, null=True, blank=True)
+    linkdin_url = models.CharField(max_length=200 , null=True, blank=True)
+    github_url = models.CharField(max_length=200, null=True, blank=True)
+    portfolio = models.CharField(max_length=200, null=True, blank=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True, blank=True)
 
@@ -97,6 +109,24 @@ class StudentProfile(models.Model):
 
     class Meta:
         db_table = "student_profile"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["education_level"]),
+            models.Index(fields=["stream"]),
+            models.Index(fields=["science_track"]),
+            models.Index(fields=["medium"]),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(science_track__in=["pcm", "pcb", "pcmb"]) | models.Q(science_track__isnull=True),
+                name="valid_science_track",
+            ),
+            models.CheckConstraint(
+                check=models.Q(medium__in=["english", "hindi", "gujarati"]) | models.Q(medium__isnull=True),
+                name="valid_medium",
+            ),
+        ]
 
 
 class BusinessSetting(models.Model):
