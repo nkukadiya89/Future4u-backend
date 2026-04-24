@@ -117,16 +117,6 @@ class StudentProfile(models.Model):
             models.Index(fields=["science_track"]),
             models.Index(fields=["medium"]),
         ]
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(science_track__in=["pcm", "pcb", "pcmb"]) | models.Q(science_track__isnull=True),
-                name="valid_science_track",
-            ),
-            models.CheckConstraint(
-                check=models.Q(medium__in=["english", "hindi", "gujarati"]) | models.Q(medium__isnull=True),
-                name="valid_medium",
-            ),
-        ]
 
 
 class BusinessSetting(models.Model):
