@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.utils.timezone import now
-from user_profile.models import BusinessSetting, StudentProfile, UserProfile
+from user_profile.models import BusinessSetting, ProfessionalProfile, StudentProfile, UserProfile
+from skill_category.models import SkillCategory
 
 
 def validate_json_choices(value, valid_set, field_name):
@@ -240,6 +241,146 @@ class BusinessSettingSerializer(serializers.ModelSerializer):
 
         # Save instance
         instance.save()
+        return instance
+
+
+class ProfessionalProfileSerializer(serializers.ModelSerializer):
+    """Working Professional-specific profile serializer matching StudentProfile pattern"""
+    role = serializers.CharField(source="user.user_type", read_only=True)
+    education_level_code = serializers.CharField(
+        source="education_level.level_code", read_only=True, default=None
+    )
+    education_level_name = serializers.CharField(
+        source="education_level.display_name", read_only=True, default=None
+    )
+    language = serializers.SerializerMethodField()
+    skills = serializers.SerializerMethodField()
+    # Location fields from User model
+    country = serializers.IntegerField(source="user.country.id", read_only=True, default=None)
+    country_name = serializers.CharField(source="user.country.name", read_only=True, default=None)
+    state = serializers.IntegerField(source="user.states.id", read_only=True, default=None)
+    state_name = serializers.CharField(source="user.states.name", read_only=True, default=None)
+    city = serializers.IntegerField(source="user.city.id", read_only=True, default=None)
+    city_name = serializers.CharField(source="user.city.name", read_only=True, default=None)
+
+    def get_language(self, obj):
+        return [
+            {"id": str(l.id), "name": l.name, "code": l.code}
+            for l in obj.language.all()
+        ]
+    
+    def get_skills(self, obj):
+        return [
+            {
+                "id": str(s.id),
+                "category_name": s.category_name,
+                "category_image_url": s.category_image_url,
+                "display_order": s.display_order
+            }
+            for s in obj.skills.all()
+        ]
+
+    class Meta:
+        model = ProfessionalProfile
+        fields = [
+            "id",
+            "user",
+            "role",
+            "language",
+            "country",
+            "country_name",
+            "state",
+            "state_name",
+            "city",
+            "city_name",
+            "employment_type",
+            "years_of_experience",
+            "education_level",
+            "education_level_code",
+            "education_level_name",
+            "skills",
+            "current_job_title",
+            "current_industry",
+            "company_size",
+            "career_goal",
+            "constraints",
+            "work_mode",
+            "work_structure",
+            "preferred_industries",
+            "career_values",
+            "expected_salary_range",
+            "transition_timeline",
+            "linkdin_url",
+            "github_url",
+            "portfolio",
+            "created_at",
+            "updated_at",
+        ]
+
+    def update(self, instance, validated_data):
+        instance.updated_at = now()
+        return super().update(instance, validated_data)
+
+
+class ProfessionalProfileUpsertSerializer(serializers.ModelSerializer):
+    """Working Professional profile upsert serializer matching StudentProfile pattern"""
+    language = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=__import__(
+            "language_master.models", fromlist=["Language"]
+        ).Language.objects.filter(is_active=True, deleted=False),
+        required=False,
+    )
+    skills = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=SkillCategory.objects.filter(deleted=False),
+        required=False,
+    )
+
+    class Meta:
+        model = ProfessionalProfile
+        fields = [
+            "language",
+            "employment_type",
+            "years_of_experience",
+            "education_level",
+            "skills",
+            "current_job_title",
+            "current_industry",
+            "company_size",
+            "career_goal",
+            "constraints",
+            "work_mode",
+            "work_structure",
+            "preferred_industries",
+            "career_values",
+            "expected_salary_range",
+            "transition_timeline",
+            "linkdin_url",
+            "github_url",
+            "portfolio",
+        ]
+
+    def update(self, instance, validated_data):
+        language = validated_data.pop("language", None)
+        skills = validated_data.pop("skills", None)
+        if not self.context.get("skip_updated_at"):
+            instance.updated_at = now()
+        instance = super().update(instance, validated_data)
+        if language is not None:
+            instance.language.set(language)
+        if skills is not None:
+            instance.skills.set(skills)
+        return instance
+
+    def create(self, validated_data):
+        language = validated_data.pop("language", None)
+        skills = validated_data.pop("skills", None)
+        instance = super().create(validated_data)
+        if language is not None:
+            instance.language.set(language)
+        if skills is not None:
+            instance.skills.set(skills)
         return instance
 
 

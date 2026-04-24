@@ -11252,6 +11252,420 @@
       ]
     },
     {
+      "name": "Skill Category",
+      "item": [
+        {
+          "name": "category-list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/skill-categories/category-list/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "skill-categories",
+                "category-list",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/skill-categories/?search=&is_active=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "skill-categories",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "is_active",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/skill-categories/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "skill-categories",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "category_name",
+                  "value": "Technology",
+                  "type": "text"
+                },
+                {
+                  "key": "category_image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/skill-categories/{{skill_category_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "skill-categories",
+                "{{skill_category_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/skill-categories/{{skill_category_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "skill-categories",
+                "{{skill_category_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "category_name",
+                  "value": "Technology Updated",
+                  "type": "text"
+                },
+                {
+                  "key": "category_image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial-update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/skill-categories/{{skill_category_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "skill-categories",
+                "{{skill_category_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "category_name",
+                  "value": "Technology",
+                  "type": "text"
+                },
+                {
+                  "key": "category_image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/skill-categories/{{skill_category_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "skill-categories",
+                "{{skill_category_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "change-status (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/skill-categories/{{skill_category_id}}/change-status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "skill-categories",
+                "{{skill_category_id}}",
+                "change-status",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "archived (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/skill-categories/archived/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "skill-categories",
+                "archived",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk-archive (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/skill-categories/bulk-archive/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "skill-categories",
+                "bulk-archive",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\"{{skill_category_id}}\"]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk-restore (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/skill-categories/bulk-restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "skill-categories",
+                "bulk-restore",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\"{{skill_category_id}}\"]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "deleted (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/skill-categories/deleted/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "skill-categories",
+                "deleted",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk-delete (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/skill-categories/bulk-delete/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "skill-categories",
+                "bulk-delete",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\"{{skill_category_id}}\"]\n}"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Education Level Master",
       "item": [
         {

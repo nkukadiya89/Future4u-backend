@@ -81,9 +81,7 @@ class BaseModule(models.Model):
         is_new = self._state.adding
         user = kwargs.pop("user", None)
         if is_new:
-
-            if self.updated_at is None:
-                self.updated_at = timezone.now()
+            # Don't set updated_at during creation
             self.updated_by = None
             if user and not self.created_by:
                 self.created_by = user

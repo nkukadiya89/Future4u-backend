@@ -243,40 +243,79 @@ class Profile(models.Model):
 
 
 class ProfessionalProfile(models.Model):
-    profile = models.OneToOneField(
-        Profile, on_delete=models.CASCADE, related_name="professional"
+    """Working Professional-specific profile matching StudentProfile pattern"""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="professional_profile",
     )
 
-    # About
-    employment_type = models.CharField(
-        max_length=50
-    )  # salaried / self-employed / freelancer / job seeker
+    language = models.ManyToManyField(
+        "language_master.Language",           
+        blank=True,
+        related_name="professional_profiles",
+        help_text="Preferred languages selected from Language master",
+    )
 
-    # Current Role
+    class EmploymentType(models.TextChoices):
+        SALARIED = "salaried_employee", "Salaried Employee"
+        SELF_EMPLOYED = "self_employed", "Self-employed / Business Owner"
+        FREELANCER = "freelancer", "Freelancer"
+        JOB_SEEKER = "job_seeker", "Looking for first job"
+
+    employment_type = models.CharField(
+        max_length=50,
+        choices=EmploymentType.choices,
+        help_text="Current employment status"
+    )
+
+    class ExperienceRange(models.TextChoices):
+        ZERO_TO_ONE = "0-1", "0-1 years"
+        ONE_TO_THREE = "1-3", "1-3 years"
+        THREE_TO_FIVE = "3-5", "3-5 years"
+        FIVE_TO_TEN = "5-10", "5-10 years"
+        TEN_PLUS = "10+", "10+ years"
+
+    years_of_experience = models.CharField(
+        max_length=10,
+        choices=ExperienceRange.choices,
+        null=True,
+        blank=True,
+        help_text="Years of professional experience"
+    )
+
+    education_level = models.ForeignKey(
+        "education_level.EducationLevel",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="professional_profiles",
+    )
+
+    skills = models.ManyToManyField(
+        "skill_category.SkillCategory",
+        blank=True,
+        related_name="professional_profiles",
+    )
+
     current_job_title = models.CharField(max_length=150, null=True, blank=True)
     current_industry = models.CharField(max_length=100, null=True, blank=True)
     company_size = models.CharField(max_length=50, null=True, blank=True)
 
-    # Experience & Education
-    years_of_experience = models.IntegerField(null=True, blank=True)
-    highest_education = models.CharField(max_length=150, null=True, blank=True)
+    career_goal = models.CharField(max_length=100, null=True, blank=True)
 
-    # Career Goals
-    career_goal = models.CharField(max_length=100)  # promotion / switch / startup etc.
-
-    # Constraints (multi-select → separate table better)
-    # storing as JSON for speed initially
     constraints = models.JSONField(default=list, blank=True)
 
-    # Work Preferences
     work_mode = models.CharField(
         max_length=50, null=True, blank=True
-    )  # remote/hybrid/office
+    ) 
     work_structure = models.CharField(
         max_length=50, null=True, blank=True
-    )  # fixed/flexible
+    )  
 
-    # Industries
     preferred_industries = models.JSONField(default=list, blank=True)
 
     # Values
@@ -288,38 +327,26 @@ class ProfessionalProfile(models.Model):
     # Timeline
     transition_timeline = models.CharField(max_length=50, null=True, blank=True)
 
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="professional_profile_created",
-    )
-    created_at = models.DateTimeField(default=now)
+    # Professional links
+    linkdin_url = models.CharField(max_length=200, null=True, blank=True)
+    github_url = models.CharField(max_length=200, null=True, blank=True)
+    portfolio = models.CharField(max_length=200, null=True, blank=True)
 
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="professional_profile_updated",
-    )
-    updated_at = models.DateTimeField(default=now)
-
-    deleted = models.BooleanField(default=False)
-    deleted_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="professional_profile_deleted",
-    )
-    deleted_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"ProfessionalProfile<{self.id} - {self.profile.title}>"
+        return f"ProfessionalProfile<{self.user_id}>"
 
     class Meta:
         db_table = "professional_profile"
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["education_level"]),
+            models.Index(fields=["employment_type"]),
+            models.Index(fields=["years_of_experience"]),
+        ]
 
 
 class ParentProfile(models.Model):
@@ -327,39 +354,29 @@ class ParentProfile(models.Model):
         Profile, on_delete=models.CASCADE, related_name="parent"
     )
 
-    relation = models.CharField(max_length=50)  # mother/father/guardian
+    relation = models.CharField(max_length=50) 
 
-    # Child Info
     child_name = models.CharField(max_length=150)
     child_education_level = models.CharField(max_length=100)
     stream = models.CharField(max_length=100, null=True, blank=True)
     academic_performance = models.CharField(max_length=50, null=True, blank=True)
 
-    # Interests
     child_interests = models.JSONField(default=list, blank=True)
 
-    # Parent behavior
     support_level = models.CharField(max_length=50)
 
-    # Child future plan
     child_goal = models.CharField(max_length=100)
 
-    # Parent expectations
     parent_expectations = models.JSONField(default=list, blank=True)
 
-    # Concerns
     concerns = models.JSONField(default=list, blank=True)
 
-    # Constraints
     constraints = models.JSONField(default=list, blank=True)
 
-    # Awareness
     career_awareness = models.CharField(max_length=50)
 
-    # Decision style
     decision_style = models.CharField(max_length=50)
 
-    # Values
     values = models.JSONField(default=list, blank=True)
 
     created_at = models.DateTimeField(default=now)
