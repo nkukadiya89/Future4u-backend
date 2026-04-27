@@ -5,7 +5,7 @@ from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
 
 
 class SkillCategory(BaseModule):
-    category_name = models.CharField(max_length=255, null=True, blank=True)
+    category_name = models.CharField(max_length=255, null=True, blank=True,unique=True)
     category_image_url = models.CharField(max_length=500, null=True, blank=True)
 
     def __str__(self):
