@@ -1,5 +1,6 @@
 from user_profile.views import (
     BusinessSettingViewSet,
+    ParentProfileViewSet,
     ProfessionalProfileViewSet,
     StudentProfileViewSet,
     UserProfileViewSet,
@@ -18,4 +19,7 @@ user_profile_router.register(
 )
 user_profile_router.register(
     "api/professional-profile", ProfessionalProfileViewSet, basename="professional_profile"
+)
+user_profile_router.register(
+    "api/parent-profile", ParentProfileViewSet, basename="parent_profile"
 )

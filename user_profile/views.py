@@ -10,10 +10,12 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
 
 from activity_log.models import ActivityLog
-from user_profile.models import BusinessSetting, ProfessionalProfile, StudentProfile, UserProfile
+from user_profile.models import BusinessSetting, ParentProfile, ProfessionalProfile, StudentProfile, UserProfile
 from user_profile.serializers import (
     BusinessSettingInfoSerializer,
     BusinessSettingSerializer,
+    ParentProfileSerializer,
+    ParentProfileUpsertSerializer,
     ProfessionalProfileSerializer,
     ProfessionalProfileUpsertSerializer,
     StudentProfileSerializer,
@@ -514,6 +516,71 @@ class ProfessionalProfileViewSet(ModelViewSet):
                 "success": True,
                 "status": True,
                 "message": "Professional profile updated",
+                "data": out,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ParentProfileViewSet(ModelViewSet):
+    """
+    Parent-specific profile endpoint
+    Endpoints:
+    - GET   /api/parent-profile/
+    - PATCH /api/parent-profile/
+    """
+
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    http_method_names = ["get", "patch", "head", "options"]
+    from utils.throttles import (
+        PerUserBurstRateThrottle,
+    )
+
+    throttle_classes = [PerUserBurstRateThrottle]
+
+    def get_queryset(self):
+        return ParentProfile.objects.filter(user=self.request.user).select_related(
+            "user__country", "user__states", "user__city"
+        ).prefetch_related("language")
+
+    def list(self, request, *args, **kwargs):
+        profile = ParentProfile.objects.filter(user=request.user).first()
+        if not profile:
+            return Response(
+                {"success": False, "message": "Profile not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        data = ParentProfileSerializer(profile).data
+        return Response(
+            {"success": True, "status": True, "message": "", "data": data},
+            status=status.HTTP_200_OK,
+        )
+
+    def partial_update(self, request, *args, **kwargs):
+        profile = ParentProfile.objects.filter(user=request.user).first()
+        if not profile:
+            return Response(
+                {"success": False, "message": "Profile not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        ser = ParentProfileUpsertSerializer(profile, data=request.data, partial=True)
+        if not ser.is_valid():
+            return Response(
+                {"success": False, "status": False, "message": ser.errors, "data": {}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        ser.save()
+        try:
+            cache.delete(recommendation_key(request.user.id))
+        except Exception:
+            pass
+        out = ParentProfileSerializer(profile).data
+        return Response(
+            {
+                "success": True,
+                "status": True,
+                "message": "Parent profile updated",
                 "data": out,
             },
             status=status.HTTP_200_OK,

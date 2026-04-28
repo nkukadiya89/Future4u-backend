@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils.timezone import now
-from user_profile.models import BusinessSetting, ProfessionalProfile, StudentProfile, UserProfile
+from user_profile.models import BusinessSetting, ParentProfile, ProfessionalProfile, StudentProfile, UserProfile
 
 
 def validate_json_choices(value, valid_set, field_name):
@@ -335,6 +335,102 @@ class ProfessionalProfileUpsertSerializer(serializers.ModelSerializer):
             "linkedin_url",
             "github_url",
             "portfolio",
+        ]
+
+    def update(self, instance, validated_data):
+        language = validated_data.pop("language", None)
+        instance.updated_at = now()
+        instance = super().update(instance, validated_data)
+        if language is not None:
+            instance.language.set(language)
+        return instance
+
+    def create(self, validated_data):
+        language = validated_data.pop("language", None)
+        instance = super().create(validated_data)
+        if language is not None:
+            instance.language.set(language)
+        return instance
+
+
+class ParentProfileSerializer(serializers.ModelSerializer):
+    """Parent-specific profile serializer"""
+    role = serializers.CharField(source="user.user_type", read_only=True)
+    language = serializers.SerializerMethodField()
+    child_education_level_name = serializers.CharField(source="child_education_level.display_name", read_only=True, default=None)
+    stream_name = serializers.CharField(source="stream.stream_name", read_only=True, default=None)
+    # Location fields from User model
+    country = serializers.IntegerField(source="user.country.id", read_only=True, default=None)
+    country_name = serializers.CharField(source="user.country.name", read_only=True, default=None)
+    state = serializers.IntegerField(source="user.states.id", read_only=True, default=None)
+    state_name = serializers.CharField(source="user.states.name", read_only=True, default=None)
+    city = serializers.IntegerField(source="user.city.id", read_only=True, default=None)
+    city_name = serializers.CharField(source="user.city.name", read_only=True, default=None)
+
+    def get_language(self, obj):
+        return [
+            {"id": str(l.id), "name": l.name, "code": l.code}
+            for l in obj.language.all()
+        ]
+
+    class Meta:
+        model = ParentProfile
+        fields = [
+            "id",
+            "user",
+            "role",
+            "language",
+            "country",
+            "country_name",
+            "state",
+            "state_name",
+            "city",
+            "city_name",
+            "relationship",
+            "child_name",
+            "child_education_level",
+            "child_education_level_name",
+            "stream",
+            "stream_name",
+            "academic_performance",
+            "created_at",
+            "updated_at",
+        ]
+
+    def update(self, instance, validated_data):
+        instance.updated_at = now()
+        return super().update(instance, validated_data)
+
+
+class ParentProfileUpsertSerializer(serializers.ModelSerializer):
+    language = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=__import__(
+            "language_master.models", fromlist=["Language"]
+        ).Language.objects.filter(is_active=True, deleted=False),
+        required=False,
+    )
+    child_education_level = serializers.PrimaryKeyRelatedField(
+        queryset=__import__(
+            "education_level.models", fromlist=["EducationLevel"]
+        ).EducationLevel.objects.filter(is_active=True, deleted=False),
+        required=False,
+    )
+    stream = serializers.PrimaryKeyRelatedField(
+        queryset=__import__(
+            "stream.models", fromlist=["Stream"]
+        ).Stream.objects.filter(is_active=True, deleted=False),
+        required=False,
+    )
+    class Meta:
+        model = ParentProfile
+        fields = [
+            "language",
+            "relationship",
+            "child_name",
+            "child_education_level",
+            "stream",
+            "academic_performance",
         ]
 
     def update(self, instance, validated_data):

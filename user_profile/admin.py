@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 
-from user_profile.models import BusinessSetting, ProfessionalProfile, StudentProfile, UserProfile
+from user_profile.models import BusinessSetting, ParentProfile, ProfessionalProfile, StudentProfile, UserProfile
 
 admin.site.register(BusinessSetting)
 
@@ -152,6 +152,33 @@ class StudentProfileAdmin(admin.ModelAdmin):
             "Social Links",
             {"fields": ("linkedin_url", "github_url", "portfolio")},
         ),
+        ("Timestamps", {"fields": ("created_at", "updated_at")}),
+    )
+
+
+@admin.register(ParentProfile)
+class ParentProfileAdmin(admin.ModelAdmin):
+    """Parent-specific profile admin"""
+    list_display = ("user", "relationship", "child_name", "child_education_level", "stream")
+    search_fields = ("user__email", "user__first_name", "user__last_name", "child_name")
+    list_filter = ("relationship", "child_education_level", "stream")
+    readonly_fields = ("user", "created_at", "updated_at")
+    raw_id_fields = ("user",)
+    filter_horizontal = ("language",)
+    list_select_related = ("user", "child_education_level", "stream")
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ("user", "created_at", "updated_at")
+        return ()
+
+    autocomplete_fields = ("child_education_level", "stream")
+
+    fieldsets = (
+        ("Identity", {"fields": ("user",)}),
+        ("Language", {"fields": ("language",)}),
+        ("About", {"fields": ("relationship",)}),
+        ("Child Information", {"fields": ("child_name", "child_education_level", "stream", "academic_performance")}),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
 

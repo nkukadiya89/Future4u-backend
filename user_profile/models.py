@@ -243,7 +243,7 @@ class Profile(models.Model):
 
 
 class ProfessionalProfile(models.Model):
-    """Working Professional-specific profile matching StudentProfile pattern"""
+    
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -269,6 +269,8 @@ class ProfessionalProfile(models.Model):
     employment_type = models.CharField(
         max_length=50,
         choices=EmploymentType.choices,
+        null=True,
+        blank=True,
         help_text="Current employment status"
     )
 
@@ -331,61 +333,74 @@ class ProfessionalProfile(models.Model):
 
 
 class ParentProfile(models.Model):
-    profile = models.OneToOneField(
-        Profile, on_delete=models.CASCADE, related_name="parent"
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True, blank=True,
+        related_name="parent_profile",
+        
     )
 
-    relation = models.CharField(max_length=50) 
+    language = models.ManyToManyField(
+        "language_master.Language",
+        blank=True,
+        related_name="parent_profiles",
+    )
 
-    child_name = models.CharField(max_length=150)
-    child_education_level = models.CharField(max_length=100)
-    stream = models.CharField(max_length=100, null=True, blank=True)
-    academic_performance = models.CharField(max_length=50, null=True, blank=True)
+    class Relationship(models.TextChoices):
+        MOTHER = "mother", "Mother"
+        FATHER = "father", "Father"
+        GUARDIAN = "guardian", "Guardian"
+        OTHER = "other", "Other"
 
-    child_interests = models.JSONField(default=list, blank=True)
-
-    support_level = models.CharField(max_length=50)
-
-    child_goal = models.CharField(max_length=100)
-
-    parent_expectations = models.JSONField(default=list, blank=True)
-
-    concerns = models.JSONField(default=list, blank=True)
-
-    constraints = models.JSONField(default=list, blank=True)
-
-    career_awareness = models.CharField(max_length=50)
-
-    decision_style = models.CharField(max_length=50)
-
-    values = models.JSONField(default=list, blank=True)
-
-    created_at = models.DateTimeField(default=now)
-
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
+    relationship = models.CharField(
+        max_length=20,
+        choices=Relationship.choices,
         null=True,
-        related_name="parent_profile_updated",
+        blank=True,
     )
-    updated_at = models.DateTimeField(default=now)
 
-    deleted = models.BooleanField(default=False)
-    deleted_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+    child_name = models.CharField(max_length=150, null=True, blank=True)
+    child_education_level = models.ForeignKey(
+        "education_level.EducationLevel",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="parent_profile_deleted",
+        related_name="parent_profiles",
     )
-    deleted_at = models.DateTimeField(null=True, blank=True)
+    stream = models.ForeignKey(
+        "stream.Stream",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="parent_profiles",
+    )
+    academic_performance = models.CharField(
+        max_length=50,
+        choices=[
+            ("average", "Average"),
+            ("good", "Good"),
+            ("excellent", "Excellent"),
+        ],
+        null=True,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"ParentProfile<{self.id} - {self.profile.title}>"
+        return f"ParentProfile<{self.user_id}>"
 
     class Meta:
         db_table = "parent_profile"
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["child_education_level"]),
+            models.Index(fields=["stream"]),
+        ]
 
 
 class CorporateProfile(models.Model):
