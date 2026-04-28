@@ -10,10 +10,12 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
 
 from activity_log.models import ActivityLog
-from user_profile.models import BusinessSetting, StudentProfile, UserProfile
+from user_profile.models import BusinessSetting, ProfessionalProfile, StudentProfile, UserProfile
 from user_profile.serializers import (
     BusinessSettingInfoSerializer,
     BusinessSettingSerializer,
+    ProfessionalProfileSerializer,
+    ProfessionalProfileUpsertSerializer,
     StudentProfileSerializer,
     StudentProfileUpsertSerializer,
     UserProfileSerializer,
@@ -322,13 +324,12 @@ class UserProfileViewSet(ModelViewSet):
     Base profile endpoint ONLY for Super Admin
     Endpoints:
     - GET   /api/profile/
-    - POST  /api/profile/
     - PATCH /api/profile/
     """
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-    http_method_names = ["get", "post", "patch", "head", "options"]
+    http_method_names = ["get", "patch", "head", "options"]
     # Rate limiting (view-level, safe)
     from utils.throttles import (
         PerUserBurstRateThrottle,
@@ -348,35 +349,15 @@ class UserProfileViewSet(ModelViewSet):
                 {"success": False, "message": "Only Super Admin can access this endpoint"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        profile = UserProfile.objects.filter(user=request.user).first()
+        if not profile:
+            return Response(
+                {"success": False, "message": "Profile not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         data = UserProfileSerializer(profile).data
         return Response(
             {"success": True, "status": True, "message": "", "data": data},
-            status=status.HTTP_200_OK,
-        )
-
-    def create(self, request, *args, **kwargs):
-        # Only Super Admin can access UserProfile
-        if request.user.user_type != request.user.Role.SUPER_ADMIN:
-            return Response(
-                {"success": False, "message": "Only Super Admin can access this endpoint"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        profile, _ = UserProfile.objects.get_or_create(user=request.user)
-        ser = UserProfileUpsertSerializer(profile, data=request.data, partial=True)
-        if not ser.is_valid():
-            return Response(
-                {"success": False, "status": False, "message": ser.errors, "data": {}},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        ser.save()
-        try:
-            cache.delete(recommendation_key(request.user.id))
-        except Exception:
-            pass
-        out = UserProfileSerializer(profile).data
-        return Response(
-            {"success": True, "status": True, "message": "Profile saved", "data": out},
             status=status.HTTP_200_OK,
         )
 
@@ -387,7 +368,12 @@ class UserProfileViewSet(ModelViewSet):
                 {"success": False, "message": "Only Super Admin can access this endpoint"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        profile = UserProfile.objects.filter(user=request.user).first()
+        if not profile:
+            return Response(
+                {"success": False, "message": "Profile not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         ser = UserProfileUpsertSerializer(profile, data=request.data, partial=True)
         if not ser.is_valid():
             return Response(
@@ -416,13 +402,12 @@ class StudentProfileViewSet(ModelViewSet):
     Student-specific profile endpoint
     Endpoints:
     - GET   /api/student-profile/
-    - POST  /api/student-profile/
     - PATCH /api/student-profile/
     """
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-    http_method_names = ["get", "post", "patch", "head", "options"]
+    http_method_names = ["get", "patch", "head", "options"]
     from utils.throttles import (
         PerUserBurstRateThrottle,
     )
@@ -435,37 +420,25 @@ class StudentProfileViewSet(ModelViewSet):
         )
 
     def list(self, request, *args, **kwargs):
-        profile, _ = StudentProfile.objects.get_or_create(user=request.user)
+        profile = StudentProfile.objects.filter(user=request.user).first()
+        if not profile:
+            return Response(
+                {"success": False, "message": "Profile not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         data = StudentProfileSerializer(profile).data
         return Response(
             {"success": True, "status": True, "message": "", "data": data},
             status=status.HTTP_200_OK,
         )
 
-    def create(self, request, *args, **kwargs):
-        profile, created = StudentProfile.objects.get_or_create(user=request.user)
-        ser = StudentProfileUpsertSerializer(
-            profile, data=request.data, partial=True,
-            context={"skip_updated_at": created}
-        )
-        if not ser.is_valid():
-            return Response(
-                {"success": False, "status": False, "message": ser.errors, "data": {}},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        ser.save()
-        try:
-            cache.delete(recommendation_key(request.user.id))
-        except Exception:
-            pass
-        out = StudentProfileSerializer(profile).data
-        return Response(
-            {"success": True, "status": True, "message": "Student profile saved", "data": out},
-            status=status.HTTP_200_OK,
-        )
-
     def partial_update(self, request, *args, **kwargs):
-        profile, _ = StudentProfile.objects.get_or_create(user=request.user)
+        profile = StudentProfile.objects.filter(user=request.user).first()
+        if not profile:
+            return Response(
+                {"success": False, "message": "Profile not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         ser = StudentProfileUpsertSerializer(profile, data=request.data, partial=True)
         if not ser.is_valid():
             return Response(
@@ -483,6 +456,64 @@ class StudentProfileViewSet(ModelViewSet):
                 "success": True,
                 "status": True,
                 "message": "Student profile updated",
+                "data": out,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ProfessionalProfileViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    http_method_names = ["get", "patch", "head", "options"]
+    from utils.throttles import (
+        PerUserBurstRateThrottle,
+    )
+
+    throttle_classes = [PerUserBurstRateThrottle]
+
+    def get_queryset(self):
+        return ProfessionalProfile.objects.filter(user=self.request.user).select_related(
+            "user__country", "user__states", "user__city", "education_level"
+        )
+
+    def list(self, request, *args, **kwargs):
+        profile = ProfessionalProfile.objects.filter(user=request.user).first()
+        if not profile:
+            return Response(
+                {"success": False, "message": "Profile not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        data = ProfessionalProfileSerializer(profile).data
+        return Response(
+            {"success": True, "status": True, "message": "", "data": data},
+            status=status.HTTP_200_OK,
+        )
+
+    def partial_update(self, request, *args, **kwargs):
+        profile = ProfessionalProfile.objects.filter(user=request.user).first()
+        if not profile:
+            return Response(
+                {"success": False, "message": "Profile not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        ser = ProfessionalProfileUpsertSerializer(profile, data=request.data, partial=True)
+        if not ser.is_valid():
+            return Response(
+                {"success": False, "status": False, "message": ser.errors, "data": {}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        ser.save()
+        try:
+            cache.delete(recommendation_key(request.user.id))
+        except Exception:
+            pass
+        out = ProfessionalProfileSerializer(profile).data
+        return Response(
+            {
+                "success": True,
+                "status": True,
+                "message": "Professional profile updated",
                 "data": out,
             },
             status=status.HTTP_200_OK,

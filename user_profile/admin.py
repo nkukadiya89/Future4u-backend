@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 
-from user_profile.models import BusinessSetting, StudentProfile, UserProfile
+from user_profile.models import BusinessSetting, ProfessionalProfile, StudentProfile, UserProfile
 
 admin.site.register(BusinessSetting)
 
@@ -150,7 +150,81 @@ class StudentProfileAdmin(admin.ModelAdmin):
         ),
         (
             "Social Links",
-            {"fields": ("linkdin_url", "github_url", "portfolio")},
+            {"fields": ("linkedin_url", "github_url", "portfolio")},
+        ),
+        ("Timestamps", {"fields": ("created_at", "updated_at")}),
+    )
+
+
+@admin.register(ProfessionalProfile)
+class ProfessionalProfileAdmin(admin.ModelAdmin):
+    """Professional-specific profile admin"""
+    list_display = (
+        "user",
+        "employment_type",
+        "years_of_experience",
+        "education_level",
+        "current_job_title",
+    )
+    search_fields = ("user__email", "user__first_name", "user__last_name", "current_job_title")
+    list_filter = ("employment_type", "years_of_experience")
+    readonly_fields = ("user", "created_at", "updated_at")
+    raw_id_fields = ("user", "education_level")
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ("user", "created_at", "updated_at")
+        return ()
+
+    autocomplete_fields = ("education_level",)
+    filter_horizontal = ("language",)
+    list_select_related = (
+        "user",
+        "education_level",
+    )
+
+    fieldsets = (
+        ("Identity", {"fields": ("user",)}),
+        ("Language", {"fields": ("language",)}),
+        (
+            "Employment",
+            {"fields": ("employment_type", "years_of_experience", "current_job_title", "current_industry", "company_size")},
+        ),
+        (
+            "Education",
+            {"fields": ("education_level",)},
+        ),
+        (
+            "Career Direction",
+            {"fields": ("career_direction",)},
+        ),
+        (
+            "Education Details",
+            {"fields": ("education",)},
+        ),
+        (
+            "Work Experience",
+            {"fields": ("work_experience",)},
+        ),
+        (
+            "Skills",
+            {"fields": ("skills",)},
+        ),
+        (
+            "Certifications",
+            {"fields": ("certifications",)},
+        ),
+        (
+            "Key Highlights (Power Section)",
+            {"fields": ("key_highlights",)},
+        ),
+        (
+            "Additional High-Impact Data",
+            {"fields": ("additional_insights",)},
+        ),
+        (
+            "Social Links",
+            {"fields": ("linkedin_url", "github_url", "portfolio")},
         ),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )

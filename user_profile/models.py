@@ -97,7 +97,7 @@ class StudentProfile(models.Model):
     achievements = models.JSONField(default=list, null=True, blank=True)
     extra_activities = models.JSONField(default=list, null=True, blank=True)
     additional_insights = models.JSONField(default=list, null=True, blank=True)
-    linkdin_url = models.CharField(max_length=200 , null=True, blank=True)
+    linkedin_url = models.CharField(max_length=200, null=True, blank=True)
     github_url = models.CharField(max_length=200, null=True, blank=True)
     portfolio = models.CharField(max_length=200, null=True, blank=True)
     
@@ -295,40 +295,21 @@ class ProfessionalProfile(models.Model):
         related_name="professional_profiles",
     )
 
-    skills = models.ManyToManyField(
-        "skill_category.SkillCategory",
-        blank=True,
-        related_name="professional_profiles",
-    )
-
     current_job_title = models.CharField(max_length=150, null=True, blank=True)
     current_industry = models.CharField(max_length=100, null=True, blank=True)
     company_size = models.CharField(max_length=50, null=True, blank=True)
 
-    career_goal = models.CharField(max_length=100, null=True, blank=True)
-
-    constraints = models.JSONField(default=list, blank=True)
-
-    work_mode = models.CharField(
-        max_length=50, null=True, blank=True
-    ) 
-    work_structure = models.CharField(
-        max_length=50, null=True, blank=True
-    )  
-
-    preferred_industries = models.JSONField(default=list, blank=True)
-
-    # Values
-    career_values = models.JSONField(default=list, blank=True)
-
-    # Salary
-    expected_salary_range = models.CharField(max_length=50, null=True, blank=True)
-
-    # Timeline
-    transition_timeline = models.CharField(max_length=50, null=True, blank=True)
+    # JSONField sections for professional profile
+    career_direction = models.JSONField(default=list, blank=True, null=True)
+    education = models.JSONField(default=list, blank=True, null=True)
+    work_experience = models.JSONField(default=list, null=True, blank=True)
+    skills = models.JSONField(default=list, null=True, blank=True)
+    certifications = models.JSONField(default=list, null=True, blank=True)
+    key_highlights = models.JSONField(default=list, null=True, blank=True)
+    additional_insights = models.JSONField(default=list, null=True, blank=True)
 
     # Professional links
-    linkdin_url = models.CharField(max_length=200, null=True, blank=True)
+    linkedin_url = models.CharField(max_length=200, null=True, blank=True)
     github_url = models.CharField(max_length=200, null=True, blank=True)
     portfolio = models.CharField(max_length=200, null=True, blank=True)
 

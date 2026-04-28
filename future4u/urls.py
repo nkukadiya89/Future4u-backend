@@ -26,25 +26,10 @@ from recommendation.views import (
     RecommendationListAPIView,
 )
 from user.user_auth import CustomTokenObtainPairView
-from user_profile.views import StudentProfileViewSet, UserProfileViewSet
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("get-token/", CustomTokenObtainPairView.as_view(), name="get_token"),
-    path(
-        "api/profile/",
-        UserProfileViewSet.as_view(
-            {"get": "list", "post": "create", "patch": "partial_update"}
-        ),
-        name="api-profile",
-    ),
-    path(
-        "api/student-profile/",
-        StudentProfileViewSet.as_view(
-            {"get": "list", "post": "create", "patch": "partial_update"}
-        ),
-        name="api-student-profile",
-    ),
     path(
         "api/recommendations/",
         RecommendationListAPIView.as_view(),
