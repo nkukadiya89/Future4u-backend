@@ -1,6 +1,7 @@
 from django.core.cache import cache
 from django.db import models, transaction
 from django.db.models import Sum
+from django.utils import timezone
 from rest_framework import mixins, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -46,6 +47,30 @@ def error_response(message, response_status=status.HTTP_400_BAD_REQUEST):
 
 def get_student_profile(user):
     return StudentProfile.objects.filter(user=user).first()
+
+
+def get_latest_attempt(user):
+    return AssessmentAttempt.objects.filter(user=user).order_by("-created_at").first()
+
+
+def get_latest_completed_attempt(user):
+    return (
+        AssessmentAttempt.objects.filter(user=user, completed_at__isnull=False)
+        .order_by("-completed_at")
+        .first()
+    )
+
+
+def get_or_create_current_attempt(user):
+    latest_attempt = get_latest_attempt(user)
+    if latest_attempt and latest_attempt.completed_at is None:
+        return latest_attempt
+
+    attempt_count = AssessmentAttempt.objects.filter(user=user).count()
+    return AssessmentAttempt.objects.create(
+        user=user,
+        attempt_number=attempt_count + 1,
+    )
 
 
 def get_student_questions(request, with_options=True, dimension=None):
@@ -134,33 +159,23 @@ class StudentInterestViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = StudentInterestSaveSerializer
 
     def list(self, request, *args, **kwargs):
-        profile = get_student_profile(request.user)
-        if not profile:
-            return error_response(
-                "Student profile not found.",
-                status.HTTP_404_NOT_FOUND,
-            )
-
-        interests = profile.domain_interests.filter(is_active=True, deleted=False)
+        attempt = get_latest_attempt(request.user)
+        interests = AssessmentInterestCategory.objects.none()
+        if attempt:
+            interests = attempt.domain_interests.filter(is_active=True, deleted=False)
         data = StudentInterestCategorySerializer(interests, many=True).data
         return success_response(data)
 
     def create(self, request, *args, **kwargs):
-        profile = get_student_profile(request.user)
-        if not profile:
-            return error_response(
-                "Student profile not found.",
-                status.HTTP_404_NOT_FOUND,
-            )
-
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
             return error_response(serializer.errors)
 
-        profile.domain_interests.set(serializer.validated_data["domain_interests"])
+        attempt = get_or_create_current_attempt(request.user)
+        attempt.domain_interests.set(serializer.validated_data["domain_interests"])
         cache.delete(recommendation_key(request.user.id))
 
-        interests = profile.domain_interests.filter(is_active=True, deleted=False)
+        interests = attempt.domain_interests.filter(is_active=True, deleted=False)
         data = StudentInterestCategorySerializer(interests, many=True).data
         return success_response(data, "Interest areas saved")
 
@@ -289,11 +304,8 @@ class StudentAssessmentSubmitViewSet(viewsets.GenericViewSet):
             if option.question_id != item["question_id"]:
                 return error_response("Option does not belong to the question.")
 
-        attempt_count = AssessmentAttempt.objects.filter(user=request.user).count()
-        attempt = AssessmentAttempt.objects.create(
-            user=request.user,
-            attempt_number=attempt_count + 1,
-        )
+        attempt = get_or_create_current_attempt(request.user)
+        attempt.responses.all().delete()
 
         user_responses = []
         for item in responses:
@@ -309,6 +321,8 @@ class StudentAssessmentSubmitViewSet(viewsets.GenericViewSet):
             )
 
         UserResponse.objects.bulk_create(user_responses)
+        attempt.completed_at = timezone.now()
+        attempt.save(update_fields=["completed_at"])
         cache.delete(recommendation_key(request.user.id))
 
         return success_response({"submitted": len(responses)}, "Responses saved")
@@ -319,11 +333,7 @@ class StudentAssessmentStatusViewSet(mixins.ListModelMixin, viewsets.GenericView
     authentication_classes = [JWTAuthentication]
 
     def list(self, request, *args, **kwargs):
-        latest_attempt = (
-            AssessmentAttempt.objects.filter(user=request.user)
-            .order_by("-completed_at")
-            .first()
-        )
+        latest_attempt = get_latest_attempt(request.user)
         attempt_count = AssessmentAttempt.objects.filter(user=request.user).count()
         answered_count = 0
 
@@ -331,7 +341,11 @@ class StudentAssessmentStatusViewSet(mixins.ListModelMixin, viewsets.GenericView
             answered_count = UserResponse.objects.filter(attempt=latest_attempt).count()
 
         data = {
-            "status": "complete" if latest_attempt else "incomplete",
+            "status": (
+                "complete"
+                if latest_attempt and latest_attempt.completed_at
+                else "incomplete"
+            ),
             "attempt_count": attempt_count,
             "answered": answered_count,
         }
@@ -343,11 +357,7 @@ class StudentAssessmentSummaryViewSet(mixins.ListModelMixin, viewsets.GenericVie
     authentication_classes = [JWTAuthentication]
 
     def list(self, request, *args, **kwargs):
-        latest_attempt = (
-            AssessmentAttempt.objects.filter(user=request.user)
-            .order_by("-completed_at")
-            .first()
-        )
+        latest_attempt = get_latest_completed_attempt(request.user)
         responses = (
             UserResponse.objects.filter(attempt=latest_attempt)
             if latest_attempt

@@ -81,7 +81,7 @@ def _get_education_level_sequence(level_code: str) -> int:
 
 def _latest_user_responses(user_id):
     latest_attempt = (
-        AssessmentAttempt.objects.filter(user_id=user_id)
+        AssessmentAttempt.objects.filter(user_id=user_id, completed_at__isnull=False)
         .order_by("-completed_at")
         .first()
     )

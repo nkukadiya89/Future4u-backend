@@ -102,10 +102,11 @@ class OptionAdmin(admin.ModelAdmin):
 
 @admin.register(AssessmentAttempt)
 class AssessmentAttemptAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "attempt_number", "completed_at")
+    list_display = ("id", "user", "attempt_number", "created_at", "completed_at")
     search_fields = ("user__email",)
-    list_filter = ("completed_at",)
-    ordering = ("-completed_at",)
+    list_filter = ("created_at", "completed_at")
+    filter_horizontal = ("domain_interests",)
+    ordering = ("-created_at",)
 
 
 @admin.register(UserResponse)

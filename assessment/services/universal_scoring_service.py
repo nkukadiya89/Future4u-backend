@@ -45,7 +45,7 @@ def _configured_dimensions(domain_cfg: dict) -> dict[str, float]:
 
 def _latest_user_responses(user_id):
     latest_attempt = (
-        AssessmentAttempt.objects.filter(user_id=user_id)
+        AssessmentAttempt.objects.filter(user_id=user_id, completed_at__isnull=False)
         .order_by("-completed_at")
         .first()
     )

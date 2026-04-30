@@ -149,11 +149,17 @@ class AssessmentAttempt(models.Model):
         related_name="assessment_attempts",
     )
     attempt_number = models.PositiveSmallIntegerField()
-    completed_at = models.DateTimeField(auto_now_add=True)
+    domain_interests = models.ManyToManyField(
+        AssessmentInterestCategory,
+        blank=True,
+        related_name="assessment_attempts",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = "assessment_attempt"
-        ordering = ["-completed_at"]
+        ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["user"]),
         ]
