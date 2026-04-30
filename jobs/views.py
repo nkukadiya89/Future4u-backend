@@ -26,8 +26,10 @@ class JobViewSet(viewsets.ModelViewSet):
         "company_name",
         "description",
         "location",
-        "employeement_type",
+        "employment_type",
         "work_mode",
+        "job_type",
+        "application_deadline",
         "domain__domain_name",
     ]
     ordering_fields = [
@@ -36,8 +38,10 @@ class JobViewSet(viewsets.ModelViewSet):
         "company_name",
         "description",
         "location",
-        "employeement_type",
+        "employment_type",
         "work_mode",
+        "job_type",
+        "application_deadline",
         "domain__domain_name",
     ]
     ordering = ["-created_at"]

@@ -41,6 +41,20 @@ class Job(models.Model):
         blank=True,
     )
 
+    # Added job_type field (e.g., Permanent, Temporary, Contract, Internship)
+    JOB_TYPE_CHOICES = (
+        ("permanent", "Permanent"),
+        ("temporary", "Temporary"),
+        ("contract", "Contract"),
+        ("internship", "Internship"),
+    )
+    job_type = models.CharField(
+        max_length=50,
+        choices=JOB_TYPE_CHOICES,
+        null=True,
+        blank=True,
+    )
+
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(default=now)
@@ -51,6 +65,9 @@ class Job(models.Model):
         related_name="job_updated",
     )
     updated_at = models.DateTimeField(default=now)
+
+    # Added application_deadline field
+    application_deadline = models.DateTimeField(null=True, blank=True)
 
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(

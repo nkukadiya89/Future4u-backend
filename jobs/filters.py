@@ -19,6 +19,18 @@ class JobFilters(django_filters.FilterSet):
     location = django_filters.CharFilter(lookup_expr="icontains")
     work_mode = django_filters.CharFilter(lookup_expr="iexact")
 
+    # Add filters for new fields
+    job_type = django_filters.CharFilter(lookup_expr="iexact")
+    application_deadline = django_filters.DateTimeFilter(
+        field_name="application_deadline", lookup_expr="exact"
+    )
+    application_deadline_before = django_filters.DateTimeFilter(
+        field_name="application_deadline", lookup_expr="lte"
+    )
+    application_deadline_after = django_filters.DateTimeFilter(
+        field_name="application_deadline", lookup_expr="gte"
+    )
+
     class Meta:
         model = Job
         fields = [
@@ -32,6 +44,10 @@ class JobFilters(django_filters.FilterSet):
             "salary_max",
             "location",
             "work_mode",
+            "job_type",
+            "application_deadline",
+            "application_deadline_before",
+            "application_deadline_after",
         ]
 
 
