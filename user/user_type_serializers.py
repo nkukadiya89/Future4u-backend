@@ -36,7 +36,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         country_id = json_data.get("country")
         state_id = json_data.get("state")
         city_id = json_data.get("city")
-
+        print("JSON Data:", json_data)  # Debug print statement
         errors = {}
         if not email:
             errors["email"] = "This field is required."

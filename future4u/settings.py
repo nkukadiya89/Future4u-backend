@@ -105,6 +105,7 @@ INSTALLED_APPS = [
     "user_profile",
     "recommendation",
     "language_master",
+    "jobs",
 ]
 
 MIDDLEWARE = [

@@ -12,6 +12,7 @@ from domain_skill_mapping.routers import domain_skill_mapping_router
 from education_level.routers import education_level_router
 from employee.routers import employee_router
 from faq.routers import faq_router
+from jobs.routers import job_router
 from skill.routers import skill_router
 from state.routers import state_router
 from stream.routers import stream_router
@@ -54,4 +55,6 @@ future4u_router.registry.extend(domain_career_mapping_router.registry)
 future4u_router.registry.extend(user_profile_router.registry)
 future4u_router.registry.extend(user_skill_router.registry)
 future4u_router.registry.extend(user_router.registry)
+future4u_router.registry.extend(job_router.registry)
+future4u_router.registry.extend(user_profile_router.registry)
 # future4u_router.registry.extend(subscription_router.registry)

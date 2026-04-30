@@ -1,6 +1,13 @@
 from rest_framework import serializers
 
-from user_profile.models import BusinessSetting, UserProfile
+from user_profile.models import (
+    BusinessSetting,
+    InternshipApplication,
+    InternshipProfile,
+    InternshipProfileSkill,
+    Profile,
+    UserProfile,
+)
 
 # Derive valid sets directly from model TextChoices — single source of truth
 VALID_CONCERNS = {c.value for c in UserProfile.UserConcern}
@@ -222,4 +229,62 @@ class BusinessSettingInfoSerializer(serializers.ModelSerializer):
             "city",
             "city_name",
             "currency",
+        ]
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = "__all__"
+        read_only_fields = [
+            "created_by",
+            "updated_by",
+            "deleted_by",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+            "deleted",
+        ]
+
+
+class InternshipProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InternshipProfile
+        fields = "__all__"
+        read_only_fields = [
+            "created_at",
+            "updated_at",
+            "updated_by",
+            "deleted",
+            "deleted_by",
+            "deleted_at",
+        ]
+
+
+class InternshipProfileSkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InternshipProfileSkill
+        fields = "__all__"
+        read_only_fields = [
+            "created_at",
+            "updated_at",
+            "updated_by",
+            "deleted",
+            "deleted_by",
+            "deleted_at",
+        ]
+
+
+class InternshipApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InternshipApplication
+        fields = "__all__"
+        read_only_fields = [
+            "created_at",
+            "updated_at",
+            "updated_by",
+            "deleted",
+            "deleted_by",
+            "deleted_at",
+            "applied_at",
         ]

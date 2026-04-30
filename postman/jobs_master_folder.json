@@ -1,0 +1,670 @@
+{
+  "name": "Jobs Master",
+  "item": [
+    {
+      "name": "Jobs",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/?search=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", ""],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "ordering", "value": "-created_at" },
+                { "key": "title", "value": "" },
+                { "key": "company_name", "value": "" },
+                { "key": "location", "value": "" },
+                { "key": "employeement_type", "value": "" },
+                { "key": "work_mode", "value": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/{{job_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", "{{job_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Software Engineer\",\n  \"company_name\": \"Tech Corp\",\n  \"description\": \"Software development role\",\n  \"location\": \"San Francisco\",\n  \"employeement_type\": \"full-time\",\n  \"work_mode\": \"hybrid\",\n  \"domain\": {{domain_id}},\n  \"is_active\": true\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/{{job_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", "{{job_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior Software Engineer\",\n  \"company_name\": \"Tech Corp\",\n  \"description\": \"Senior software development role\",\n  \"location\": \"San Francisco\",\n  \"employeement_type\": \"full-time\",\n  \"work_mode\": \"hybrid\",\n  \"domain\": {{domain_id}},\n  \"is_active\": true\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/{{job_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", "{{job_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior Software Engineer\",\n  \"work_mode\": \"remote\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/{{job_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", "{{job_id}}", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Job Skills",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-skills/?search=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-skills", ""],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "ordering", "value": "-created_at" },
+                { "key": "level_choices", "value": "" },
+                { "key": "job__title", "value": "" },
+                { "key": "skill__name", "value": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-skills/{{job_skill_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-skills", "{{job_skill_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-skills/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-skills", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job\": {{job_id}},\n  \"skill\": {{skill_id}},\n  \"level_choices\": \"intermediate\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-skills/{{job_skill_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-skills", "{{job_skill_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job\": {{job_id}},\n  \"skill\": {{skill_id}},\n  \"level_choices\": \"advanced\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-skills/{{job_skill_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-skills", "{{job_skill_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"level_choices\": \"expert\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-skills/{{job_skill_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-skills", "{{job_skill_id}}", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Job Preferences",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-preferences/?search=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-preferences", ""],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "ordering", "value": "-created_at" },
+                { "key": "preferred_industries", "value": "" },
+                { "key": "education_requirement", "value": "" },
+                { "key": "job__title", "value": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-preferences/{{job_preference_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-preferences", "{{job_preference_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-preferences/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-preferences", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job\": {{job_id}},\n  \"preferred_industries\": \"Technology\",\n  \"education_requirement\": \"Bachelor's Degree\",\n  \"soft_skills\": [{{skill_id1}}, {{skill_id2}}]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-preferences/{{job_preference_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-preferences", "{{job_preference_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job\": {{job_id}},\n  \"preferred_industries\": \"Technology & Finance\",\n  \"education_requirement\": \"Master's Degree\",\n  \"soft_skills\": [{{skill_id1}}, {{skill_id2}}, {{skill_id3}}]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-preferences/{{job_preference_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-preferences", "{{job_preference_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"education_requirement\": \"PhD\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-preferences/{{job_preference_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-preferences", "{{job_preference_id}}", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Job Applications",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-applications/?search=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-applications", ""],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "ordering", "value": "-created_at" },
+                { "key": "status", "value": "" },
+                { "key": "job__title", "value": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-applications/{{job_application_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-applications", "{{job_application_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-applications/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-applications", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job\": {{job_id}},\n  \"profile\": {{profile_id}},\n  \"status\": \"applied\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-applications/{{job_application_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-applications", "{{job_application_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job\": {{job_id}},\n  \"profile\": {{profile_id}},\n  \"status\": \"interview_scheduled\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-applications/{{job_application_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-applications", "{{job_application_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"hired\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job-applications/{{job_application_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job-applications", "{{job_application_id}}", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Saved Jobs",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/saved-jobs/?search=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "saved-jobs", ""],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "ordering", "value": "-created_at" },
+                { "key": "job__title", "value": "" },
+                { "key": "job__company_name", "value": "" },
+                { "key": "job__location", "value": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/saved-jobs/{{saved_job_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "saved-jobs", "{{saved_job_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/saved-jobs/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "saved-jobs", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job\": {{job_id}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/saved-jobs/{{saved_job_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "saved-jobs", "{{saved_job_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job\": {{job_id}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/saved-jobs/{{saved_job_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "saved-jobs", "{{saved_job_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job\": {{job_id}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/saved-jobs/{{saved_job_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "saved-jobs", "{{saved_job_id}}", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "access_token",
+      "value": "your_access_token_here"
+    },
+    {
+      "key": "job_id",
+      "value": "1"
+    },
+    {
+      "key": "job_skill_id", 
+      "value": "1"
+    },
+    {
+      "key": "job_preference_id",
+      "value": "1" 
+    },
+    {
+      "key": "job_application_id",
+      "value": "1"
+    },
+    {
+      "key": "saved_job_id",
+      "value": "1"
+    },
+    {
+      "key": "domain_id",
+      "value": "1"
+    },
+    {
+      "key": "skill_id",
+      "value": "1"
+    },
+    {
+      "key": "skill_id1",
+      "value": "1"
+    },
+    {
+      "key": "skill_id2", 
+      "value": "2"
+    },
+    {
+      "key": "skill_id3",
+      "value": "3"
+    },
+    {
+      "key": "profile_id",
+      "value": "1"
+    }
+  ]
+}

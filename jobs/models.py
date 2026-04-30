@@ -10,7 +10,7 @@ class Job(models.Model):
 
     description = models.TextField()
 
-    domain = models.ForeignKey("Domain", on_delete=models.SET_NULL, null=True)
+    domain = models.ForeignKey("domain.Domain", on_delete=models.SET_NULL, null=True)
 
     employment_type = models.CharField(
         max_length=50,
@@ -107,7 +107,7 @@ class JobSkill(models.Model):
     job = models.ForeignKey(
         Job, on_delete=models.CASCADE, related_name="skill_requirements"
     )
-    skill = models.ForeignKey("Skill", on_delete=models.CASCADE)
+    skill = models.ForeignKey("skill.Skill", on_delete=models.CASCADE)
 
     required_level = models.CharField(max_length=20, choices=LEVEL_CHOICES)
 
@@ -173,13 +173,7 @@ class JobPreference(models.Model):
 
     preferred_industries = models.JSONField(default=list, blank=True)
 
-    soft_skills = models.ForeignKey(
-        "Skill",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="job_preference_soft_skills",
-    )
+    soft_skills = models.ManyToManyField("skill.Skill", blank=True)
 
     education_requirement = models.CharField(max_length=150, null=True, blank=True)
 
@@ -245,7 +239,7 @@ class JobApplication(models.Model):
     )
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    profile = models.ForeignKey("Profile", on_delete=models.CASCADE)
+    profile = models.ForeignKey("user_profile.Profile", on_delete=models.CASCADE)
 
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
 

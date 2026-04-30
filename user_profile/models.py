@@ -407,7 +407,7 @@ class ParentProfile(models.Model):
     academic_performance = models.CharField(max_length=50, null=True, blank=True)
 
     # Interests
-    child_interests = models.JSONField(default=list, blank=True)
+    child_interests = models.ManyToManyField(Domain, blank=True)
 
     # Parent behavior
     support_level = models.CharField(max_length=50)
