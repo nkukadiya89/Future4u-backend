@@ -1,0 +1,9 @@
+category_code,category_name,category_image_url,sequence_order
+technology,Technology / Coding,Technology.png,1
+healthcare,Healthcare / Life Sciences,Healthcare.png,2
+business,Business / Finance,Business.png,3
+creative,Creative / Design,Creative.png,4
+science,Science / Research,Science.png,5
+agriculture,Agriculture / Environment,Agriculture.png,6
+sports,Sports / Fitness,Sports.png,7
+government,Government / Public Service,Government.png,8

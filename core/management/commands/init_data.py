@@ -62,6 +62,11 @@ class Command(BaseCommand):
         parser.add_argument(
             "--assessment", type=bool, help="Assessment questions/options to be seeded"
         )
+        parser.add_argument(
+            "--assessment_interest_category",
+            type=bool,
+            help="Assessment interest category data/images to be uploaded",
+        )
 
         parser.add_argument("--groups", type=bool, help="Create Groups")
         parser.add_argument("--user", type=bool, help="Create Super User")
@@ -117,6 +122,10 @@ class Command(BaseCommand):
             self.load_assessment_questions()
             return
 
+        if kwargs["assessment_interest_category"]:
+            self.load_assessment_interest_categories()
+            return
+
         # If no specific flags, run all initialization
         if (
             kwargs["country"] is None
@@ -126,6 +135,7 @@ class Command(BaseCommand):
             and kwargs["skill"] is None
             and kwargs["career"] is None
             and kwargs["assessment"] is None
+            and kwargs["assessment_interest_category"] is None
             and kwargs["groups"] is None
             and kwargs["user"] is None
             and kwargs["subscription"] is None
@@ -148,6 +158,7 @@ class Command(BaseCommand):
             self.load_stream_domain_mappings()
             self.load_domain_skill_mappings()
             self.load_domain_career_mappings()
+            self.load_assessment_interest_categories()
             self.load_assessment_questions()
             self.load_domain_report_meta()
             self.load_stream_report_meta()
@@ -770,6 +781,95 @@ class Command(BaseCommand):
                 self.stdout.write(f"  No image filename provided or already a URL")
 
         self.stdout.write("Skill Category data uploaded.")
+
+    def load_assessment_interest_categories(self, admin_user=None):
+        self.stdout.write("Loading Assessment Interest Categories...")
+        from assessment.models import AssessmentInterestCategory
+
+        created_by_user = admin_user or User.objects.filter(is_superuser=True).first()
+        file_path = path.join(
+            settings.BASE_DIR,
+            "core",
+            "management",
+            "source",
+            "assessment_interest_category_master_sample.csv",
+        )
+
+        categories = []
+        with open(file_path, "r", encoding="utf-8") as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=",")
+            for row in reader:
+                category, created = AssessmentInterestCategory.objects.get_or_create(
+                    category_code=row["category_code"].strip(),
+                    defaults={
+                        "category_name": row["category_name"].strip(),
+                        "sequence_order": int(row.get("sequence_order") or 0),
+                        "category_image_url": "",
+                        "is_active": True,
+                        "deleted": False,
+                        "created_by": created_by_user,
+                        "updated_by": created_by_user,
+                    },
+                )
+                if not created:
+                    category.category_name = row["category_name"].strip()
+                    category.sequence_order = int(row.get("sequence_order") or 0)
+                    category.is_active = True
+                    category.deleted = False
+                    category.updated_by = created_by_user
+                    category.save()
+
+                categories.append(
+                    (category, row.get("category_image_url", "").strip())
+                )
+
+        for category, image_filename in categories:
+            self.stdout.write(
+                f"  Processing {category.category_name}, image: {image_filename}"
+            )
+            if image_filename and not image_filename.startswith("http"):
+                local_image_path = path.join(
+                    settings.BASE_DIR,
+                    "core",
+                    "management",
+                    "source",
+                    "images",
+                    "assessment_interest_category",
+                    image_filename,
+                )
+                self.stdout.write(f"  Looking for image at: {local_image_path}")
+                if path.exists(local_image_path):
+                    try:
+                        with open(local_image_path, "rb") as f:
+                            from django.core.files.uploadedfile import SimpleUploadedFile
+
+                            uploaded_file = SimpleUploadedFile(
+                                name=image_filename,
+                                content=f.read(),
+                            )
+                        category.upload_category_image(uploaded_file)
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"  Uploaded image for {category.category_name}: {category.category_image_url}"
+                            )
+                        )
+                    except Exception as e:
+                        self.stdout.write(
+                            self.style.ERROR(
+                                f"  Failed to upload image for {category.category_name}: {str(e)}"
+                            )
+                        )
+                else:
+                    self.stdout.write(
+                        self.style.ERROR(f"  Image file not found: {local_image_path}")
+                    )
+            elif image_filename:
+                category.category_image_url = image_filename
+                category.save(update_fields=["category_image_url"])
+            else:
+                self.stdout.write("  No image filename provided")
+
+        self.stdout.write("Assessment Interest Category data uploaded.")
 
     def load_careers(self):
         self.stdout.write("Loading Careers...")

@@ -1,6 +1,36 @@
 from django.contrib import admin
 
-from assessment.models import Option, Question, UserResponse
+from assessment.models import (
+    AssessmentAttempt,
+    AssessmentInterestCategory,
+    Option,
+    Question,
+    UserResponse,
+)
+
+
+@admin.register(AssessmentInterestCategory)
+class AssessmentInterestCategoryAdmin(admin.ModelAdmin):
+    list_display = (
+        "category_name",
+        "category_code",
+        "category_image_url",
+        "sequence_order",
+        "is_active",
+        "deleted",
+        "created_at",
+    )
+    list_filter = ("is_active", "deleted")
+    search_fields = ("category_name", "category_code")
+    ordering = ("sequence_order", "category_name")
+    readonly_fields = (
+        "created_by",
+        "updated_by",
+        "created_at",
+        "updated_at",
+        "deleted_at",
+        "deleted_by",
+    )
 
 
 class OptionInline(admin.TabularInline):
@@ -70,8 +100,23 @@ class OptionAdmin(admin.ModelAdmin):
     list_filter = ("score_value", "question__dimension")
 
 
+@admin.register(AssessmentAttempt)
+class AssessmentAttemptAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "attempt_number", "completed_at")
+    search_fields = ("user__email",)
+    list_filter = ("completed_at",)
+    ordering = ("-completed_at",)
+
+
 @admin.register(UserResponse)
 class UserResponseAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "question", "selected_option", "score_value")
+    list_display = (
+        "id",
+        "user",
+        "attempt",
+        "question",
+        "selected_option",
+        "score_value",
+    )
     search_fields = ("user__email", "question__question_text")
-    list_filter = ("question__dimension", "score_value")
+    list_filter = ("attempt", "question__dimension", "score_value")

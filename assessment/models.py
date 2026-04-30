@@ -1,6 +1,54 @@
+import os
+
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from common.models import BaseModule
+from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
+
+
+class AssessmentInterestCategory(BaseModule):
+    category_code = models.CharField(max_length=64, unique=True)
+    category_name = models.CharField(max_length=255, unique=True)
+    category_image_url = models.CharField(max_length=500, null=True, blank=True)
+    sequence_order = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.category_name
+
+    def upload_category_image(self, category_image_file):
+        allowed_types = [".jpg", ".jpeg", ".png"]
+
+        file_extension = os.path.splitext(category_image_file.name)[1].lower()
+        if file_extension not in allowed_types:
+            raise ValueError(
+                f"Invalid file type: {file_extension}. Allowed types are {', '.join(allowed_types)}."
+            )
+
+        current_value = getattr(self, "category_image_url", None)
+
+        try:
+            if current_value:
+                delete_uploaded_file(current_value)
+
+            aws_file_url, _ = upload_file_to_bucket(
+                category_image_file,
+                allowed_types,
+                "AssessmentInterestCategory/",
+                self.id,
+                None,
+            )
+            self.category_image_url = aws_file_url
+            self.save(update_fields=["category_image_url"])
+        except ValueError:
+            raise
+        except Exception as e:
+            raise Exception(f"Failed to upload category image: {str(e)}")
+
+    class Meta:
+        db_table = "assessment_interest_category"
+        ordering = ["sequence_order", "category_name"]
 
 
 class Question(models.Model):
@@ -94,11 +142,38 @@ class Option(models.Model):
         return f"Q{self.question_id} - {self.option_text[:40]}"
 
 
+class AssessmentAttempt(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="assessment_attempts",
+    )
+    attempt_number = models.PositiveSmallIntegerField()
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "assessment_attempt"
+        ordering = ["-completed_at"]
+        indexes = [
+            models.Index(fields=["user"]),
+        ]
+
+    def __str__(self):
+        return f"user={self.user_id}, attempt={self.attempt_number}"
+
+
 class UserResponse(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="assessment_responses",
+    )
+    attempt = models.ForeignKey(
+        AssessmentAttempt,
+        on_delete=models.CASCADE,
+        related_name="responses",
+        null=True,
+        blank=True,
     )
     question = models.ForeignKey(
         Question,
@@ -119,8 +194,8 @@ class UserResponse(models.Model):
         ordering = ["id"]
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "question"],
-                name="assessment_user_question_unique",
+                fields=["attempt", "question"],
+                name="assessment_attempt_question_unique",
             ),
         ]
 

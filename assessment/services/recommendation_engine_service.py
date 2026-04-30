@@ -4,7 +4,7 @@ from django.db import models
 from django.db.models import Count, F, FloatField, Sum
 from django.db.models.expressions import ExpressionWrapper
 
-from assessment.models import UserResponse
+from assessment.models import AssessmentAttempt, UserResponse
 from assessment.services.counsellor_message_service import build_counsellor_message
 from assessment.services.domain_config import domain_has_config
 from assessment.services.universal_scoring_service import evaluate_domain
@@ -79,6 +79,17 @@ def _get_education_level_sequence(level_code: str) -> int:
     return 0
 
 
+def _latest_user_responses(user_id):
+    latest_attempt = (
+        AssessmentAttempt.objects.filter(user_id=user_id)
+        .order_by("-completed_at")
+        .first()
+    )
+    if latest_attempt:
+        return UserResponse.objects.filter(attempt=latest_attempt)
+    return UserResponse.objects.filter(user_id=user_id)
+
+
 class RecommendationEngineService:
     """
     Education-level aware recommendation engine.
@@ -136,8 +147,7 @@ class RecommendationEngineService:
         )
 
         rows = (
-            UserResponse.objects.filter(
-                user_id=user_id,
+            _latest_user_responses(user_id).filter(
                 question__mapped_streams__stream_code__in=_get_stream_codes_for_level(
                     LEVEL_10TH
                 ),
@@ -325,8 +335,7 @@ class RecommendationEngineService:
             F("question__signal_strength") * 5.0, output_field=FloatField()
         )
         rows = (
-            UserResponse.objects.filter(
-                user_id=user_id,
+            _latest_user_responses(user_id).filter(
                 question__mapped_domains__deleted=False,
                 question__mapped_domains__is_active=True,
             )
@@ -344,7 +353,7 @@ class RecommendationEngineService:
         )
 
         # Total questions answered by this user (for coverage penalty)
-        total_answered = UserResponse.objects.filter(user_id=user_id).count()
+        total_answered = _latest_user_responses(user_id).count()
 
         domain_ranking = []
         for row in rows:

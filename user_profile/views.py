@@ -419,10 +419,10 @@ class StudentProfileViewSet(ModelViewSet):
     def get_queryset(self):
         return StudentProfile.objects.filter(user=self.request.user).select_related(
             "user__country", "user__states", "user__city", "education_level", "stream"
-        )
+        ).prefetch_related("domain_interests")
 
     def list(self, request, *args, **kwargs):
-        profile = StudentProfile.objects.filter(user=request.user).first()
+        profile = self.get_queryset().first()
         if not profile:
             return Response(
                 {"success": False, "message": "Profile not found"},
@@ -435,7 +435,7 @@ class StudentProfileViewSet(ModelViewSet):
         )
 
     def partial_update(self, request, *args, **kwargs):
-        profile = StudentProfile.objects.filter(user=request.user).first()
+        profile = self.get_queryset().first()
         if not profile:
             return Response(
                 {"success": False, "message": "Profile not found"},

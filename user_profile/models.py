@@ -88,6 +88,11 @@ class StudentProfile(models.Model):
         blank=True,
         related_name="student_profiles",
     )
+    domain_interests = models.ManyToManyField(
+        "assessment.AssessmentInterestCategory",
+        blank=True,
+        related_name="student_profiles",
+    )
     career_direction = models.JSONField(default=list, blank=True, null=True)
     education = models.JSONField(default=list, blank=True, null=True)
     skills = models.JSONField(default=list, null=True, blank=True)

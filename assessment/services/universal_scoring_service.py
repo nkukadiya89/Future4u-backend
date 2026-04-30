@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from assessment.models import UserResponse
+from assessment.models import AssessmentAttempt, UserResponse
 from assessment.services.domain_config import get_domain_config
 from domain.models import Domain
 
@@ -43,6 +43,17 @@ def _configured_dimensions(domain_cfg: dict) -> dict[str, float]:
     }
 
 
+def _latest_user_responses(user_id):
+    latest_attempt = (
+        AssessmentAttempt.objects.filter(user_id=user_id)
+        .order_by("-completed_at")
+        .first()
+    )
+    if latest_attempt:
+        return UserResponse.objects.filter(attempt=latest_attempt)
+    return UserResponse.objects.filter(user_id=user_id)
+
+
 def _collect_dimension_scores(
     *,
     domain_obj: Domain,
@@ -52,8 +63,7 @@ def _collect_dimension_scores(
     max_score_per_answer: float,
 ) -> tuple[dict[str, float], int]:
     responses = (
-        UserResponse.objects.filter(
-            user_id=user_id,
+        _latest_user_responses(user_id).filter(
             question__mapped_domains=domain_obj,
             question__is_active=True,
         )

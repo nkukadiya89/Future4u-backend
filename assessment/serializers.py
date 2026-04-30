@@ -1,6 +1,63 @@
 from rest_framework import serializers
+from django.db import transaction
 
-from assessment.models import Option, Question, UserResponse
+from common.serializers import BaseModelSerializer
+from assessment.models import AssessmentInterestCategory, Option, Question
+
+
+class AssessmentInterestCategorySerializer(BaseModelSerializer):
+    category_image = serializers.ImageField(
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
+
+    class Meta(BaseModelSerializer.Meta):
+        model = AssessmentInterestCategory
+        fields = BaseModelSerializer.Meta.fields + [
+            "category_code",
+            "category_name",
+            "category_image_url",
+            "category_image",
+            "sequence_order",
+            "is_active",
+        ]
+        extra_kwargs = {
+            "category_image_url": {
+                "required": False,
+                "allow_null": True,
+                "allow_blank": True,
+                "read_only": True,
+            },
+        }
+
+    @transaction.atomic
+    def create(self, validated_data):
+        category_image = validated_data.pop("category_image", None)
+        instance = super().create(validated_data)
+        if category_image:
+            instance.upload_category_image(category_image)
+        return instance
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        category_image = validated_data.pop("category_image", None)
+        instance = super().update(instance, validated_data)
+        if category_image:
+            instance.upload_category_image(category_image)
+        return instance
+
+
+class StudentInterestCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssessmentInterestCategory
+        fields = [
+            "id",
+            "category_code",
+            "category_name",
+            "category_image_url",
+            "sequence_order",
+        ]
 
 
 class OptionSerializer(serializers.ModelSerializer):
@@ -36,50 +93,6 @@ class QuestionSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserResponseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserResponse
-        fields = ["id", "user", "question", "selected_option", "score_value"]
-        read_only_fields = ["id", "user"]
-
-    def validate(self, attrs):
-        question = attrs.get("question")
-        selected_option = attrs.get("selected_option")
-        score_value = attrs.get("score_value")
-
-        if selected_option and question and selected_option.question_id != question.id:
-            raise serializers.ValidationError(
-                {"selected_option": "Selected option does not belong to this question."}
-            )
-
-        if (
-            selected_option
-            and score_value is not None
-            and score_value != selected_option.score_value
-        ):
-            raise serializers.ValidationError(
-                {"score_value": "score_value must match selected_option score."}
-            )
-
-        request = self.context.get("request") if hasattr(self, "context") else None
-        req_user = getattr(request, "user", None) if request else None
-        if req_user and question:
-            exists = UserResponse.objects.filter(user=req_user, question=question)
-            if self.instance:
-                exists = exists.exclude(pk=self.instance.pk)
-            if exists.exists():
-                raise serializers.ValidationError(
-                    {"question": "Response already exists for this user and question."}
-                )
-
-        return attrs
-
-    def create(self, validated_data):
-        request = self.context.get("request") if hasattr(self, "context") else None
-        user = getattr(request, "user", None) if request else None
-        return UserResponse.objects.create(user=user, **validated_data)
-
-
 class AssessmentSubmitItemSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()
     option_id = serializers.IntegerField()
@@ -87,3 +100,21 @@ class AssessmentSubmitItemSerializer(serializers.Serializer):
 
 class AssessmentSubmitSerializer(serializers.Serializer):
     responses = AssessmentSubmitItemSerializer(many=True)
+
+
+class StudentInterestSaveSerializer(serializers.Serializer):
+    domain_interests = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=AssessmentInterestCategory.objects.filter(
+            is_active=True,
+            deleted=False,
+        ),
+        allow_empty=False,
+    )
+
+    def validate_domain_interests(self, value):
+        if len(value) > 2:
+            raise serializers.ValidationError("Select up to 2 interest areas.")
+        if len({item.id for item in value}) != len(value):
+            raise serializers.ValidationError("Duplicate interest areas are not allowed.")
+        return value

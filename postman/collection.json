@@ -10060,7 +10060,7 @@
       "name": "assessment",
       "item": [
         {
-          "name": "questions grouped (GET)",
+          "name": "Student Interest Categories (GET)",
           "request": {
             "method": "GET",
             "header": [
@@ -10074,14 +10074,15 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/assessment/questions/",
+              "raw": "{{base_url}}/api/assessment/student/interest-categories/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "assessment",
-                "questions",
+                "student",
+                "interest-categories",
                 ""
               ]
             }
@@ -10089,7 +10090,37 @@
           "response": []
         },
         {
-          "name": "submit (POST)",
+          "name": "Student Selected Interests (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment/student/interests/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "assessment",
+                "student",
+                "interests",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Save Student Interests (POST)",
           "request": {
             "method": "POST",
             "header": [
@@ -10103,26 +10134,27 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/assessment/submit/",
+              "raw": "{{base_url}}/api/assessment/student/interests/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "assessment",
-                "submit",
+                "student",
+                "interests",
                 ""
               ]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"responses\": [\n    {\n      \"question_id\": 1,\n      \"option_id\": 1\n    }\n  ]\n}"
+              "raw": "{\n  \"domain_interests\": [1, 2]\n}"
             }
           },
           "response": []
         },
         {
-          "name": "summary (GET)",
+          "name": "Student Questions (GET)",
           "request": {
             "method": "GET",
             "header": [
@@ -10136,16 +10168,491 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/assessment/summary/",
+              "raw": "{{base_url}}/api/assessment/student/questions/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "assessment",
+                "student",
+                "questions",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Student Submit Responses (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment/student/submit/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "assessment",
+                "student",
+                "submit",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"responses\": [\n    {\n      \"question_id\": 1,\n      \"option_id\": 1\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Student Assessment Status (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment/student/status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "assessment",
+                "student",
+                "status",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Student Assessment Summary (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment/student/summary/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "assessment",
+                "student",
                 "summary",
                 ""
               ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Assessment Interest Category",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assessment-interest-categories/?search=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assessment-interest-categories",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assessment-interest-categories/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assessment-interest-categories",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "category_code",
+                  "value": "technology",
+                  "type": "text"
+                },
+                {
+                  "key": "category_name",
+                  "value": "Technology / Coding",
+                  "type": "text"
+                },
+                {
+                  "key": "sequence_order",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "category_image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assessment-interest-categories/{{assessment_interest_category_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assessment-interest-categories",
+                "{{assessment_interest_category_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assessment-interest-categories/{{assessment_interest_category_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assessment-interest-categories",
+                "{{assessment_interest_category_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "category_code",
+                  "value": "technology",
+                  "type": "text"
+                },
+                {
+                  "key": "category_name",
+                  "value": "Technology / Coding",
+                  "type": "text"
+                },
+                {
+                  "key": "sequence_order",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "category_image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial-update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assessment-interest-categories/{{assessment_interest_category_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assessment-interest-categories",
+                "{{assessment_interest_category_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "category_name",
+                  "value": "Technology / Coding",
+                  "type": "text"
+                },
+                {
+                  "key": "category_image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assessment-interest-categories/{{assessment_interest_category_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assessment-interest-categories",
+                "{{assessment_interest_category_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "archive-list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assessment-interest-categories/archive-list/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assessment-interest-categories",
+                "archive-list",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "archive (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assessment-interest-categories/{{assessment_interest_category_id}}/archive/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assessment-interest-categories",
+                "{{assessment_interest_category_id}}",
+                "archive",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "restore (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assessment-interest-categories/{{assessment_interest_category_id}}/restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assessment-interest-categories",
+                "{{assessment_interest_category_id}}",
+                "restore",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk-archive (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assessment-interest-categories/bulk-archive/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assessment-interest-categories",
+                "bulk-archive",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\"{{assessment_interest_category_id}}\"]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk-restore (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/assessment-interest-categories/bulk-restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "assessment-interest-categories",
+                "bulk-restore",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\"{{assessment_interest_category_id}}\"]\n}"
             }
           },
           "response": []

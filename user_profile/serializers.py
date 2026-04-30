@@ -1,6 +1,13 @@
 from rest_framework import serializers
 from django.utils.timezone import now
-from user_profile.models import BusinessSetting, ParentProfile, ProfessionalProfile, StudentProfile, UserProfile
+from assessment.models import AssessmentInterestCategory
+from user_profile.models import (
+    BusinessSetting,
+    ParentProfile,
+    ProfessionalProfile,
+    StudentProfile,
+    UserProfile,
+)
 
 
 def validate_json_choices(value, valid_set, field_name):
@@ -82,6 +89,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         source="stream.stream_name", read_only=True, default=None
     )
     language = serializers.SerializerMethodField()
+    domain_interests = serializers.SerializerMethodField()
     # Location fields from User model
     country = serializers.IntegerField(source="user.country.id", read_only=True, default=None)
     country_name = serializers.CharField(source="user.country.name", read_only=True, default=None)
@@ -94,6 +102,17 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         return [
             {"id": str(l.id), "name": l.name, "code": l.code}
             for l in obj.language.all()
+        ]
+
+    def get_domain_interests(self, obj):
+        return [
+            {
+                "id": item.id,
+                "category_code": item.category_code,
+                "category_name": item.category_name,
+                "category_image_url": item.category_image_url,
+            }
+            for item in obj.domain_interests.filter(is_active=True, deleted=False)
         ]
 
     class Meta:
@@ -117,6 +136,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             "stream",
             "stream_code",
             "stream_name",
+            "domain_interests",
             "career_direction",
             "education",
             "skills",
@@ -146,6 +166,14 @@ class StudentProfileUpsertSerializer(serializers.ModelSerializer):
         ).Language.objects.filter(is_active=True, deleted=False),
         required=False,
     )
+    domain_interests = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=AssessmentInterestCategory.objects.filter(
+            is_active=True,
+            deleted=False,
+        ),
+        required=False,
+    )
 
     class Meta:
         model = StudentProfile
@@ -155,6 +183,7 @@ class StudentProfileUpsertSerializer(serializers.ModelSerializer):
             "medium",
             "education_level",
             "stream",
+            "domain_interests",
             "career_direction",
             "education",
             "skills",
@@ -169,19 +198,32 @@ class StudentProfileUpsertSerializer(serializers.ModelSerializer):
             "portfolio",
         ]
 
+    def validate_domain_interests(self, value):
+        if len(value) > 2:
+            raise serializers.ValidationError("Select up to 2 interest areas.")
+        if len({item.id for item in value}) != len(value):
+            raise serializers.ValidationError("Duplicate interest areas are not allowed.")
+        return value
+
     def update(self, instance, validated_data):
         language = validated_data.pop("language", None)
+        domain_interests = validated_data.pop("domain_interests", None)
         instance.updated_at = now()
         instance = super().update(instance, validated_data)
         if language is not None:
             instance.language.set(language)
+        if domain_interests is not None:
+            instance.domain_interests.set(domain_interests)
         return instance
 
     def create(self, validated_data):
         language = validated_data.pop("language", None)
+        domain_interests = validated_data.pop("domain_interests", None)
         instance = super().create(validated_data)
         if language is not None:
             instance.language.set(language)
+        if domain_interests is not None:
+            instance.domain_interests.set(domain_interests)
         return instance
 
 
