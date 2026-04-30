@@ -68,6 +68,9 @@ class Command(BaseCommand):
         parser.add_argument(
             "--subscription", type=bool, help="Subscription plans data to be seeded"
         )
+        parser.add_argument(
+            "--skill_category", type=bool, help="Skill Category and Assessment models data to be seeded"
+        )
 
     def handle(self, *args, **kwargs):
         self.stdout.write("Initialise..")
@@ -117,6 +120,10 @@ class Command(BaseCommand):
             self.load_assessment_questions()
             return
 
+        if kwargs["skill_category"]:
+            self.load_skill_categories()
+            return
+
         # If no specific flags, run all initialization
         if (
             kwargs["country"] is None
@@ -129,6 +136,7 @@ class Command(BaseCommand):
             and kwargs["groups"] is None
             and kwargs["user"] is None
             and kwargs["subscription"] is None
+            and kwargs["skill_category"] is None
         ):
             self.load_business_category()
             admin_user = self.create_super_user()
@@ -725,7 +733,8 @@ class Command(BaseCommand):
                         "updated_by": created_by_user,
                     }
                 )
-                categories.append((category, row.get("category_image_url", "").strip()))
+                image_url = row.get("category_image_url") or ""
+                categories.append((category, image_url.strip()))
 
         # Step 2: Upload images
         for category, image_filename in categories:
@@ -769,7 +778,159 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(f"  No image filename provided or already a URL")
 
+        # Load assessment interest values and goals
+        self.load_assessment_interest_values(admin_user)
+        self.load_assessment_goals(admin_user)
+
         self.stdout.write("Skill Category data uploaded.")
+
+    def load_assessment_interest_values(self, admin_user=None):
+        self.stdout.write("Loading Assessment Interest Values...")
+        from skill_category.models import AssessmentInterestValue
+
+        created_by_user = admin_user or User.objects.filter(is_superuser=True).first()
+        file_path = path.join(
+            settings.BASE_DIR,
+            "core",
+            "management",
+            "source",
+            "assessment_interest_value_master_sample.csv",
+        )
+
+        # Step 1: Create or update records
+        with open(file_path, "r", encoding="utf-8") as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=",")
+            values = []
+            for row in reader:
+                # Get or create the value (handle existing records)
+                value, created = AssessmentInterestValue.objects.get_or_create(
+                    category_name=row["category_name"],
+                    defaults={
+                        "category_image_url": "",
+                        "created_by": created_by_user,
+                        "updated_by": created_by_user,
+                    }
+                )
+                image_url = row.get("category_image_url") or ""
+                values.append((value, image_url.strip()))
+
+        # Step 2: Upload images
+        for value, image_filename in values:
+            self.stdout.write(f"  Processing {value.category_name}, image: {image_filename}")
+            if image_filename and not image_filename.startswith("http"):
+                # It's a local file path
+                local_image_path = path.join(
+                    settings.BASE_DIR,
+                    "core",
+                    "management",
+                    "source",
+                    "images",
+                    "assessment_interest_value",
+                    image_filename,
+                )
+                self.stdout.write(f"  Looking for image at: {local_image_path}")
+                if path.exists(local_image_path):
+                    try:
+                        with open(local_image_path, "rb") as f:
+                            from django.core.files.uploadedfile import SimpleUploadedFile
+                            file_content = f.read()
+                            uploaded_file = SimpleUploadedFile(
+                                name=image_filename,
+                                content=file_content
+                            )
+                        self.stdout.write(f"  Calling upload_category_image...")
+                        value.upload_category_image(uploaded_file)
+                        self.stdout.write(
+                            self.style.SUCCESS(f"  Uploaded image for {value.category_name}: {value.category_image_url}")
+                        )
+                    except Exception as e:
+                        self.stdout.write(
+                            self.style.ERROR(f"  Failed to upload image for {value.category_name}: {str(e)}")
+                        )
+                        import traceback
+                        self.stdout.write(traceback.format_exc())
+                else:
+                    self.stdout.write(
+                        self.style.ERROR(f"  Image file not found: {local_image_path}")
+                    )
+            else:
+                self.stdout.write(f"  No image filename provided or already a URL")
+
+        self.stdout.write("Assessment Interest Values data uploaded.")
+
+    def load_assessment_goals(self, admin_user=None):
+        self.stdout.write("Loading Assessment Goals...")
+        from skill_category.models import AssessmentGoal
+
+        created_by_user = admin_user or User.objects.filter(is_superuser=True).first()
+        file_path = path.join(
+            settings.BASE_DIR,
+            "core",
+            "management",
+            "source",
+            "assessment_goal_master_sample.csv",
+        )
+
+        # Step 1: Create or update records
+        with open(file_path, "r", encoding="utf-8") as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=",")
+            goals = []
+            for row in reader:
+                # Get or create the goal (handle existing records)
+                goal, created = AssessmentGoal.objects.get_or_create(
+                    name=row["name"],
+                    defaults={
+                        "image_url": "",
+                        "created_by": created_by_user,
+                        "updated_by": created_by_user,
+                    }
+                )
+                image_url = row.get("image_url") or ""
+                goals.append((goal, image_url.strip()))
+
+        # Step 2: Upload images
+        for goal, image_filename in goals:
+            self.stdout.write(f"  Processing {goal.name}, image: {image_filename}")
+            if image_filename and not image_filename.startswith("http"):
+                # It's a local file path
+                local_image_path = path.join(
+                    settings.BASE_DIR,
+                    "core",
+                    "management",
+                    "source",
+                    "images",
+                    "assessment_goal",
+                    image_filename,
+                )
+                self.stdout.write(f"  Looking for image at: {local_image_path}")
+                if path.exists(local_image_path):
+                    try:
+                        with open(local_image_path, "rb") as f:
+                            from django.core.files.uploadedfile import SimpleUploadedFile
+                            file_content = f.read()
+                            uploaded_file = SimpleUploadedFile(
+                                name=image_filename,
+                                content=file_content
+                            )
+                        self.stdout.write(f"  Calling upload_image...")
+                        goal.upload_image(uploaded_file)
+                        self.stdout.write(
+                            self.style.SUCCESS(f"  Uploaded image for {goal.name}: {goal.image_url}")
+                        )
+                    except Exception as e:
+                        self.stdout.write(
+                            self.style.ERROR(f"  Failed to upload image for {goal.name}: {str(e)}")
+                        )
+                        import traceback
+                        self.stdout.write(traceback.format_exc())
+                else:
+                    self.stdout.write(
+                        self.style.ERROR(f"  Image file not found: {local_image_path}")
+                    )
+            else:
+                self.stdout.write(f"  No image filename provided or already a URL")
+
+        self.stdout.write("Assessment Goals data uploaded.")
 
     def load_careers(self):
         self.stdout.write("Loading Careers...")

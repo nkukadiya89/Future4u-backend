@@ -1,0 +1,404 @@
+{
+  "name": "Skill Category Master",
+  "item": [
+    {
+      "name": "Skill Categories",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/skill-categories/?search=&is_active=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "skill-categories", ""],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "is_active", "value": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/skill-categories/{{skill_category_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "skill-categories", "{{skill_category_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/skill-categories/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "skill-categories", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_name\": \"Technology\",\n  \"category_image\": null\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/skill-categories/{{skill_category_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "skill-categories", "{{skill_category_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_name\": \"Technology Updated\",\n  \"category_image\": null\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/skill-categories/{{skill_category_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "skill-categories", "{{skill_category_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_name\": \"Technology\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/skill-categories/{{skill_category_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "skill-categories", "{{skill_category_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "dropdown (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/skill-categories/dropdown/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "skill-categories", "dropdown", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Assessment Interest Values",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-interest-values/?search=&is_active=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessment-interest-values", ""],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "is_active", "value": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-interest-values/{{assessment_interest_value_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessment-interest-values", "{{assessment_interest_value_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-interest-values/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessment-interest-values", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_name\": \"Technology\",\n  \"category_image\": null\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-interest-values/{{assessment_interest_value_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessment-interest-values", "{{assessment_interest_value_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_name\": \"Technology Updated\",\n  \"category_image\": null\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-interest-values/{{assessment_interest_value_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessment-interest-values", "{{assessment_interest_value_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_name\": \"Technology\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-interest-values/{{assessment_interest_value_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessment-interest-values", "{{assessment_interest_value_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "dropdown (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-interest-values/dropdown/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessment-interest-values", "dropdown", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Assessment Goals",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-goals/?search=&is_active=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessment-goals", ""],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "is_active", "value": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-goals/{{assessment_goal_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessment-goals", "{{assessment_goal_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-goals/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessment-goals", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Financial Stability\",\n  \"image\": null\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-goals/{{assessment_goal_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessment-goals", "{{assessment_goal_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Financial Stability Updated\",\n  \"image\": null\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-goals/{{assessment_goal_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessment-goals", "{{assessment_goal_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Financial Stability\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-goals/{{assessment_goal_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessment-goals", "{{assessment_goal_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "dropdown (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-goals/dropdown/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessment-goals", "dropdown", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
