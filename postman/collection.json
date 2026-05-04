@@ -14199,6 +14199,92 @@
           }
         }
       ]
+    },
+    {
+      "name": "resume_builder",
+      "item": [
+        {
+          "name": "generate (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/resume/generate/?template=professional",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "resume",
+                "generate",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "template",
+                  "value": "professional",
+                  "description": "standard | professional (default: professional)"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": "",
+                  "description": "Optional profile photo (jpg/png)"
+                }
+              ]
+            },
+            "description": "Generates and downloads a PDF resume for the logged-in user. Accepts an optional photo file upload. Returns a PDF file."
+          },
+          "response": []
+        },
+        {
+          "name": "preview (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/resume/preview/?template=professional",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "resume",
+                "preview",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "template",
+                  "value": "professional",
+                  "description": "standard | professional (default: professional)"
+                }
+              ]
+            },
+            "description": "Returns the resume data as JSON for frontend preview or debugging. Does not call AI or generate a PDF."
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

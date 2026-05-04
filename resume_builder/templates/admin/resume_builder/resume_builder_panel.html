@@ -1,0 +1,47 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Resume Builder Panel{% endblock %}
+
+{% block content %}
+<h1>Resume Builder</h1>
+<p style="margin-bottom:16px;color:#666;">
+  Generate or preview PDF resumes for <strong>Student</strong> and <strong>Working Professional</strong> users.
+  Only active users with those roles are listed.
+</p>
+
+{% if users %}
+<table style="width:100%;border-collapse:collapse;">
+  <thead>
+    <tr style="background:#f8f8f8;border-bottom:2px solid #ddd;">
+      <th style="padding:10px;text-align:left;">ID</th>
+      <th style="padding:10px;text-align:left;">Name</th>
+      <th style="padding:10px;text-align:left;">Email</th>
+      <th style="padding:10px;text-align:left;">Role</th>
+      <th style="padding:10px;text-align:left;">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for u in users %}
+    <tr style="border-bottom:1px solid #eee;">
+      <td style="padding:8px;">{{ u.id }}</td>
+      <td style="padding:8px;">{{ u.name }}</td>
+      <td style="padding:8px;">{{ u.email }}</td>
+      <td style="padding:8px;">{{ u.role }}</td>
+      <td style="padding:8px;">
+        <a href="{{ u.gen_professional }}" target="_blank" style="margin-right:8px;padding:4px 10px;background:#417690;color:#fff;border-radius:3px;text-decoration:none;font-size:12px;">
+          ⬇ Professional PDF
+        </a>
+        <a href="{{ u.gen_standard }}" target="_blank" style="margin-right:8px;padding:4px 10px;background:#609060;color:#fff;border-radius:3px;text-decoration:none;font-size:12px;">
+          ⬇ Standard PDF
+        </a>
+        <a href="{{ u.preview }}" target="_blank" style="padding:4px 10px;background:#888;color:#fff;border-radius:3px;text-decoration:none;font-size:12px;">
+          👁 Preview JSON
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p style="color:#999;">No active Student or Professional users found.</p>
+{% endif %}
+{% endblock %}

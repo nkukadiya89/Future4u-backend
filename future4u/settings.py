@@ -105,7 +105,9 @@ INSTALLED_APPS = [
     "user_profile",
     "recommendation",
     "language_master",
+    "skill_category",
     "jobs",
+    "resume_builder",
 ]
 
 MIDDLEWARE = [
@@ -254,6 +256,11 @@ LOGGING = {
         "services": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "assessment": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "recommendation": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "resume_builder": {
             "handlers": ["console"],
             "level": "INFO",
             "propagate": False,
