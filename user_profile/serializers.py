@@ -11,11 +11,6 @@ from user_profile.models import (
     UserProfile,
 )
 
-# Derive valid sets directly from model TextChoices — single source of truth
-VALID_CONCERNS = {c.value for c in UserProfile.UserConcern}
-VALID_INTEREST_CATEGORIES = {c.value for c in UserProfile.InterestCategory}
-VALID_CAREER_VALUES = {c.value for c in UserProfile.CareerValue}
-VALID_PLATFORM_GOALS = {c.value for c in UserProfile.PlatformGoal}
 
 
 def validate_json_choices(value, valid_set, field_name):

@@ -10,7 +10,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ('education_level', '0004_educationlevel_next_steps'),
         ('language_master', '0001_initial'),
-        ('skill_category', '0001_initial'),
         ('user_profile', '0026_remove_studentprofile_valid_science_track_and_more'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]

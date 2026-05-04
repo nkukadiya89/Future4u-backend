@@ -24,11 +24,7 @@ class Migration(migrations.Migration):
             model_name='parentprofile',
             name='child_goal',
         ),
-        migrations.RemoveField(
-            model_name='parentprofile',
-            name='child_interests',
-        ),
-        migrations.RemoveField(
+                migrations.RemoveField(
             model_name='parentprofile',
             name='concerns',
         ),
