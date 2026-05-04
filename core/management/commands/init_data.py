@@ -80,7 +80,9 @@ class Command(BaseCommand):
 
         # Handle specific flags
         if kwargs["groups"]:
-            admin_user = User.objects.filter(is_superuser=True).first() or User.objects.first()
+            admin_user = (
+                User.objects.filter(is_superuser=True).first() or User.objects.first()
+            )
             self.create_custom_groups(admin_user=admin_user)
             return
 
@@ -293,10 +295,12 @@ class Command(BaseCommand):
 
         self.stdout.write("Custom Groups Created!.......")
         all_permissions = Permission.objects.all()
-        super_admin_group.permissions.set(all_permissions)    
+        super_admin_group.permissions.set(all_permissions)
 
         self.stdout.write(
-            self.style.SUCCESS(f"Super Admin Group Assigned Full Access({all_permissions.count()} Permissions)")
+            self.style.SUCCESS(
+                f"Super Admin Group Assigned Full Access({all_permissions.count()} Permissions)"
+            )
         )
 
         # Student Permissions - View own data, assessments, recommendations

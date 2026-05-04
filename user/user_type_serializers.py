@@ -36,7 +36,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         country_id = json_data.get("country")
         state_id = json_data.get("state")
         city_id = json_data.get("city")
-
+        print("JSON Data:", json_data)  # Debug print statement
         errors = {}
         if not email:
             errors["email"] = "This field is required."
@@ -76,7 +76,9 @@ class RegisterSerializer(serializers.ModelSerializer):
             errors["email"] = "An account with this email already exists."
 
         if not terms_accepted:
-            errors["terms_accepted"] = "You must accept the Terms & Conditions to create an account."
+            errors["terms_accepted"] = (
+                "You must accept the Terms & Conditions to create an account."
+            )
 
         country = Country.objects.filter(id=country_id).first()
         if not country:
@@ -90,7 +92,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         valid_user_types = [r.value for r in User.Role]
         if user_type not in valid_user_types:
-            errors["user_type"] = f"Invalid user_type. Must be one of: {', '.join(valid_user_types)}"
+            errors["user_type"] = (
+                f"Invalid user_type. Must be one of: {', '.join(valid_user_types)}"
+            )
 
         if errors:
             raise serializers.ValidationError(errors)

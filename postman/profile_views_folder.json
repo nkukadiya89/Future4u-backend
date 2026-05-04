@@ -1,0 +1,153 @@
+{
+  "name": "Profile Views",
+  "item": [
+    {
+      "name": "Profiles",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/profiles/?search=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profiles", ""],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "ordering", "value": "-created_at" },
+                { "key": "title", "value": "" },
+                { "key": "city", "value": "" },
+                { "key": "country", "value": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/profiles/{{profile_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profiles", "{{profile_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/profiles/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profiles", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Software Engineer\",\n  \"city\": \"San Francisco\",\n  \"country\": \"USA\",\n  \"user\": {{user_id}},\n  \"bio\": \"Experienced developer\",\n  \"is_active\": true\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/profiles/{{profile_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profiles", "{{profile_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior Software Engineer\",\n  \"city\": \"San Francisco\",\n  \"country\": \"USA\",\n  \"user\": {{user_id}},\n  \"bio\": \"Senior developer with 5+ years experience\",\n  \"is_active\": true\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/profiles/{{profile_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profiles", "{{profile_id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Lead Software Engineer\",\n  \"bio\": \"Technical leader with expertise in system design\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/profiles/{{profile_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profiles", "{{profile_id}}", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "access_token",
+      "value": "your_access_token_here"
+    },
+    {
+      "key": "profile_id",
+      "value": "1"
+    },
+    {
+      "key": "user_id",
+      "value": "1"
+    }
+  ]
+}

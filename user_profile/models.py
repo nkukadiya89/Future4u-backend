@@ -1,10 +1,13 @@
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils.timezone import now
-from django.contrib.postgres.fields import ArrayField
+
 from city.models import City
 from company.models import Company
 from country.models import Country
+from domain.models import Domain
+from skill.models import Skill
 from state.models import State
 
 
@@ -473,4 +476,154 @@ class CorporateProfile(models.Model):
 
     class Meta:
         db_table = "corporate_profile"
+        ordering = ["-created_at"]
+
+
+class InternshipProfile(models.Model):
+    profile = models.OneToOneField(
+        Profile, on_delete=models.CASCADE, related_name="internship"
+    )
+
+    domains = models.ManyToManyField(Domain, blank=True)
+
+    current_degree = models.CharField(max_length=150, null=True, blank=True)
+    college_name = models.CharField(max_length=200, null=True, blank=True)
+    graduation_year = models.IntegerField(null=True, blank=True)
+
+    experience_level = models.CharField(
+        max_length=50,
+        choices=(
+            ("fresher", "Fresher"),
+            ("beginner", "Beginner"),
+            ("intermediate", "Intermediate"),
+        ),
+        default="fresher",
+    )
+
+    available_from = models.DateField(null=True, blank=True)
+    duration_weeks = models.IntegerField(null=True, blank=True)
+
+    preferred_work_mode = models.CharField(max_length=50, null=True, blank=True)
+    expected_stipend = models.CharField(max_length=50, null=True, blank=True)
+
+    resume = models.FileField(upload_to="resumes/", null=True, blank=True)
+    portfolio_link = models.URLField(null=True, blank=True)
+    github_link = models.URLField(null=True, blank=True)
+
+    why_internship = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(default=now)
+
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="internship_profile_updated",
+    )
+    updated_at = models.DateTimeField(default=now)
+
+    deleted = models.BooleanField(default=False)
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="internship_profile_deleted",
+    )
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Internship<{self.id} - {self.profile.title}>"
+
+    class Meta:
+        db_table = "internship_profile"
+        ordering = ["-created_at"]
+
+
+class InternshipProfileSkill(models.Model):
+    LEVEL_CHOICES = (
+        ("beginner", "Beginner"),
+        ("intermediate", "Intermediate"),
+        ("advanced", "Advanced"),
+    )
+
+    internship_profile = models.ForeignKey(
+        InternshipProfile, on_delete=models.CASCADE, related_name="skill_map"
+    )
+    skill = models.ForeignKey(Skill, on_delete=models.CASCADE)
+
+    level = models.CharField(max_length=20, choices=LEVEL_CHOICES)
+    years_of_experience = models.FloatField(null=True, blank=True)
+    created_at = models.DateTimeField(default=now)
+
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="internship_skill_updated",
+    )
+    updated_at = models.DateTimeField(default=now)
+
+    deleted = models.BooleanField(default=False)
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="internship_skill_deleted",
+    )
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"InternshipSkill<{self.id} - {self.internship_profile.profile.title} - {self.skill.name}>"
+
+    class Meta:
+        db_table = "internship_profile_skill"
+        ordering = ["-created_at"]
+        unique_together = ("internship_profile", "skill")
+
+
+class InternshipApplication(models.Model):
+    STATUS_CHOICES = (
+        ("applied", "Applied"),
+        ("shortlisted", "Shortlisted"),
+        ("rejected", "Rejected"),
+        ("accepted", "Accepted"),
+    )
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    internship_profile = models.ForeignKey(InternshipProfile, on_delete=models.CASCADE)
+
+    company_name = models.CharField(max_length=200)
+    role = models.CharField(max_length=150)
+
+    cover_letter = models.TextField(null=True, blank=True)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="applied")
+
+    applied_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=now)
+
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="internship_application_updated",
+    )
+    updated_at = models.DateTimeField(default=now)
+
+    deleted = models.BooleanField(default=False)
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="internship_application_deleted",
+    )
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"InternshipApplication<{self.id} - {self.internship_profile.profile.title} - {self.user.username}>"
+
+    class Meta:
+        db_table = "internship_application"
         ordering = ["-created_at"]

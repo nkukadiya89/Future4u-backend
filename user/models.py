@@ -104,10 +104,10 @@ class User(AbstractUser):
         ordering = ["-id"]
 
     def save(self, *args, **kwargs):
-        skip_group_assignment = kwargs.pop('skip_group_assignment', False)
+        skip_group_assignment = kwargs.pop("skip_group_assignment", False)
         self.full_name = f"{self.first_name} {self.last_name}".strip()
         super().save(*args, **kwargs)
-        
+
         if not skip_group_assignment:
             self.assign_group_based_on_role()
 
@@ -122,14 +122,14 @@ class User(AbstractUser):
             self.Role.CORPORATE: "Corporate",
             self.Role.SUPER_ADMIN: "Super Admin",
         }
-        
+
         group_name = role_group_mapping.get(self.user_type)
         if group_name:
             try:
                 group = CustomGroup.objects.get(name=group_name)
-                self.groups.remove(*CustomGroup.objects.filter(
-                    name__in=role_group_mapping.values()
-                ))
+                self.groups.remove(
+                    *CustomGroup.objects.filter(name__in=role_group_mapping.values())
+                )
                 self.groups.add(group)
             except CustomGroup.DoesNotExist:
                 pass
@@ -143,7 +143,9 @@ class User(AbstractUser):
 
         file_extension = os.path.splitext(profile_image_file.name)[1].lower()
         if file_extension not in allowed_types:
-            raise ValueError(f"Invalid file type: {file_extension}. Allowed types are {', '.join(allowed_types)}.")
+            raise ValueError(
+                f"Invalid file type: {file_extension}. Allowed types are {', '.join(allowed_types)}."
+            )
 
         current_value = getattr(self, "profile_image", None)
 
