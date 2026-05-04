@@ -10153,6 +10153,219 @@
       ]
     },
     {
+      "name": "student_assessment",
+      "item": [
+        {
+          "name": "1. Start Assessment (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessments/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "assessments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Update Assessment Fields (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessments/{{assessment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "assessments",
+                "{{assessment_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": [1, 2, 3],\n  \"career_direction\": [\"study\"],\n  \"parent_support\": \"very_supportive\",\n  \"concerns\": [\"math\", \"science\"],\n  \"career_values\": [\"helping\", \"learning\"],\n  \"user_goals\": [\"engineering\", \"research\"]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Next Question (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/questions/next/?assessment_id={{assessment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "questions",
+                "next"
+              ],
+              "query": [
+                {
+                  "key": "assessment_id",
+                  "value": "{{assessment_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Save Answer (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/responses/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "responses"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assessment\": {{assessment_id}},\n  \"question\": {{question_id}},\n  \"selected_option\": {{option_id}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5. Complete Assessment (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessments/{{assessment_id}}/complete/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "assessments",
+                "{{assessment_id}}",
+                "complete"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Assessments (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessments/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "assessments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Assessment Details (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessments/{{assessment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "assessments",
+                "{{assessment_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "recommendations",
       "item": [
         {

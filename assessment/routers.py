@@ -7,6 +7,11 @@ from assessment.views import (
     QuestionViewSet,
     UserResponseViewSet,
 )
+from assessment.studentassessment import (
+    AssessmentResponseViewSet,
+    NextQuestionViewSet,
+    StudentAssessmentViewSet,
+)
 
 assessment_router = DefaultRouter()
 assessment_router.register(
@@ -29,4 +34,21 @@ assessment_router.register(
     "api/assessment/summary",
     ApiAssessmentSummaryViewSet,
     basename="api_assessment_summary",
+)
+
+# NEW: Student Assessment session endpoints (step-by-step flow)
+assessment_router.register(
+    "api/assessments",
+    StudentAssessmentViewSet,
+    basename="student_assessments",
+)
+assessment_router.register(
+    "api/questions/next",
+    NextQuestionViewSet,
+    basename="next_question",
+)
+assessment_router.register(
+    "api/responses",
+    AssessmentResponseViewSet,
+    basename="assessment_responses_stored",
 )

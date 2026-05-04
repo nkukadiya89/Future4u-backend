@@ -2,6 +2,8 @@ from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from common.models import BaseModule
+
 
 class Question(models.Model):
     class Dimension(models.TextChoices):
@@ -95,6 +97,13 @@ class Option(models.Model):
 
 
 class UserResponse(models.Model):
+    assessment = models.ForeignKey(
+        "assessment.StudentAssessment",
+        on_delete=models.CASCADE,
+        related_name="responses",
+        null=True,
+        blank=True,
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -119,10 +128,40 @@ class UserResponse(models.Model):
         ordering = ["id"]
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "question"],
-                name="assessment_user_question_unique",
+                fields=["assessment", "question"],
+                name="assessment_question_unique",
             ),
         ]
 
     def __str__(self):
         return f"user={self.user_id}, question={self.question_id}, score={self.score_value}"
+
+class StudentAssessment(BaseModule):
+    PARENT_CHOICES = (
+        ("very_supportive", "Very Supportive"),
+        ("somewhat_supportive", "SomeWhat Supportive"),
+        ("neutral", "Neutral"),
+        ("not_supportive", "Not Supportive"),
+        ("notsure", "Not Sure"),
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="student_assessments",
+    )
+    domain = models.ManyToManyField("domain.Domain",blank=True, null=True, related_name="assessments")
+    career_direction = models.JSONField(default=list, blank=True, null=True)
+    current_step = models.PositiveSmallIntegerField(default=1)
+    parent_support =  models.CharField(choices=PARENT_CHOICES, default="neutral", max_length=150)
+    concerns = models.JSONField(default=list, blank=True, null=True)
+    career_values = models.JSONField(default=list, blank=True, null=True)
+    user_goals = models.JSONField(default=list, blank=True, null=True)
+    is_completed = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "student_assessment"
+        ordering = ["-created_at"]
+    def __str__(self):
+        return f"Assessment {self.id} - User {self.user_id}"
+    
+
