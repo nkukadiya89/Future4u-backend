@@ -238,7 +238,7 @@ class BusinessSetting(models.Model):
         null=True,
         related_name="business_setting_created",
     )
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -246,7 +246,7 @@ class BusinessSetting(models.Model):
         null=True,
         related_name="business_setting_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
@@ -285,7 +285,7 @@ class Profile(models.Model):
         null=True,
         related_name="profile_created",
     )
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -293,7 +293,7 @@ class Profile(models.Model):
         null=True,
         related_name="profile_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
@@ -365,7 +365,7 @@ class ProfessionalProfile(models.Model):
         null=True,
         related_name="professional_profile_created",
     )
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -373,7 +373,7 @@ class ProfessionalProfile(models.Model):
         null=True,
         related_name="professional_profile_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
@@ -433,7 +433,7 @@ class ParentProfile(models.Model):
     # Values
     values = models.JSONField(default=list, blank=True)
 
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -441,7 +441,7 @@ class ParentProfile(models.Model):
         null=True,
         related_name="parent_profile_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
@@ -506,7 +506,7 @@ class CorporateProfile(models.Model):
     # Goals
     goals = models.JSONField(default=list, blank=True)
 
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -514,7 +514,7 @@ class CorporateProfile(models.Model):
         null=True,
         related_name="corporate_profile_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
@@ -566,7 +566,7 @@ class InternshipProfile(models.Model):
     github_link = models.URLField(null=True, blank=True)
 
     why_internship = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -574,7 +574,7 @@ class InternshipProfile(models.Model):
         null=True,
         related_name="internship_profile_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
@@ -608,7 +608,7 @@ class InternshipProfileSkill(models.Model):
 
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES)
     years_of_experience = models.FloatField(null=True, blank=True)
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -616,7 +616,7 @@ class InternshipProfileSkill(models.Model):
         null=True,
         related_name="internship_skill_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
@@ -656,7 +656,7 @@ class InternshipApplication(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="applied")
 
     applied_at = models.DateTimeField(auto_now_add=True)
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -664,7 +664,7 @@ class InternshipApplication(models.Model):
         null=True,
         related_name="internship_application_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(

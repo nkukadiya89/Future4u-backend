@@ -1,13 +1,13 @@
 import os
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager, Group
+from django.core.files.storage import default_storage
 from django.db import models
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
-from django.core.files.storage import default_storage
 
 from company.models import Company
-from django.conf import settings
 from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
 
 
@@ -233,8 +233,8 @@ class RoleFamily(models.Model):
         related_name="role_family_updated",
     )
     deleted = models.BooleanField(default=False)
-    created_at = models.DateTimeField(default=now)
-    updated_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     def __str__(self):
         return f"{self.id} - {self.family_name}"
@@ -268,8 +268,8 @@ class CustomGroup(Group):
         null=True,
         related_name="group_updated",
     )
-    created_at = models.DateTimeField(default=now)
-    updated_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
@@ -303,8 +303,8 @@ class EmailPhoneVerify(models.Model):
         null=True,
         related_name="email_phone_verify_updated",
     )
-    created_at = models.DateTimeField(default=now)
-    updated_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted = models.BooleanField(default=False)
 
     def __str__(self):

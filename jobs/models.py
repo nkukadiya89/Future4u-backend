@@ -57,14 +57,14 @@ class Job(models.Model):
 
     is_active = models.BooleanField(default=True)
 
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         related_name="job_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     # Added application_deadline field
     application_deadline = models.DateTimeField(null=True, blank=True)
@@ -130,14 +130,14 @@ class JobSkill(models.Model):
 
     is_mandatory = models.BooleanField(default=True)
 
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         related_name="jobskill_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -196,14 +196,14 @@ class JobPreference(models.Model):
 
     notice_period_days = models.IntegerField(null=True, blank=True)
 
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         related_name="jobpreference_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -266,14 +266,14 @@ class JobApplication(models.Model):
 
     applied_at = models.DateTimeField(auto_now_add=True)
 
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         related_name="jobapplication_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -320,14 +320,14 @@ class SavedJob(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
 
     saved_at = models.DateTimeField(auto_now_add=True)
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         related_name="savedjob_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
