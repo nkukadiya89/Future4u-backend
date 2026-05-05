@@ -71,7 +71,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='professionalprofile',
             name='skills',
-            field=models.ManyToManyField(blank=True, related_name='professional_profiles', to='skill_category.skillcategory'),
+            field=models.JSONField(blank=True, default=list, null=True),
         ),
         migrations.AddField(
             model_name='professionalprofile',
