@@ -35,7 +35,7 @@ class Subscription(models.Model):
         related_name="subcription_deleted",
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -83,7 +83,7 @@ class SubscriptionFeature(models.Model):
         related_name="subscription_feature_deleted",
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -123,7 +123,7 @@ class UserSubscription(models.Model):
         related_name="company_subcription_deleted",
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -163,7 +163,7 @@ class FeatureUsage(models.Model):
         related_name="feature_usage_deleted",
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -234,7 +234,7 @@ class PaymentSubscription(models.Model):
         related_name="payment_subcription_deleted",
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -293,7 +293,7 @@ class SubscriptionInvoice(models.Model):
         related_name="subcription_invoice_deleted",
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -341,7 +341,7 @@ class Discount(models.Model):
         related_name="discount_deleted",
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -392,7 +392,7 @@ class PromoCode(models.Model):
         related_name="promo_code_deleted",
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):

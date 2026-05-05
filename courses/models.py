@@ -37,8 +37,7 @@ class Course(models.Model):
         null=True,
         related_name="course_updated",
     )
-    created_at = models.DateTimeField(default=now)
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
@@ -95,7 +94,7 @@ class CourseEnrollment(models.Model):
         ),
         default="self",
     )
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -103,7 +102,7 @@ class CourseEnrollment(models.Model):
         null=True,
         related_name="course_enrollment_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
@@ -167,14 +166,14 @@ class CourseOutcome(models.Model):
     # optional: used in matching later
     improved_employability = models.BooleanField(default=False)
 
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         related_name="course_outcome_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
@@ -242,7 +241,7 @@ class CourseReview(models.Model):
         null=True,
         related_name="course_review_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
@@ -309,14 +308,14 @@ class ProfileCoursePreference(models.Model):
     preferred_skills = models.ManyToManyField("Skill", blank=True)
 
     goal = models.CharField(max_length=200, null=True, blank=True)
-    created_at = models.DateTimeField(default=now)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         related_name="profile_course_preference_updated",
     )
-    updated_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     deleted = models.BooleanField(default=False)
     deleted_by = models.ForeignKey(
