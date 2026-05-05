@@ -1,7 +1,9 @@
 from rest_framework import serializers
 
-from assessment.models import Option, Question, UserResponse
-
+from common.serializers import BaseModelSerializer
+from assessment.models import Option, Question, StudentAssessment, UserResponse
+from domain.models import Domain
+from user.serializers import UserQuickSerializer
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,10 +39,13 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 
 class UserResponseSerializer(serializers.ModelSerializer):
+    assessment = serializers.PrimaryKeyRelatedField(queryset=StudentAssessment.objects.all(), required=False)
+    user = UserQuickSerializer(read_only=True)
+
     class Meta:
         model = UserResponse
-        fields = ["id", "user", "question", "selected_option", "score_value"]
-        read_only_fields = ["id", "user"]
+        fields = ["id","assessment" ,"user", "question", "selected_option", "score_value"]
+        read_only_fields = ["id", "user", "score_value"]
 
     def validate(self, attrs):
         question = attrs.get("question")
@@ -87,3 +92,53 @@ class AssessmentSubmitItemSerializer(serializers.Serializer):
 
 class AssessmentSubmitSerializer(serializers.Serializer):
     responses = AssessmentSubmitItemSerializer(many=True)
+
+class StudentAssessmentSerializer(BaseModelSerializer):
+    domain = serializers.PrimaryKeyRelatedField(
+    many=True, 
+    queryset = Domain.objects.filter(is_active=True, deleted=False),
+    required = False,
+    )
+    user = UserQuickSerializer(read_only=True)
+    
+    class Meta:
+        model = StudentAssessment
+        fields = BaseModelSerializer.Meta.fields + [
+            "domain",
+            "career_direction",
+            "parent_support",
+            "concerns",
+            "career_values",
+            "current_step",
+            "user_goals",
+            "user",
+            "is_completed",
+        ]
+        read_only_fields = ("id", "user", "created_at", "updated_at")
+
+class StudentAssessmentCreateSerializer(BaseModelSerializer):
+    class Meta:
+        model = StudentAssessment
+        fields = [
+            "id",
+            "current_step",
+            "is_completed",
+        ]
+
+
+class NextQuestionSerializer(serializers.ModelSerializer):
+    options = OptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Question
+        fields = [
+            "id",
+            "question_text",
+            "dimension",
+            "options",
+        ]
+
+class AssessmentResponseSerializer(BaseModelSerializer):
+    assessment = serializers.IntegerField()
+    question = serializers.IntegerField()
+    selected_option = serializers.IntegerField()
