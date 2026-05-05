@@ -33,6 +33,7 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
             "parent_acceptance_level",
             "future_relevance_score",
             "description",
+            "domain_image",
             "is_active",
             "interest_weight",
             "aptitude_weight",

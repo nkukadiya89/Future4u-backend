@@ -38,9 +38,9 @@ assessment_router.register(
 
 # NEW: Student Assessment session endpoints (step-by-step flow)
 assessment_router.register(
-    "api/assessments",
+    "api/student/assessments",
     StudentAssessmentViewSet,
-    basename="student_assessments",
+    basename="student_assessment",
 )
 assessment_router.register(
     "api/questions/next",

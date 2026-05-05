@@ -1,0 +1,570 @@
+{
+  "name": "Courses API",
+  "item": [
+    {
+      "name": "Course Enrollments",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-enrollments/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-enrollments", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-enrollments/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-enrollments", "{{id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-enrollments/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-enrollments", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"course\": {{course_id}},\n  \"profile\": {{profile_id}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-enrollments/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-enrollments", "{{id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"course\": {{course_id}},\n  \"profile\": {{profile_id}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-enrollments/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-enrollments", "{{id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"course\": {{course_id}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-enrollments/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-enrollments", "{{id}}", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Course Outcomes",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-outcomes/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-outcomes", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-outcomes/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-outcomes", "{{id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-outcomes/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-outcomes", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enrollment\": {{enrollment_id}},\n  \"skills_gained\": [{{skill_id}}]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-outcomes/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-outcomes", "{{id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enrollment\": {{enrollment_id}},\n  \"skills_gained\": [{{skill_id}}]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-outcomes/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-outcomes", "{{id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skills_gained\": [{{skill_id}}]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-outcomes/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-outcomes", "{{id}}", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Course Preferences",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-preferences/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-preferences", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-preferences/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-preferences", "{{id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-preferences/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-preferences", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profile\": {{profile_id}},\n  \"preferred_domains\": [{{domain_id}}],\n  \"preferred_skills\": [{{skill_id}}]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-preferences/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-preferences", "{{id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profile\": {{profile_id}},\n  \"preferred_domains\": [{{domain_id}}],\n  \"preferred_skills\": [{{skill_id}}]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-preferences/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-preferences", "{{id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"preferred_domains\": [{{domain_id}}]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-preferences/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-preferences", "{{id}}", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Course Reviews",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-reviews/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-reviews", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-reviews/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-reviews", "{{id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-reviews/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-reviews", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"course\": {{course_id}},\n  \"user\": {{user_id}},\n  \"review\": \"Great course!\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-reviews/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-reviews", "{{id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"course\": {{course_id}},\n  \"user\": {{user_id}},\n  \"review\": \"Updated review\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-reviews/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-reviews", "{{id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"review\": \"Updated review\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/course-reviews/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "course-reviews", "{{id}}", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/courses/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "courses", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/courses/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "courses", "{{id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/courses/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "courses", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Course Title\",\n  \"provider_name\": \"Provider\",\n  \"price\": 0,\n  \"domains\": [{{domain_id}}],\n  \"skills\": [{{skill_id}}]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/courses/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "courses", "{{id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Course Title\",\n  \"provider_name\": \"Provider\",\n  \"price\": 0,\n  \"domains\": [{{domain_id}}],\n  \"skills\": [{{skill_id}}]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/courses/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "courses", "{{id}}", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Title\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/courses/{{id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "courses", "{{id}}", ""]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

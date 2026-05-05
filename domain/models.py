@@ -1,4 +1,5 @@
 import uuid
+import os
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -8,6 +9,7 @@ from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 
 from base.models import MasterBaseModel
+from utils.aws_file_upload import upload_file_to_bucket
 
 
 class Domain(MasterBaseModel):
@@ -31,6 +33,12 @@ class Domain(MasterBaseModel):
     parent_acceptance_level = models.PositiveSmallIntegerField()
     future_relevance_score = models.PositiveSmallIntegerField()
     description = models.TextField(blank=True)
+    domain_image = models.ImageField(
+        upload_to='domain_images/',
+        blank=True,
+        null=True,
+        help_text="Upload domain image/icon"
+    )
 
     # How much each assessment dimension contributes to this domain's fit score.
     # Nullable to allow "use default/fallback" behavior.
@@ -97,6 +105,38 @@ class Domain(MasterBaseModel):
         total = float(sum(provided))
         if abs(total - 1.0) > 0.001:
             raise ValidationError({f: "Weights must sum to 1.0." for f in fields})
+
+    def upload_domain_image(self, domain_image_file):
+        """Upload domain image to AWS S3 following the same pattern as User model"""
+        allowed_types = [".jpg", ".jpeg", ".png"]
+        
+        file_extension = os.path.splitext(domain_image_file.name)[1].lower()
+        if file_extension not in allowed_types:
+            raise ValueError(
+                f"Invalid file type: {file_extension}. Allowed types are {', '.join(allowed_types)}."
+            )
+        
+        current_value = getattr(self, "domain_image", None)
+        
+        try:
+            if current_value:
+                # Note: You may want to implement delete_uploaded_file for domain images too
+                pass
+            
+            aws_file_url, presigned_url = upload_file_to_bucket(
+                domain_image_file,
+                allowed_types,
+                "DomainImages/",
+                str(self.id),
+                None,
+            )
+            self.domain_image = aws_file_url
+            self.save(update_fields=["domain_image"])
+            return aws_file_url
+        except ValueError:
+            raise
+        except Exception as e:
+            raise Exception(f"Failed to upload domain image: {str(e)}")
 
 
 class DomainImportBatch(models.Model):

@@ -12,7 +12,8 @@ from assessment.serializers import (
     StudentAssessmentCreateSerializer,
     StudentAssessmentSerializer,
 )
-
+from utils.pagination import Pagination
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 class StudentAssessmentViewSet(viewsets.ModelViewSet):
     """
@@ -25,7 +26,9 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-
+    pagination_class = Pagination
+    serializer_class = StudentAssessmentSerializer
+    
     def get_queryset(self):
         return StudentAssessment.objects.filter(user=self.request.user)
 
@@ -33,12 +36,50 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
         if self.action == "create":
             return StudentAssessmentCreateSerializer
         return StudentAssessmentSerializer
+    
+    search_fields = [
+        "id",
+        "career_direction",
+        "parent_support",
+        "concerns",
+        "career_values",
+        "user_goals",
+        "is_completed",
+    ]
+    ordering_fields = [
+        "user",
+        "domain",
+        "career_direction",
+        "parent_support",
+        "concerns",
+        "career_values",
+        "user_goals",
+        "created_at",
+        "updated_at",
+        "is_completed",
+    ]
+
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        no_pagination = request.query_params.get("no_pagination")
+        if no_pagination:
+            serializer = self.get_serializer(queryset, many=True)
+            return Response({"success": True, "data": serializer.data})
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+        serializer = self.get_serializer(queryset, many=True)
+        return self.get_paginated_response({"success": True, "data": serializer.data})
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         """POST /api/assessments/start/ - Always creates a new assessment"""
         assessment = StudentAssessment.objects.create(
-            user=request.user, current_step=1, is_completed=False
+            user=request.user, is_completed=False
         )
         serializer = StudentAssessmentCreateSerializer(assessment)
         return Response(
@@ -56,7 +97,6 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
         """POST /api/assessments/{id}/complete/"""
         assessment = self.get_object()
         assessment.is_completed = True
-        assessment.current_step = 11
         assessment.save()
 
         return Response(
@@ -81,6 +121,7 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     serializer_class = NextQuestionSerializer
+    pagination_class = Pagination
 
     def list(self, request):
         assessment_id = request.query_params.get("assessment_id")

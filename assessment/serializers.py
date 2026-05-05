@@ -109,7 +109,6 @@ class StudentAssessmentSerializer(BaseModelSerializer):
             "parent_support",
             "concerns",
             "career_values",
-            "current_step",
             "user_goals",
             "user",
             "is_completed",
@@ -121,7 +120,6 @@ class StudentAssessmentCreateSerializer(BaseModelSerializer):
         model = StudentAssessment
         fields = [
             "id",
-            "current_step",
             "is_completed",
         ]
 
@@ -138,7 +136,7 @@ class NextQuestionSerializer(serializers.ModelSerializer):
             "options",
         ]
 
-class AssessmentResponseSerializer(BaseModelSerializer):
+class AssessmentResponseSerializer(serializers.Serializer):
     assessment = serializers.IntegerField()
     question = serializers.IntegerField()
     selected_option = serializers.IntegerField()
