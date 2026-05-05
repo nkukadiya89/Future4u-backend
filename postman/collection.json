@@ -10170,12 +10170,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/assessments/",
+              "raw": "{{base_url}}/api/student/assessments/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
+                "student",
                 "assessments"
               ]
             }
@@ -10197,19 +10198,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/assessments/{{assessment_id}}/",
+              "raw": "{{base_url}}/api/student/assessments/{{assessment_id}}/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
+                "student",
                 "assessments",
                 "{{assessment_id}}"
               ]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain\": [1, 2, 3],\n  \"career_direction\": [\"study\"],\n  \"parent_support\": \"very_supportive\",\n  \"concerns\": [\"math\", \"science\"],\n  \"career_values\": [\"helping\", \"learning\"],\n  \"user_goals\": [\"engineering\", \"research\"]\n}"
+              "raw": "{\n  \"domain\": [\"0aa9dced-e9b7-4538-9795-684479e7907d\"],\n  \"career_direction\": [\"study further\", \"Internship\"],\n  \"parent_support\": \"very_supportive\",\n  \"concerns\": [\"Job Security\", \"Wrong career choice\"],\n  \"career_values\": [\"High Salary\"],\n  \"user_goals\": [\"Career Clarity\"]\n}"
             }
           },
           "response": []
@@ -10294,12 +10296,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/assessments/{{assessment_id}}/complete/",
+              "raw": "{{base_url}}/api/student/assessments/{{assessment_id}}/complete/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
+                "student",
                 "assessments",
                 "{{assessment_id}}",
                 "complete"
@@ -10323,12 +10326,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/assessments/",
+              "raw": "{{base_url}}/api/student/assessments/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
+                "student",
                 "assessments"
               ]
             }
@@ -10350,12 +10354,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/assessments/{{assessment_id}}/",
+              "raw": "{{base_url}}/api/student/assessments/{{assessment_id}}/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
+                "student",
                 "assessments",
                 "{{assessment_id}}"
               ]
