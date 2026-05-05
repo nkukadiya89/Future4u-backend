@@ -62,34 +62,9 @@ class Migration(migrations.Migration):
                 "ordering": ["-created_at"],
             },
         ),
-        migrations.RunSQL(
-            sql="""
-            DO $$
-            BEGIN
-                IF EXISTS (
-                    SELECT 1
-                    FROM pg_constraint
-                    WHERE conname = 'assessment_user_question_unique'
-                ) THEN
-                    ALTER TABLE assessment_user_response
-                    DROP CONSTRAINT assessment_user_question_unique;
-                END IF;
-            END $$;
-            """,
-            reverse_sql="""
-            DO $$
-            BEGIN
-                IF NOT EXISTS (
-                    SELECT 1
-                    FROM pg_constraint
-                    WHERE conname = 'assessment_user_question_unique'
-                ) THEN
-                    ALTER TABLE assessment_user_response
-                    ADD CONSTRAINT assessment_user_question_unique
-                    UNIQUE (user, question);
-                END IF;
-            END $$;
-            """,
+        migrations.RemoveConstraint(
+            model_name="userresponse",
+            name="assessment_user_question_unique",
         ),
         migrations.AddField(
             model_name="studentassessment",

@@ -9,9 +9,4 @@ class Migration(migrations.Migration):
         ("assessment", "0008_studentassessment_and_more"),
     ]
 
-    operations = [
-        migrations.RemoveConstraint(
-            model_name="userresponse",
-            name="assessment_user_question_unique",
-        ),
-    ]
+    operations = []
