@@ -149,7 +149,7 @@ class StudentAssessment(BaseModule):
         on_delete=models.CASCADE,
         related_name="student_assessments",
     )
-    domain = models.ManyToManyField("domain.Domain",blank=True, null=True, related_name="assessments")
+    domain = models.ManyToManyField("domain.Domain", blank=True, related_name="assessments")
     career_direction = models.JSONField(default=list, blank=True, null=True)
     parent_support =  models.CharField(choices=PARENT_CHOICES, max_length=150)
     concerns = models.JSONField(default=list, blank=True, null=True)

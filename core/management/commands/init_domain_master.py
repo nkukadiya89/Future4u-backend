@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Load domains from CSV (defaults to core/management/source/domain_master_sample.csv). Supports affinity weight columns."
+    help = "Load domains from CSV (defaults to core/management/source/domain_master_sample.csv)."
 
     def add_arguments(self, parser):
         parser.add_argument(
