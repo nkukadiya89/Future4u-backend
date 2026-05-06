@@ -50,11 +50,6 @@ class DomainAdmin(BaseAdmin):
         "parent",
         "is_active",
         "deleted",
-        "interest_weight",
-        "aptitude_weight",
-        "personality_weight",
-        "work_style_weight",
-        "score_display",
         "created_at",
         "row_actions",
     )
@@ -81,15 +76,8 @@ class DomainAdmin(BaseAdmin):
                     "domain_name",
                     "domain_category",
                     "parent",
-                    "parent_acceptance_level",
-                    "future_relevance_score",
                     "description",
-                    (
-                        "interest_weight",
-                        "aptitude_weight",
-                        "personality_weight",
-                        "work_style_weight",
-                    ),
+                    "domain_image",
                     "is_active",
                 )
             },
@@ -102,10 +90,6 @@ class DomainAdmin(BaseAdmin):
             },
         ),
     )
-
-    @admin.display(description="Score", ordering="future_relevance_score")
-    def score_display(self, obj):
-        return obj.future_relevance_score
 
     @admin.display(description="Actions")
     def row_actions(self, obj):

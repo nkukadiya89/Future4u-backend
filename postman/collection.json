@@ -10621,7 +10621,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"parent_acceptance_level\": 2,\n  \"future_relevance_score\": 95,\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true,\n  \"interest_weight\": 0.35,\n  \"aptitude_weight\": 0.35,\n  \"personality_weight\": 0.15,\n  \"work_style_weight\": 0.15\n}"
+              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true\n}"
             }
           },
           "response": []
@@ -10654,7 +10654,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"parent_acceptance_level\": 2,\n  \"future_relevance_score\": 95,\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true,\n  \"interest_weight\": 0.35,\n  \"aptitude_weight\": 0.35,\n  \"personality_weight\": 0.15,\n  \"work_style_weight\": 0.15\n}"
+              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true\n}"
             }
           },
           "response": []
@@ -10687,7 +10687,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"parent_acceptance_level\": 2,\n  \"future_relevance_score\": 95,\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true,\n  \"interest_weight\": 0.35,\n  \"aptitude_weight\": 0.35,\n  \"personality_weight\": 0.15,\n  \"work_style_weight\": 0.15\n}"
+              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true\n}"
             }
           },
           "response": []
@@ -10936,7 +10936,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"rows\": [\n    {\n      \"domain_code\": \"bulk_a\",\n      \"domain_name\": \"Bulk A\",\n      \"parent_acceptance_level\": 3,\n      \"future_relevance_score\": 40,\n      \"description\": \"\",\n      \"is_active\": true\n    }\n  ]\n}"
+              "raw": "{\n  \"rows\": [\n    {\n      \"domain_code\": \"bulk_a\",\n      \"domain_name\": \"Bulk A\",\n      \"domain_category\": \"technology\",\n      \"description\": \"\",\n      \"is_active\": true\n    }\n  ]\n}"
             }
           },
           "response": []

@@ -1,83 +1,83 @@
-domain_code,domain_name,domain_category,parent_acceptance_level,future_relevance_score,description,is_active,interest_weight,aptitude_weight,personality_weight,work_style_weight
-mbbs_medicine,Medicine (MBBS/MD),healthcare,5,92,Doctor and physician career path including MBBS and postgraduate specialisations,1,0.40,0.35,0.15,0.10
-nursing,Nursing,healthcare,5,88,Registered nursing patient care and clinical nursing practice,1,0.40,0.25,0.25,0.10
-pharmacy,Pharmacy,healthcare,5,85,Retail and hospital pharmacy drug dispensing and pharmaceutical care,1,0.35,0.40,0.15,0.10
-physiotherapy,Physiotherapy & Rehab,healthcare,4,84,Physical rehabilitation sports injury and musculoskeletal therapy,1,0.40,0.30,0.20,0.10
-dentistry,Dentistry (BDS/MDS),healthcare,5,86,Dental surgery oral health and dental practice,1,0.35,0.40,0.15,0.10
-ayurveda_homeopathy,Ayurveda & Homeopathy,healthcare,4,72,Traditional Indian medicine BAMS BHMS and integrative health,1,0.40,0.30,0.20,0.10
-healthtech,Healthcare Technology,healthcare,4,88,Digital health medical technology and telemedicine,1,0.35,0.30,0.20,0.15
-med_devices,Medical Devices,healthcare,4,84,Medical device engineering and development,1,0.30,0.45,0.10,0.15
-civil_engineering,Civil Engineering,engineering,4,80,Construction infrastructure roads bridges and structural engineering,1,0.25,0.45,0.10,0.20
-mechanical_engineering,Mechanical Engineering,engineering,4,78,Machines manufacturing thermal systems and mechanical design,1,0.25,0.45,0.10,0.20
-electrical_engineering,Electrical Engineering,engineering,4,82,Power systems electrical circuits and electrical infrastructure,1,0.25,0.45,0.10,0.20
-chemical_engineering,Chemical Engineering,engineering,4,78,Chemical processes refining and process plant engineering,1,0.25,0.45,0.10,0.20
-manufacturing,Manufacturing & Industrial Engg,engineering,4,80,Industrial manufacturing and process engineering,1,0.25,0.40,0.15,0.20
-robotics,Robotics & Automation,engineering,3,88,Robotics automation and mechatronics,1,0.30,0.40,0.15,0.15
-ev_mobility,EV & Mobility,engineering,3,87,Electric vehicles and mobility technology,1,0.30,0.40,0.15,0.15
-renewable_energy,Renewable Energy,engineering,3,88,Solar wind and clean energy engineering,1,0.30,0.40,0.15,0.15
-construction_tech,Construction Technology,engineering,3,79,Construction technology and smart buildings,1,0.25,0.40,0.15,0.20
-ai_data,AI & Data Science,technology,2,95,Artificial intelligence machine learning and data science,1,0.35,0.35,0.15,0.15
-data_engineering,Data Engineering,technology,2,90,Building data pipelines and infrastructure,1,0.25,0.40,0.15,0.20
-cloud_computing,Cloud Computing,technology,2,92,Cloud platforms infrastructure and services,1,0.25,0.40,0.15,0.20
-devops,DevOps & Platform Engg,technology,2,88,Development operations CI/CD and platform engineering,1,0.25,0.40,0.15,0.20
-cybersecurity,Cybersecurity,technology,2,93,Information security ethical hacking and defense,1,0.30,0.40,0.15,0.15
-iot,IoT & Smart Systems,technology,2,86,Internet of things and connected devices,1,0.30,0.40,0.15,0.15
-blockchain,Blockchain & Web3,technology,2,72,Blockchain decentralized systems and Web3,1,0.30,0.40,0.15,0.15
-quantum,Quantum Computing,technology,3,82,Quantum computing and quantum information,1,0.25,0.50,0.10,0.15
-nanotech,Nanotechnology,technology,3,78,Nanoscale science and engineering,1,0.30,0.45,0.10,0.15
-ar_vr,AR/VR & Immersive Tech,technology,1,80,Augmented and virtual reality,1,0.35,0.35,0.15,0.15
-ca_accounting,CA & Accounting,business_finance,5,85,Chartered accountancy cost accounting and audit,1,0.30,0.40,0.15,0.15
-banking_finance,Banking & Finance,business_finance,5,84,Traditional banking financial services and investment banking,1,0.30,0.40,0.15,0.15
-fintech,Finance & FinTech,business_finance,4,88,Financial technology digital payments and investment platforms,1,0.35,0.35,0.15,0.15
-insurance_tech,Insurance & Risk,business_finance,3,79,Insurance technology and risk management,1,0.30,0.35,0.20,0.15
-business_management,Business Management,business_finance,3,82,Business administration and management,1,0.35,0.25,0.25,0.15
-supply_chain,Supply Chain & Operations,business_finance,3,85,Supply chain management and operations,1,0.25,0.35,0.20,0.20
-entrepreneurship,Entrepreneurship,business_finance,3,88,Startups business building and venture,1,0.40,0.25,0.20,0.15
-ecommerce,E-Commerce,business_finance,2,87,Online retail and e-commerce platforms,1,0.35,0.25,0.20,0.20
-upsc_civil_services,UPSC & Civil Services (IAS/IPS),government,5,82,Union Public Service Commission and Indian Administrative Service,1,0.35,0.35,0.20,0.10
-state_govt_services,State Government Services,government,5,78,State PSC exams and state administrative services,1,0.30,0.35,0.20,0.15
-banking_govt,Government Banking (IBPS/SBI),government,5,80,Public sector bank exams IBPS SBI PO and clerk,1,0.25,0.40,0.15,0.20
-defense_armed_forces,Defense & Armed Forces,government,5,80,Indian Army Navy Air Force and paramilitary services,1,0.30,0.35,0.25,0.10
-police_law_enforcement,Police & Law Enforcement,government,4,75,State police services and law enforcement careers,1,0.30,0.30,0.25,0.15
-teaching_school,School Teaching,government,5,72,Primary and secondary school teaching and education,1,0.40,0.25,0.25,0.10
-higher_education,Higher Education & Academia,education,4,75,University teaching research and academic careers,1,0.40,0.35,0.15,0.10
-edtech,Education Technology,education,2,83,Educational technology and e-learning platforms,1,0.40,0.25,0.20,0.15
-law_practice,Law & Legal Practice,law_policy,4,82,Litigation corporate law and legal practice,1,0.30,0.40,0.20,0.10
-legaltech,Legal Technology,law_policy,3,78,Legal technology and law practice innovation,1,0.30,0.35,0.20,0.15
-ai_ethics,AI Ethics & Policy,law_policy,2,80,AI ethics governance and technology policy,1,0.35,0.30,0.20,0.15
-biotech,Biotechnology,science_research,4,85,Biological research genomics and drug discovery,1,0.35,0.40,0.10,0.15
-pharma,Pharmaceuticals,science_research,4,83,Drug development and pharmaceutical industry,1,0.35,0.40,0.10,0.15
-space_tech,Aviation & Aerospace,science_research,4,85,Space technology aviation and aerospace,1,0.30,0.45,0.10,0.15
-pure_sciences,Pure Sciences (BSc/MSc),science_research,3,70,Physics chemistry mathematics and pure science research,1,0.35,0.45,0.10,0.10
-defense_tech,Defense Technology,science_research,3,82,Defense technology systems and research,1,0.30,0.45,0.10,0.15
-agriculture_farming,Agriculture & Farming,agriculture,3,72,Traditional farming crop science and agricultural practice,1,0.40,0.25,0.15,0.20
-agritech,AgriTech,agriculture,2,84,Agricultural technology precision farming and food systems,1,0.40,0.25,0.15,0.20
-veterinary,Veterinary Science,agriculture,4,78,Animal health veterinary medicine and livestock management,1,0.40,0.35,0.15,0.10
-horticulture,Horticulture & Forestry,agriculture,3,68,Horticulture floriculture and forest management,1,0.40,0.25,0.15,0.20
-foodtech,Food Technology,agriculture,3,81,Food science food processing and food technology,1,0.35,0.30,0.20,0.15
-fine_arts_design,Fine Arts & Design,creative_arts,1,65,Fine arts painting sculpture and visual arts,1,0.50,0.15,0.25,0.10
-architecture,Architecture,creative_arts,3,78,Building design urban planning and architectural practice,1,0.40,0.35,0.15,0.10
-fashion_design,Fashion & Textile Design,creative_arts,1,68,Fashion design textile and apparel industry,1,0.50,0.15,0.25,0.10
-fashiontech,Fashion Technology,creative_arts,1,72,Fashion technology and design innovation,1,0.45,0.20,0.20,0.15
-performing_arts,Performing Arts (Music/Dance/Theatre),creative_arts,1,58,Classical and contemporary music dance and theatre,1,0.55,0.10,0.25,0.10
-journalism_media,Journalism & Mass Media,creative_arts,2,72,Print digital and broadcast journalism and media,1,0.45,0.20,0.25,0.10
-creator_economy,Content Creation & Media,creative_arts,1,80,Content creation social media and the creator economy,1,0.45,0.15,0.25,0.15
-digital_marketing,Digital Marketing,creative_arts,1,85,Online marketing SEO social media and growth,1,0.40,0.20,0.25,0.15
-marketing,Marketing & Brand Management,creative_arts,2,83,Marketing strategy and brand management,1,0.40,0.20,0.25,0.15
-gaming,Gaming & Game Development,creative_arts,1,78,Game development and gaming industry,1,0.40,0.30,0.15,0.15
-professional_sports,Professional Sports & Athletics,sports_physical,1,55,Competitive sports and professional athletics career,1,0.50,0.20,0.20,0.10
-sports_coaching,Sports Coaching & Training,sports_physical,2,65,Sports coaching fitness training and athletic development,1,0.45,0.20,0.25,0.10
-sports_tech,Sports Science & Technology,sports_physical,2,72,Sports science performance analysis and sports technology,1,0.40,0.25,0.20,0.15
-physical_education,Physical Education,sports_physical,3,62,School and college physical education and fitness instruction,1,0.40,0.20,0.25,0.15
-social_work,Social Work & NGO,social_welfare,2,62,Social work community development and NGO careers,1,0.45,0.15,0.30,0.10
-psychology_counselling,Psychology & Counselling,social_welfare,2,78,Clinical psychology counselling and mental health practice,1,0.40,0.20,0.30,0.10
-mental_health,Mental Health & Wellness,social_welfare,1,82,Mental health platforms wellness and psychology services,1,0.40,0.20,0.25,0.15
-hrtech,HR & People Management,social_welfare,3,80,Human resources technology and people management,1,0.35,0.25,0.25,0.15
-hotel_management,Hotel Management & Hospitality,hospitality_travel,3,72,Hotel operations food and beverage and hospitality management,1,0.40,0.20,0.25,0.15
-traveltech,Travel & Tourism Technology,hospitality_travel,2,75,Travel technology and hospitality platforms,1,0.40,0.20,0.25,0.15
-electrician_trades,Electrician & Electrical Trades,vocational,3,70,Electrical wiring installation and maintenance trades,1,0.30,0.40,0.10,0.20
-plumbing_civil_trades,Plumbing & Civil Trades,vocational,3,65,Plumbing civil construction and building trades,1,0.25,0.40,0.10,0.25
-it_hardware_support,IT Hardware & Support,vocational,3,72,Computer hardware networking and IT support trades,1,0.30,0.40,0.15,0.15
-beauty_wellness,Beauty & Wellness,vocational,2,62,Beauty therapy cosmetology and wellness services,1,0.45,0.20,0.20,0.15
-climate_tech,Climate Tech & Sustainability,climate_environment,2,86,Climate change technology and sustainability solutions,1,0.40,0.30,0.15,0.15
-urban_tech,Smart Cities & Urban Planning,climate_environment,3,80,Urban technology smart city solutions and urban planning,1,0.30,0.35,0.20,0.15
+domain_code,domain_name,domain_category,description,is_active
+mbbs_medicine,Medicine (MBBS/MD),healthcare,Doctor and physician career path including MBBS and postgraduate specialisations,1
+nursing,Nursing,healthcare,Registered nursing patient care and clinical nursing practice,1
+pharmacy,Pharmacy,healthcare,Retail and hospital pharmacy drug dispensing and pharmaceutical care,1
+physiotherapy,Physiotherapy & Rehab,healthcare,Physical rehabilitation sports injury and musculoskeletal therapy,1
+dentistry,Dentistry (BDS/MDS),healthcare,Dental surgery oral health and dental practice,1
+ayurveda_homeopathy,Ayurveda & Homeopathy,healthcare,Traditional Indian medicine BAMS BHMS and integrative health,1
+healthtech,Healthcare Technology,healthcare,Digital health medical technology and telemedicine,1
+med_devices,Medical Devices,healthcare,Medical device engineering and development,1
+civil_engineering,Civil Engineering,engineering,Construction infrastructure roads bridges and structural engineering,1
+mechanical_engineering,Mechanical Engineering,engineering,Machines manufacturing thermal systems and mechanical design,1
+electrical_engineering,Electrical Engineering,engineering,Power systems electrical circuits and electrical infrastructure,1
+chemical_engineering,Chemical Engineering,engineering,Chemical processes refining and process plant engineering,1
+manufacturing,Manufacturing & Industrial Engg,engineering,Industrial manufacturing and process engineering,1
+robotics,Robotics & Automation,engineering,Robotics automation and mechatronics,1
+ev_mobility,EV & Mobility,engineering,Electric vehicles and mobility technology,1
+renewable_energy,Renewable Energy,engineering,Solar wind and clean energy engineering,1
+construction_tech,Construction Technology,engineering,Construction technology and smart buildings,1
+ai_data,AI & Data Science,technology,Artificial intelligence machine learning and data science,1
+data_engineering,Data Engineering,technology,Building data pipelines and infrastructure,1
+cloud_computing,Cloud Computing,technology,Cloud platforms infrastructure and services,1
+devops,DevOps & Platform Engg,technology,Development operations CI/CD and platform engineering,1
+cybersecurity,Cybersecurity,technology,Information security ethical hacking and defense,1
+iot,IoT & Smart Systems,technology,Internet of things and connected devices,1
+blockchain,Blockchain & Web3,technology,Blockchain decentralized systems and Web3,1
+quantum,Quantum Computing,technology,Quantum computing and quantum information,1
+nanotech,Nanotechnology,technology,Nanoscale science and engineering,1
+ar_vr,AR/VR & Immersive Tech,technology,Augmented and virtual reality,1
+ca_accounting,CA & Accounting,business_finance,Chartered accountancy cost accounting and audit,1
+banking_finance,Banking & Finance,business_finance,Traditional banking financial services and investment banking,1
+fintech,Finance & FinTech,business_finance,Financial technology digital payments and investment platforms,1
+insurance_tech,Insurance & Risk,business_finance,Insurance technology and risk management,1
+business_management,Business Management,business_finance,Business administration and management,1
+supply_chain,Supply Chain & Operations,business_finance,Supply chain management and operations,1
+entrepreneurship,Entrepreneurship,business_finance,Startups business building and venture,1
+ecommerce,E-Commerce,business_finance,Online retail and e-commerce platforms,1
+upsc_civil_services,UPSC & Civil Services (IAS/IPS),government,Union Public Service Commission and Indian Administrative Service,1
+state_govt_services,State Government Services,government,State PSC exams and state administrative services,1
+banking_govt,Government Banking (IBPS/SBI),government,Public sector bank exams IBPS SBI PO and clerk,1
+defense_armed_forces,Defense & Armed Forces,government,Indian Army Navy Air Force and paramilitary services,1
+police_law_enforcement,Police & Law Enforcement,government,State police services and law enforcement careers,1
+teaching_school,School Teaching,government,Primary and secondary school teaching and education,1
+higher_education,Higher Education & Academia,education,University teaching research and academic careers,1
+edtech,Education Technology,education,Educational technology and e-learning platforms,1
+law_practice,Law & Legal Practice,law_policy,Litigation corporate law and legal practice,1
+legaltech,Legal Technology,law_policy,Legal technology and law practice innovation,1
+ai_ethics,AI Ethics & Policy,law_policy,AI ethics governance and technology policy,1
+biotech,Biotechnology,science_research,Biological research genomics and drug discovery,1
+pharma,Pharmaceuticals,science_research,Drug development and pharmaceutical industry,1
+space_tech,Aviation & Aerospace,science_research,Space technology aviation and aerospace,1
+pure_sciences,Pure Sciences (BSc/MSc),science_research,Physics chemistry mathematics and pure science research,1
+defense_tech,Defense Technology,science_research,Defense technology systems and research,1
+agriculture_farming,Agriculture & Farming,agriculture,Traditional farming crop science and agricultural practice,1
+agritech,AgriTech,agriculture,Agricultural technology precision farming and food systems,1
+veterinary,Veterinary Science,agriculture,Animal health veterinary medicine and livestock management,1
+horticulture,Horticulture & Forestry,agriculture,Horticulture floriculture and forest management,1
+foodtech,Food Technology,agriculture,Food science food processing and food technology,1
+fine_arts_design,Fine Arts & Design,creative_arts,Fine arts painting sculpture and visual arts,1
+architecture,Architecture,creative_arts,Building design urban planning and architectural practice,1
+fashion_design,Fashion & Textile Design,creative_arts,Fashion design textile and apparel industry,1
+fashiontech,Fashion Technology,creative_arts,Fashion technology and design innovation,1
+performing_arts,Performing Arts (Music/Dance/Theatre),creative_arts,Classical and contemporary music dance and theatre,1
+journalism_media,Journalism & Mass Media,creative_arts,Print digital and broadcast journalism and media,1
+creator_economy,Content Creation & Media,creative_arts,Content creation social media and the creator economy,1
+digital_marketing,Digital Marketing,creative_arts,Online marketing SEO social media and growth,1
+marketing,Marketing & Brand Management,creative_arts,Marketing strategy and brand management,1
+gaming,Gaming & Game Development,creative_arts,Game development and gaming industry,1
+professional_sports,Professional Sports & Athletics,sports_physical,Competitive sports and professional athletics career,1
+sports_coaching,Sports Coaching & Training,sports_physical,Sports coaching fitness training and athletic development,1
+sports_tech,Sports Science & Technology,sports_physical,Sports science performance analysis and sports technology,1
+physical_education,Physical Education,sports_physical,School and college physical education and fitness instruction,1
+social_work,Social Work & NGO,social_welfare,Social work community development and NGO careers,1
+psychology_counselling,Psychology & Counselling,social_welfare,Clinical psychology counselling and mental health practice,1
+mental_health,Mental Health & Wellness,social_welfare,Mental health platforms wellness and psychology services,1
+hrtech,HR & People Management,social_welfare,Human resources technology and people management,1
+hotel_management,Hotel Management & Hospitality,hospitality_travel,Hotel operations food and beverage and hospitality management,1
+traveltech,Travel & Tourism Technology,hospitality_travel,Travel technology and hospitality platforms,1
+electrician_trades,Electrician & Electrical Trades,vocational,Electrical wiring installation and maintenance trades,1
+plumbing_civil_trades,Plumbing & Civil Trades,vocational,Plumbing civil construction and building trades,1
+it_hardware_support,IT Hardware & Support,vocational,Computer hardware networking and IT support trades,1
+beauty_wellness,Beauty & Wellness,vocational,Beauty therapy cosmetology and wellness services,1
+climate_tech,Climate Tech & Sustainability,climate_environment,Climate change technology and sustainability solutions,1
+urban_tech,Smart Cities & Urban Planning,climate_environment,Urban technology smart city solutions and urban planning,1

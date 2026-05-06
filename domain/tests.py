@@ -27,9 +27,7 @@ class DomainAPITests(TestCase):
     def _payload(self, code=None, name=None, **extra):
         return {
             "domain_code": code or f"d_{uuid.uuid4().hex[:8]}",
-            "domain_name": name or "Test Domain",
-            "parent_acceptance_level": 3,
-            "future_relevance_score": 50,
+            "domain_name": "Test Domain" if name is None else name,
             "description": "desc",
             "is_active": True,
             **extra,
@@ -62,17 +60,11 @@ class DomainAPITests(TestCase):
         r = self.client.post(url, self._payload(code="abc"), format="json")
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_validation_ranges(self):
+    def test_domain_name_required(self):
         url = reverse("domain-list")
         r = self.client.post(
             url,
-            self._payload(parent_acceptance_level=0),
-            format="json",
-        )
-        self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
-        r = self.client.post(
-            url,
-            self._payload(future_relevance_score=101),
+            self._payload(name=""),
             format="json",
         )
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
@@ -168,9 +160,9 @@ class DomainAPITests(TestCase):
 
     def test_bulk_upload_csv_file(self):
         csv_body = (
-            "domain_code,domain_name,parent,acceptance_level,score,description\n"
-            "csv_up_1,One,,2,40,x\n"
-            "csv_up_1,Duplicate,,2,40,y\n"
+            "domain_code,domain_name,domain_category,parent,description,is_active\n"
+            "csv_up_1,One,test,,x,1\n"
+            "csv_up_1,Duplicate,test,,y,1\n"
         )
         f = SimpleUploadedFile(
             "d.csv", csv_body.encode("utf-8"), content_type="text/csv"
@@ -189,14 +181,12 @@ class DomainAPITests(TestCase):
             {
                 "domain_code": "imp_ok",
                 "domain_name": "OK",
-                "parent_acceptance_level": 2,
-                "future_relevance_score": 20,
+                "domain_category": "test",
             },
             {
                 "domain_code": "imp_ok",
                 "domain_name": "Dup",
-                "parent_acceptance_level": 2,
-                "future_relevance_score": 20,
+                "domain_category": "test",
             },
         ]
         r = self.client.post(url, {"rows": rows}, format="json")

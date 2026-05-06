@@ -38,8 +38,6 @@ class DomainViewSet(ModelViewSet):
         "domain_name",
         "created_at",
         "updated_at",
-        "future_relevance_score",
-        "parent_acceptance_level",
     ]
     permission_classes = [DomainMasterPermission]
     authentication_classes = [JWTAuthentication]
