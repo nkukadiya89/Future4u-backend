@@ -13,8 +13,6 @@ from career.serializers import CareerSerializer
 from career.services import career_service
 from city.models import City
 from country.models import Country
-from domain.serializers import DomainSerializer
-from domain.services import domain_service
 from domain_career_mapping.serializers import DomainCareerMappingSerializer
 from domain_career_mapping.services import domain_career_mapping_service
 from domain_skill_mapping.serializers import DomainSkillMappingSerializer
@@ -632,19 +630,15 @@ class Command(BaseCommand):
         )
 
     def load_domain_master(self):
-        self.stdout.write("Loading Domain Master...")
+        self.stdout.write("Loading Domain Hierarchy...")
         file_path = path.join(
             settings.BASE_DIR,
             "core",
             "management",
             "source",
-            "domain_master_sample.csv",
+            "domain_hierarchy.csv",
         )
-        self._bulk_import_from_csv(
-            file_path=file_path,
-            serializer_class=DomainSerializer,
-            importer=domain_service.bulk_import_domains,
-        )
+        call_command("seed_domain_hierarchy", load_path=file_path)
 
     def load_education_levels(self):
         self.stdout.write("Loading Education Levels...")

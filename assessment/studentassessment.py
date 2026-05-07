@@ -153,10 +153,15 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
             .values_list("question_id", flat=True)
         )
 
-        # Get selected domain IDs
-        domain_ids = assessment.domain.filter(is_active=True, deleted=False).values_list(
-            "id", flat=True
-        )
+        # Use broad category questions plus selected child-domain questions.
+        domain_ids = [
+            domain_id
+            for domain_id in (
+                assessment.domain_category_id,
+                assessment.domain_id,
+            )
+            if domain_id
+        ]
 
         # Build base queryset
         qs = Question.objects.filter(

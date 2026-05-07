@@ -10211,7 +10211,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain\": [\"0aa9dced-e9b7-4538-9795-684479e7907d\"],\n  \"career_direction\": [\"study further\", \"Internship\"],\n  \"parent_support\": \"very_supportive\",\n  \"concerns\": [\"Job Security\", \"Wrong career choice\"],\n  \"career_values\": [\"High Salary\"],\n  \"user_goals\": [\"Career Clarity\"]\n}"
+              "raw": "{\n  \"domain_category\": \"{{domain_category_id}}\",\n  \"domain\": \"{{domain_id}}\",\n  \"career_direction\": [\"study further\", \"Internship\"],\n  \"parent_support\": \"very_supportive\",\n  \"concerns\": [\"Job Security\", \"Wrong career choice\"],\n  \"career_values\": [\"High Salary\"],\n  \"user_goals\": [\"Career Clarity\"]\n}"
             }
           },
           "response": []
@@ -10621,7 +10621,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true\n}"
+              "raw": "{\n  \"domain_code\": \"AI_ML\",\n  \"domain_name\": \"AI & Machine Learning\",\n  \"parent_id\": \"{{parent_domain_id}}\",\n  \"description\": \"Artificial intelligence and machine learning careers\",\n  \"is_active\": true\n}"
             }
           },
           "response": []
@@ -10654,7 +10654,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true\n}"
+              "raw": "{\n  \"domain_code\": \"AI_ML\",\n  \"domain_name\": \"AI & Machine Learning\",\n  \"parent_id\": \"{{parent_domain_id}}\",\n  \"description\": \"Artificial intelligence and machine learning careers\",\n  \"is_active\": true\n}"
             }
           },
           "response": []
@@ -10687,7 +10687,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true\n}"
+              "raw": "{\n  \"domain_name\": \"AI & Machine Learning\",\n  \"parent_id\": \"{{parent_domain_id}}\",\n  \"description\": \"Artificial intelligence and machine learning careers\",\n  \"is_active\": true\n}"
             }
           },
           "response": []
@@ -10936,7 +10936,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"rows\": [\n    {\n      \"domain_code\": \"bulk_a\",\n      \"domain_name\": \"Bulk A\",\n      \"domain_category\": \"technology\",\n      \"description\": \"\",\n      \"is_active\": true\n    }\n  ]\n}"
+              "raw": "{\n  \"rows\": [\n    {\n      \"domain_code\": \"BULK_A\",\n      \"domain_name\": \"Bulk A\",\n      \"parent\": \"SCI_TECH\",\n      \"description\": \"\",\n      \"is_active\": true\n    }\n  ]\n}"
             }
           },
           "response": []

@@ -160,9 +160,9 @@ class DomainAPITests(TestCase):
 
     def test_bulk_upload_csv_file(self):
         csv_body = (
-            "domain_code,domain_name,domain_category,parent,description,is_active\n"
-            "csv_up_1,One,test,,x,1\n"
-            "csv_up_1,Duplicate,test,,y,1\n"
+            "domain_code,domain_name,parent,description,domain_image,is_active\n"
+            "csv_up_1,One,,x,,1\n"
+            "csv_up_1,Duplicate,,y,,1\n"
         )
         f = SimpleUploadedFile(
             "d.csv", csv_body.encode("utf-8"), content_type="text/csv"
@@ -181,12 +181,10 @@ class DomainAPITests(TestCase):
             {
                 "domain_code": "imp_ok",
                 "domain_name": "OK",
-                "domain_category": "test",
             },
             {
                 "domain_code": "imp_ok",
                 "domain_name": "Dup",
-                "domain_category": "test",
             },
         ]
         r = self.client.post(url, {"rows": rows}, format="json")
