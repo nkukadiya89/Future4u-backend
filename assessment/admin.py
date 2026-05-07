@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from assessment.models import Option, Question, UserResponse
+from assessment.models import Option, Question, StudentAssessment, UserResponse
 
 
 class OptionInline(admin.TabularInline):
@@ -75,3 +75,24 @@ class UserResponseAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "question", "selected_option", "score_value")
     search_fields = ("user__email", "question__question_text")
     list_filter = ("question__dimension", "score_value")
+
+
+@admin.register(StudentAssessment)
+class StudentAssessmentAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "domain_category",
+        "domain",
+        "parent_support",
+        "is_completed",
+        "created_at",
+    )
+    search_fields = (
+        "user__email",
+        "domain_category__domain_code",
+        "domain_category__domain_name",
+        "domain__domain_code",
+        "domain__domain_name",
+    )
+    list_filter = ("is_completed", "domain_category", "domain")

@@ -149,7 +149,22 @@ class StudentAssessment(BaseModule):
         on_delete=models.CASCADE,
         related_name="student_assessments",
     )
-    domain = models.ManyToManyField("domain.Domain", blank=True, related_name="assessments")
+    domain_category = models.ForeignKey(
+        "domain.Domain",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="category_assessments",
+        help_text="Parent category domain selected by the student.",
+    )
+    domain = models.ForeignKey(
+        "domain.Domain",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assessments",
+        help_text="Child domain selected by the student.",
+    )
     career_direction = models.JSONField(default=list, blank=True, null=True)
     parent_support =  models.CharField(choices=PARENT_CHOICES, max_length=150)
     concerns = models.JSONField(default=list, blank=True, null=True)
@@ -163,4 +178,3 @@ class StudentAssessment(BaseModule):
     def __str__(self):
         return f"Assessment {self.id} - User {self.user_id}"
     
-

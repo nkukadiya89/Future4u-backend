@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 SAMPLE_CSV_HEADERS = (
     "domain_code",
     "domain_name",
-    "domain_category",
     "parent",
     "description",
+    "domain_image",
     "is_active",
 )
 
@@ -128,8 +128,8 @@ def validate_domain_data(
     return {
         "domain_code": code,
         "domain_name": name,
-        "domain_category": (data.get("domain_category") or "").strip(),
         "description": (data.get("description") or "").strip(),
+        "domain_image": (data.get("domain_image") or "").strip(),
         "is_active": bool(data.get("is_active", True)),
     }
 
@@ -235,7 +235,6 @@ def tree_domains():
             "id",
             "domain_code",
             "domain_name",
-            "domain_category",
             "parent_id",
             "is_active",
         )
@@ -256,7 +255,6 @@ def _build_tree(by_parent, parent_id):
                 "id": str(obj.id),
                 "domain_code": obj.domain_code,
                 "domain_name": obj.domain_name,
-                "domain_category": obj.domain_category,
                 "is_active": obj.is_active,
                 "children": _build_tree(by_parent, obj.id),
             }
@@ -274,6 +272,8 @@ def normalize_import_row(row: dict[str, Any]) -> dict[str, Any]:
     if "is_active" in out and out["is_active"] not in ("", None):
         v = str(out["is_active"]).lower()
         out["is_active"] = v in ("1", "true", "yes", "y")
+    if out.get("domain_image") in ("", None):
+        out.pop("domain_image", None)
     return out
 
 
@@ -532,6 +532,6 @@ def sample_csv_bytes() -> bytes:
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(SAMPLE_CSV_HEADERS)
-    w.writerow(["ROOT", "Root domain", "sample", "", "Top-level sample", "1"])
-    w.writerow(["CHILD_A", "Child A", "sample", "ROOT", "Under ROOT", "1"])
+    w.writerow(["ROOT", "Root domain", "", "Top-level sample", "", "1"])
+    w.writerow(["CHILD_A", "Child A", "ROOT", "Under ROOT", "", "1"])
     return buf.getvalue().encode("utf-8")

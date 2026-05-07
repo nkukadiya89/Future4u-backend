@@ -94,16 +94,22 @@ class AssessmentSubmitSerializer(serializers.Serializer):
     responses = AssessmentSubmitItemSerializer(many=True)
 
 class StudentAssessmentSerializer(BaseModelSerializer):
+    domain_category = serializers.PrimaryKeyRelatedField(
+        queryset=Domain.objects.filter(is_active=True, deleted=False),
+        required=False,
+        allow_null=True,
+    )
     domain = serializers.PrimaryKeyRelatedField(
-    many=True, 
-    queryset = Domain.objects.filter(is_active=True, deleted=False),
-    required = False,
+        queryset=Domain.objects.filter(is_active=True, deleted=False),
+        required=False,
+        allow_null=True,
     )
     user = UserQuickSerializer(read_only=True)
     
     class Meta:
         model = StudentAssessment
         fields = BaseModelSerializer.Meta.fields + [
+            "domain_category",
             "domain",
             "career_direction",
             "parent_support",
@@ -114,6 +120,32 @@ class StudentAssessmentSerializer(BaseModelSerializer):
             "is_completed",
         ]
         read_only_fields = ("id", "user", "created_at", "updated_at")
+
+    def validate(self, attrs):
+        category = attrs.get("domain_category")
+        domain = attrs.get("domain")
+        if self.instance:
+            if category is None and self.instance.domain_category_id:
+                category = self.instance.domain_category
+            if domain is None and self.instance.domain_id:
+                domain = self.instance.domain
+
+        if category and category.parent_id is not None:
+            raise serializers.ValidationError(
+                {"domain_category": "Selected category must be a parent domain."}
+            )
+
+        if domain and domain.parent_id is None:
+            raise serializers.ValidationError(
+                {"domain": "Selected domain must be a child domain."}
+            )
+
+        if category and domain and domain.parent_id != category.id:
+            raise serializers.ValidationError(
+                {"domain": "Selected domain must belong to selected category."}
+            )
+
+        return attrs
 
 class StudentAssessmentCreateSerializer(BaseModelSerializer):
     class Meta:

@@ -27,7 +27,6 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
             "id",
             "domain_code",
             "domain_name",
-            "domain_category",
             "parent",
             "parent_id",
             "description",
