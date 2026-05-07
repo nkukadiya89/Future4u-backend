@@ -9,8 +9,13 @@ from courses.course_views import CourseViewSet
 course_router = DefaultRouter()
 
 course_router.register("courses", CourseViewSet, basename="courses")
-course_router.register("course-enrollments", CourseEnrollmentViewSet, basename="course-enrollments")
-course_router.register("course-outcomes", CourseOutcomeViewSet, basename="course-outcomes")
+course_router.register(
+    "course-enrollments", CourseEnrollmentViewSet, basename="course-enrollments"
+)
+course_router.register(
+    "course-outcomes", CourseOutcomeViewSet, basename="course-outcomes"
+)
 course_router.register("course-reviews", CourseReviewViewSet, basename="course-reviews")
-course_router.register("course-preferences", ProfileCoursePreferenceViewSet, basename="course-preferences")
-
+course_router.register(
+    "course-preferences", ProfileCoursePreferenceViewSet, basename="course-preferences"
+)
