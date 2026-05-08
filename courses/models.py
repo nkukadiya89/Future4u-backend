@@ -10,8 +10,8 @@ class Course(models.Model):
 
     provider_name = models.CharField(max_length=200)
 
-    domains = models.ManyToManyField("Domain", blank=True)
-    skills = models.ManyToManyField("Skill", blank=True)
+    domains = models.ManyToManyField("domain.Domain", blank=True)
+    skills = models.ManyToManyField("skill.Skill", blank=True)
 
     level = models.CharField(
         max_length=50,
@@ -69,7 +69,7 @@ class CourseEnrollment(models.Model):
 
     # Optional: tie to specific profile (important for your multi-profile system)
     profile = models.ForeignKey(
-        "Profile", on_delete=models.CASCADE, null=True, blank=True
+        "user_profile.Profile", on_delete=models.CASCADE, null=True, blank=True
     )
 
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
@@ -154,7 +154,7 @@ Example:
 class CourseOutcome(models.Model):
     enrollment = models.OneToOneField(CourseEnrollment, on_delete=models.CASCADE)
 
-    skills_gained = models.ManyToManyField("Skill", blank=True)
+    skills_gained = models.ManyToManyField("skill.Skill", blank=True)
 
     completion_rating = models.IntegerField(null=True, blank=True)  # 1–5
 
@@ -302,10 +302,10 @@ This is critical for:
 
 
 class ProfileCoursePreference(models.Model):
-    profile = models.ForeignKey("Profile", on_delete=models.CASCADE)
+    profile = models.ForeignKey("user_profile.Profile", on_delete=models.CASCADE)
 
-    preferred_domains = models.ManyToManyField("Domain", blank=True)
-    preferred_skills = models.ManyToManyField("Skill", blank=True)
+    preferred_domains = models.ManyToManyField("domain.Domain", blank=True)
+    preferred_skills = models.ManyToManyField("skill.Skill", blank=True)
 
     goal = models.CharField(max_length=200, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

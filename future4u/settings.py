@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     "recommendation",
     "language_master",
     "jobs",
+    "courses",
 ]
 
 MIDDLEWARE = [
