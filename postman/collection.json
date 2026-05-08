@@ -9619,13 +9619,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/profile/",
+              "raw": "{{base_url}}/api/profile/{{user_profile_id}}/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "profile",
+                "{{user_profile_id}}",
                 ""
               ]
             },
@@ -9679,19 +9680,20 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/student-profile/",
+              "raw": "{{base_url}}/api/student-profile/{{student_profile_id}}/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "student-profile",
+                "{{student_profile_id}}",
                 ""
               ]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"language\": [\"{{language_id}}\"],\n  \"science_track\": \"pcm\",\n  \"medium\": \"english\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"stream\": \"{{stream_id}}\",\n  \"career_direction\": {\n    \"role\": \"Frontend Developer\",\n    \"tags\": [\"SaaS\", \"Web Applications\"],\n    \"description\": \"Passionate about building interactive UI and solving real-world problems\"\n  },\n  \"education\": [\n    {\n      \"degree\": \"B.Tech in Computer Engineering\",\n      \"college\": \"Silver Oak University\",\n      \"year\": 2025,\n      \"cgpa\": 8.4\n    }\n  ],\n  \"skills\": {\n    \"technical\": [\n      {\"name\": \"JavaScript\"},\n      {\"name\": \"React.js\"},\n      {\"name\": \"HTML5 & CSS3\"},\n      {\"name\": \"Tailwind CSS\"},\n      {\"name\": \"Git & GitHub\"}\n    ],\n    \"soft\": [\"Problem Solving\", \"Communication\", \"Teamwork\"]\n  },\n  \"key_highlights\": [\"Built 5+ web projects\", \"Won hackathon 2024\"],\n  \"additional_insights\": [\"Open to internships\", \"Interested in frontend development\"]\n}"
+              "raw": "{\n  \"language\": [\n    \"{{language_id}}\",\n    \"{{language_id_2}}\",\n    \"{{language_id_3}}\"\n  ],\n  \"science_track\": \"pcm\",\n  \"medium\": \"english\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"stream\": \"{{stream_id}}\",\n  \"linkedin_url\": \"https://linkedin.com/in/aaravpatel\",\n  \"github_url\": \"https://github.com/aaravpatel\",\n  \"portfolio\": \"https://aaravportfolio.com\",\n  \"career_direction\": {\n    \"role\": \"Frontend Developer\",\n    \"tags\": [\n      \"SaaS\",\n      \"Web Applications\"\n    ],\n    \"description\": \"Passionate about building interactive user interfaces and solving real-world problems using modern JavaScript frameworks.\"\n  },\n  \"education\": [\n    {\n      \"degree\": \"B.Tech in Computer Engineering\",\n      \"college\": \"Silver Oak University\",\n      \"year\": 2025,\n      \"cgpa\": 8.4\n    }\n  ],\n  \"skills\": {\n    \"technical\": [\n      {\n        \"name\": \"JavaScript\"\n      },\n      {\n        \"name\": \"React.js\"\n      },\n      {\n        \"name\": \"HTML5 & CSS3\"\n      },\n      {\n        \"name\": \"Tailwind CSS\"\n      },\n      {\n        \"name\": \"Git & GitHub\"\n      }\n    ],\n    \"soft\": [\n      \"Problem Solving\",\n      \"Communication\",\n      \"Team Collaboration\"\n    ]\n  },\n  \"projects\": [\n    {\n      \"title\": \"E-commerce Web Application\",\n      \"problem_statement\": \"Small businesses lack affordable online storefront solutions.\",\n      \"role\": \"Frontend Developer\",\n      \"technologies\": [\n        \"React.js\",\n        \"Tailwind CSS\",\n        \"Node.js\"\n      ],\n      \"impact\": \"Improved page load speed by 30% and handled 500+ test users.\"\n    },\n    {\n      \"title\": \"Task Management App\",\n      \"problem_statement\": \"Students struggle to track assignments efficiently.\",\n      \"role\": \"Frontend Developer\",\n      \"technologies\": [\n        \"React.js\",\n        \"Firebase\"\n      ],\n      \"impact\": \"Increased task completion rate by 40% among test users.\"\n    }\n  ],\n  \"internships\": [\n    {\n      \"company\": \"WebTech Solutions\",\n      \"duration\": \"3 Months (June 2024 - Aug 2024)\",\n      \"responsibilities\": [\n        \"Built responsive UI components\",\n        \"Fixed frontend bugs\",\n        \"Collaborated with backend team\"\n      ],\n      \"achievement\": \"Reduced UI bugs by 25%\"\n    }\n  ],\n  \"certifications\": [\n    {\n      \"name\": \"React Developer Certification\",\n      \"issuer\": \"Coursera\",\n      \"year\": 2024\n    }\n  ],\n  \"achievements\": [\n    \"1st Rank in College Hackathon 2024\",\n    \"Finalist in State-Level Coding Competition\"\n  ],\n  \"extra_activities\": [\n    \"Core Member – Coding Club\",\n    \"Organized 2 technical workshops\"\n  ],\n  \"additional_insights\": {\n    \"strengths\": \"Fast learner, strong debugging skills, attention to detail\",\n    \"weaknesses\": \"Tendency to over-focus on UI perfection (working on balancing speed vs quality)\",\n    \"preferred_job_location\": \"Bangalore / Remote\"\n  }\n}"
             }
           },
           "response": []
@@ -9739,13 +9741,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/professional-profile/",
+              "raw": "{{base_url}}/api/professional-profile/{{professional_profile_id}}/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "professional-profile",
+                "{{professional_profile_id}}",
                 ""
               ]
             },
@@ -9799,13 +9802,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/parent-profile/",
+              "raw": "{{base_url}}/api/parent-profile/{{parent_profile_id}}/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "parent-profile",
+                "{{parent_profile_id}}",
                 ""
               ]
             },
@@ -10620,8 +10624,19 @@
               ]
             },
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"domain_code\": \"AI_ML\",\n  \"domain_name\": \"AI & Machine Learning\",\n  \"parent_id\": \"{{parent_domain_id}}\",\n  \"description\": \"Artificial intelligence and machine learning careers\",\n  \"is_active\": true\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"domain_code\":\"AI_ML\",\"domain_name\":\"AI & Machine Learning\",\"parent_id\":\"{{parent_domain_id}}\",\"description\":\"Artificial intelligence and machine learning careers\",\"is_active\":true}",
+                  "type": "text"
+                },
+                {
+                  "key": "domain_image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
             }
           },
           "response": []
@@ -10653,8 +10668,19 @@
               ]
             },
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"domain_code\": \"AI_ML\",\n  \"domain_name\": \"AI & Machine Learning\",\n  \"parent_id\": \"{{parent_domain_id}}\",\n  \"description\": \"Artificial intelligence and machine learning careers\",\n  \"is_active\": true\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"domain_code\":\"AI_ML\",\"domain_name\":\"AI & Machine Learning\",\"parent_id\":\"{{parent_domain_id}}\",\"description\":\"Artificial intelligence and machine learning careers\",\"is_active\":true}",
+                  "type": "text"
+                },
+                {
+                  "key": "domain_image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
             }
           },
           "response": []
@@ -10686,8 +10712,19 @@
               ]
             },
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"domain_name\": \"AI & Machine Learning\",\n  \"parent_id\": \"{{parent_domain_id}}\",\n  \"description\": \"Artificial intelligence and machine learning careers\",\n  \"is_active\": true\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"domain_name\":\"AI & Machine Learning\",\"parent_id\":\"{{parent_domain_id}}\",\"description\":\"Artificial intelligence and machine learning careers\",\"is_active\":true}",
+                  "type": "text"
+                },
+                {
+                  "key": "domain_image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
             }
           },
           "response": []
@@ -12128,7 +12165,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"stream_code\": \"science\",\n  \"stream_name\": \"Science\",\n  \"sequence_order\": 1,\n  \"parent_safe_label\": true,\n  \"traditional_equivalent\": \"General Science\",\n  \"description\": \"Physics/Chemistry/Biology path\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"is_active\": true\n}"
+              "raw": "{\n  \"stream_code\": \"science\",\n  \"stream_name\": \"Science\",\n  \"sequence_order\": 1,\n  \"description\": \"Physics Chemistry Mathematics Biology focused stream\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"is_active\": true\n}"
             }
           },
           "response": []
@@ -12228,7 +12265,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"stream_code\": \"science\",\n  \"stream_name\": \"Science Updated\",\n  \"sequence_order\": 1,\n  \"parent_safe_label\": true,\n  \"traditional_equivalent\": \"General Science\",\n  \"description\": \"Updated description\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"is_active\": true\n}"
+              "raw": "{\n  \"stream_code\": \"science\",\n  \"stream_name\": \"Science Updated\",\n  \"sequence_order\": 1,\n  \"description\": \"Updated description\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"is_active\": true\n}"
             }
           },
           "response": []
@@ -12386,7 +12423,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"rows\": [\n    {\n      \"stream_code\": \"commerce\",\n      \"stream_name\": \"Commerce\",\n      \"sequence_order\": 2,\n      \"parent_safe_label\": true,\n      \"traditional_equivalent\": \"Business Studies\",\n      \"description\": \"Accounts/Economics path\",\n      \"education_level\": \"{{education_level_id}}\",\n      \"is_active\": true\n    }\n  ]\n}"
+              "raw": "{\n  \"rows\": [\n    {\n      \"stream_code\": \"commerce\",\n      \"stream_name\": \"Commerce\",\n      \"sequence_order\": 2,\n      \"description\": \"Accounts Business Studies Economics focused stream\",\n      \"education_level\": \"{{education_level_id}}\",\n      \"is_active\": true\n    }\n  ]\n}"
             }
           },
           "response": []
@@ -14417,6 +14454,48 @@
           }
         }
       ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "user_profile_id",
+      "value": "1"
+    },
+    {
+      "key": "student_profile_id",
+      "value": "1"
+    },
+    {
+      "key": "professional_profile_id",
+      "value": "1"
+    },
+    {
+      "key": "parent_profile_id",
+      "value": "1"
+    },
+    {
+      "key": "language_id",
+      "value": "1"
+    },
+    {
+      "key": "language_id_2",
+      "value": "2"
+    },
+    {
+      "key": "language_id_3",
+      "value": "3"
+    },
+    {
+      "key": "parent_domain_id",
+      "value": "1"
     }
   ]
 }

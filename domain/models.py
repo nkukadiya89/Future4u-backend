@@ -7,7 +7,7 @@ from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 
 from base.models import MasterBaseModel
-from utils.aws_file_upload import upload_file_to_bucket
+from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
 
 
 class Domain(MasterBaseModel):
@@ -22,10 +22,10 @@ class Domain(MasterBaseModel):
         related_name="child_domains",
     )
     description = models.TextField(blank=True)
-    domain_image = models.ImageField(
-        upload_to='domain_images/',
-        blank=True,
+    domain_image = models.CharField(
+        max_length=250,
         null=True,
+        blank=True,
         help_text="Upload domain image/icon"
     )
 
@@ -60,8 +60,7 @@ class Domain(MasterBaseModel):
         
         try:
             if current_value:
-                # Note: You may want to implement delete_uploaded_file for domain images too
-                pass
+                delete_uploaded_file(current_value)
             
             aws_file_url, presigned_url = upload_file_to_bucket(
                 domain_image_file,

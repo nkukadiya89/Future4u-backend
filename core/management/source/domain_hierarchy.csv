@@ -1,21 +1,21 @@
 domain_code,domain_name,parent_code,description,domain_image,is_active
-SCI_TECH,Science Technology & Engineering,,Science technology engineering and research fields,,1
-MEDICAL_HEALTH,Medical Healthcare & Life Sciences,,Medical healthcare wellness and life science fields,,1
-SPORTS_FITNESS,Sports & Fitness,,Sports fitness performance and wellness fields,,1
-BUSINESS_MGMT,Business & Management,,Business leadership operations and management fields,,1
-FINANCE_ACCT,Finance & Accounting,,Finance accounting banking and investment fields,,1
-MARKETING_SALES,Marketing & Sales,,Marketing sales branding and customer growth fields,,1
-ARTS_DESIGN,Arts Design & Creative Fields,,Arts design performance and creative fields,,1
-MEDIA_COMM,Media Communication & Content,,Media communication journalism and content fields,,1
-LAW_PUBLIC,Law Safety & Public Services,,Law legal services safety and public service fields,,1
-EDU_TEACHING,Education & Teaching,,Teaching training counselling and education fields,,1
-TRAVEL_HOSP,Travel & Hospitality,,Travel hospitality tourism and guest service fields,,1
-AGRI_ENV,Agriculture Food & Environment,,Agriculture food environment and sustainability fields,,1
-CONST_ARCH,Construction & Architecture,,Construction architecture planning and built environment fields,,1
-TRANSPORT_LOG,Transportation & Logistics,,Transportation logistics aviation and supply movement fields,,1
-MANUF_PROD,Manufacturing & Production,,Manufacturing production maintenance and industrial fields,,1
-GOVT_JOBS,Government & Civil Services,,Government exams public administration and civil service fields,,1
-SOCIAL_WORK,Social Work & Community Services,,Social work community service and public impact fields,,1
+SCI_TECH,Science Technology & Engineering,,Science technology engineering and research fields,Science Technology & Engineering.png,1
+MEDICAL_HEALTH,Medical Healthcare & Life Sciences,,Medical healthcare wellness and life science fields,Medical Healthcare & Life Sciences.png,1
+SPORTS_FITNESS,Sports & Fitness,,Sports fitness performance and wellness fields,Sports & Fitness.png,1
+BUSINESS_MGMT,Business & Management,,Business leadership operations and management fields,Business & Management.png,1
+FINANCE_ACCT,Finance & Accounting,,Finance accounting banking and investment fields,Finance & Accounting.png,1
+MARKETING_SALES,Marketing & Sales,,Marketing sales branding and customer growth fields,Marketing & Sales.png,1
+ARTS_DESIGN,Arts Design & Creative Fields,,Arts design performance and creative fields,Arts Design & Creative Fields.png,1
+MEDIA_COMM,Media Communication & Content,,Media communication journalism and content fields,Media Communication & Content.png,1
+LAW_PUBLIC,Law Safety & Public Services,,Law legal services safety and public service fields,Law Safety & Public Services.png,1
+EDU_TEACHING,Education & Teaching,,Teaching training counselling and education fields,Education & Teaching.png,1
+TRAVEL_HOSP,Travel & Hospitality,,Travel hospitality tourism and guest service fields,Travel & Hospitality.png,1
+AGRI_ENV,Agriculture Food & Environment,,Agriculture food environment and sustainability fields,Agriculture Food & Environment.png,1
+CONST_ARCH,Construction & Architecture,,Construction architecture planning and built environment fields,Construction & Architecture.png,1
+TRANSPORT_LOG,Transportation & Logistics,,Transportation logistics aviation and supply movement fields,Transportation & Logistics.png,1
+MANUF_PROD,Manufacturing & Production,,Manufacturing production maintenance and industrial fields,Manufacturing & Production.png,1
+GOVT_JOBS,Government & Civil Services,,Government exams public administration and civil service fields,Government & Civil Services.png,1
+SOCIAL_WORK,Social Work & Community Services,,Social work community service and public impact fields,Social Work & Community Services.png,1
 AI_ML,AI & Machine Learning,SCI_TECH,Artificial intelligence and machine learning careers,,1
 DATA_SCIENCE,Data Science,SCI_TECH,Data analysis and data science careers,,1
 WEB_DEV,Web Development,SCI_TECH,Web development and programming careers,,1

@@ -66,7 +66,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--subscription", type=bool, help="Subscription plans data to be seeded"
         )
-        
+                
     def handle(self, *args, **kwargs):
         self.stdout.write("Initialise..")
         if kwargs["subscription"]:
@@ -638,7 +638,11 @@ class Command(BaseCommand):
             "source",
             "domain_hierarchy.csv",
         )
-        call_command("seed_domain_hierarchy", load_path=file_path)
+        
+        # Prepare command arguments
+        command_args = {"path": file_path}
+        
+        call_command("init_domain_master", **command_args)
 
     def load_education_levels(self):
         self.stdout.write("Loading Education Levels...")

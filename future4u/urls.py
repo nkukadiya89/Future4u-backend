@@ -25,7 +25,6 @@ from recommendation.views import (
     RecommendationDomainDetailAPIView,
     RecommendationListAPIView,
 )
-from user.user_auth import CustomTokenObtainPairView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
