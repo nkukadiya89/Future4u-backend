@@ -37,7 +37,6 @@ class StreamDomainMappingAPITests(TestCase):
             stream_code="sdm_stream",
             stream_name="SDM Stream",
             sequence_order=9400,
-            parent_safe_label=True,
             education_level=self.edu,
             is_active=True,
             created_by=self.user,
@@ -45,8 +44,6 @@ class StreamDomainMappingAPITests(TestCase):
         self.domain = Domain.objects.create(
             domain_code="sdm_domain",
             domain_name="SDM Domain",
-            parent_acceptance_level=3,
-            future_relevance_score=80,
             is_active=True,
             created_by=self.user,
         )
@@ -104,8 +101,6 @@ class StreamDomainMappingAPITests(TestCase):
         d2 = Domain.objects.create(
             domain_code="sdm_domain_2",
             domain_name="Robotics",
-            parent_acceptance_level=3,
-            future_relevance_score=70,
             is_active=True,
             created_by=self.user,
         )
@@ -136,8 +131,6 @@ class StreamDomainMappingAPITests(TestCase):
         d2 = Domain.objects.create(
             domain_code="sdm_domain_3",
             domain_name="Finance",
-            parent_acceptance_level=3,
-            future_relevance_score=70,
             is_active=True,
             created_by=self.user,
         )
@@ -166,8 +159,6 @@ class StreamDomainMappingAPITests(TestCase):
         d2 = Domain.objects.create(
             domain_code="sdm_domain_4",
             domain_name="Economics",
-            parent_acceptance_level=3,
-            future_relevance_score=70,
             is_active=True,
             created_by=self.user,
         )
@@ -198,8 +189,6 @@ class StreamDomainMappingAPITests(TestCase):
         d2 = Domain.objects.create(
             domain_code=f"sdm_domain_{uuid.uuid4().hex[:6]}",
             domain_name="Bulk Domain",
-            parent_acceptance_level=2,
-            future_relevance_score=60,
             is_active=True,
             created_by=self.user,
         )

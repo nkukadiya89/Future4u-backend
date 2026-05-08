@@ -35,22 +35,34 @@ class QuestionAdmin(admin.ModelAdmin):
         "id",
         "dimension",
         "signal_strength",
+        "education_level",
+        "target_stream",
         "is_active",
         "question_text",
         "mapped_domains_list",
+        "mapped_streams_list",
     )
-    list_filter = ("dimension", "is_active", MappedDomainFilter)
+    list_filter = (
+        "dimension",
+        "education_level",
+        "target_stream",
+        "is_active",
+        MappedDomainFilter,
+    )
     search_fields = (
         "question_text",
         "mapped_domains__domain_name",
         "mapped_domains__domain_code",
+        "mapped_streams__stream_name",
+        "mapped_streams__stream_code",
     )
-    filter_horizontal = ("mapped_domains",)
+    filter_horizontal = ("mapped_domains", "mapped_streams")
+    raw_id_fields = ("education_level", "target_stream")
     inlines = [OptionInline]
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.prefetch_related("mapped_domains").distinct()
+        return qs.prefetch_related("mapped_domains", "mapped_streams").distinct()
 
     @admin.display(description="Mapped domains")
     def mapped_domains_list(self, obj: Question) -> str:
@@ -59,6 +71,15 @@ class QuestionAdmin(admin.ModelAdmin):
         for d in obj.mapped_domains.all():
             code = (getattr(d, "domain_code", "") or "").strip()
             name = (getattr(d, "domain_name", "") or "").strip()
+            parts.append(code or name)
+        return ", ".join([p for p in parts if p])
+
+    @admin.display(description="Mapped streams")
+    def mapped_streams_list(self, obj: Question) -> str:
+        parts = []
+        for stream in obj.mapped_streams.all():
+            code = (getattr(stream, "stream_code", "") or "").strip()
+            name = (getattr(stream, "stream_name", "") or "").strip()
             parts.append(code or name)
         return ", ".join([p for p in parts if p])
 
@@ -85,6 +106,7 @@ class StudentAssessmentAdmin(admin.ModelAdmin):
         "domain_category",
         "domain",
         "parent_support",
+        "current_screen",
         "is_completed",
         "created_at",
     )
@@ -95,4 +117,4 @@ class StudentAssessmentAdmin(admin.ModelAdmin):
         "domain__domain_code",
         "domain__domain_name",
     )
-    list_filter = ("is_completed", "domain_category", "domain")
+    list_filter = ("is_completed", "current_screen", "domain_category", "domain")

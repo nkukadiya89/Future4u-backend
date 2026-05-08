@@ -189,7 +189,6 @@ class DomainCounsellorKnowledge(models.Model):
 class StreamCounsellorKnowledge(models.Model):
     """
     Counsellor message content per stream (insight, tradeoff, action, tension).
-    Loaded via: python manage.py init_stream_counsellor_knowledge
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -232,7 +231,6 @@ class DomainScoringConfig(models.Model):
 class StreamReportMeta(models.Model):
     """
     Student-facing report data per stream (why, subjects, careers, note, next steps).
-    Loaded via: python manage.py init_stream_report_meta
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

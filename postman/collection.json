@@ -10028,133 +10028,12 @@
             }
           },
           "response": []
-        },
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/assessment/questions/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "assessment",
-                "questions",
-                ""
-              ]
-            }
-          },
-          "response": []
         }
       ]
     },
     {
       "name": "assessment",
-      "item": [
-        {
-          "name": "questions grouped (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/assessment/questions/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "assessment",
-                "questions",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "submit (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/assessment/submit/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "assessment",
-                "submit",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"responses\": [\n    {\n      \"question_id\": 1,\n      \"option_id\": 1\n    }\n  ]\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "summary (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/assessment/summary/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "assessment",
-                "summary",
-                ""
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
+      "item": []
     },
     {
       "name": "student_assessment",
@@ -10182,6 +10061,39 @@
                 "api",
                 "student",
                 "assessments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"force_new\": false\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Assessment Status (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/student/assessments/status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "student",
+                "assessments",
+                "status"
               ]
             }
           },

@@ -7,11 +7,16 @@ from common.models import BaseModule
 
 class Question(models.Model):
     class Dimension(models.TextChoices):
+        BACKGROUND = "background", "Background"
         INTEREST = "interest", "Interest"
+        ACADEMIC_STRENGTH = "academic_strength", "Academic Strength"
+        SKILL_CONFIDENCE = "skill_confidence", "Skill Confidence"
+        EXPOSURE = "exposure", "Exposure"
+        WORK_PREFERENCE = "work_preference", "Work Preference"
+        READINESS = "readiness", "Readiness"
         APTITUDE = "aptitude", "Aptitude"
         PERSONALITY = "personality", "Personality"
         WORK_STYLE = "work_style", "Work Style"
-        BACKGROUND = "background", "Background"  # warmup / context questions
 
     class QuestionType(models.TextChoices):
         SCALE = "scale", "Scale (1-5 agreement)"
@@ -28,7 +33,7 @@ class Question(models.Model):
     )
     sequence_order = models.PositiveSmallIntegerField(
         default=0,
-        help_text="Display order within the same education level and dimension.",
+        help_text="Display order within the same education level and signal type.",
     )
     mapped_domains = models.ManyToManyField(
         "domain.Domain",
@@ -137,6 +142,19 @@ class UserResponse(models.Model):
         return f"user={self.user_id}, question={self.question_id}, score={self.score_value}"
 
 class StudentAssessment(BaseModule):
+    class Screen(models.TextChoices):
+        EDUCATION_LEVEL = "education_level", "Education Level"
+        STREAM = "stream", "Stream / Path"
+        DOMAIN_CATEGORY = "domain_category", "Domain Category"
+        DOMAIN = "domain", "Domain"
+        CAREER_DIRECTION = "career_direction", "Career Direction"
+        PARENT_SUPPORT = "parent_support", "Parent Support"
+        CONCERNS = "concerns", "Concerns"
+        QUESTIONS = "questions", "Dynamic Questions"
+        CAREER_VALUES = "career_values", "Career Values"
+        USER_GOALS = "user_goals", "User Goals"
+        COMPLETE = "complete", "Complete"
+
     PARENT_CHOICES = (
         ("very_supportive", "Very Supportive"),
         ("somewhat_supportive", "SomeWhat Supportive"),
@@ -166,10 +184,15 @@ class StudentAssessment(BaseModule):
         help_text="Child domain selected by the student.",
     )
     career_direction = models.JSONField(default=list, blank=True, null=True)
-    parent_support =  models.CharField(choices=PARENT_CHOICES, max_length=150)
+    parent_support = models.CharField(choices=PARENT_CHOICES, max_length=150, null=True, blank=True)
     concerns = models.JSONField(default=list, blank=True, null=True)
     career_values = models.JSONField(default=list, blank=True, null=True)
     user_goals = models.JSONField(default=list, blank=True, null=True)
+    current_screen = models.CharField(
+        max_length=32,
+        choices=Screen.choices,
+        default=Screen.EDUCATION_LEVEL,
+    )
     is_completed = models.BooleanField(default=False)
 
     class Meta:

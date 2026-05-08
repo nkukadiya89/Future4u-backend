@@ -68,13 +68,14 @@ class UserResponseSerializer(serializers.ModelSerializer):
 
         request = self.context.get("request") if hasattr(self, "context") else None
         req_user = getattr(request, "user", None) if request else None
-        if req_user and question:
-            exists = UserResponse.objects.filter(user=req_user, question=question)
+        assessment = attrs.get("assessment")
+        if assessment and question:
+            exists = UserResponse.objects.filter(assessment=assessment, question=question)
             if self.instance:
                 exists = exists.exclude(pk=self.instance.pk)
             if exists.exists():
                 raise serializers.ValidationError(
-                    {"question": "Response already exists for this user and question."}
+                    {"question": "Response already exists for this assessment and question."}
                 )
 
         return attrs
@@ -84,14 +85,6 @@ class UserResponseSerializer(serializers.ModelSerializer):
         user = getattr(request, "user", None) if request else None
         return UserResponse.objects.create(user=user, **validated_data)
 
-
-class AssessmentSubmitItemSerializer(serializers.Serializer):
-    question_id = serializers.IntegerField()
-    option_id = serializers.IntegerField()
-
-
-class AssessmentSubmitSerializer(serializers.Serializer):
-    responses = AssessmentSubmitItemSerializer(many=True)
 
 class StudentAssessmentSerializer(BaseModelSerializer):
     domain_category = serializers.PrimaryKeyRelatedField(
@@ -116,10 +109,11 @@ class StudentAssessmentSerializer(BaseModelSerializer):
             "concerns",
             "career_values",
             "user_goals",
+            "current_screen",
             "user",
             "is_completed",
         ]
-        read_only_fields = ("id", "user", "created_at", "updated_at")
+        read_only_fields = ("id", "user", "current_screen", "created_at", "updated_at")
 
     def validate(self, attrs):
         category = attrs.get("domain_category")
@@ -152,6 +146,7 @@ class StudentAssessmentCreateSerializer(BaseModelSerializer):
         model = StudentAssessment
         fields = [
             "id",
+            "current_screen",
             "is_completed",
         ]
 

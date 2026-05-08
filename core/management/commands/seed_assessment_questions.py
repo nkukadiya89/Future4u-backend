@@ -11,14 +11,30 @@ from assessment.models import Option, Question
 from domain.models import Domain
 
 
-DIMENSIONS = ("interest", "aptitude", "personality", "work_style", "background")
+DIMENSIONS = (
+    "background",
+    "interest",
+    "academic_strength",
+    "skill_confidence",
+    "exposure",
+    "work_preference",
+    "readiness",
+    "aptitude",
+    "personality",
+    "work_style",
+)
 
 SAMPLE_HEADERS = (
     "dimension",
     "question_text",
+    "question_type",
     "mapped_domains",
+    "mapped_streams",
     "signal_strength",
     "is_active",
+    "education_level",
+    "target_stream",
+    "sequence_order",
     "option_1",
     "option_2",
     "option_3",
@@ -150,6 +166,7 @@ class Command(BaseCommand):
                                 f"Row {idx}: mapped_domains not found (skipping): {', '.join(missing_codes)}"
                             )
                         )
+                        continue
                     domain_ids = [d.id for d in domains]
 
                 # Parse extra columns
@@ -235,15 +252,32 @@ class Command(BaseCommand):
                     "education_level": education_level_obj,
                     "target_stream": target_stream_obj,
                 }
-                q, q_created = Question.objects.get_or_create(
+                q = Question.objects.filter(
                     dimension=dim,
                     question_text=qt,
-                    defaults=defaults,
-                )
+                ).first()
+                if not q and has_sequence_order_column and sequence_order:
+                    sequence_matches = Question.objects.filter(
+                        dimension=dim,
+                        sequence_order=sequence_order,
+                    )
+                    if sequence_matches.count() == 1:
+                        q = sequence_matches.first()
+                if q:
+                    q_created = False
+                else:
+                    q, q_created = Question.objects.get_or_create(
+                        dimension=dim,
+                        question_text=qt,
+                        defaults=defaults,
+                    )
                 if q_created:
                     created_q += 1
                 else:
                     changed_fields = []
+                    if q.question_text != qt:
+                        q.question_text = qt
+                        changed_fields.append("question_text")
                     if q.is_active != is_active:
                         q.is_active = is_active
                         changed_fields.append("is_active")
@@ -253,6 +287,22 @@ class Command(BaseCommand):
                     ):
                         q.signal_strength = signal_strength
                         changed_fields.append("signal_strength")
+                    if q.question_type != question_type:
+                        q.question_type = question_type
+                        changed_fields.append("question_type")
+                    if q.sequence_order != sequence_order:
+                        q.sequence_order = sequence_order
+                        changed_fields.append("sequence_order")
+                    if q.education_level_id != (
+                        education_level_obj.id if education_level_obj else None
+                    ):
+                        q.education_level = education_level_obj
+                        changed_fields.append("education_level")
+                    if q.target_stream_id != (
+                        target_stream_obj.id if target_stream_obj else None
+                    ):
+                        q.target_stream = target_stream_obj
+                        changed_fields.append("target_stream")
                     if changed_fields:
                         q.save(update_fields=changed_fields)
                         updated_q += 1
@@ -288,14 +338,20 @@ class Command(BaseCommand):
                     o, o_created = Option.objects.get_or_create(
                         question=q,
                         score_value=score_value,
-                        defaults={"option_text": label},
+                        defaults={"option_text": label, "sequence_order": i},
                     )
                     if o_created:
                         created_o += 1
                     else:
+                        option_changed_fields = []
                         if o.option_text != label:
                             o.option_text = label
-                            o.save(update_fields=["option_text"])
+                            option_changed_fields.append("option_text")
+                        if o.sequence_order != i:
+                            o.sequence_order = i
+                            option_changed_fields.append("sequence_order")
+                        if option_changed_fields:
+                            o.save(update_fields=option_changed_fields)
                             updated_o += 1
 
         if dry_run:
