@@ -10,16 +10,7 @@ from assessment.models import Question
 from domain.models import Domain
 
 
-SIGNAL_DIMENSIONS = (
-    "background",
-    "interest",
-    "academic_strength",
-    "skill_confidence",
-    "exposure",
-    "work_preference",
-    "readiness",
-)
-OLD_DIMENSIONS = ("aptitude", "personality", "work_style")
+DIMENSIONS = ("interest", "aptitude", "personality", "work_style")
 
 
 class Command(BaseCommand):
@@ -42,9 +33,9 @@ class Command(BaseCommand):
         output_path = Path(options["output"])
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        active_questions = Question.objects.filter(is_active=True).prefetch_related(
-            "mapped_domains"
-        )
+        active_questions = Question.objects.filter(
+            is_active=True, dimension__in=DIMENSIONS
+        ).prefetch_related("mapped_domains")
         questions_by_domain_id = {}
         for question in active_questions:
             for domain in question.mapped_domains.all():
@@ -68,25 +59,18 @@ class Command(BaseCommand):
             parent = domain.parent
             parent_questions = questions_by_domain_id.get(parent.id, [])
             domain_questions = questions_by_domain_id.get(domain.id, [])
-            combined_questions = list(
-                {question.id: question for question in parent_questions + domain_questions}.values()
-            )
+            # The runtime question pool uses the specific domain once selected,
+            # so coverage for child domains should be evaluated against the child domain alone.
+            combined_questions = list({question.id: question for question in domain_questions}.values())
 
-            old_dimensions = sorted(
-                {
-                    question.dimension
-                    for question in combined_questions
-                    if question.dimension in OLD_DIMENSIONS
-                }
-            )
             dimension_counts = {
                 dimension: sum(
                     1 for question in combined_questions if question.dimension == dimension
                 )
-                for dimension in SIGNAL_DIMENSIONS
+                for dimension in DIMENSIONS
             }
             combined_count = len(combined_questions)
-            status = self._coverage_status(combined_count, old_dimensions)
+            status = self._coverage_status(combined_count, dimension_counts)
             status_counts[status] = status_counts.get(status, 0) + 1
 
             rows.append(
@@ -99,7 +83,6 @@ class Command(BaseCommand):
                     "domain_question_count": len(domain_questions),
                     "combined_question_count": combined_count,
                     **dimension_counts,
-                    "old_active_dimensions": "|".join(old_dimensions),
                     "status": status,
                 }
             )
@@ -112,8 +95,7 @@ class Command(BaseCommand):
             "parent_question_count",
             "domain_question_count",
             "combined_question_count",
-            *SIGNAL_DIMENSIONS,
-            "old_active_dimensions",
+            *DIMENSIONS,
             "status",
         ]
         with output_path.open("w", newline="", encoding="utf-8") as f:
@@ -130,13 +112,15 @@ class Command(BaseCommand):
             )
         )
 
-    def _coverage_status(self, combined_count, old_dimensions):
-        if old_dimensions:
-            return "OLD_STYLE"
-        if 12 <= combined_count <= 15:
+    def _coverage_status(self, combined_count, dimension_counts):
+        per_dim = 3
+        expected_total = per_dim * len(DIMENSIONS)
+        if combined_count == expected_total and all(
+            dimension_counts.get(d, 0) == per_dim for d in DIMENSIONS
+        ):
             return "GOOD"
-        if combined_count > 15:
+        if combined_count > expected_total:
             return "TOO_HIGH"
-        if 6 <= combined_count <= 11:
+        if combined_count >= (expected_total // 2):
             return "SHORT"
         return "BAD"

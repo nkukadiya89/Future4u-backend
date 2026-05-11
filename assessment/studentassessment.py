@@ -18,13 +18,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 
 
 SIGNAL_ORDER = [
-    Question.Dimension.BACKGROUND,
     Question.Dimension.INTEREST,
-    Question.Dimension.ACADEMIC_STRENGTH,
-    Question.Dimension.SKILL_CONFIDENCE,
-    Question.Dimension.EXPOSURE,
-    Question.Dimension.WORK_PREFERENCE,
-    Question.Dimension.READINESS,
     Question.Dimension.APTITUDE,
     Question.Dimension.PERSONALITY,
     Question.Dimension.WORK_STYLE,
@@ -51,20 +45,25 @@ def get_student_profile(user):
 
 
 def get_question_pool(assessment, user):
-    domain_ids = [
-        domain_id
-        for domain_id in (
-            assessment.domain_category_id,
-            assessment.domain_id,
-        )
-        if domain_id
-    ]
+    # Once a specific domain is selected, we should only use that domain's questions.
+    # Domain category is only a navigation/filtering step for picking the domain.
+    domain_ids = (
+        [assessment.domain_id]
+        if assessment.domain_id
+        else ([assessment.domain_category_id] if assessment.domain_category_id else [])
+    )
     if not domain_ids:
         return Question.objects.none()
 
     question_pool = Question.objects.filter(
         is_active=True,
         mapped_domains__id__in=domain_ids,
+        dimension__in=[
+            Question.Dimension.INTEREST,
+            Question.Dimension.APTITUDE,
+            Question.Dimension.PERSONALITY,
+            Question.Dimension.WORK_STYLE,
+        ],
     )
 
     profile = get_student_profile(user)
