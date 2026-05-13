@@ -1,3 +1,5 @@
+from django.utils import timezone
+from datetime import timedelta
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -6,7 +8,7 @@ from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 
 from user.models import User
 from email_utils.send_email import generate_token, send_mail, decode_token
-from user.services.registration_service import send_registration_email
+from user.services.registration_service import send_registration_email, send_verify_email
 from user.user_type_serializers import RegisterSerializer
 
 
@@ -61,16 +63,64 @@ class AuthViewSet(viewsets.ViewSet):
             return Response(
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
-        if user.otp != int(otp):  # type: ignore
+        # Check OTP expiry first (1 day)
+        if not user.otp_created_at or timezone.now() - user.otp_created_at > timedelta(days=1):
+            return Response(
+                {"error": "OTP has expired. Please request a new one."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if user.otp != int(otp):
             return Response(
                 {"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         user.is_active = True
-        user.otp = None  # type: ignore
-        user.save()  # type: ignore
+        user.otp = None
+        user.otp_created_at = None
+        user.save()
         return Response(
             {"message": "Email verified successfully"}, status=status.HTTP_200_OK
+        )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="resend-otp",
+        permission_classes=[AllowAny],
+        authentication_classes=[],
+    )
+    def resend_otp(self, request):
+        email = request.data.get("email")
+
+        if not email:
+            return Response(
+                {"error": "Email is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if user.is_active:
+            return Response(
+                {"error": "Email is already verified"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        otp = send_verify_email(user.email, user.first_name)
+        user.otp = otp
+        user.otp_created_at = timezone.now()
+        user.save(update_fields=["otp", "otp_created_at"])
+
+        return Response(
+            {"message": "OTP resent successfully. Please check your email."},
+            status=status.HTTP_200_OK,
         )
 
     @action(detail=False, methods=["post"], url_path="change-password")
