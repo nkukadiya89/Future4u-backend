@@ -2,8 +2,15 @@ import logging
 from pathlib import Path
 
 from django.conf import settings
-from django.core.management import call_command
-from django.core.management.base import BaseCommand
+from django.core.files import File
+from django.core.management.base import BaseCommand, CommandError
+from django.db import connection, transaction
+
+from core.management.commands._master_import_utils import (
+    load_csv_rows,
+    resolve_import_user,
+)
+from domain.models import Domain
 
 logger = logging.getLogger(__name__)
 
@@ -24,20 +31,262 @@ class Command(BaseCommand):
             ),
             help="Load domains from CSV at this path.",
         )
+
         parser.add_argument(
             "--username",
             default=None,
             help="User for created_by/updated_by on imports (default: first superuser).",
         )
 
+        parser.add_argument(
+            "--images-folder",
+            default=None,
+            help="Base folder containing domain images.",
+        )
+
     def handle(self, *args, **options):
         load_path = options.get("load_path")
+
         if not load_path:
             return
 
         logger.info("init_domain_master loading hierarchy from %s", load_path)
-        call_command(
-            "seed_domain_hierarchy",
-            load_path=load_path,
-            username=options.get("username"),
+
+        self._assert_schema_ready()
+
+        user = resolve_import_user(username=options.get("username"))
+
+        rows = load_csv_rows(load_path)
+
+        images_folder = options.get("images_folder")
+
+        if images_folder is None:
+            images_folder = (
+                Path(settings.BASE_DIR)
+                / "core"
+                / "management"
+                / "source"
+                / "images"
+            )
+        else:
+            images_folder = Path(images_folder)
+
+        normalized = self._normalize_rows(rows)
+
+        with transaction.atomic():
+
+            domains_by_code = self._upsert_all_without_parents(
+                rows=normalized,
+                user=user,
+                images_folder=images_folder,
+            )
+
+            updated = self._attach_parents(
+                rows=normalized,
+                domains_by_code=domains_by_code,
+                user=user,
+            )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Domain hierarchy loaded: total={len(normalized)} parent_links={updated}"
+            )
         )
+
+    def _assert_schema_ready(self):
+        table_name = Domain._meta.db_table
+
+        with connection.cursor() as cursor:
+            columns = {
+                column.name
+                for column in connection.introspection.get_table_description(
+                    cursor,
+                    table_name,
+                )
+            }
+
+        if "domain_category" in columns:
+            raise CommandError(
+                "Run migrations before seeding domain_hierarchy.csv: "
+                "python manage.py migrate"
+            )
+
+    def _normalize_rows(self, rows: list[dict]) -> list[dict]:
+
+        required = {"domain_code", "domain_name", "parent_code"}
+
+        seen: set[str] = set()
+
+        normalized = []
+
+        for idx, row in enumerate(rows, start=2):
+
+            missing = required - set(row.keys())
+
+            if missing:
+                raise CommandError(
+                    f"Missing columns: {', '.join(sorted(missing))}"
+                )
+
+            code = (row.get("domain_code") or "").strip()
+
+            name = (row.get("domain_name") or "").strip()
+
+            parent_code = (
+                row.get("parent_code")
+                or row.get("parent")
+                or ""
+            ).strip()
+
+            if not code:
+                raise CommandError(
+                    f"Row {idx}: domain_code is required."
+                )
+
+            if not name:
+                raise CommandError(
+                    f"Row {idx}: domain_name is required."
+                )
+
+            if code.lower() in seen:
+                raise CommandError(
+                    f"Row {idx}: duplicate domain_code '{code}'"
+                )
+
+            seen.add(code.lower())
+
+            normalized.append(
+                {
+                    "domain_code": code,
+                    "domain_name": name,
+                    "parent_code": parent_code,
+                    "description": (row.get("description") or "").strip(),
+                    "domain_image": (row.get("domain_image") or "").strip(),
+                    "is_active": int(row.get("is_active", 1)),
+                }
+            )
+
+        return normalized
+
+    def _upsert_all_without_parents(
+        self,
+        *,
+        rows: list[dict],
+        user,
+        images_folder: Path,
+    ):
+        domains_by_code = {}
+
+        for row in rows:
+
+            code = row["domain_code"]
+
+            domain = Domain.objects.filter(
+                domain_code__iexact=code
+            ).first()
+
+            if domain is None:
+                domain = Domain(domain_code=code)
+
+            domain.domain_name = row["domain_name"]
+            domain.description = row["description"]
+            domain.is_active = row["is_active"]
+            domain.deleted = False
+
+            domain.save(user=user)
+
+            image_filename = row["domain_image"]
+
+            if image_filename:
+
+                image_filename = image_filename.strip()
+
+                if Path(image_filename).parent.name != "domain":
+                    image_filename = f"domain/{image_filename}"
+
+                image_path = images_folder / image_filename
+
+                if image_path.exists():
+
+                    try:
+
+                        with open(image_path, "rb") as img_file:
+
+                            django_file = File(
+                                img_file,
+                                name=Path(image_filename).name,
+                            )
+
+                            domain.upload_domain_image(django_file)
+
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"Uploaded image for domain "
+                                f"{code}: {image_filename}"
+                            )
+                        )
+
+                    except Exception as e:
+
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"Failed to upload image for "
+                                f"domain {code}: {e}"
+                            )
+                        )
+
+                else:
+
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"Image file not found for "
+                            f"domain {code}: {image_path}"
+                        )
+                    )
+
+            domains_by_code[code.lower()] = domain
+
+        return domains_by_code
+
+    def _attach_parents(
+        self,
+        *,
+        rows: list[dict],
+        domains_by_code: dict,
+        user,
+    ):
+        updated = 0
+
+        for row in rows:
+
+            code = row["domain_code"]
+
+            parent_code = row["parent_code"]
+
+            if not parent_code:
+                continue
+
+            domain = domains_by_code[code.lower()]
+
+            parent = domains_by_code.get(parent_code.lower())
+
+            if parent:
+
+                if domain.parent_id != parent.pk:
+
+                    domain.parent = parent
+
+                    domain.save(user=user)
+
+                    updated += 1
+
+            else:
+
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"Parent domain not found for "
+                        f"{code}: {parent_code}"
+                    )
+                )
+
+        return updated

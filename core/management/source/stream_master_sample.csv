@@ -1,21 +1,28 @@
-stream_code,stream_name,sequence_order,parent_safe_label,traditional_equivalent,description,is_active,education_level
-science,Science,1,1,Science Group,Physics Chemistry Mathematics Biology focused stream,1,higher_secondary
-commerce,Commerce,2,1,Business Commerce Group,Accounts Business Studies Economics focused stream,1,higher_secondary
-arts,Arts Humanities,3,1,Humanities Group,History Geography Political Science Sociology stream,1,higher_secondary
-vocational,Vocational,4,1,Skill Based Track,Practical skill based education like ITI trades,1,higher_secondary
-sports,Sports,5,1,Physical Education Track,Sports training physical education and performance,1,higher_secondary
-fine_arts,Fine Arts,6,1,Creative Arts,Painting sculpture performing arts,1,higher_secondary
-agriculture,Agriculture,7,0,Agri Stream,Agriculture farming agri business studies,1,higher_secondary
-diploma_technical,Diploma Technical,8,1,Polytechnic,Engineering diploma streams like mechanical civil electrical,1,diploma
-diploma_non_technical,Diploma Non Technical,9,1,Non Tech Diploma,Hotel management design paramedical diplomas,1,diploma
-design,Design,10,0,Creative Design,UI UX fashion interior design animation,1,graduation
-media,Media Communication,11,0,Mass Communication,Journalism film media communication studies,1,graduation
-computer_science,Computer Science,12,1,IT Stream,Programming software development and computing,1,graduation
-business_management,Business Management,13,1,Management Stream,Entrepreneurship business and management studies,1,graduation
-health_science,Health Science,14,1,Medical Stream,Nursing paramedical public health related fields,1,graduation
-law,Law,15,0,Legal Studies,Legal education and judiciary preparation,1,graduation
-hospitality,Hospitality Tourism,16,0,Hotel Management,Hospitality travel tourism and service industry,1,graduation
-education,Education Teaching,17,0,Teaching Track,BEd teaching and academic training paths,1,graduation
-defense,Defense Services,18,0,Armed Forces Track,Army navy airforce and defense services preparation,1,graduation
-aviation,Aviation,19,0,Aviation Studies,Pilot cabin crew and aviation management,1,graduation
-entrepreneurship,Entrepreneurship,20,0,Startup Track,Startup building business creation innovation,1,graduation
+stream_code,stream_name,sequence_order,description,is_active,education_level
+secondary_science,Science,1,Interested in science subjects after 10th,1,secondary
+secondary_commerce,Commerce,2,Interested in commerce business or accounts after 10th,1,secondary
+secondary_arts_humanities,Arts / Humanities,3,Interested in humanities social science languages or public issues after 10th,1,secondary
+secondary_skill_based,Skill-based Course,4,Interested in practical skill-based courses after 10th,1,secondary
+secondary_not_sure,Not Sure Yet,5,Not sure which path to choose after 10th,1,secondary
+secondary_other,Other,6,Another preferred path after 10th,1,secondary
+science,Science,7,Physics Chemistry Mathematics Biology focused stream,1,higher_secondary
+commerce,Commerce,8,Accounts Business Studies Economics focused stream,1,higher_secondary
+arts_humanities,Arts / Humanities,9,History Geography Political Science Sociology languages or humanities stream,1,higher_secondary
+vocational_skills,Skill-based / Vocational,10,Practical skill-based education in 11th and 12th,1,higher_secondary
+higher_secondary_other,Other,11,Another higher secondary stream or path,1,higher_secondary
+iti_electrical,Electrical Work,12,Electrical wiring repair maintenance and related trade work,1,iti
+iti_fitter_mechanical,Mechanical / Fitter,13,Mechanical fitting machine work tools and workshop practice,1,iti
+iti_computer_it,Computer / IT,14,Computer basics hardware networking software or IT support,1,iti
+iti_automobile,Automobile,15,Vehicle repair maintenance and automobile systems,1,iti
+iti_welding_fabrication,Welding / Fabrication,16,Welding fabrication metal work and workshop practice,1,iti
+iti_electronics,Electronics,17,Electronic circuits devices repair and maintenance,1,iti
+iti_beauty_wellness,Beauty & Wellness,18,Beauty wellness grooming and personal care services,1,iti
+iti_healthcare_assistant,Healthcare Assistant,19,Basic healthcare support patient care and clinical assistance,1,iti
+iti_other_vocational,Other Vocational,20,Another ITI or vocational trade,1,iti
+diploma_engineering_technical,Engineering / Technical,21,Engineering diploma paths such as mechanical civil electrical electronics or automobile,1,diploma
+diploma_computer_it,Computer / IT,22,Computer engineering information technology software networking or IT diploma paths,1,diploma
+diploma_health_paramedical,Healthcare / Paramedical,23,Paramedical healthcare lab nursing assistant or allied health diploma paths,1,diploma
+diploma_business_commerce,Business / Commerce,24,Business management office administration finance or commerce diploma paths,1,diploma
+diploma_design_creative,Design / Creative,25,Design fashion animation interior or other creative diploma paths,1,diploma
+diploma_hospitality_tourism,Hotel / Travel,26,Hotel management travel tourism culinary or hospitality diploma paths,1,diploma
+diploma_other,Other,27,Another diploma path,1,diploma

@@ -1,4 +1,6 @@
+from domain.models import Domain
 from django.db import transaction
+from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -15,13 +17,182 @@ from assessment.serializers import (
 from utils.pagination import Pagination
 from rest_framework.filters import SearchFilter, OrderingFilter
 
+
+SIGNAL_ORDER = [
+    Question.Dimension.INTEREST,
+    Question.Dimension.APTITUDE,
+    Question.Dimension.PERSONALITY,
+    Question.Dimension.WORK_STYLE,
+]
+
+STREAM_REQUIRED_LEVEL_CODES = {
+    "secondary",
+    "higher_secondary",
+    "iti",
+    "diploma",
+}
+
+
+def get_student_profile(user):
+    try:
+        from user_profile.models import StudentProfile
+
+        return StudentProfile.objects.select_related(
+            "education_level",
+            "stream",
+        ).get(user=user)
+    except StudentProfile.DoesNotExist:
+        return None
+
+
+def get_question_pool(assessment, user, dimension=None):
+    # Use domain codes instead of UUIDs for robust mapping
+    from domain.models import Domain
+    
+    domain_codes = []
+    
+    # Get domain codes from assessment
+    if assessment.domain_id:
+        try:
+            domain = Domain.objects.get(id=assessment.domain_id)
+            domain_codes.append(domain.domain_code)
+        except Domain.DoesNotExist:
+            pass
+    
+    if assessment.domain_category_id:
+        try:
+            category = Domain.objects.get(id=assessment.domain_category_id)
+            domain_codes.append(category.domain_code)
+        except Domain.DoesNotExist:
+            pass
+    
+    if not domain_codes:
+        return Question.objects.none()
+
+    # Filter by specific dimension if provided
+    dimensions = [dimension] if dimension else [
+        Question.Dimension.INTEREST,
+        Question.Dimension.APTITUDE,
+        Question.Dimension.PERSONALITY,
+        Question.Dimension.WORK_STYLE,
+    ]
+
+    question_pool = Question.objects.filter(
+        is_active=True,
+        mapped_domains__domain_code__in=domain_codes,
+        dimension__in=dimensions,
+    )
+
+    profile = get_student_profile(user)
+    education_level = profile.education_level if profile else None
+    if education_level:
+        question_pool = question_pool.filter(
+            Q(education_level=education_level) | Q(education_level__isnull=True)
+        )
+
+    return question_pool.distinct()
+
+
+def calculate_current_screen(assessment, user):
+    if assessment.is_completed:
+        return StudentAssessment.Screen.COMPLETE
+
+    profile = get_student_profile(user)
+    if not profile or not profile.education_level_id:
+        return StudentAssessment.Screen.EDUCATION_LEVEL
+
+    level_code = (profile.education_level.level_code or "").lower()
+    if level_code in STREAM_REQUIRED_LEVEL_CODES and not profile.stream_id:
+        return StudentAssessment.Screen.STREAM
+
+    if not assessment.domain_category_id:
+        return StudentAssessment.Screen.DOMAIN_CATEGORY
+    if not assessment.domain_id:
+        return StudentAssessment.Screen.DOMAIN
+    if not assessment.career_direction:
+        return StudentAssessment.Screen.CAREER_DIRECTION
+    if not assessment.parent_support:
+        return StudentAssessment.Screen.PARENT_SUPPORT
+    if not assessment.concerns:
+        return StudentAssessment.Screen.CONCERNS
+
+    # Check each dimension in sequence
+    dimensions = [
+        (Question.Dimension.INTEREST, StudentAssessment.Screen.INTEREST),
+        (Question.Dimension.APTITUDE, StudentAssessment.Screen.APTITUDE),
+        (Question.Dimension.PERSONALITY, StudentAssessment.Screen.PERSONALITY),
+        (Question.Dimension.WORK_STYLE, StudentAssessment.Screen.WORK_STYLE),
+    ]
+    
+    for dimension, screen_name in dimensions:
+        question_pool = get_question_pool(assessment, user, dimension)
+        total_questions = question_pool.count()
+        if total_questions:
+            answered_count = UserResponse.objects.filter(
+                assessment=assessment,
+                question__in=question_pool,
+            ).values("question_id").distinct().count()
+            if answered_count < total_questions:
+                return screen_name
+
+    if not assessment.career_values:
+        return StudentAssessment.Screen.CAREER_VALUES
+    if not assessment.user_goals:
+        return StudentAssessment.Screen.USER_GOALS
+
+    return StudentAssessment.Screen.COMPLETE
+
+
+def sync_current_screen(assessment, user):
+    next_screen = calculate_current_screen(assessment, user)
+    if assessment.current_screen != next_screen:
+        assessment.current_screen = next_screen
+        assessment.save(update_fields=["current_screen", "updated_at"])
+    return assessment
+
+
+def assessment_status_payload(assessment, user):
+    profile = get_student_profile(user)
+    education_level = profile.education_level if profile else None
+    stream = profile.stream if profile else None
+
+    if not assessment:
+        return {
+            "success": True,
+            "has_assessment": False,
+            "assessment_id": None,
+            "is_completed": False,
+            "current_screen": StudentAssessment.Screen.EDUCATION_LEVEL,
+            "data": None,
+        }
+
+    sync_current_screen(assessment, user)
+    return {
+        "success": True,
+        "has_assessment": True,
+        "assessment_id": assessment.id,
+        "is_completed": assessment.is_completed,
+        "current_screen": assessment.current_screen,
+        "data": {
+            "education_level": education_level.level_code if education_level else None,
+            "stream": stream.stream_code if stream else None,
+            "domain_category": (
+                str(assessment.domain_category_id)
+                if assessment.domain_category_id
+                else None
+            ),
+            "domain": str(assessment.domain_id) if assessment.domain_id else None,
+        },
+    }
+
+
 class StudentAssessmentViewSet(viewsets.ModelViewSet):
     """
-    POST   /api/assessments/start/     -> Create new assessment session
-    PATCH  /api/assessments/{id}/      -> Update form fields (step 2-5, 9-10)
-    POST   /api/assessments/{id}/complete/ -> Finalize assessment
-    GET    /api/assessments/           -> List user's assessments
-    GET    /api/assessments/{id}/      -> Retrieve single assessment
+    POST   /api/assessments/start/    
+    PATCH  /api/assessments/{id}/      
+    POST   /api/assessments/{id}/complete/
+    GET    /api/assessments/         
+    GET    /api/assessments/{id}/   
     """
 
     permission_classes = [IsAuthenticated]
@@ -30,7 +201,10 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
     serializer_class = StudentAssessmentSerializer
     
     def get_queryset(self):
-        return StudentAssessment.objects.filter(user=self.request.user)
+        return StudentAssessment.objects.filter(
+            user=self.request.user,
+            deleted=False,
+        )
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -77,19 +251,47 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        """POST /api/assessments/start/ - Always creates a new assessment"""
+        """POST /api/assessments/start/ - Resume incomplete assessment or create new."""
+        force_new = request.data.get("force_new") is True
+        if not force_new:
+            assessment = self.get_queryset().filter(is_completed=False).first()
+            if assessment:
+                sync_current_screen(assessment, request.user)
+                serializer = StudentAssessmentCreateSerializer(assessment)
+                return Response(
+                    {
+                        "success": True,
+                        "message": "Assessment resumed",
+                        "resume": True,
+                        "data": serializer.data,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+
         assessment = StudentAssessment.objects.create(
             user=request.user, is_completed=False
         )
+        sync_current_screen(assessment, request.user)
         serializer = StudentAssessmentCreateSerializer(assessment)
         return Response(
             {
                 "success": True,
                 "message": "Assessment created",
+                "resume": False,
                 "data": serializer.data,
             },
             status=status.HTTP_201_CREATED,
         )
+
+    def perform_update(self, serializer):
+        assessment = serializer.save()
+        sync_current_screen(assessment, self.request.user)
+
+    @action(detail=False, methods=["get"], url_path="status")
+    def assessment_status(self, request):
+        """GET /api/student/assessments/status/ - Latest assessment resume state."""
+        assessment = self.get_queryset().order_by("-created_at").first()
+        return Response(assessment_status_payload(assessment, request.user))
 
     @action(detail=True, methods=["post"])
     @transaction.atomic
@@ -97,7 +299,8 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
         """POST /api/assessments/{id}/complete/"""
         assessment = self.get_object()
         assessment.is_completed = True
-        assessment.save()
+        assessment.current_screen = StudentAssessment.Screen.COMPLETE
+        assessment.save(update_fields=["is_completed", "current_screen", "updated_at"])
 
         return Response(
             {
@@ -105,6 +308,7 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
                 "message": "Assessment completed",
                 "data": {
                     "id": assessment.id,
+                    "current_screen": assessment.current_screen,
                     "is_completed": True,
                 },
             },
@@ -136,7 +340,9 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
 
         try:
             assessment = StudentAssessment.objects.get(
-                id=assessment_id, user=request.user
+                id=assessment_id,
+                user=request.user,
+                deleted=False,
             )
         except StudentAssessment.DoesNotExist:
             return Response(
@@ -153,50 +359,82 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
             .values_list("question_id", flat=True)
         )
 
-        # Use broad category questions plus selected child-domain questions.
-        domain_ids = [
-            domain_id
-            for domain_id in (
-                assessment.domain_category_id,
-                assessment.domain_id,
-            )
-            if domain_id
-        ]
-
-        # Build base queryset
-        qs = Question.objects.filter(
-            is_active=True,
-            mapped_domains__id__in=domain_ids,
-        ).exclude(id__in=answered_ids)
-
-        # Progressive dimensions: interest -> aptitude -> personality -> work_style
-        DIMENSION_ORDER = [
-            Question.Dimension.INTEREST,
-            Question.Dimension.APTITUDE,
-            Question.Dimension.PERSONALITY,
-            Question.Dimension.WORK_STYLE,
-        ]
-
-        next_q = None
-        for dim in DIMENSION_ORDER:
-            candidate = qs.filter(dimension=dim).order_by("sequence_order").first()
-            if candidate:
-                next_q = candidate
-                break
-
-        if not next_q:
+        # Get current screen to determine which dimension questions to show
+        current_screen = assessment.current_screen
+        
+        # Map screen to dimension
+        dimension_map = {
+            StudentAssessment.Screen.INTEREST: Question.Dimension.INTEREST,
+            StudentAssessment.Screen.APTITUDE: Question.Dimension.APTITUDE,
+            StudentAssessment.Screen.PERSONALITY: Question.Dimension.PERSONALITY,
+            StudentAssessment.Screen.WORK_STYLE: Question.Dimension.WORK_STYLE,
+        }
+        
+        # Get questions for current dimension
+        current_dimension = dimension_map.get(current_screen)
+        if not current_dimension:
+            sync_current_screen(assessment, request.user)
             return Response(
                 {
                     "success": True,
-                    "message": "All questions completed for selected domains",
+                    "message": "No active question dimension",
                     "data": None,
+                },
+                status=status.HTTP_200_OK,
+            )
+        
+        question_pool = get_question_pool(assessment, request.user, current_dimension)
+        total_questions = question_pool.count()
+        
+        # Get answered questions for this dimension
+        answered_ids = (
+            UserResponse.objects.filter(
+                assessment=assessment,
+                question__in=question_pool
+            )
+            .values_list("question_id", flat=True)
+        )
+        answered_count = len(answered_ids)
+        
+        qs = question_pool.exclude(id__in=answered_ids)
+        next_q = qs.order_by("sequence_order").first()
+
+        if not next_q:
+            sync_current_screen(assessment, request.user)
+            message = (
+                "No questions found for selected domain"
+                if total_questions == 0
+                else "All questions completed for selected domains"
+            )
+            return Response(
+                {
+                    "success": True,
+                    "message": message,
+                    "data": None,
+                    "progress": {
+                        "question_number": total_questions,
+                        "total_questions": total_questions,
+                        "answered": total_questions,
+                        "remaining": 0,
+                        "is_complete": True,
+                    },
                 },
                 status=status.HTTP_200_OK,
             )
 
         serializer = self.get_serializer(next_q)
         return Response(
-            {"success": True, "data": serializer.data},
+            {
+                "success": True,
+                "data": serializer.data,
+                "progress": {
+                    "question_number": answered_count + 1,
+                    "total_questions": total_questions,
+                    "answered": answered_count,
+                    "remaining": max(total_questions - answered_count, 0),
+                    "is_complete": False,
+                },
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -228,7 +466,9 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
         # Validate assessment belongs to user
         try:
             assessment = StudentAssessment.objects.get(
-                id=assessment_id, user=request.user
+                id=assessment_id,
+                user=request.user,
+                deleted=False,
             )
         except StudentAssessment.DoesNotExist:
             return Response(
@@ -267,12 +507,16 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
                 "score_value": option.score_value,
             },
         )
+        sync_current_screen(assessment, request.user)
 
         return Response(
             {
                 "success": True,
                 "message": "Response saved",
-                "data": {"score": option.score_value},
+                "data": {
+                    "score": option.score_value,
+                    "current_screen": assessment.current_screen,
+                },
             },
             status=status.HTTP_200_OK,
         )

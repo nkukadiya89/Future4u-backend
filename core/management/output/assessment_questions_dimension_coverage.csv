@@ -1,0 +1,143 @@
+parent_code,parent_name,domain_code,domain_name,parent_question_count,domain_question_count,combined_question_count,interest,aptitude,personality,work_style,status
+AGRI_ENV,Agriculture Food & Environment,AGRICULTURE,Agriculture,12,12,12,3,3,3,3,GOOD
+AGRI_ENV,Agriculture Food & Environment,ANIMAL_SCIENCE,Animal Science,12,12,12,3,3,3,3,GOOD
+AGRI_ENV,Agriculture Food & Environment,FISHERIES,Aquaculture & Fisheries,12,12,12,3,3,3,3,GOOD
+AGRI_ENV,Agriculture Food & Environment,ENVIRONMENTAL_CONSERVATION,Environmental Conservation,12,12,12,3,3,3,3,GOOD
+AGRI_ENV,Agriculture Food & Environment,FOOD_SCIENCE,Food Science,12,12,12,3,3,3,3,GOOD
+AGRI_ENV,Agriculture Food & Environment,FORESTRY,Forestry,12,12,12,3,3,3,3,GOOD
+AGRI_ENV,Agriculture Food & Environment,NATURAL_RESOURCES,Natural Resources,12,12,12,3,3,3,3,GOOD
+AGRI_ENV,Agriculture Food & Environment,PLANT_SCIENCE,Plant Science,12,12,12,3,3,3,3,GOOD
+AGRI_ENV,Agriculture Food & Environment,SUSTAINABILITY,Sustainability,12,12,12,3,3,3,3,GOOD
+ARTS_DESIGN,Arts Design & Creative Fields,ANIMATION,Animation,12,12,12,3,3,3,3,GOOD
+ARTS_DESIGN,Arts Design & Creative Fields,DANCE,Dance,12,12,12,3,3,3,3,GOOD
+ARTS_DESIGN,Arts Design & Creative Fields,fashion_design,Fashion Design,12,13,13,4,3,3,3,TOO_HIGH
+ARTS_DESIGN,Arts Design & Creative Fields,GRAPHIC_DESIGN,Graphic Design,12,12,12,3,3,3,3,GOOD
+ARTS_DESIGN,Arts Design & Creative Fields,INTERIOR_DESIGN,Interior Design,12,12,12,3,3,3,3,GOOD
+ARTS_DESIGN,Arts Design & Creative Fields,MUSIC,Music,12,12,12,3,3,3,3,GOOD
+ARTS_DESIGN,Arts Design & Creative Fields,performing_arts,Performing Arts,12,13,13,4,3,3,3,TOO_HIGH
+ARTS_DESIGN,Arts Design & Creative Fields,PRODUCT_DESIGN,Product Design,12,12,12,3,3,3,3,GOOD
+ARTS_DESIGN,Arts Design & Creative Fields,UX_UI_DESIGN,UX/UI Design,12,12,12,3,3,3,3,GOOD
+ARTS_DESIGN,Arts Design & Creative Fields,VISUAL_ARTS,Visual Arts,12,12,12,3,3,3,3,GOOD
+BUSINESS_MGMT,Business & Management,BUSINESS_ADMIN,Business Administration,12,12,12,3,3,3,3,GOOD
+BUSINESS_MGMT,Business & Management,BUSINESS_ANALYSIS,Business Analysis,12,12,12,3,3,3,3,GOOD
+BUSINESS_MGMT,Business & Management,entrepreneurship,Entrepreneurship,12,20,20,9,3,4,4,TOO_HIGH
+BUSINESS_MGMT,Business & Management,HUMAN_RESOURCES,Human Resources,12,12,12,3,3,3,3,GOOD
+BUSINESS_MGMT,Business & Management,MANAGEMENT_CONSULTING,Management Consulting,12,12,12,3,3,3,3,GOOD
+BUSINESS_MGMT,Business & Management,OFFICE_ADMINISTRATION,Office Administration,12,12,12,3,3,3,3,GOOD
+BUSINESS_MGMT,Business & Management,OPERATIONS_MANAGEMENT,Operations Management,12,12,12,3,3,3,3,GOOD
+BUSINESS_MGMT,Business & Management,PROJECT_MANAGEMENT,Project Management,12,12,12,3,3,3,3,GOOD
+CONST_ARCH,Construction & Architecture,architecture,Architecture,12,18,18,7,4,3,4,TOO_HIGH
+CONST_ARCH,Construction & Architecture,BUILDING_SAFETY,Building Safety,12,12,12,3,3,3,3,GOOD
+CONST_ARCH,Construction & Architecture,civil_engineering,Civil Engineering,12,20,20,7,3,3,7,TOO_HIGH
+CONST_ARCH,Construction & Architecture,CONSTRUCTION_MANAGEMENT,Construction Management,12,12,12,3,3,3,3,GOOD
+CONST_ARCH,Construction & Architecture,INTERIOR_ARCHITECTURE,Interior Architecture,12,12,12,3,3,3,3,GOOD
+CONST_ARCH,Construction & Architecture,LANDSCAPE_ARCHITECTURE,Landscape Architecture,12,12,12,3,3,3,3,GOOD
+CONST_ARCH,Construction & Architecture,REAL_ESTATE,Real Estate,12,12,12,3,3,3,3,GOOD
+CONST_ARCH,Construction & Architecture,URBAN_PLANNING,Urban Planning,12,12,12,3,3,3,3,GOOD
+EDU_TEACHING,Education & Teaching,EARLY_CHILDHOOD_EDU,Early Childhood Education,12,12,12,3,3,3,3,GOOD
+EDU_TEACHING,Education & Teaching,EDUCATION_ADMIN,Education Administration,12,12,12,3,3,3,3,GOOD
+EDU_TEACHING,Education & Teaching,EDUCATION_COUNSELING,Education Counseling,12,12,12,3,3,3,3,GOOD
+EDU_TEACHING,Education & Teaching,higher_education,Higher Education,12,13,13,4,3,3,3,TOO_HIGH
+EDU_TEACHING,Education & Teaching,SCHOOL_EDUCATION,School Education,12,12,12,3,3,3,3,GOOD
+EDU_TEACHING,Education & Teaching,SPECIAL_EDUCATION,Special Education,12,12,12,3,3,3,3,GOOD
+EDU_TEACHING,Education & Teaching,TEACHING,Teaching,12,12,12,3,3,3,3,GOOD
+EDU_TEACHING,Education & Teaching,TRAINING_DEVELOPMENT,Training & Development,12,12,12,3,3,3,3,GOOD
+FINANCE_ACCT,Finance & Accounting,ACCOUNTING,Accounting,12,12,12,3,3,3,3,GOOD
+FINANCE_ACCT,Finance & Accounting,ACTUARIAL_SCIENCE,Actuarial Science,12,12,12,3,3,3,3,GOOD
+FINANCE_ACCT,Finance & Accounting,AUDITING,Auditing,12,12,12,3,3,3,3,GOOD
+FINANCE_ACCT,Finance & Accounting,BANKING,Banking,12,12,12,3,3,3,3,GOOD
+FINANCE_ACCT,Finance & Accounting,FINANCIAL_ANALYSIS,Financial Analysis,12,12,12,3,3,3,3,GOOD
+FINANCE_ACCT,Finance & Accounting,FINANCIAL_PLANNING,Financial Planning,12,12,12,3,3,3,3,GOOD
+FINANCE_ACCT,Finance & Accounting,INSURANCE,Insurance,12,12,12,3,3,3,3,GOOD
+FINANCE_ACCT,Finance & Accounting,INVESTMENT_MANAGEMENT,Investment Management,12,12,12,3,3,3,3,GOOD
+FINANCE_ACCT,Finance & Accounting,TAXATION,Taxation,12,12,12,3,3,3,3,GOOD
+GOVT_JOBS,Government & Civil Services,CIVIL_SERVICES,Civil Services,12,12,12,3,3,3,3,GOOD
+GOVT_JOBS,Government & Civil Services,DEFENSE_SERVICES,Defense Services,12,12,12,3,3,3,3,GOOD
+GOVT_JOBS,Government & Civil Services,GOVT_BANKING,Government Banking,12,12,12,3,3,3,3,GOOD
+GOVT_JOBS,Government & Civil Services,PUBLIC_ADMINISTRATION,Public Administration,12,12,12,3,3,3,3,GOOD
+GOVT_JOBS,Government & Civil Services,PUBLIC_SECTOR_UNITS,Public Sector Units,12,12,12,3,3,3,3,GOOD
+GOVT_JOBS,Government & Civil Services,RAILWAY_JOBS,Railway Jobs,12,12,12,3,3,3,3,GOOD
+GOVT_JOBS,Government & Civil Services,state_govt_services,State Government Services,12,18,18,7,5,3,3,TOO_HIGH
+LAW_PUBLIC,Law Safety & Public Services,CRIMINAL_JUSTICE,Criminal Justice,12,12,12,3,3,3,3,GOOD
+LAW_PUBLIC,Law Safety & Public Services,EMERGENCY_MANAGEMENT,Emergency Management,12,12,12,3,3,3,3,GOOD
+LAW_PUBLIC,Law Safety & Public Services,FIRE_SAFETY,Fire Safety,12,12,12,3,3,3,3,GOOD
+LAW_PUBLIC,Law Safety & Public Services,FORENSIC_SCIENCE,Forensic Science,12,12,12,3,3,3,3,GOOD
+LAW_PUBLIC,Law Safety & Public Services,LAW,Law,12,12,12,3,3,3,3,GOOD
+LAW_PUBLIC,Law Safety & Public Services,LEGAL_SERVICES,Legal Services,12,12,12,3,3,3,3,GOOD
+LAW_PUBLIC,Law Safety & Public Services,POLICE_SERVICES,Police Services,12,12,12,3,3,3,3,GOOD
+LAW_PUBLIC,Law Safety & Public Services,PUBLIC_SAFETY,Public Safety,12,12,12,3,3,3,3,GOOD
+MANUF_PROD,Manufacturing & Production,AUTOMOBILE_MANUFACTURING,Automobile Manufacturing,12,12,12,3,3,3,3,GOOD
+MANUF_PROD,Manufacturing & Production,FOOD_PROCESSING,Food Processing,12,12,12,3,3,3,3,GOOD
+MANUF_PROD,Manufacturing & Production,INDUSTRIAL_ENGINEERING,Industrial Engineering,12,12,12,3,3,3,3,GOOD
+MANUF_PROD,Manufacturing & Production,MAINTENANCE_TECH,Maintenance Technology,12,12,12,3,3,3,3,GOOD
+MANUF_PROD,Manufacturing & Production,MANUFACTURING_TECH,Manufacturing Technology,12,12,12,3,3,3,3,GOOD
+MANUF_PROD,Manufacturing & Production,PRODUCTION_MANAGEMENT,Production Management,12,12,12,3,3,3,3,GOOD
+MANUF_PROD,Manufacturing & Production,QUALITY_CONTROL,Quality Control,12,12,12,3,3,3,3,GOOD
+MANUF_PROD,Manufacturing & Production,TEXTILE_MANUFACTURING,Textile Manufacturing,12,12,12,3,3,3,3,GOOD
+MARKETING_SALES,Marketing & Sales,ADVERTISING,Advertising,12,12,12,3,3,3,3,GOOD
+MARKETING_SALES,Marketing & Sales,BRAND_MANAGEMENT,Brand Management,12,12,12,3,3,3,3,GOOD
+MARKETING_SALES,Marketing & Sales,digital_marketing,Digital Marketing,12,18,18,8,3,4,3,TOO_HIGH
+MARKETING_SALES,Marketing & Sales,E_COMMERCE,E-Commerce,12,12,12,3,3,3,3,GOOD
+MARKETING_SALES,Marketing & Sales,MARKET_RESEARCH,Market Research,12,12,12,3,3,3,3,GOOD
+MARKETING_SALES,Marketing & Sales,PUBLIC_RELATIONS,Public Relations,12,12,12,3,3,3,3,GOOD
+MARKETING_SALES,Marketing & Sales,SALES,Sales,12,12,12,3,3,3,3,GOOD
+MARKETING_SALES,Marketing & Sales,SOCIAL_MEDIA_MARKETING,Social Media Marketing,12,12,12,3,3,3,3,GOOD
+MEDIA_COMM,Media Communication & Content,BROADCASTING,Broadcasting,12,12,12,3,3,3,3,GOOD
+MEDIA_COMM,Media Communication & Content,COMMUNICATIONS,Communications,12,12,12,3,3,3,3,GOOD
+MEDIA_COMM,Media Communication & Content,CONTENT_WRITING,Content Writing,12,12,12,3,3,3,3,GOOD
+MEDIA_COMM,Media Communication & Content,EDITING_PUBLISHING,Editing & Publishing,12,12,12,3,3,3,3,GOOD
+MEDIA_COMM,Media Communication & Content,FILM_VIDEO_PRODUCTION,Film & Video Production,12,12,12,3,3,3,3,GOOD
+MEDIA_COMM,Media Communication & Content,JOURNALISM,Journalism,12,12,12,3,3,3,3,GOOD
+MEDIA_COMM,Media Communication & Content,MEDIA_PRODUCTION,Media Production,12,12,12,3,3,3,3,GOOD
+MEDIA_COMM,Media Communication & Content,MEDIA_RELATIONS,Media Relations,12,12,12,3,3,3,3,GOOD
+MEDIA_COMM,Media Communication & Content,PHOTOGRAPHY,Photography,12,12,12,3,3,3,3,GOOD
+MEDICAL_HEALTH,Medical Healthcare & Life Sciences,biotech,Biotechnology,12,25,25,9,7,4,5,TOO_HIGH
+MEDICAL_HEALTH,Medical Healthcare & Life Sciences,dentistry,Dentistry,12,15,15,5,3,4,3,TOO_HIGH
+MEDICAL_HEALTH,Medical Healthcare & Life Sciences,DOCTOR_MEDICINE,Doctor & Medicine,12,12,12,3,3,3,3,GOOD
+MEDICAL_HEALTH,Medical Healthcare & Life Sciences,HEALTHCARE_ADMIN,Healthcare Administration,12,12,12,3,3,3,3,GOOD
+MEDICAL_HEALTH,Medical Healthcare & Life Sciences,MEDICAL_RESEARCH,Medical Research,12,12,12,3,3,3,3,GOOD
+MEDICAL_HEALTH,Medical Healthcare & Life Sciences,nursing,Nursing,12,14,14,4,3,4,3,TOO_HIGH
+MEDICAL_HEALTH,Medical Healthcare & Life Sciences,pharmacy,Pharmacy,12,16,16,6,4,3,3,TOO_HIGH
+MEDICAL_HEALTH,Medical Healthcare & Life Sciences,physiotherapy,Physiotherapy,12,15,15,5,3,4,3,TOO_HIGH
+MEDICAL_HEALTH,Medical Healthcare & Life Sciences,mental_health,Psychology & Mental Health,12,18,18,9,3,3,3,TOO_HIGH
+MEDICAL_HEALTH,Medical Healthcare & Life Sciences,PUBLIC_HEALTH,Public Health,12,12,12,3,3,3,3,GOOD
+SCI_TECH,Science Technology & Engineering,AEROSPACE_SPACE,Aerospace & Space Science,12,12,12,3,3,3,3,GOOD
+SCI_TECH,Science Technology & Engineering,AI_ML,AI & Machine Learning,12,12,12,3,3,3,3,GOOD
+SCI_TECH,Science Technology & Engineering,CYBER_SECURITY,Cyber Security,12,12,12,3,3,3,3,GOOD
+SCI_TECH,Science Technology & Engineering,DATA_SCIENCE,Data Science,12,12,12,3,3,3,3,GOOD
+SCI_TECH,Science Technology & Engineering,ELECTRICAL_ENG,Electrical Engineering,12,12,12,3,3,3,3,GOOD
+SCI_TECH,Science Technology & Engineering,ENV_SCIENCE,Environmental Science,12,12,12,3,3,3,3,GOOD
+SCI_TECH,Science Technology & Engineering,MATH_STATS,Mathematics & Statistics,12,12,12,3,3,3,3,GOOD
+SCI_TECH,Science Technology & Engineering,MECHANICAL_ENG,Mechanical Engineering,12,12,12,3,3,3,3,GOOD
+SCI_TECH,Science Technology & Engineering,pure_sciences,Pure Sciences,12,18,18,7,4,3,4,TOO_HIGH
+SCI_TECH,Science Technology & Engineering,robotics,Robotics,12,24,24,10,7,3,4,TOO_HIGH
+SCI_TECH,Science Technology & Engineering,SOFTWARE_DEV,Software Development,12,12,12,3,3,3,3,GOOD
+SCI_TECH,Science Technology & Engineering,WEB_DEV,Web Development,12,12,12,3,3,3,3,GOOD
+social_work,Social Work & Community Services,CHILD_FAMILY_SERVICES,Child & Family Services,16,12,12,3,3,3,3,GOOD
+social_work,Social Work & Community Services,COMMUNITY_DEVELOPMENT,Community Development,16,12,12,3,3,3,3,GOOD
+social_work,Social Work & Community Services,COUNSELING_SERVICES,Counseling Services,16,12,12,3,3,3,3,GOOD
+social_work,Social Work & Community Services,NGO_MANAGEMENT,NGO Management,16,12,12,3,3,3,3,GOOD
+social_work,Social Work & Community Services,RURAL_DEVELOPMENT,Rural Development,16,12,12,3,3,3,3,GOOD
+social_work,Social Work & Community Services,SOCIAL_WORK_FIELD,Social Work,16,12,12,3,3,3,3,GOOD
+SPORTS_FITNESS,Sports & Fitness,ATHLETIC_TRAINING,Athletic Training,12,12,12,3,3,3,3,GOOD
+SPORTS_FITNESS,Sports & Fitness,FITNESS_TRAINING,Fitness Training,12,12,12,3,3,3,3,GOOD
+SPORTS_FITNESS,Sports & Fitness,NUTRITION_WELLNESS,Nutrition & Wellness,12,12,12,3,3,3,3,GOOD
+SPORTS_FITNESS,Sports & Fitness,physical_education,Physical Education,12,14,14,5,3,3,3,TOO_HIGH
+SPORTS_FITNESS,Sports & Fitness,sports_coaching,Sports Coaching,12,14,14,5,3,3,3,TOO_HIGH
+SPORTS_FITNESS,Sports & Fitness,SPORTS_MANAGEMENT,Sports Management,12,12,12,3,3,3,3,GOOD
+SPORTS_FITNESS,Sports & Fitness,SPORTS_MEDICINE,Sports Medicine,12,12,12,3,3,3,3,GOOD
+SPORTS_FITNESS,Sports & Fitness,YOGA_WELLNESS,Yoga & Wellness,12,12,12,3,3,3,3,GOOD
+TRANSPORT_LOG,Transportation & Logistics,AVIATION,Aviation,12,12,12,3,3,3,3,GOOD
+TRANSPORT_LOG,Transportation & Logistics,LOGISTICS,Logistics,12,12,12,3,3,3,3,GOOD
+TRANSPORT_LOG,Transportation & Logistics,MARITIME_TRANSPORT,Maritime Transport,12,12,12,3,3,3,3,GOOD
+TRANSPORT_LOG,Transportation & Logistics,RAIL_TRANSPORT,Rail Transport,12,12,12,3,3,3,3,GOOD
+TRANSPORT_LOG,Transportation & Logistics,supply_chain,Supply Chain Management,12,15,15,5,4,3,3,TOO_HIGH
+TRANSPORT_LOG,Transportation & Logistics,TRANSPORTATION_MANAGEMENT,Transportation Management,12,12,12,3,3,3,3,GOOD
+TRANSPORT_LOG,Transportation & Logistics,WAREHOUSING,Warehousing,12,12,12,3,3,3,3,GOOD
+TRAVEL_HOSP,Travel & Hospitality,AIRLINE_SERVICES,Airline Services,12,12,12,3,3,3,3,GOOD
+TRAVEL_HOSP,Travel & Hospitality,CULINARY_ARTS,Culinary Arts,12,12,12,3,3,3,3,GOOD
+TRAVEL_HOSP,Travel & Hospitality,EVENT_MANAGEMENT,Event Management,12,12,12,3,3,3,3,GOOD
+TRAVEL_HOSP,Travel & Hospitality,HOSPITALITY_OPERATIONS,Hospitality Operations,12,12,12,3,3,3,3,GOOD
+TRAVEL_HOSP,Travel & Hospitality,hotel_management,Hotel Management,12,15,15,6,3,3,3,TOO_HIGH
+TRAVEL_HOSP,Travel & Hospitality,TOURISM_MANAGEMENT,Tourism Management,12,12,12,3,3,3,3,GOOD
+TRAVEL_HOSP,Travel & Hospitality,TRAVEL_SERVICES,Travel Services,12,12,12,3,3,3,3,GOOD

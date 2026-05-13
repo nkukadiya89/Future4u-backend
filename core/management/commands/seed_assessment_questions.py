@@ -11,14 +11,20 @@ from assessment.models import Option, Question
 from domain.models import Domain
 
 
-DIMENSIONS = ("interest", "aptitude", "personality", "work_style", "background")
+# Only keep the 4 UI dimensions (3 questions per dimension).
+DIMENSIONS = ("interest", "aptitude", "personality", "work_style")
 
 SAMPLE_HEADERS = (
     "dimension",
     "question_text",
+    "question_type",
     "mapped_domains",
+    "mapped_streams",
     "signal_strength",
     "is_active",
+    "education_level",
+    "target_stream",
+    "sequence_order",
     "option_1",
     "option_2",
     "option_3",
@@ -58,6 +64,15 @@ class Command(BaseCommand):
             action="store_true",
             help="Do not write anything, only print what would be created.",
         )
+        parser.add_argument(
+            "--prune-existing",
+            action="store_true",
+            help=(
+                "Before loading, deactivate existing questions in the 4 supported dimensions "
+                "for any domains mentioned in the CSV. Use this when you want EXACTLY 12 "
+                "questions (4 dimensions × 3) per domain/category."
+            ),
+        )
 
     def _write_sample_csv(self, *, sample_path: Path):
         sample_path.parent.mkdir(parents=True, exist_ok=True)
@@ -65,7 +80,7 @@ class Command(BaseCommand):
             w = csv.writer(f)
             w.writerow(SAMPLE_HEADERS)
 
-    def _load_from_csv(self, *, load_path: Path, dry_run: bool):
+    def _load_from_csv(self, *, load_path: Path, dry_run: bool, prune_existing: bool):
         if not load_path.exists():
             raise FileNotFoundError(str(load_path))
 
@@ -81,19 +96,66 @@ class Command(BaseCommand):
             has_education_level_column = "education_level" in reader.fieldnames
             has_target_stream_column = "target_stream" in reader.fieldnames
             has_sequence_order_column = "sequence_order" in reader.fieldnames
-            required_headers = (
-                "dimension",
-                "question_text",
-                "is_active",
-                "option_1",
-                "option_2",
-                "option_3",
-                "option_4",
-                "option_5",
+            # Support 2 CSV option formats:
+            # 1) Legacy: option_1..option_5 where each cell is either "label" or "score: label"
+            # 2) Split: option_1_text, option_1_score, ..., option_4_text, option_4_score
+            required_base_headers = ("dimension", "question_text", "is_active")
+            missing_base = [h for h in required_base_headers if h not in reader.fieldnames]
+            if missing_base:
+                raise ValueError(f"Missing headers: {', '.join(missing_base)}")
+
+            has_legacy_options = all(
+                h in reader.fieldnames
+                for h in ("option_1", "option_2", "option_3", "option_4")
             )
-            missing = [h for h in required_headers if h not in reader.fieldnames]
-            if missing:
-                raise ValueError(f"Missing headers: {', '.join(missing)}")
+            has_split_options = all(
+                h in reader.fieldnames
+                for h in (
+                    "option_1_text",
+                    "option_1_score",
+                    "option_2_text",
+                    "option_2_score",
+                    "option_3_text",
+                    "option_3_score",
+                    "option_4_text",
+                    "option_4_score",
+                )
+            )
+            if not (has_legacy_options or has_split_options):
+                raise ValueError(
+                    "Missing option headers. Provide either option_1..option_5 columns "
+                    "or option_1_text/option_1_score .. option_4_text/option_4_score columns."
+                )
+
+            # Optionally prune existing questions for the domains in this CSV
+            if prune_existing and not dry_run and has_mapped_domains_column:
+                codes: set[str] = set()
+                for row in reader:
+                    mapped = (row.get("mapped_domains") or "").strip()
+                    if not mapped:
+                        continue
+                    sep = "|" if "|" in mapped else ","
+                    for code in [c.strip() for c in mapped.split(sep) if c.strip()]:
+                        codes.add(code)
+
+                if codes:
+                    domain_ids_to_prune = list(
+                        Domain.objects.filter(
+                            domain_code__in=list(codes),
+                            deleted=False,
+                            is_active=True,
+                        ).values_list("id", flat=True)
+                    )
+                    if domain_ids_to_prune:
+                        # Deactivate questions mapped to these domains in our supported dimensions.
+                        Question.objects.filter(
+                            mapped_domains__id__in=domain_ids_to_prune,
+                            dimension__in=DIMENSIONS,
+                        ).update(is_active=False)
+
+                # Rewind to the start for actual load
+                f.seek(0)
+                reader = csv.DictReader(f)
 
             for idx, r in enumerate(reader, start=2):
                 dim = (r.get("dimension") or "").strip()
@@ -150,6 +212,7 @@ class Command(BaseCommand):
                                 f"Row {idx}: mapped_domains not found (skipping): {', '.join(missing_codes)}"
                             )
                         )
+                        continue
                     domain_ids = [d.id for d in domains]
 
                 # Parse extra columns
@@ -235,15 +298,32 @@ class Command(BaseCommand):
                     "education_level": education_level_obj,
                     "target_stream": target_stream_obj,
                 }
-                q, q_created = Question.objects.get_or_create(
+                q = Question.objects.filter(
                     dimension=dim,
                     question_text=qt,
-                    defaults=defaults,
-                )
+                ).first()
+                if not q and has_sequence_order_column and sequence_order:
+                    sequence_matches = Question.objects.filter(
+                        dimension=dim,
+                        sequence_order=sequence_order,
+                    )
+                    if sequence_matches.count() == 1:
+                        q = sequence_matches.first()
+                if q:
+                    q_created = False
+                else:
+                    q, q_created = Question.objects.get_or_create(
+                        dimension=dim,
+                        question_text=qt,
+                        defaults=defaults,
+                    )
                 if q_created:
                     created_q += 1
                 else:
                     changed_fields = []
+                    if q.question_text != qt:
+                        q.question_text = qt
+                        changed_fields.append("question_text")
                     if q.is_active != is_active:
                         q.is_active = is_active
                         changed_fields.append("is_active")
@@ -253,6 +333,22 @@ class Command(BaseCommand):
                     ):
                         q.signal_strength = signal_strength
                         changed_fields.append("signal_strength")
+                    if q.question_type != question_type:
+                        q.question_type = question_type
+                        changed_fields.append("question_type")
+                    if q.sequence_order != sequence_order:
+                        q.sequence_order = sequence_order
+                        changed_fields.append("sequence_order")
+                    if q.education_level_id != (
+                        education_level_obj.id if education_level_obj else None
+                    ):
+                        q.education_level = education_level_obj
+                        changed_fields.append("education_level")
+                    if q.target_stream_id != (
+                        target_stream_obj.id if target_stream_obj else None
+                    ):
+                        q.target_stream = target_stream_obj
+                        changed_fields.append("target_stream")
                     if changed_fields:
                         q.save(update_fields=changed_fields)
                         updated_q += 1
@@ -269,34 +365,76 @@ class Command(BaseCommand):
                     else:
                         q.mapped_streams.clear()
 
-                for i in range(1, 6):
-                    cell = (r.get(f"option_{i}") or "").strip()
-                    if not cell:
-                        continue
-                    if ":" not in cell:
-                        score_value = i
-                        label = cell.strip()
-                    else:
-                        score_str, label = cell.split(":", 1)
-                        score_value = int(score_str.strip())
-                        label = label.strip()
-                    if score_value < 1 or score_value > 5:
-                        raise ValueError(f"Row {idx}: option score must be 1..5")
-                    if not label:
-                        raise ValueError(f"Row {idx}: option label cannot be blank")
+                if has_split_options:
+                    # 4-option MCQ format with explicit scores.
+                    for i in range(1, 5):
+                        label = (r.get(f"option_{i}_text") or "").strip()
+                        score_raw = (r.get(f"option_{i}_score") or "").strip()
+                        if not label and not score_raw:
+                            continue
+                        if not label:
+                            raise ValueError(f"Row {idx}: option_{i}_text cannot be blank")
+                        try:
+                            score_value = int(score_raw) if score_raw else i
+                        except ValueError as exc:
+                            raise ValueError(f"Row {idx}: option_{i}_score must be an integer") from exc
+                        if score_value < 1 or score_value > 5:
+                            raise ValueError(f"Row {idx}: option score must be 1..5")
 
-                    o, o_created = Option.objects.get_or_create(
-                        question=q,
-                        score_value=score_value,
-                        defaults={"option_text": label},
-                    )
-                    if o_created:
-                        created_o += 1
-                    else:
-                        if o.option_text != label:
-                            o.option_text = label
-                            o.save(update_fields=["option_text"])
-                            updated_o += 1
+                        o, o_created = Option.objects.get_or_create(
+                            question=q,
+                            score_value=score_value,
+                            defaults={"option_text": label, "sequence_order": i},
+                        )
+                        if o_created:
+                            created_o += 1
+                        else:
+                            option_changed_fields = []
+                            if o.option_text != label:
+                                o.option_text = label
+                                option_changed_fields.append("option_text")
+                            if o.sequence_order != i:
+                                o.sequence_order = i
+                                option_changed_fields.append("sequence_order")
+                            if option_changed_fields:
+                                o.save(update_fields=option_changed_fields)
+                                updated_o += 1
+                else:
+                    # Legacy option_1..option_5 format.
+                    for i in range(1, 6):
+                        cell = (r.get(f"option_{i}") or "").strip()
+                        if not cell:
+                            continue
+                        if ":" not in cell:
+                            score_value = i
+                            label = cell.strip()
+                        else:
+                            score_str, label = cell.split(":", 1)
+                            score_value = int(score_str.strip())
+                            label = label.strip()
+                        if score_value < 1 or score_value > 5:
+                            raise ValueError(f"Row {idx}: option score must be 1..5")
+                        if not label:
+                            raise ValueError(f"Row {idx}: option label cannot be blank")
+
+                        o, o_created = Option.objects.get_or_create(
+                            question=q,
+                            score_value=score_value,
+                            defaults={"option_text": label, "sequence_order": i},
+                        )
+                        if o_created:
+                            created_o += 1
+                        else:
+                            option_changed_fields = []
+                            if o.option_text != label:
+                                o.option_text = label
+                                option_changed_fields.append("option_text")
+                            if o.sequence_order != i:
+                                o.sequence_order = i
+                                option_changed_fields.append("sequence_order")
+                            if option_changed_fields:
+                                o.save(update_fields=option_changed_fields)
+                                updated_o += 1
 
         if dry_run:
             return None
@@ -305,6 +443,7 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         dry_run = bool(options.get("dry_run"))
+        prune_existing = bool(options.get("prune_existing"))
 
         sample_path = Path(options["sample_path"])
         if options.get("write_sample"):
@@ -316,7 +455,9 @@ class Command(BaseCommand):
 
         load_path_raw = options.get("load_path")
         load_path = Path(load_path_raw) if load_path_raw else sample_path
-        result = self._load_from_csv(load_path=load_path, dry_run=dry_run)
+        result = self._load_from_csv(
+            load_path=load_path, dry_run=dry_run, prune_existing=prune_existing
+        )
         if dry_run:
             self.stdout.write(
                 self.style.SUCCESS("Dry run complete. No changes written.")

@@ -39,8 +39,6 @@ class StreamAPITests(TestCase):
             "stream_code": code or f"stream_{uuid.uuid4().hex[:8]}",
             "stream_name": "Test Stream",
             "sequence_order": sequence_order or 1000,
-            "parent_safe_label": True,
-            "traditional_equivalent": "Equivalent",
             "description": "Description",
             "education_level": str(self.edu.pk),
             "is_active": True,
@@ -166,9 +164,9 @@ class StreamAPITests(TestCase):
 
     def test_bulk_upload_csv_file(self):
         csv_body = (
-            "stream_code,stream_name,sequence_order,parent_safe_label,traditional_equivalent,description,education_level\n"
-            "st_csv_1,CSV One,101,1,Legacy,Desc,sec\n"
-            "st_csv_1,CSV Dup,102,1,Legacy,Desc,sec\n"
+            "stream_code,stream_name,sequence_order,description,education_level\n"
+            "st_csv_1,CSV One,101,Desc,sec\n"
+            "st_csv_1,CSV Dup,102,Desc,sec\n"
         )
         f = SimpleUploadedFile(
             "stream.csv", csv_body.encode("utf-8"), content_type="text/csv"
@@ -186,14 +184,12 @@ class StreamAPITests(TestCase):
                 "stream_code": "import_ok",
                 "stream_name": "Import Ok",
                 "sequence_order": 100,
-                "parent_safe_label": True,
                 "education_level": "sec",
             },
             {
                 "stream_code": "import_ok",
                 "stream_name": "Import Dup",
                 "sequence_order": 101,
-                "parent_safe_label": True,
                 "education_level": "sec",
             },
         ]

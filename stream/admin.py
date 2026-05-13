@@ -61,8 +61,6 @@ class StreamAdmin(admin.ModelAdmin):
                     "stream_name",
                     "sequence_order",
                     "education_level",
-                    "parent_safe_label",
-                    "traditional_equivalent",
                     "description",
                     "is_active",
                 )

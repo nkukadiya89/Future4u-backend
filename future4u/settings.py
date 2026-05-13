@@ -108,6 +108,7 @@ INSTALLED_APPS = [
     "skill_category",
     "jobs",
     "resume_builder",
+    "courses",
 ]
 
 MIDDLEWARE = [

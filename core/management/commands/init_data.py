@@ -26,8 +26,6 @@ from skill.services import skill_service
 from state.models import State
 from stream.serializers import StreamSerializer
 from stream.services import stream_service
-from stream_domain_mapping.serializers import StreamDomainMappingSerializer
-from stream_domain_mapping.services import stream_domain_mapping_service
 from subscription.models import Subscription, SubscriptionFeature
 from user.models import CustomGroup, RoleFamily, User
 
@@ -66,7 +64,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--subscription", type=bool, help="Subscription plans data to be seeded"
         )
-        
+                
     def handle(self, *args, **kwargs):
         self.stdout.write("Initialise..")
         if kwargs["subscription"]:
@@ -145,14 +143,11 @@ class Command(BaseCommand):
             self.load_skills()
             self.load_careers()
             self.load_streams()
-            self.load_stream_domain_mappings()
             self.load_domain_skill_mappings()
             self.load_domain_career_mappings()
             self.load_assessment_questions()
             self.load_domain_report_meta()
-            self.load_stream_report_meta()
             self.load_domain_counsellor_knowledge()
-            self.load_stream_counsellor_knowledge()
             self.load_domain_scoring_config()
             self.load_language_master()
             self.load_subscription()  # TODO: fix field mismatch with current Subscription model
@@ -638,7 +633,11 @@ class Command(BaseCommand):
             "source",
             "domain_hierarchy.csv",
         )
-        call_command("seed_domain_hierarchy", load_path=file_path)
+        
+        # Prepare command arguments
+        command_args = {"path": file_path}
+        
+        call_command("init_domain_master", **command_args)
 
     def load_education_levels(self):
         self.stdout.write("Loading Education Levels...")
@@ -714,21 +713,6 @@ class Command(BaseCommand):
             importer=career_service.bulk_import_careers,
         )
 
-    def load_stream_domain_mappings(self):
-        self.stdout.write("Loading Stream Domain Mappings...")
-        file_path = path.join(
-            settings.BASE_DIR,
-            "core",
-            "management",
-            "source",
-            "stream_domain_mapping_sample.csv",
-        )
-        self._bulk_import_from_csv(
-            file_path=file_path,
-            serializer_class=StreamDomainMappingSerializer,
-            importer=stream_domain_mapping_service.bulk_import_mappings,
-        )
-
     def load_domain_skill_mappings(self):
         self.stdout.write("Loading Domain Skill Mappings...")
         file_path = path.join(
@@ -790,32 +774,6 @@ class Command(BaseCommand):
                 },
             )
 
-    def load_stream_report_meta(self):
-        self.stdout.write("Loading Stream Report Meta...")
-        from core.management.commands._master_import_utils import load_csv_rows
-        from domain.models import StreamReportMeta
-
-        file_path = path.join(
-            settings.BASE_DIR, "core", "management", "source", "stream_report_meta.csv"
-        )
-        rows = load_csv_rows(file_path)
-        for row in rows:
-            code = (row.get("stream_code") or "").strip().lower()
-            if not code:
-                continue
-            StreamReportMeta.objects.update_or_create(
-                stream_code=code,
-                defaults={
-                    "why": (row.get("why") or "").strip(),
-                    "subjects": (row.get("subjects") or "").strip(),
-                    "careers": (row.get("careers") or "").strip(),
-                    "note": (row.get("note") or "").strip(),
-                    "next_step_1": (row.get("next_step_1") or "").strip(),
-                    "next_step_2": (row.get("next_step_2") or "").strip(),
-                    "next_step_3": (row.get("next_step_3") or "").strip(),
-                },
-            )
-
     def load_domain_counsellor_knowledge(self):
         self.stdout.write("Loading Domain Counsellor Knowledge...")
         from core.management.commands._master_import_utils import load_csv_rows
@@ -848,33 +806,6 @@ class Command(BaseCommand):
                         row.get("technical_keywords")
                     ),
                     "domain_keywords": _parse_keywords(row.get("domain_keywords")),
-                },
-            )
-
-    def load_stream_counsellor_knowledge(self):
-        self.stdout.write("Loading Stream Counsellor Knowledge...")
-        from core.management.commands._master_import_utils import load_csv_rows
-        from domain.models import StreamCounsellorKnowledge
-
-        file_path = path.join(
-            settings.BASE_DIR,
-            "core",
-            "management",
-            "source",
-            "stream_counsellor_knowledge.csv",
-        )
-        rows = load_csv_rows(file_path)
-        for row in rows:
-            code = (row.get("stream_code") or "").strip().lower()
-            if not code:
-                continue
-            StreamCounsellorKnowledge.objects.update_or_create(
-                stream_code=code,
-                defaults={
-                    "insight": (row.get("insight") or "").strip(),
-                    "tradeoff": (row.get("tradeoff") or "").strip(),
-                    "action": (row.get("action") or "").strip(),
-                    "tension": (row.get("tension") or "").strip(),
                 },
             )
 

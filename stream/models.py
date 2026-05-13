@@ -13,8 +13,6 @@ class Stream(BaseModule):
     stream_code = models.CharField(max_length=64)
     stream_name = models.CharField(max_length=255)
     sequence_order = models.PositiveIntegerField(unique=True)
-    parent_safe_label = models.BooleanField(default=False)
-    traditional_equivalent = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
     education_level = models.ForeignKey(
         "education_level.EducationLevel",
