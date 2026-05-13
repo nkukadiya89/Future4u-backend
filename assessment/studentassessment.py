@@ -46,28 +46,26 @@ def get_student_profile(user):
 
 
 def get_question_pool(assessment, user, dimension=None):
-    # Use domain codes instead of UUIDs for robust mapping
     from domain.models import Domain
-    
-    domain_codes = []
-    
-    # Get domain codes from assessment
-    if assessment.domain_id:
-        try:
-            domain = Domain.objects.get(id=assessment.domain_id)
-            domain_codes.append(domain.domain_code)
-        except Domain.DoesNotExist:
-            pass
-    
+
+    if not assessment.domain_id:
+        return Question.objects.none()
+
+    try:
+        domain = Domain.objects.get(id=assessment.domain_id)
+    except Domain.DoesNotExist:
+        return Question.objects.none()
+
+    # Start with child domain questions
+    domain_codes = [domain.domain_code]
+
+    # If category exists, filter questions mapped to BOTH domain AND category
     if assessment.domain_category_id:
         try:
             category = Domain.objects.get(id=assessment.domain_category_id)
-            domain_codes.append(category.domain_code)
+            domain_codes = [domain.domain_code, category.domain_code]
         except Domain.DoesNotExist:
             pass
-    
-    if not domain_codes:
-        return Question.objects.none()
 
     # Filter by specific dimension if provided
     dimensions = [dimension] if dimension else [
@@ -77,11 +75,21 @@ def get_question_pool(assessment, user, dimension=None):
         Question.Dimension.WORK_STYLE,
     ]
 
-    question_pool = Question.objects.filter(
-        is_active=True,
-        mapped_domains__domain_code__in=domain_codes,
-        dimension__in=dimensions,
-    )
+    # If both domain and category, question must be mapped to BOTH (AND logic)
+    if len(domain_codes) == 2:
+        question_pool = Question.objects.filter(
+            is_active=True,
+            dimension__in=dimensions,
+            mapped_domains__domain_code=domain_codes[0],
+        ).filter(
+            mapped_domains__domain_code=domain_codes[1],
+        )
+    else:
+        question_pool = Question.objects.filter(
+            is_active=True,
+            mapped_domains__domain_code__in=domain_codes,
+            dimension__in=dimensions,
+        )
 
     profile = get_student_profile(user)
     education_level = profile.education_level if profile else None
