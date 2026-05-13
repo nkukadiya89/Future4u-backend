@@ -1,3 +1,4 @@
+from domain.models import Domain
 from django.db import transaction
 from django.db.models import Q
 from rest_framework import status, viewsets
@@ -44,26 +45,42 @@ def get_student_profile(user):
         return None
 
 
-def get_question_pool(assessment, user):
-    # Once a specific domain is selected, we should only use that domain's questions.
-    # Domain category is only a navigation/filtering step for picking the domain.
-    domain_ids = (
-        [assessment.domain_id]
-        if assessment.domain_id
-        else ([assessment.domain_category_id] if assessment.domain_category_id else [])
-    )
-    if not domain_ids:
+def get_question_pool(assessment, user, dimension=None):
+    # Use domain codes instead of UUIDs for robust mapping
+    from domain.models import Domain
+    
+    domain_codes = []
+    
+    # Get domain codes from assessment
+    if assessment.domain_id:
+        try:
+            domain = Domain.objects.get(id=assessment.domain_id)
+            domain_codes.append(domain.domain_code)
+        except Domain.DoesNotExist:
+            pass
+    
+    if assessment.domain_category_id:
+        try:
+            category = Domain.objects.get(id=assessment.domain_category_id)
+            domain_codes.append(category.domain_code)
+        except Domain.DoesNotExist:
+            pass
+    
+    if not domain_codes:
         return Question.objects.none()
+
+    # Filter by specific dimension if provided
+    dimensions = [dimension] if dimension else [
+        Question.Dimension.INTEREST,
+        Question.Dimension.APTITUDE,
+        Question.Dimension.PERSONALITY,
+        Question.Dimension.WORK_STYLE,
+    ]
 
     question_pool = Question.objects.filter(
         is_active=True,
-        mapped_domains__id__in=domain_ids,
-        dimension__in=[
-            Question.Dimension.INTEREST,
-            Question.Dimension.APTITUDE,
-            Question.Dimension.PERSONALITY,
-            Question.Dimension.WORK_STYLE,
-        ],
+        mapped_domains__domain_code__in=domain_codes,
+        dimension__in=dimensions,
     )
 
     profile = get_student_profile(user)
@@ -99,15 +116,24 @@ def calculate_current_screen(assessment, user):
     if not assessment.concerns:
         return StudentAssessment.Screen.CONCERNS
 
-    question_pool = get_question_pool(assessment, user)
-    total_questions = question_pool.count()
-    if total_questions:
-        answered_count = UserResponse.objects.filter(
-            assessment=assessment,
-            question__in=question_pool,
-        ).values("question_id").distinct().count()
-        if answered_count < total_questions:
-            return StudentAssessment.Screen.QUESTIONS
+    # Check each dimension in sequence
+    dimensions = [
+        (Question.Dimension.INTEREST, StudentAssessment.Screen.INTEREST),
+        (Question.Dimension.APTITUDE, StudentAssessment.Screen.APTITUDE),
+        (Question.Dimension.PERSONALITY, StudentAssessment.Screen.PERSONALITY),
+        (Question.Dimension.WORK_STYLE, StudentAssessment.Screen.WORK_STYLE),
+    ]
+    
+    for dimension, screen_name in dimensions:
+        question_pool = get_question_pool(assessment, user, dimension)
+        total_questions = question_pool.count()
+        if total_questions:
+            answered_count = UserResponse.objects.filter(
+                assessment=assessment,
+                question__in=question_pool,
+            ).values("question_id").distinct().count()
+            if answered_count < total_questions:
+                return screen_name
 
     if not assessment.career_values:
         return StudentAssessment.Screen.CAREER_VALUES
@@ -162,11 +188,11 @@ def assessment_status_payload(assessment, user):
 
 class StudentAssessmentViewSet(viewsets.ModelViewSet):
     """
-    POST   /api/assessments/start/     -> Create new assessment session
-    PATCH  /api/assessments/{id}/      -> Update form fields (step 2-5, 9-10)
-    POST   /api/assessments/{id}/complete/ -> Finalize assessment
-    GET    /api/assessments/           -> List user's assessments
-    GET    /api/assessments/{id}/      -> Retrieve single assessment
+    POST   /api/assessments/start/    
+    PATCH  /api/assessments/{id}/      
+    POST   /api/assessments/{id}/complete/
+    GET    /api/assessments/         
+    GET    /api/assessments/{id}/   
     """
 
     permission_classes = [IsAuthenticated]
@@ -333,22 +359,45 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
             .values_list("question_id", flat=True)
         )
 
-        # Build the full eligible pool first; progress counts should not shrink
-        # as answers are submitted.
-        question_pool = get_question_pool(assessment, request.user)
+        # Get current screen to determine which dimension questions to show
+        current_screen = assessment.current_screen
+        
+        # Map screen to dimension
+        dimension_map = {
+            StudentAssessment.Screen.INTEREST: Question.Dimension.INTEREST,
+            StudentAssessment.Screen.APTITUDE: Question.Dimension.APTITUDE,
+            StudentAssessment.Screen.PERSONALITY: Question.Dimension.PERSONALITY,
+            StudentAssessment.Screen.WORK_STYLE: Question.Dimension.WORK_STYLE,
+        }
+        
+        # Get questions for current dimension
+        current_dimension = dimension_map.get(current_screen)
+        if not current_dimension:
+            sync_current_screen(assessment, request.user)
+            return Response(
+                {
+                    "success": True,
+                    "message": "No active question dimension",
+                    "data": None,
+                },
+                status=status.HTTP_200_OK,
+            )
+        
+        question_pool = get_question_pool(assessment, request.user, current_dimension)
         total_questions = question_pool.count()
-        answered_count = UserResponse.objects.filter(
-            assessment=assessment,
-            question__in=question_pool,
-        ).values("question_id").distinct().count()
+        
+        # Get answered questions for this dimension
+        answered_ids = (
+            UserResponse.objects.filter(
+                assessment=assessment,
+                question__in=question_pool
+            )
+            .values_list("question_id", flat=True)
+        )
+        answered_count = len(answered_ids)
+        
         qs = question_pool.exclude(id__in=answered_ids)
-
-        next_q = None
-        for dim in SIGNAL_ORDER:
-            candidate = qs.filter(dimension=dim).order_by("sequence_order").first()
-            if candidate:
-                next_q = candidate
-                break
+        next_q = qs.order_by("sequence_order").first()
 
         if not next_q:
             sync_current_screen(assessment, request.user)
