@@ -7,13 +7,7 @@ from common.models import BaseModule
 
 class Question(models.Model):
     class Dimension(models.TextChoices):
-        BACKGROUND = "background", "Background"
         INTEREST = "interest", "Interest"
-        ACADEMIC_STRENGTH = "academic_strength", "Academic Strength"
-        SKILL_CONFIDENCE = "skill_confidence", "Skill Confidence"
-        EXPOSURE = "exposure", "Exposure"
-        WORK_PREFERENCE = "work_preference", "Work Preference"
-        READINESS = "readiness", "Readiness"
         APTITUDE = "aptitude", "Aptitude"
         PERSONALITY = "personality", "Personality"
         WORK_STYLE = "work_style", "Work Style"
