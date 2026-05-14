@@ -5788,6 +5788,76 @@
       ]
     },
     {
+      "name": "resume_builder",
+      "item": [
+        {
+          "name": "generate_resume (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/resume/generate/?template=professional",
+              "host": ["{{base_url}}"],
+              "path": ["resume", "generate"],
+              "query": [
+                {
+                  "key": "template",
+                  "value": "professional",
+                  "description": "'professional' (default) or 'standard'"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": "",
+                  "description": "Optional profile photo (jpg/png)"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "preview_resume (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/resume/preview/?template=professional",
+              "host": ["{{base_url}}"],
+              "path": ["resume", "preview"],
+              "query": [
+                {
+                  "key": "template",
+                  "value": "professional",
+                  "description": "'professional' (default) or 'standard'"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "user",
       "item": [
         {
