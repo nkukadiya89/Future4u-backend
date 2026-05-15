@@ -112,19 +112,15 @@ class Command(BaseCommand):
                 h in reader.fieldnames
                 for h in (
                     "option_1_text",
-                    "option_1_score",
                     "option_2_text",
-                    "option_2_score",
                     "option_3_text",
-                    "option_3_score",
                     "option_4_text",
-                    "option_4_score",
                 )
             )
             if not (has_legacy_options or has_split_options):
                 raise ValueError(
                     "Missing option headers. Provide either option_1..option_5 columns "
-                    "or option_1_text/option_1_score .. option_4_text/option_4_score columns."
+                    "or option_1_text .. option_4_text columns."
                 )
 
             # Optionally prune existing questions for the domains in this CSV
@@ -366,74 +362,46 @@ class Command(BaseCommand):
                         q.mapped_streams.clear()
 
                 if has_split_options:
-                    # 4-option MCQ format with explicit scores.
+                    # 4-option MCQ format (text only).
                     for i in range(1, 5):
                         label = (r.get(f"option_{i}_text") or "").strip()
-                        score_raw = (r.get(f"option_{i}_score") or "").strip()
-                        if not label and not score_raw:
-                            continue
                         if not label:
-                            raise ValueError(f"Row {idx}: option_{i}_text cannot be blank")
-                        try:
-                            score_value = int(score_raw) if score_raw else i
-                        except ValueError as exc:
-                            raise ValueError(f"Row {idx}: option_{i}_score must be an integer") from exc
-                        if score_value < 1 or score_value > 5:
-                            raise ValueError(f"Row {idx}: option score must be 1..5")
+                            continue
 
                         o, o_created = Option.objects.get_or_create(
                             question=q,
-                            score_value=score_value,
-                            defaults={"option_text": label, "sequence_order": i},
+                            sequence_order=i,
+                            defaults={"option_text": label},
                         )
                         if o_created:
                             created_o += 1
                         else:
-                            option_changed_fields = []
                             if o.option_text != label:
                                 o.option_text = label
-                                option_changed_fields.append("option_text")
-                            if o.sequence_order != i:
-                                o.sequence_order = i
-                                option_changed_fields.append("sequence_order")
-                            if option_changed_fields:
-                                o.save(update_fields=option_changed_fields)
+                                o.save(update_fields=["option_text"])
                                 updated_o += 1
                 else:
-                    # Legacy option_1..option_5 format.
+                    # Legacy option_1..option_5 format (text only, ignore score prefix).
                     for i in range(1, 6):
                         cell = (r.get(f"option_{i}") or "").strip()
                         if not cell:
                             continue
-                        if ":" not in cell:
-                            score_value = i
-                            label = cell.strip()
-                        else:
-                            score_str, label = cell.split(":", 1)
-                            score_value = int(score_str.strip())
-                            label = label.strip()
-                        if score_value < 1 or score_value > 5:
-                            raise ValueError(f"Row {idx}: option score must be 1..5")
+                        # Strip optional "score: " prefix if present
+                        label = cell.split(":", 1)[1].strip() if ":" in cell else cell.strip()
                         if not label:
                             raise ValueError(f"Row {idx}: option label cannot be blank")
 
                         o, o_created = Option.objects.get_or_create(
                             question=q,
-                            score_value=score_value,
-                            defaults={"option_text": label, "sequence_order": i},
+                            sequence_order=i,
+                            defaults={"option_text": label},
                         )
                         if o_created:
                             created_o += 1
                         else:
-                            option_changed_fields = []
                             if o.option_text != label:
                                 o.option_text = label
-                                option_changed_fields.append("option_text")
-                            if o.sequence_order != i:
-                                o.sequence_order = i
-                                option_changed_fields.append("sequence_order")
-                            if option_changed_fields:
-                                o.save(update_fields=option_changed_fields)
+                                o.save(update_fields=["option_text"])
                                 updated_o += 1
 
         if dry_run:

@@ -8,7 +8,7 @@ from user.serializers import UserQuickSerializer
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option
-        fields = ["id", "option_text", "score_value", "sequence_order"]
+        fields = ["id", "option_text", "sequence_order"]
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -44,30 +44,18 @@ class UserResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserResponse
-        fields = ["id","assessment" ,"user", "question", "selected_option", "score_value"]
-        read_only_fields = ["id", "user", "score_value"]
+        fields = ["id", "assessment", "user", "question", "selected_option"]
+        read_only_fields = ["id", "user"]
 
     def validate(self, attrs):
         question = attrs.get("question")
         selected_option = attrs.get("selected_option")
-        score_value = attrs.get("score_value")
 
         if selected_option and question and selected_option.question_id != question.id:
             raise serializers.ValidationError(
                 {"selected_option": "Selected option does not belong to this question."}
             )
 
-        if (
-            selected_option
-            and score_value is not None
-            and score_value != selected_option.score_value
-        ):
-            raise serializers.ValidationError(
-                {"score_value": "score_value must match selected_option score."}
-            )
-
-        request = self.context.get("request") if hasattr(self, "context") else None
-        req_user = getattr(request, "user", None) if request else None
         assessment = attrs.get("assessment")
         if assessment and question:
             exists = UserResponse.objects.filter(assessment=assessment, question=question)

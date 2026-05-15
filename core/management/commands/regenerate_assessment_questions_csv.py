@@ -19,11 +19,10 @@ HEADERS = (
     "education_level",
     "target_stream",
     "sequence_order",
-    "option_1",
-    "option_2",
-    "option_3",
-    "option_4",
-    "option_5",
+    "option_1_text",
+    "option_2_text",
+    "option_3_text",
+    "option_4_text",
 )
 
 
@@ -391,12 +390,10 @@ class Command(BaseCommand):
                             "education_level": "",
                             "target_stream": "",
                             "sequence_order": str(seq),
-                            # For MCQ we keep 4 options, and leave option_5 blank.
-                            "option_1": f"1: {t.options[0]}",
-                            "option_2": f"2: {t.options[1]}",
-                            "option_3": f"3: {t.options[2]}",
-                            "option_4": f"4: {t.options[3]}",
-                            "option_5": "",
+                            "option_1_text": t.options[0],
+                            "option_2_text": t.options[1],
+                            "option_3_text": t.options[2],
+                            "option_4_text": t.options[3],
                         }
                         w.writerow(row)
                         created += 1
@@ -427,11 +424,10 @@ class Command(BaseCommand):
                             "education_level": "",
                             "target_stream": "",
                             "sequence_order": str(seq),
-                            "option_1": f"1: {t.options[0]}",
-                            "option_2": f"2: {t.options[1]}",
-                            "option_3": f"3: {t.options[2]}",
-                            "option_4": f"4: {t.options[3]}",
-                            "option_5": "",
+                            "option_1_text": t.options[0],
+                            "option_2_text": t.options[1],
+                            "option_3_text": t.options[2],
+                            "option_4_text": t.options[3],
                         }
                         w.writerow(row)
                         created += 1

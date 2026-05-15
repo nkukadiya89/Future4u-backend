@@ -512,7 +512,6 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
             question=question,
             defaults={
                 "selected_option": option,
-                "score_value": option.score_value,
             },
         )
         sync_current_screen(assessment, request.user)
@@ -522,7 +521,6 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
                 "success": True,
                 "message": "Response saved",
                 "data": {
-                    "score": option.score_value,
                     "current_screen": assessment.current_screen,
                 },
             },

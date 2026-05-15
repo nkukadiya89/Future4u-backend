@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from common.models import BaseModule
@@ -79,9 +78,6 @@ class Option(models.Model):
         related_name="options",
     )
     option_text = models.CharField(max_length=255)
-    score_value = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)]
-    )
     sequence_order = models.PositiveSmallIntegerField(
         default=0,
         help_text="Display order of this option within its question.",
@@ -118,9 +114,6 @@ class UserResponse(models.Model):
         on_delete=models.CASCADE,
         related_name="responses",
     )
-    score_value = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)]
-    )
 
     class Meta:
         db_table = "assessment_user_response"
@@ -133,7 +126,7 @@ class UserResponse(models.Model):
         ]
 
     def __str__(self):
-        return f"user={self.user_id}, question={self.question_id}, score={self.score_value}"
+        return f"user={self.user_id}, question={self.question_id}, option={self.selected_option_id}"
 
 class StudentAssessment(BaseModule):
     class Screen(models.TextChoices):
