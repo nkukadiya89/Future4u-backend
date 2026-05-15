@@ -18,14 +18,9 @@ SAMPLE_CSV_HEADERS = (
     "domain_code",
     "domain_name",
     "parent",
-    "acceptance_level",
-    "score",
     "description",
+    "domain_image",
     "is_active",
-    "interest_weight",
-    "aptitude_weight",
-    "personality_weight",
-    "work_style_weight",
 )
 
 
@@ -123,18 +118,6 @@ def validate_domain_data(
     name = (data.get("domain_name") or "").strip()
     if not name:
         raise ValidationError({"domain_name": "This field may not be blank."})
-    pal = data.get("parent_acceptance_level")
-    if pal is None:
-        raise ValidationError({"parent_acceptance_level": "This field is required."})
-    pal = int(pal)
-    if pal < 1 or pal > 5:
-        raise ValidationError({"parent_acceptance_level": "Must be between 1 and 5."})
-    score = data.get("future_relevance_score")
-    if score is None:
-        raise ValidationError({"future_relevance_score": "This field is required."})
-    score = int(score)
-    if score < 1 or score > 100:
-        raise ValidationError({"future_relevance_score": "Must be between 1 and 100."})
     exclude_pk = instance.pk if instance and instance.pk else None
     if case_insensitive_code_exists(code=code, exclude_pk=exclude_pk):
         raise ValidationError(
@@ -145,9 +128,8 @@ def validate_domain_data(
     return {
         "domain_code": code,
         "domain_name": name,
-        "parent_acceptance_level": pal,
-        "future_relevance_score": score,
         "description": (data.get("description") or "").strip(),
+        "domain_image": (data.get("domain_image") or "").strip(),
         "is_active": bool(data.get("is_active", True)),
     }
 
@@ -255,7 +237,6 @@ def tree_domains():
             "domain_name",
             "parent_id",
             "is_active",
-            "future_relevance_score",
         )
         .order_by("domain_name")
     )
@@ -275,7 +256,6 @@ def _build_tree(by_parent, parent_id):
                 "domain_code": obj.domain_code,
                 "domain_name": obj.domain_name,
                 "is_active": obj.is_active,
-                "future_relevance_score": obj.future_relevance_score,
                 "children": _build_tree(by_parent, obj.id),
             }
         )
@@ -289,34 +269,11 @@ def normalize_import_row(row: dict[str, Any]) -> dict[str, Any]:
         if not kk:
             continue
         out[kk] = v
-    if "acceptance_level" in out and "parent_acceptance_level" not in out:
-        out["parent_acceptance_level"] = out.pop("acceptance_level")
-    if "score" in out and "future_relevance_score" not in out:
-        out["future_relevance_score"] = out.pop("score")
-    for k in ("parent_acceptance_level", "future_relevance_score"):
-        if k in out and out[k] not in ("", None):
-            if isinstance(out[k], int):
-                continue
-            try:
-                out[k] = int(float(str(out[k]).strip()))
-            except (TypeError, ValueError):
-                raise ValueError(f"Invalid {k}")
     if "is_active" in out and out["is_active"] not in ("", None):
         v = str(out["is_active"]).lower()
         out["is_active"] = v in ("1", "true", "yes", "y")
-
-    # Optional affinity weights (floats 0..1). Keep None/"" as None.
-    for k in (
-        "interest_weight",
-        "aptitude_weight",
-        "personality_weight",
-        "work_style_weight",
-    ):
-        if k in out and out[k] not in ("", None):
-            try:
-                out[k] = float(str(out[k]).strip())
-            except (TypeError, ValueError):
-                raise ValueError(f"Invalid {k}")
+    if out.get("domain_image") in ("", None):
+        out.pop("domain_image", None)
     return out
 
 
@@ -575,22 +532,6 @@ def sample_csv_bytes() -> bytes:
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(SAMPLE_CSV_HEADERS)
-    w.writerow(
-        ["ROOT", "Root domain", "", "3", "80", "Top-level sample", "1", "", "", "", ""]
-    )
-    w.writerow(
-        [
-            "CHILD_A",
-            "Child A",
-            "ROOT",
-            "2",
-            "60",
-            "Under ROOT",
-            "1",
-            "0.25",
-            "0.25",
-            "0.25",
-            "0.25",
-        ]
-    )
+    w.writerow(["ROOT", "Root domain", "", "Top-level sample", "", "1"])
+    w.writerow(["CHILD_A", "Child A", "ROOT", "Under ROOT", "", "1"])
     return buf.getvalue().encode("utf-8")

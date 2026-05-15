@@ -46,21 +46,15 @@ class DomainAdmin(BaseAdmin):
     list_display = (
         "domain_code",
         "domain_name",
-        "domain_category",
         "parent",
         "is_active",
         "deleted",
-        "interest_weight",
-        "aptitude_weight",
-        "personality_weight",
-        "work_style_weight",
-        "score_display",
         "created_at",
         "row_actions",
     )
     list_display_links = ("domain_code", "domain_name")
-    search_fields = ("domain_code", "domain_name", "domain_category")
-    list_filter = ("is_active", "deleted", "domain_category", "parent")
+    search_fields = ("domain_code", "domain_name")
+    list_filter = ("is_active", "deleted", "parent")
     list_select_related = ("parent",)
     ordering = ("-created_at",)
     raw_id_fields = ("parent", "created_by", "updated_by")
@@ -79,17 +73,9 @@ class DomainAdmin(BaseAdmin):
                 "fields": (
                     "domain_code",
                     "domain_name",
-                    "domain_category",
                     "parent",
-                    "parent_acceptance_level",
-                    "future_relevance_score",
                     "description",
-                    (
-                        "interest_weight",
-                        "aptitude_weight",
-                        "personality_weight",
-                        "work_style_weight",
-                    ),
+                    "domain_image",
                     "is_active",
                 )
             },
@@ -102,10 +88,6 @@ class DomainAdmin(BaseAdmin):
             },
         ),
     )
-
-    @admin.display(description="Score", ordering="future_relevance_score")
-    def score_display(self, obj):
-        return obj.future_relevance_score
 
     @admin.display(description="Actions")
     def row_actions(self, obj):
@@ -149,7 +131,7 @@ class DomainAdmin(BaseAdmin):
     def sample_csv_view(self, request):
         data = domain_service.sample_csv_bytes()
         resp = HttpResponse(data, content_type="text/csv; charset=utf-8")
-        resp["Content-Disposition"] = 'attachment; filename="domain_master_sample.csv"'
+        resp["Content-Disposition"] = 'attachment; filename="domain_hierarchy_sample.csv"'
         return resp
 
     def upload_view(self, request):

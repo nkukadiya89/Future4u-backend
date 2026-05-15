@@ -26,15 +26,17 @@ class UserChangeForm(BaseUserChangeForm):
 
 
 class UserCreationForm(BaseUserCreationForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["username"].required = False
+    username = forms.CharField(required=False, max_length=60)
+
+    class Meta(BaseUserCreationForm.Meta):
+        model = User
+        fields = ("email", "username")
+        field_classes = {}  # prevent UsernameField being applied to username
 
     def clean_username(self):
         username = self.cleaned_data.get("username")
         if not username:
-            email = self.cleaned_data.get("email")
-            return email if email else ""
+            return self.cleaned_data.get("email") or ""
         return username
 
 

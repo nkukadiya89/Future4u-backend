@@ -17,8 +17,6 @@ SAMPLE_CSV_HEADERS = (
     "stream_code",
     "stream_name",
     "sequence_order",
-    "parent_safe_label",
-    "traditional_equivalent",
     "description",
     "education_level",
     "is_active",
@@ -27,7 +25,6 @@ REQUIRED_IMPORT_HEADERS = {
     "stream_code",
     "stream_name",
     "sequence_order",
-    "parent_safe_label",
 }
 HEADER_ALIASES = {
     "code": "stream_code",
@@ -35,7 +32,6 @@ HEADER_ALIASES = {
     "name": "stream_name",
     "order": "sequence_order",
     "sequence": "sequence_order",
-    "parent_safe": "parent_safe_label",
     "education_level_code": "education_level",
     "level_code": "education_level",
     "active": "is_active",
@@ -199,7 +195,7 @@ def normalize_import_row(row: dict[str, Any]) -> dict[str, Any]:
         except (TypeError, ValueError):
             raise ValueError("Invalid sequence_order")
 
-    for b in ("parent_safe_label", "is_active"):
+    for b in ("is_active",):
         if b in out and out[b] not in ("", None):
             out[b] = str(out[b]).lower() in ("1", "true", "yes", "y")
 
@@ -466,8 +462,6 @@ def sample_csv_bytes() -> bytes:
             "science",
             "Science",
             "1",
-            "1",
-            "General Science",
             "Physics/Chemistry/Biology path",
             "secondary",
             "1",
@@ -478,8 +472,6 @@ def sample_csv_bytes() -> bytes:
             "commerce",
             "Commerce",
             "2",
-            "1",
-            "Business Studies",
             "Accounts/Economics path",
             "higher_secondary",
             "1",

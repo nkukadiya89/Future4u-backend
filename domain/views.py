@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.filters import OrderingFilter
-from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -31,6 +31,7 @@ from utils.cache_keys import dropdown_key
 class DomainViewSet(ModelViewSet):
     serializer_class = DomainSerializer
     pagination_class = Pagination
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
     filter_backends = [CustomSearchFilter, OrderingFilter]
     search_fields = ["domain_code", "domain_name", "description"]
     ordering_fields = [
@@ -38,8 +39,6 @@ class DomainViewSet(ModelViewSet):
         "domain_name",
         "created_at",
         "updated_at",
-        "future_relevance_score",
-        "parent_acceptance_level",
     ]
     permission_classes = [DomainMasterPermission]
     authentication_classes = [JWTAuthentication]

@@ -5788,6 +5788,76 @@
       ]
     },
     {
+      "name": "resume_builder",
+      "item": [
+        {
+          "name": "generate_resume (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/resume/generate/?template=professional",
+              "host": ["{{base_url}}"],
+              "path": ["resume", "generate"],
+              "query": [
+                {
+                  "key": "template",
+                  "value": "professional",
+                  "description": "'professional' (default) or 'standard'"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": "",
+                  "description": "Optional profile photo (jpg/png)"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "preview_resume (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/resume/preview/?template=professional",
+              "host": ["{{base_url}}"],
+              "path": ["resume", "preview"],
+              "query": [
+                {
+                  "key": "template",
+                  "value": "professional",
+                  "description": "'professional' (default) or 'standard'"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "user",
       "item": [
         {
@@ -9512,6 +9582,64 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "user-detail (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-detail/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user-detail",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "user-detail (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-detail/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user-detail",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"first_name\": \"John\", \"last_name\": \"Doe\", \"phone\": \"1234567890\", \"about_me\": \"Student\", \"designation\": \"Student\"}"
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -9547,38 +9675,6 @@
           "response": []
         },
         {
-          "name": "profile (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/profile/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "profile",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"role\": \"student\",\n  \"language\": [\n    \"english\",\n    \"hindi\"\n  ],\n  \"medium\": \"english\",\n  \"country\": \"{{country_id}}\",\n  \"state\": \"{{state_id}}\",\n  \"city\": \"{{city_id}}\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"stream\": \"{{stream_id}}\",\n  \"science_track\": \"pcm\",\n  \"interest_categories\": [\n    \"technology\",\n    \"healthcare\"\n  ],\n  \"career_goal\": \"study_further\",\n  \"parent_support_level\": \"very_supportive\",\n  \"user_concerns\": [\n    \"high_education_cost\",\n    \"future_demand\"\n  ],\n  \"career_values\": [\n    \"high_salary_potential\",\n    \"growth_and_learning\"\n  ],\n  \"platform_goals\": [\n    \"career_clarity\",\n    \"course_recommendations\"\n  ]\n}"
-            }
-          },
-          "response": []
-        },
-        {
           "name": "profile (PATCH)",
           "request": {
             "method": "PATCH",
@@ -9593,19 +9689,203 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/profile/",
+              "raw": "{{base_url}}/api/profile/{{user_profile_id}}/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "profile",
+                "{{user_profile_id}}",
                 ""
               ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"role\": \"student\",\n  \"science_track\": \"pcm\",\n  \"career_goal\": \"study_further\",\n  \"parent_support_level\": \"very_supportive\",\n  \"user_concerns\": [\n    \"high_education_cost\"\n  ],\n  \"career_values\": [\n    \"growth_and_learning\"\n  ],\n  \"platform_goals\": [\n    \"career_clarity\"\n  ],\n  \"interest_categories\": [\n    \"technology\"\n  ],\n  \"language\": [\n    \"english\"\n  ],\n  \"medium\": \"english\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "student-profile (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/student-profile/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "student-profile",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "student-profile (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/student-profile/{{student_profile_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "student-profile",
+                "{{student_profile_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"language\": [\n    \"{{language_id}}\",\n    \"{{language_id_2}}\",\n    \"{{language_id_3}}\"\n  ],\n  \"science_track\": \"pcm\",\n  \"medium\": \"english\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"stream\": \"{{stream_id}}\",\n  \"linkedin_url\": \"https://linkedin.com/in/aaravpatel\",\n  \"github_url\": \"https://github.com/aaravpatel\",\n  \"portfolio\": \"https://aaravportfolio.com\",\n  \"career_direction\": {\n    \"role\": \"Frontend Developer\",\n    \"tags\": [\n      \"SaaS\",\n      \"Web Applications\"\n    ],\n    \"description\": \"Passionate about building interactive user interfaces and solving real-world problems using modern JavaScript frameworks.\"\n  },\n  \"education\": [\n    {\n      \"degree\": \"B.Tech in Computer Engineering\",\n      \"college\": \"Silver Oak University\",\n      \"year\": 2025,\n      \"cgpa\": 8.4\n    }\n  ],\n  \"skills\": {\n    \"technical\": [\n      {\n        \"name\": \"JavaScript\"\n      },\n      {\n        \"name\": \"React.js\"\n      },\n      {\n        \"name\": \"HTML5 & CSS3\"\n      },\n      {\n        \"name\": \"Tailwind CSS\"\n      },\n      {\n        \"name\": \"Git & GitHub\"\n      }\n    ],\n    \"soft\": [\n      \"Problem Solving\",\n      \"Communication\",\n      \"Team Collaboration\"\n    ]\n  },\n  \"projects\": [\n    {\n      \"title\": \"E-commerce Web Application\",\n      \"problem_statement\": \"Small businesses lack affordable online storefront solutions.\",\n      \"role\": \"Frontend Developer\",\n      \"technologies\": [\n        \"React.js\",\n        \"Tailwind CSS\",\n        \"Node.js\"\n      ],\n      \"impact\": \"Improved page load speed by 30% and handled 500+ test users.\"\n    },\n    {\n      \"title\": \"Task Management App\",\n      \"problem_statement\": \"Students struggle to track assignments efficiently.\",\n      \"role\": \"Frontend Developer\",\n      \"technologies\": [\n        \"React.js\",\n        \"Firebase\"\n      ],\n      \"impact\": \"Increased task completion rate by 40% among test users.\"\n    }\n  ],\n  \"internships\": [\n    {\n      \"company\": \"WebTech Solutions\",\n      \"duration\": \"3 Months (June 2024 - Aug 2024)\",\n      \"responsibilities\": [\n        \"Built responsive UI components\",\n        \"Fixed frontend bugs\",\n        \"Collaborated with backend team\"\n      ],\n      \"achievement\": \"Reduced UI bugs by 25%\"\n    }\n  ],\n  \"certifications\": [\n    {\n      \"name\": \"React Developer Certification\",\n      \"issuer\": \"Coursera\",\n      \"year\": 2024\n    }\n  ],\n  \"achievements\": [\n    \"1st Rank in College Hackathon 2024\",\n    \"Finalist in State-Level Coding Competition\"\n  ],\n  \"extra_activities\": [\n    \"Core Member – Coding Club\",\n    \"Organized 2 technical workshops\"\n  ],\n  \"additional_insights\": {\n    \"strengths\": \"Fast learner, strong debugging skills, attention to detail\",\n    \"weaknesses\": \"Tendency to over-focus on UI perfection (working on balancing speed vs quality)\",\n    \"preferred_job_location\": \"Bangalore / Remote\"\n  }\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "professional-profile (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional-profile/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional-profile",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "professional-profile (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional-profile/{{professional_profile_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional-profile",
+                "{{professional_profile_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"language\": [\"{{language_id}}\"],\n  \"employment_type\": \"salaried_employee\",\n  \"years_of_experience\": \"1-3\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"current_job_title\": \"Software Engineer\",\n  \"current_industry\": \"Technology\",\n  \"company_size\": \"100-500\",\n  \"career_direction\": {\n    \"role\": \"Senior Software Engineer\",\n    \"key_expertise_areas\": [\"SaaS\", \"Cloud Computing\"],\n    \"total_experince\": \"5 Years\"\n  },\n  \"education\": [\n    {\n      \"degree\": \"B.Tech in Computer Engineering\",\n      \"college\": \"Silver Oak University\",\n      \"year\": 2022,\n      \"cgpa\": 8.5\n    }\n  ],\n  \"work_experience\": [\n    {\n      \"company\": \"Tech Solutions Inc\",\n      \"duration\": \"2 Years\",\n      \"role\": \"Software Developer\",\n      \"responsibilities\": [\"Built REST APIs\", \"Optimized database queries\"],\n      \"key_achievements\": [\"Led team of 3 developers\", \"Reduced API latency by 30%\"],\n      \"key_projects\": [\"E-commerce Platform\", \"Real-time Analytics Dashboard\"]\n    }\n  ],\n  \"skills\": {\n    \"technical\": [\n      {\"name\": \"Python\"},\n      {\"name\": \"Django\"},\n      {\"name\": \"React.js\"},\n      {\"name\": \"AWS\"}\n    ],\n    \"domain_knowledge\": [\"Full Stack Development\", \"Cloud Architecture\"],\n    \"leadership_skills\": [\"Team Management\", \"Mentoring\", \"Agile Methodology\"]\n  },\n  \"certifications\": [\n    {\n      \"name\": \"AWS Certified Developer\",\n      \"issuer\": \"Amazon Web Services\",\n      \"year\": 2023\n    }\n  ],\n  \"key_highlights\": [\n    \"Led a team of 5 developers\",\n    \"Reduced API response time by 40%\"\n  ],\n  \"additional_insights\": [\n    \"Open to remote work\",\n    \"Interested in AI/ML projects\"\n  ],\n  \"linkedin_url\": \"https://linkedin.com/in/username\",\n  \"github_url\": \"https://github.com/username\",\n  \"portfolio\": \"https://portfolio.com\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "parent-profile (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent-profile/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent-profile",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "parent-profile (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent-profile/{{parent_profile_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent-profile",
+                "{{parent_profile_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"child_name\": \"John Doe\", \"child_education_level\": 1, \"stream\": 1, \"academic_performance\": \"good\", \"relationship\": \"father\", \"language\": [1]}"
             }
           },
           "response": []
@@ -9823,38 +10103,13 @@
     },
     {
       "name": "assessment",
+      "item": []
+    },
+    {
+      "name": "student_assessment",
       "item": [
         {
-          "name": "questions grouped (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/assessment/questions/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "assessment",
-                "questions",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "submit (POST)",
+          "name": "1. Start Assessment (POST)",
           "request": {
             "method": "POST",
             "header": [
@@ -9868,26 +10123,25 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/assessment/submit/",
+              "raw": "{{base_url}}/api/student/assessments/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
-                "assessment",
-                "submit",
-                ""
+                "student",
+                "assessments"
               ]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"responses\": [\n    {\n      \"question_id\": 1,\n      \"option_id\": 1\n    }\n  ]\n}"
+              "raw": "{\n  \"force_new\": false\n}"
             }
           },
           "response": []
         },
         {
-          "name": "summary (GET)",
+          "name": "Assessment Status (GET)",
           "request": {
             "method": "GET",
             "header": [
@@ -9901,15 +10155,200 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/assessment/summary/",
+              "raw": "{{base_url}}/api/student/assessments/status/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
-                "assessment",
-                "summary",
-                ""
+                "student",
+                "assessments",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Update Assessment Fields (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/student/assessments/{{assessment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "student",
+                "assessments",
+                "{{assessment_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain_category\": \"{{domain_category_id}}\",\n  \"domain\": \"{{domain_id}}\",\n  \"career_direction\": [\"study further\", \"Internship\"],\n  \"parent_support\": \"very_supportive\",\n  \"concerns\": [\"Job Security\", \"Wrong career choice\"],\n  \"career_values\": [\"High Salary\"],\n  \"user_goals\": [\"Career Clarity\"]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Next Question (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/questions/next/?assessment_id={{assessment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "questions",
+                "next"
+              ],
+              "query": [
+                {
+                  "key": "assessment_id",
+                  "value": "{{assessment_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Save Answer (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/responses/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "responses"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assessment\": {{assessment_id}},\n  \"question\": {{question_id}},\n  \"selected_option\": {{option_id}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5. Complete Assessment (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/student/assessments/{{assessment_id}}/complete/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "student",
+                "assessments",
+                "{{assessment_id}}",
+                "complete"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Assessments (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/student/assessments/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "student",
+                "assessments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Assessment Details (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/student/assessments/{{assessment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "student",
+                "assessments",
+                "{{assessment_id}}"
               ]
             }
           },
@@ -10167,8 +10606,19 @@
               ]
             },
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"parent_acceptance_level\": 2,\n  \"future_relevance_score\": 95,\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true,\n  \"interest_weight\": 0.35,\n  \"aptitude_weight\": 0.35,\n  \"personality_weight\": 0.15,\n  \"work_style_weight\": 0.15\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"domain_code\":\"AI_ML\",\"domain_name\":\"AI & Machine Learning\",\"parent_id\":\"{{parent_domain_id}}\",\"description\":\"Artificial intelligence and machine learning careers\",\"is_active\":true}",
+                  "type": "text"
+                },
+                {
+                  "key": "domain_image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
             }
           },
           "response": []
@@ -10200,8 +10650,19 @@
               ]
             },
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"parent_acceptance_level\": 2,\n  \"future_relevance_score\": 95,\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true,\n  \"interest_weight\": 0.35,\n  \"aptitude_weight\": 0.35,\n  \"personality_weight\": 0.15,\n  \"work_style_weight\": 0.15\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"domain_code\":\"AI_ML\",\"domain_name\":\"AI & Machine Learning\",\"parent_id\":\"{{parent_domain_id}}\",\"description\":\"Artificial intelligence and machine learning careers\",\"is_active\":true}",
+                  "type": "text"
+                },
+                {
+                  "key": "domain_image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
             }
           },
           "response": []
@@ -10233,8 +10694,19 @@
               ]
             },
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"domain_code\": \"ai_data\",\n  \"domain_name\": \"AI & Data Science\",\n  \"domain_category\": \"technology\",\n  \"parent_acceptance_level\": 2,\n  \"future_relevance_score\": 95,\n  \"description\": \"Artificial intelligence machine learning and data science\",\n  \"is_active\": true,\n  \"interest_weight\": 0.35,\n  \"aptitude_weight\": 0.35,\n  \"personality_weight\": 0.15,\n  \"work_style_weight\": 0.15\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"domain_name\":\"AI & Machine Learning\",\"parent_id\":\"{{parent_domain_id}}\",\"description\":\"Artificial intelligence and machine learning careers\",\"is_active\":true}",
+                  "type": "text"
+                },
+                {
+                  "key": "domain_image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
             }
           },
           "response": []
@@ -10483,7 +10955,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"rows\": [\n    {\n      \"domain_code\": \"bulk_a\",\n      \"domain_name\": \"Bulk A\",\n      \"parent_acceptance_level\": 3,\n      \"future_relevance_score\": 40,\n      \"description\": \"\",\n      \"is_active\": true\n    }\n  ]\n}"
+              "raw": "{\n  \"rows\": [\n    {\n      \"domain_code\": \"BULK_A\",\n      \"domain_name\": \"Bulk A\",\n      \"parent\": \"SCI_TECH\",\n      \"description\": \"\",\n      \"is_active\": true\n    }\n  ]\n}"
             }
           },
           "response": []
@@ -11675,7 +12147,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"stream_code\": \"science\",\n  \"stream_name\": \"Science\",\n  \"sequence_order\": 1,\n  \"parent_safe_label\": true,\n  \"traditional_equivalent\": \"General Science\",\n  \"description\": \"Physics/Chemistry/Biology path\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"is_active\": true\n}"
+              "raw": "{\n  \"stream_code\": \"science\",\n  \"stream_name\": \"Science\",\n  \"sequence_order\": 1,\n  \"description\": \"Physics Chemistry Mathematics Biology focused stream\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"is_active\": true\n}"
             }
           },
           "response": []
@@ -11775,7 +12247,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"stream_code\": \"science\",\n  \"stream_name\": \"Science Updated\",\n  \"sequence_order\": 1,\n  \"parent_safe_label\": true,\n  \"traditional_equivalent\": \"General Science\",\n  \"description\": \"Updated description\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"is_active\": true\n}"
+              "raw": "{\n  \"stream_code\": \"science\",\n  \"stream_name\": \"Science Updated\",\n  \"sequence_order\": 1,\n  \"description\": \"Updated description\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"is_active\": true\n}"
             }
           },
           "response": []
@@ -11933,7 +12405,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"rows\": [\n    {\n      \"stream_code\": \"commerce\",\n      \"stream_name\": \"Commerce\",\n      \"sequence_order\": 2,\n      \"parent_safe_label\": true,\n      \"traditional_equivalent\": \"Business Studies\",\n      \"description\": \"Accounts/Economics path\",\n      \"education_level\": \"{{education_level_id}}\",\n      \"is_active\": true\n    }\n  ]\n}"
+              "raw": "{\n  \"rows\": [\n    {\n      \"stream_code\": \"commerce\",\n      \"stream_name\": \"Commerce\",\n      \"sequence_order\": 2,\n      \"description\": \"Accounts Business Studies Economics focused stream\",\n      \"education_level\": \"{{education_level_id}}\",\n      \"is_active\": true\n    }\n  ]\n}"
             }
           },
           "response": []
@@ -13353,8 +13825,14 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/auth/register/",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register",
+                ""
+              ]
             },
             "body": {
               "mode": "formdata",
@@ -13376,19 +13854,56 @@
           "response": []
         },
         {
+          "name": "logout (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout", ""]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "verify-success (POST)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/verify-success/",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "verify-success", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "verify-success",
+                ""
+              ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"otp\": \"{{otp}}\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": []
@@ -13397,16 +13912,30 @@
           "name": "get-token (POST)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/get-token/",
-              "host": ["{{base_url}}"],
-              "path": ["get-token", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get-token",
+                ""
+              ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"username\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": []
@@ -13416,18 +13945,34 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Content-Type", "value": "application/json"},
-              {"key": "Authorization", "value": "Bearer {{access_token}}"}
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/auth/change-password/",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "change-password", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "change-password",
+                ""
+              ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"current_password\": \"{{user_password}}\",\n  \"new_password\": \"{{new_password}}\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": []
@@ -13436,16 +13981,31 @@
           "name": "forgot-password (POST)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/forgot-password/",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "forgot-password", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password",
+                ""
+              ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{user_email}}\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": []
@@ -13454,16 +14014,64 @@
           "name": "reset-password (POST)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/auth/reset-password/",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "reset-password", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password",
+                ""
+              ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"token\": \"{{reset_token}}\",\n  \"new_password\": \"{{new_password}}\",\n  \"re_enter_password\": \"{{new_password}}\"\n}",
-              "options": {"raw": {"language": "json"}}
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "resend-otp (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/resend-otp/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "resend-otp",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{user_email}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": []
@@ -13883,6 +14491,134 @@
           }
         }
       ]
+    },
+    {
+      "name": "resume_builder",
+      "item": [
+        {
+          "name": "generate (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/resume/generate/?template=professional",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "resume",
+                "generate",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "template",
+                  "value": "professional",
+                  "description": "standard | professional (default: professional)"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": "",
+                  "description": "Optional profile photo (jpg/png)"
+                }
+              ]
+            },
+            "description": "Generates and downloads a PDF resume for the logged-in user. Accepts an optional photo file upload. Returns a PDF file."
+          },
+          "response": []
+        },
+        {
+          "name": "preview (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/resume/preview/?template=professional",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "resume",
+                "preview",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "template",
+                  "value": "professional",
+                  "description": "standard | professional (default: professional)"
+                }
+              ]
+            },
+            "description": "Returns the resume data as JSON for frontend preview or debugging. Does not call AI or generate a PDF."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "user_profile_id",
+      "value": "1"
+    },
+    {
+      "key": "student_profile_id",
+      "value": "1"
+    },
+    {
+      "key": "professional_profile_id",
+      "value": "1"
+    },
+    {
+      "key": "parent_profile_id",
+      "value": "1"
+    },
+    {
+      "key": "language_id",
+      "value": "1"
+    },
+    {
+      "key": "language_id_2",
+      "value": "2"
+    },
+    {
+      "key": "language_id_3",
+      "value": "3"
+    },
+    {
+      "key": "parent_domain_id",
+      "value": "1"
     }
   ]
 }

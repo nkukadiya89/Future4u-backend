@@ -66,7 +66,7 @@ class BaseModule(models.Model):
         related_name="%(class)s_deleted",
     )
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True, db_index=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
     deleted = models.BooleanField(default=False)
 
@@ -76,47 +76,40 @@ class BaseModule(models.Model):
 
     class Meta:
         abstract = True
-
+    
     def save(self, *args, **kwargs):
-        is_new = self._state.adding
-        user = kwargs.pop("user", None)
-        if is_new:
+        user = kwargs.pop('user', None)
+        if user is None and hasattr(self, '_request_user'):
+            user = self._request_user
 
-            if self.updated_at is None:
-                self.updated_at = timezone.now()
-            self.updated_by = None
+        update_fields = kwargs.get('update_fields')
+
+        if self._state.adding:
             if user and not self.created_by:
                 self.created_by = user
+            self.updated_by = None
+            self.updated_at = None
         else:
-            old_deleted = (
-                getattr(self.__class__.objects.get(pk=self.pk), "deleted", False)
-                if self.pk
-                else False
-            )
-            current_deleted = getattr(self, "deleted", False)
-
-            if old_deleted == current_deleted and not current_deleted:
-                self.updated_at = timezone.now()
-
-            if user:
-                self.updated_by = user
-
+            if update_fields is None:
+                if user:
+                    self.updated_by = user
+                if not self.deleted:
+                    self.updated_at = timezone.now()
+            else:
+                if 'updated_by' in update_fields and user:
+                    self.updated_by = user
+                if 'updated_at' in update_fields and not self.deleted:
+                    self.updated_at = timezone.now()
         super().save(*args, **kwargs)
 
     def soft_delete(self, user=None):
-        """
-        Soft delete the record by setting deleted=True, deleted_at, and deleted_by.
-        This ensures audit trail is maintained.
-        """
         self.deleted = True
         self.deleted_at = timezone.now()
         if user:
             self.deleted_by = user
-        models.Model.save(self, update_fields=["deleted", "deleted_at", "deleted_by"])
-
-        return (1, {self.__class__.__name__: [self.pk]})
-
-
+        elif hasattr(self, '_request_user'):
+            self.deleted_by = self._request_user
+        super().save(update_fields=['deleted', 'deleted_at', 'deleted_by'])
 """
 NOTE:
 API/view concerns like ArchiveMixin should not live in models modules.

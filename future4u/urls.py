@@ -25,19 +25,10 @@ from recommendation.views import (
     RecommendationDomainDetailAPIView,
     RecommendationListAPIView,
 )
-from user.user_auth import CustomTokenObtainPairView
-from user_profile.views import UserProfileViewSet
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("get-token/", CustomTokenObtainPairView.as_view(), name="get_token"),
-    path(
-        "api/profile/",
-        UserProfileViewSet.as_view(
-            {"get": "list", "post": "create", "patch": "partial_update"}
-        ),
-        name="api-profile",
-    ),
     path(
         "api/recommendations/",
         RecommendationListAPIView.as_view(),
@@ -61,4 +52,5 @@ urlpatterns = [
     path("", include(future4u_router.urls)),
     path("", include("subscription.urls")),
     path("api/v1/", include("subscription.urls")),
+    path("", include("resume_builder.urls")),
 ]

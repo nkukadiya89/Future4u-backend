@@ -170,8 +170,7 @@ def _assessment_dimension_scores_0_1(*, user_id: int) -> dict[str, float]:
 
 
 DOMAIN_DIM_WEIGHTS: dict[str, float] = {
-    # Default dimension weights used when a Domain has no per-domain weights set.
-    # Per-domain overrides are loaded from Domain.interest_weight / aptitude_weight etc.
+    # Default dimension weights used for all domains.
     # Must sum to 1.0.
     "interest": 0.35,
     "aptitude": 0.30,
@@ -183,17 +182,8 @@ DOMAIN_DIM_WEIGHTS: dict[str, float] = {
 def _get_domain_dim_weights(domain: Domain | None) -> dict[str, float]:
     """
     Return dimension weights for a domain.
-    Uses per-domain weights from Domain model if all 4 are set; falls back to DOMAIN_DIM_WEIGHTS.
+    Domain-specific weight fields were removed, so all domains use the shared defaults.
     """
-    if domain is not None:
-        w = {
-            "interest": domain.interest_weight,
-            "aptitude": domain.aptitude_weight,
-            "personality": domain.personality_weight,
-            "work_style": domain.work_style_weight,
-        }
-        if all(v is not None for v in w.values()):
-            return {k: float(v) for k, v in w.items()}
     return DOMAIN_DIM_WEIGHTS
 
 
@@ -701,11 +691,6 @@ def generate_recommendation(
             "domain__id",
             "domain__domain_name",
             "domain__domain_code",
-            "domain__future_relevance_score",
-            "domain__interest_weight",
-            "domain__aptitude_weight",
-            "domain__personality_weight",
-            "domain__work_style_weight",
         )
     )
     if not stream_domain_rows:
@@ -799,9 +784,7 @@ def generate_recommendation(
                     top_dim=top_dim,
                     top_dim_score=float(top_dim_score),
                     mapping_weight=mapping_weight,
-                    domain_future_relevance=getattr(
-                        dom, "future_relevance_score", None
-                    ),
+                    domain_future_relevance=None,
                 ),
             }
         )
@@ -1092,7 +1075,7 @@ def generate_recommendation(
                 "careers": breakdown_careers,
                 "formulae": {
                     "dimension_normalization": "normalized=(avg_score-1)/4",
-                    "domain_score": f"interest*{DOMAIN_DIM_WEIGHTS['interest']} + aptitude*{DOMAIN_DIM_WEIGHTS['aptitude']} + personality*{DOMAIN_DIM_WEIGHTS['personality']} + work_style*{DOMAIN_DIM_WEIGHTS['work_style']} (reweighted by available dims; per-domain overrides apply)",
+                    "domain_score": f"interest*{DOMAIN_DIM_WEIGHTS['interest']} + aptitude*{DOMAIN_DIM_WEIGHTS['aptitude']} + personality*{DOMAIN_DIM_WEIGHTS['personality']} + work_style*{DOMAIN_DIM_WEIGHTS['work_style']} (reweighted by available dims)",
                     "multi_domain_leakage": "contribution_per_domain = value/N",
                     "stream_influence": f"final = domain_score * (1 + mapping_weight/100*{_STREAM_INFLUENCE})",
                     "career": "cscore=sqrt(dscore)*(mw/100); career_score=(cscore/sum(cscores))*100",
@@ -1148,7 +1131,7 @@ def generate_recommendation(
             "careers": breakdown_careers,
             "formulae": {
                 "dimension_normalization": "normalized=(avg_score-1)/4",
-                "domain_score": f"interest*{DOMAIN_DIM_WEIGHTS['interest']} + aptitude*{DOMAIN_DIM_WEIGHTS['aptitude']} + personality*{DOMAIN_DIM_WEIGHTS['personality']} + work_style*{DOMAIN_DIM_WEIGHTS['work_style']} (reweighted by available dims; per-domain overrides apply)",
+                "domain_score": f"interest*{DOMAIN_DIM_WEIGHTS['interest']} + aptitude*{DOMAIN_DIM_WEIGHTS['aptitude']} + personality*{DOMAIN_DIM_WEIGHTS['personality']} + work_style*{DOMAIN_DIM_WEIGHTS['work_style']} (reweighted by available dims)",
                 "multi_domain_leakage": "contribution_per_domain = value/N",
                 "stream_influence": f"final = domain_score * (1 + mapping_weight/100*{_STREAM_INFLUENCE})",
                 "career": "cscore=sqrt(dscore)*(mw/100); career_score=(cscore/sum(cscores))*100",

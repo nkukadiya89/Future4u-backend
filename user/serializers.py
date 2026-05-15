@@ -112,12 +112,16 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "email", "first_name", "phone", "education_level", "stream"]
 
     def get_education_level(self, obj):
-        profile = getattr(obj, "profile", None)
-        return getattr(profile, "education_level_id", None) if profile else None
+        if obj.user_type == obj.Role.STUDENT:
+            student_profile = getattr(obj, "student_profile", None)
+            return getattr(student_profile, "education_level_id", None) if student_profile else None
+        return None
 
     def get_stream(self, obj):
-        profile = getattr(obj, "profile", None)
-        return getattr(profile, "stream_id", None) if profile else None
+        if obj.user_type == obj.Role.STUDENT:
+            student_profile = getattr(obj, "student_profile", None)
+            return getattr(student_profile, "stream_id", None) if student_profile else None
+        return None
 
 
 class RoleFamilySerializer(serializers.ModelSerializer):
@@ -142,7 +146,16 @@ class UserDetailsSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "phone",
+            "about_me",
+            "designation",
+            "profile_image",
+            "country",
+            "states",
+            "city",
         ]
+        extra_kwargs = {
+            "email": {"read_only": True},  
+        }
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -165,10 +178,6 @@ class UserDetailsSerializer(serializers.ModelSerializer):
         company_role = None
         vendor_role = None
 
-        # Company logic removed - users are now standalone
-        # TODO: Implement alternative role identification
-
-        # Remove employee references since User model doesn't have employee field
         assign_site_employee = []
 
         # ret["company"] = instance.company.id if instance.company else None  # Removed

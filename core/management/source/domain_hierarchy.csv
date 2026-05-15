@@ -1,0 +1,161 @@
+domain_code,domain_name,parent_code,description,domain_image,is_active
+SCI_TECH,Science Technology & Engineering,,Science technology engineering and research fields,Science Technology & Engineering.png,1
+MEDICAL_HEALTH,Medical Healthcare & Life Sciences,,Medical healthcare wellness and life science fields,Medical Healthcare & Life Sciences.png,1
+SPORTS_FITNESS,Sports & Fitness,,Sports fitness performance and wellness fields,Sports & Fitness.png,1
+BUSINESS_MGMT,Business & Management,,Business leadership operations and management fields,Business & Management.png,1
+FINANCE_ACCT,Finance & Accounting,,Finance accounting banking and investment fields,Finance & Accounting.png,1
+MARKETING_SALES,Marketing & Sales,,Marketing sales branding and customer growth fields,Marketing & Sales.png,1
+ARTS_DESIGN,Arts Design & Creative Fields,,Arts design performance and creative fields,Arts Design & Creative Fields.png,1
+MEDIA_COMM,Media Communication & Content,,Media communication journalism and content fields,Media Communication & Content.png,1
+LAW_PUBLIC,Law Safety & Public Services,,Law legal services safety and public service fields,Law Safety & Public Services.png,1
+EDU_TEACHING,Education & Teaching,,Teaching training counselling and education fields,Education & Teaching.png,1
+TRAVEL_HOSP,Travel & Hospitality,,Travel hospitality tourism and guest service fields,Travel & Hospitality.png,1
+AGRI_ENV,Agriculture Food & Environment,,Agriculture food environment and sustainability fields,Agriculture Food & Environment.png,1
+CONST_ARCH,Construction & Architecture,,Construction architecture planning and built environment fields,Construction & Architecture.png,1
+TRANSPORT_LOG,Transportation & Logistics,,Transportation logistics aviation and supply movement fields,Transportation & Logistics.png,1
+MANUF_PROD,Manufacturing & Production,,Manufacturing production maintenance and industrial fields,Manufacturing & Production.png,1
+GOVT_JOBS,Government & Civil Services,,Government exams public administration and civil service fields,Government & Civil Services.png,1
+SOCIAL_WORK,Social Work & Community Services,,Social work community service and public impact fields,Social Work & Community Services.png,1
+AI_ML,AI & Machine Learning,SCI_TECH,Artificial intelligence and machine learning careers,,1
+DATA_SCIENCE,Data Science,SCI_TECH,Data analysis and data science careers,,1
+WEB_DEV,Web Development,SCI_TECH,Web development and programming careers,,1
+SOFTWARE_DEV,Software Development,SCI_TECH,Software engineering and development careers,,1
+CYBER_SECURITY,Cyber Security,SCI_TECH,Cybersecurity and information security careers,,1
+ROBOTICS,Robotics,SCI_TECH,Robotics and automation careers,,1
+PURE_SCIENCES,Pure Sciences,SCI_TECH,Physics chemistry mathematics and pure science careers,,1
+ENV_SCIENCE,Environmental Science,SCI_TECH,Environmental science and sustainability careers,,1
+MATH_STATS,Mathematics & Statistics,SCI_TECH,Mathematics and statistics careers,,1
+AEROSPACE_SPACE,Aerospace & Space Science,SCI_TECH,Aerospace and space science careers,,1
+MECHANICAL_ENG,Mechanical Engineering,SCI_TECH,Mechanical engineering careers,,1
+ELECTRICAL_ENG,Electrical Engineering,SCI_TECH,Electrical engineering careers,,1
+DOCTOR_MEDICINE,Doctor & Medicine,MEDICAL_HEALTH,Doctor and medicine careers,,1
+NURSING,Nursing,MEDICAL_HEALTH,Nursing and patient care careers,,1
+PHARMACY,Pharmacy,MEDICAL_HEALTH,Pharmacy and pharmaceutical careers,,1
+DENTISTRY,Dentistry,MEDICAL_HEALTH,Dentistry and dental care careers,,1
+PHYSIOTHERAPY,Physiotherapy,MEDICAL_HEALTH,Physiotherapy and rehabilitation careers,,1
+PUBLIC_HEALTH,Public Health,MEDICAL_HEALTH,Public health and community health careers,,1
+MEDICAL_RESEARCH,Medical Research,MEDICAL_HEALTH,Medical research and laboratory careers,,1
+MENTAL_HEALTH,Psychology & Mental Health,MEDICAL_HEALTH,Psychology and mental health careers,,1
+BIOTECH,Biotechnology,MEDICAL_HEALTH,Biotechnology and life sciences careers,,1
+HEALTHCARE_ADMIN,Healthcare Administration,MEDICAL_HEALTH,Healthcare administration and management careers,,1
+SPORTS_COACHING,Sports Coaching,SPORTS_FITNESS,Sports coaching and training careers,,1
+ATHLETIC_TRAINING,Athletic Training,SPORTS_FITNESS,Athletic training and fitness careers,,1
+FITNESS_TRAINING,Fitness Training,SPORTS_FITNESS,Fitness training and wellness careers,,1
+SPORTS_MEDICINE,Sports Medicine,SPORTS_FITNESS,Sports medicine and therapy careers,,1
+SPORTS_MANAGEMENT,Sports Management,SPORTS_FITNESS,Sports management careers,,1
+PHYSICAL_EDUCATION,Physical Education,SPORTS_FITNESS,Physical education and teaching careers,,1
+NUTRITION_WELLNESS,Nutrition & Wellness,SPORTS_FITNESS,Nutrition and wellness careers,,1
+YOGA_WELLNESS,Yoga & Wellness,SPORTS_FITNESS,Yoga and wellness careers,,1
+BUSINESS_ADMIN,Business Administration,BUSINESS_MGMT,Business administration careers,,1
+ENTREPRENEURSHIP,Entrepreneurship,BUSINESS_MGMT,Entrepreneurship and startup careers,,1
+HUMAN_RESOURCES,Human Resources,BUSINESS_MGMT,Human resources careers,,1
+OPERATIONS_MANAGEMENT,Operations Management,BUSINESS_MGMT,Operations management careers,,1
+PROJECT_MANAGEMENT,Project Management,BUSINESS_MGMT,Project management careers,,1
+BUSINESS_ANALYSIS,Business Analysis,BUSINESS_MGMT,Business analysis careers,,1
+MANAGEMENT_CONSULTING,Management Consulting,BUSINESS_MGMT,Management consulting careers,,1
+OFFICE_ADMINISTRATION,Office Administration,BUSINESS_MGMT,Office administration careers,,1
+ACCOUNTING,Accounting,FINANCE_ACCT,Accounting and finance careers,,1
+FINANCIAL_ANALYSIS,Financial Analysis,FINANCE_ACCT,Financial analysis careers,,1
+BANKING,Banking,FINANCE_ACCT,Banking careers,,1
+INSURANCE,Insurance,FINANCE_ACCT,Insurance careers,,1
+INVESTMENT_MANAGEMENT,Investment Management,FINANCE_ACCT,Investment management careers,,1
+TAXATION,Taxation,FINANCE_ACCT,Taxation careers,,1
+AUDITING,Auditing,FINANCE_ACCT,Auditing careers,,1
+FINANCIAL_PLANNING,Financial Planning,FINANCE_ACCT,Financial planning careers,,1
+ACTUARIAL_SCIENCE,Actuarial Science,FINANCE_ACCT,Actuarial science careers,,1
+DIGITAL_MARKETING,Digital Marketing,MARKETING_SALES,Digital marketing careers,,1
+SALES,Sales,MARKETING_SALES,Sales careers,,1
+BRAND_MANAGEMENT,Brand Management,MARKETING_SALES,Brand management careers,,1
+MARKET_RESEARCH,Market Research,MARKETING_SALES,Market research careers,,1
+ADVERTISING,Advertising,MARKETING_SALES,Advertising careers,,1
+PUBLIC_RELATIONS,Public Relations,MARKETING_SALES,Public relations careers,,1
+SOCIAL_MEDIA_MARKETING,Social Media Marketing,MARKETING_SALES,Social media marketing careers,,1
+E_COMMERCE,E-Commerce,MARKETING_SALES,E-commerce careers,,1
+GRAPHIC_DESIGN,Graphic Design,ARTS_DESIGN,Graphic design careers,,1
+FASHION_DESIGN,Fashion Design,ARTS_DESIGN,Fashion design careers,,1
+INTERIOR_DESIGN,Interior Design,ARTS_DESIGN,Interior design careers,,1
+ANIMATION,Animation,ARTS_DESIGN,Animation careers,,1
+VISUAL_ARTS,Visual Arts,ARTS_DESIGN,Visual arts careers,,1
+PERFORMING_ARTS,Performing Arts,ARTS_DESIGN,Performing arts careers,,1
+DANCE,Dance,ARTS_DESIGN,Dance careers,,1
+MUSIC,Music,ARTS_DESIGN,Music careers,,1
+PRODUCT_DESIGN,Product Design,ARTS_DESIGN,Product design careers,,1
+UX_UI_DESIGN,UX/UI Design,ARTS_DESIGN,UX/UI design careers,,1
+JOURNALISM,Journalism,MEDIA_COMM,Journalism careers,,1
+FILM_VIDEO_PRODUCTION,Film & Video Production,MEDIA_COMM,Film and video production careers,,1
+BROADCASTING,Broadcasting,MEDIA_COMM,Broadcasting careers,,1
+CONTENT_WRITING,Content Writing,MEDIA_COMM,Content writing careers,,1
+EDITING_PUBLISHING,Editing & Publishing,MEDIA_COMM,Editing and publishing careers,,1
+PHOTOGRAPHY,Photography,MEDIA_COMM,Photography careers,,1
+COMMUNICATIONS,Communications,MEDIA_COMM,Communications careers,,1
+MEDIA_PRODUCTION,Media Production,MEDIA_COMM,Media production careers,,1
+MEDIA_RELATIONS,Media Relations,MEDIA_COMM,Media relations careers,,1
+LAW,Law,LAW_PUBLIC,Law careers,,1
+LEGAL_SERVICES,Legal Services,LAW_PUBLIC,Legal services careers,,1
+CRIMINAL_JUSTICE,Criminal Justice,LAW_PUBLIC,Criminal justice careers,,1
+PUBLIC_SAFETY,Public Safety,LAW_PUBLIC,Public safety careers,,1
+FORENSIC_SCIENCE,Forensic Science,LAW_PUBLIC,Forensic science careers,,1
+POLICE_SERVICES,Police Services,LAW_PUBLIC,Police services careers,,1
+EMERGENCY_MANAGEMENT,Emergency Management,LAW_PUBLIC,Emergency management careers,,1
+FIRE_SAFETY,Fire Safety,LAW_PUBLIC,Fire safety careers,,1
+TEACHING,Teaching,EDU_TEACHING,Teaching careers,,1
+EARLY_CHILDHOOD_EDU,Early Childhood Education,EDU_TEACHING,Early childhood education careers,,1
+SCHOOL_EDUCATION,School Education,EDU_TEACHING,School education careers,,1
+HIGHER_EDUCATION,Higher Education,EDU_TEACHING,Higher education careers,,1
+SPECIAL_EDUCATION,Special Education,EDU_TEACHING,Special education careers,,1
+EDUCATION_COUNSELING,Education Counseling,EDU_TEACHING,Education counseling careers,,1
+EDUCATION_ADMIN,Education Administration,EDU_TEACHING,Education administration careers,,1
+TRAINING_DEVELOPMENT,Training & Development,EDU_TEACHING,Training and development careers,,1
+HOTEL_MANAGEMENT,Hotel Management,TRAVEL_HOSP,Hotel management careers,,1
+TOURISM_MANAGEMENT,Tourism Management,TRAVEL_HOSP,Tourism management careers,,1
+EVENT_MANAGEMENT,Event Management,TRAVEL_HOSP,Event management careers,,1
+CULINARY_ARTS,Culinary Arts,TRAVEL_HOSP,Culinary arts careers,,1
+TRAVEL_SERVICES,Travel Services,TRAVEL_HOSP,Travel services careers,,1
+AIRLINE_SERVICES,Airline Services,TRAVEL_HOSP,Airline services careers,,1
+HOSPITALITY_OPERATIONS,Hospitality Operations,TRAVEL_HOSP,Hospitality operations careers,,1
+AGRICULTURE,Agriculture,AGRI_ENV,Agriculture careers,,1
+FOOD_SCIENCE,Food Science,AGRI_ENV,Food science careers,,1
+ANIMAL_SCIENCE,Animal Science,AGRI_ENV,Animal science careers,,1
+PLANT_SCIENCE,Plant Science,AGRI_ENV,Plant science careers,,1
+ENVIRONMENTAL_CONSERVATION,Environmental Conservation,AGRI_ENV,Environmental conservation careers,,1
+FORESTRY,Forestry,AGRI_ENV,Forestry careers,,1
+FISHERIES,Aquaculture & Fisheries,AGRI_ENV,Aquaculture and fisheries careers,,1
+NATURAL_RESOURCES,Natural Resources,AGRI_ENV,Natural resources careers,,1
+SUSTAINABILITY,Sustainability,AGRI_ENV,Sustainability careers,,1
+ARCHITECTURE,Architecture,CONST_ARCH,Architecture careers,,1
+CIVIL_ENGINEERING,Civil Engineering,CONST_ARCH,Civil engineering careers,,1
+CONSTRUCTION_MANAGEMENT,Construction Management,CONST_ARCH,Construction management careers,,1
+INTERIOR_ARCHITECTURE,Interior Architecture,CONST_ARCH,Interior architecture careers,,1
+LANDSCAPE_ARCHITECTURE,Landscape Architecture,CONST_ARCH,Landscape architecture careers,,1
+URBAN_PLANNING,Urban Planning,CONST_ARCH,Urban planning careers,,1
+REAL_ESTATE,Real Estate,CONST_ARCH,Real estate careers,,1
+BUILDING_SAFETY,Building Safety,CONST_ARCH,Building safety careers,,1
+LOGISTICS,Logistics,TRANSPORT_LOG,Logistics careers,,1
+SUPPLY_CHAIN,Supply Chain Management,TRANSPORT_LOG,Supply chain management careers,,1
+TRANSPORTATION_MANAGEMENT,Transportation Management,TRANSPORT_LOG,Transportation management careers,,1
+WAREHOUSING,Warehousing,TRANSPORT_LOG,Warehousing careers,,1
+AVIATION,Aviation,TRANSPORT_LOG,Aviation careers,,1
+MARITIME_TRANSPORT,Maritime Transport,TRANSPORT_LOG,Maritime transport careers,,1
+RAIL_TRANSPORT,Rail Transport,TRANSPORT_LOG,Rail transport careers,,1
+PRODUCTION_MANAGEMENT,Production Management,MANUF_PROD,Production management careers,,1
+QUALITY_CONTROL,Quality Control,MANUF_PROD,Quality control and quality assurance careers,,1
+INDUSTRIAL_ENGINEERING,Industrial Engineering,MANUF_PROD,Industrial engineering careers,,1
+MANUFACTURING_TECH,Manufacturing Technology,MANUF_PROD,Manufacturing technology careers,,1
+AUTOMOBILE_MANUFACTURING,Automobile Manufacturing,MANUF_PROD,Automobile manufacturing careers,,1
+TEXTILE_MANUFACTURING,Textile Manufacturing,MANUF_PROD,Textile manufacturing careers,,1
+FOOD_PROCESSING,Food Processing,MANUF_PROD,Food processing careers,,1
+MAINTENANCE_TECH,Maintenance Technology,MANUF_PROD,Maintenance technology careers,,1
+CIVIL_SERVICES,Civil Services,GOVT_JOBS,Civil services and public administration careers,,1
+DEFENSE_SERVICES,Defense Services,GOVT_JOBS,Defense services careers,,1
+GOVT_BANKING,Government Banking,GOVT_JOBS,Government banking exam careers,,1
+RAILWAY_JOBS,Railway Jobs,GOVT_JOBS,Railway job careers,,1
+PUBLIC_ADMINISTRATION,Public Administration,GOVT_JOBS,Public administration careers,,1
+STATE_GOVT_SERVICES,State Government Services,GOVT_JOBS,State government service careers,,1
+PUBLIC_SECTOR_UNITS,Public Sector Units,GOVT_JOBS,Public sector unit careers,,1
+SOCIAL_WORK_FIELD,Social Work,SOCIAL_WORK,Social work careers,,1
+NGO_MANAGEMENT,NGO Management,SOCIAL_WORK,NGO management careers,,1
+COMMUNITY_DEVELOPMENT,Community Development,SOCIAL_WORK,Community development careers,,1
+COUNSELING_SERVICES,Counseling Services,SOCIAL_WORK,Counseling service careers,,1
+CHILD_FAMILY_SERVICES,Child & Family Services,SOCIAL_WORK,Child and family service careers,,1
+RURAL_DEVELOPMENT,Rural Development,SOCIAL_WORK,Rural development careers,,1
+DISABILITY_SERVICES,Disability Services,SOCIAL_WORK,Disability service careers,,1

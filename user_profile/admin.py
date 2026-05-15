@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 
-from user_profile.models import BusinessSetting, UserProfile
+from user_profile.models import BusinessSetting, ParentProfile, ProfessionalProfile, StudentProfile, UserProfile
 
 admin.site.register(BusinessSetting)
 
@@ -38,22 +38,6 @@ class MultiSelectField(forms.MultipleChoiceField):
 
 
 class UserProfileAdminForm(forms.ModelForm):
-    career_goal = MultiSelectField(
-        choices=UserProfile.CareerGoal.choices, required=False
-    )
-    interest_categories = MultiSelectField(
-        choices=UserProfile.InterestCategory.choices, required=False
-    )
-    user_concerns = MultiSelectField(
-        choices=UserProfile.UserConcern.choices, required=False
-    )
-    career_values = MultiSelectField(
-        choices=UserProfile.CareerValue.choices, required=False
-    )
-    platform_goals = MultiSelectField(
-        choices=UserProfile.PlatformGoal.choices, required=False
-    )
-
     class Meta:
         model = UserProfile
         fields = "__all__"
@@ -61,32 +45,15 @@ class UserProfileAdminForm(forms.ModelForm):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
+    """Base profile admin for Super Admin with language preference"""
     form = UserProfileAdminForm
     list_display = (
         "user",
-        "education_level",
-        "stream",
-        "science_track",
-        "medium",
-        "country",
-        "state",
-        "city",
-        "get_career_goal",
-        "parent_support_level",
         "get_language",
-        "get_interest_categories",
-        "get_user_concerns",
-        "get_career_values",
-        "get_platform_goals",
+        "get_role",
     )
     search_fields = ("user__email", "user__first_name", "user__last_name")
-    list_filter = (
-        "science_track",
-        "parent_support_level",
-        "medium",
-    )
     readonly_fields = ("user", "get_role")
-    raw_id_fields = ("user", "country", "state", "city")
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
@@ -97,59 +64,194 @@ class UserProfileAdmin(admin.ModelAdmin):
     def get_role(self, obj):
         return obj.user.user_type if obj.user else "-"
 
-    autocomplete_fields = ("education_level", "stream")
     filter_horizontal = ("language",)
-    list_select_related = (
-        "user",
-        "education_level",
-        "stream",
-        "country",
-        "state",
-        "city",
-    )
+    list_select_related = ("user",)
 
     fieldsets = (
         ("Identity", {"fields": ("user", "get_role")}),
-        (
-            "Education",
-            {"fields": ("education_level", "stream", "science_track", "medium")},
-        ),
-        ("Location & Language", {"fields": ("language", "country", "state", "city")}),
-        (
-            "Onboarding",
-            {
-                "fields": (
-                    "interest_categories",
-                    "career_goal",
-                    "parent_support_level",
-                    "user_concerns",
-                    "career_values",
-                    "platform_goals",
-                )
-            },
-        ),
+        ("Language", {"fields": ("language",)}),
     )
 
     @admin.display(description="Languages")
     def get_language(self, obj):
         return ", ".join(obj.language.values_list("name", flat=True)) or "-"
 
-    @admin.display(description="Career Goal")
-    def get_career_goal(self, obj):
-        return ", ".join(obj.career_goal) if obj.career_goal else "-"
 
-    @admin.display(description="Interests")
-    def get_interest_categories(self, obj):
-        return ", ".join(obj.interest_categories) if obj.interest_categories else "-"
+@admin.register(StudentProfile)
+class StudentProfileAdmin(admin.ModelAdmin):
+    """Student-specific profile admin with language and educational fields"""
+    list_display = (
+        "user",
+        "science_track",
+        "medium",
+        "education_level",
+        "stream",
+    )
+    search_fields = ("user__email", "user__first_name", "user__last_name")
+    list_filter = ("science_track", "medium")
+    readonly_fields = ("user", "created_at", "updated_at")
+    raw_id_fields = ("user", "education_level", "stream")
 
-    @admin.display(description="Concerns")
-    def get_user_concerns(self, obj):
-        return ", ".join(obj.user_concerns) if obj.user_concerns else "-"
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ("user", "created_at", "updated_at")
+        return ()
 
-    @admin.display(description="Career Values")
-    def get_career_values(self, obj):
-        return ", ".join(obj.career_values) if obj.career_values else "-"
+    autocomplete_fields = ("education_level", "stream")
+    filter_horizontal = ("language",)
+    list_select_related = (
+        "user",
+        "education_level",
+        "stream",
+    )
 
-    @admin.display(description="Platform Goals")
-    def get_platform_goals(self, obj):
-        return ", ".join(obj.platform_goals) if obj.platform_goals else "-"
+    fieldsets = (
+        ("Identity", {"fields": ("user",)}),
+        ("Language", {"fields": ("language",)}),
+        (
+            "Education",
+            {"fields": ("education_level", "stream", "science_track", "medium")},
+        ),
+        (
+            "Career Direction",
+            {"fields": ("career_direction",)},
+        ),
+        (
+            "Education Details",
+            {"fields": ("education",)},
+        ),
+        (
+            "Skills",
+            {"fields": ("skills",)},
+        ),
+        (
+            "Projects",
+            {"fields": ("projects",)},
+        ),
+        (
+            "Internships",
+            {"fields": ("internships",)},
+        ),
+        (
+            "Certifications",
+            {"fields": ("certifications",)},
+        ),
+        (
+            "Achievements",
+            {"fields": ("achievements",)},
+        ),
+        (
+            "Extra Activities",
+            {"fields": ("extra_activities",)},
+        ),
+        (
+            "Additional Insights",
+            {"fields": ("additional_insights",)},
+        ),
+        (
+            "Social Links",
+            {"fields": ("linkedin_url", "github_url", "portfolio")},
+        ),
+        ("Timestamps", {"fields": ("created_at", "updated_at")}),
+    )
+
+
+@admin.register(ParentProfile)
+class ParentProfileAdmin(admin.ModelAdmin):
+    """Parent-specific profile admin"""
+    list_display = ("user", "relationship", "child_name", "child_education_level", "stream")
+    search_fields = ("user__email", "user__first_name", "user__last_name", "child_name")
+    list_filter = ("relationship", "child_education_level", "stream")
+    readonly_fields = ("user", "created_at", "updated_at")
+    raw_id_fields = ("user",)
+    filter_horizontal = ("language",)
+    list_select_related = ("user", "child_education_level", "stream")
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ("user", "created_at", "updated_at")
+        return ()
+
+    autocomplete_fields = ("child_education_level", "stream")
+
+    fieldsets = (
+        ("Identity", {"fields": ("user",)}),
+        ("Language", {"fields": ("language",)}),
+        ("About", {"fields": ("relationship",)}),
+        ("Child Information", {"fields": ("child_name", "child_education_level", "stream", "academic_performance")}),
+        ("Timestamps", {"fields": ("created_at", "updated_at")}),
+    )
+
+
+@admin.register(ProfessionalProfile)
+class ProfessionalProfileAdmin(admin.ModelAdmin):
+    """Professional-specific profile admin"""
+    list_display = (
+        "user",
+        "employment_type",
+        "years_of_experience",
+        "education_level",
+        "current_job_title",
+    )
+    search_fields = ("user__email", "user__first_name", "user__last_name", "current_job_title")
+    list_filter = ("employment_type", "years_of_experience")
+    readonly_fields = ("user", "created_at", "updated_at")
+    raw_id_fields = ("user", "education_level")
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ("user", "created_at", "updated_at")
+        return ()
+
+    autocomplete_fields = ("education_level",)
+    filter_horizontal = ("language",)
+    list_select_related = (
+        "user",
+        "education_level",
+    )
+
+    fieldsets = (
+        ("Identity", {"fields": ("user",)}),
+        ("Language", {"fields": ("language",)}),
+        (
+            "Employment",
+            {"fields": ("employment_type", "years_of_experience", "current_job_title", "current_industry", "company_size")},
+        ),
+        (
+            "Education",
+            {"fields": ("education_level",)},
+        ),
+        (
+            "Career Direction",
+            {"fields": ("career_direction",)},
+        ),
+        (
+            "Education Details",
+            {"fields": ("education",)},
+        ),
+        (
+            "Work Experience",
+            {"fields": ("work_experience",)},
+        ),
+        (
+            "Skills",
+            {"fields": ("skills",)},
+        ),
+        (
+            "Certifications",
+            {"fields": ("certifications",)},
+        ),
+        (
+            "Key Highlights (Power Section)",
+            {"fields": ("key_highlights",)},
+        ),
+        (
+            "Additional High-Impact Data",
+            {"fields": ("additional_insights",)},
+        ),
+        (
+            "Social Links",
+            {"fields": ("linkedin_url", "github_url", "portfolio")},
+        ),
+        ("Timestamps", {"fields": ("created_at", "updated_at")}),
+    )

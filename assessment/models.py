@@ -1,6 +1,7 @@
 from django.conf import settings
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
+from common.models import BaseModule
 
 
 class Question(models.Model):
@@ -9,7 +10,6 @@ class Question(models.Model):
         APTITUDE = "aptitude", "Aptitude"
         PERSONALITY = "personality", "Personality"
         WORK_STYLE = "work_style", "Work Style"
-        BACKGROUND = "background", "Background"  # warmup / context questions
 
     class QuestionType(models.TextChoices):
         SCALE = "scale", "Scale (1-5 agreement)"
@@ -26,7 +26,7 @@ class Question(models.Model):
     )
     sequence_order = models.PositiveSmallIntegerField(
         default=0,
-        help_text="Display order within the same education level and dimension.",
+        help_text="Display order within the same education level and signal type.",
     )
     mapped_domains = models.ManyToManyField(
         "domain.Domain",
@@ -78,9 +78,6 @@ class Option(models.Model):
         related_name="options",
     )
     option_text = models.CharField(max_length=255)
-    score_value = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)]
-    )
     sequence_order = models.PositiveSmallIntegerField(
         default=0,
         help_text="Display order of this option within its question.",
@@ -95,6 +92,13 @@ class Option(models.Model):
 
 
 class UserResponse(models.Model):
+    assessment = models.ForeignKey(
+        "assessment.StudentAssessment",
+        on_delete=models.CASCADE,
+        related_name="responses",
+        null=True,
+        blank=True,
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -110,19 +114,80 @@ class UserResponse(models.Model):
         on_delete=models.CASCADE,
         related_name="responses",
     )
-    score_value = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)]
-    )
 
     class Meta:
         db_table = "assessment_user_response"
         ordering = ["id"]
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "question"],
-                name="assessment_user_question_unique",
+                fields=["assessment", "question"],
+                name="assessment_question_unique",
             ),
         ]
 
     def __str__(self):
-        return f"user={self.user_id}, question={self.question_id}, score={self.score_value}"
+        return f"user={self.user_id}, question={self.question_id}, option={self.selected_option_id}"
+
+class StudentAssessment(BaseModule):
+    class Screen(models.TextChoices):
+        EDUCATION_LEVEL = "education_level", "Education Level"
+        STREAM = "stream", "Stream / Path"
+        DOMAIN_CATEGORY = "domain_category", "Domain Category"
+        DOMAIN = "domain", "Domain"
+        CAREER_DIRECTION = "career_direction", "Career Direction"
+        PARENT_SUPPORT = "parent_support", "Parent Support"
+        CONCERNS = "concerns", "Concerns"
+        INTEREST = "interest", "Interest Questions"
+        APTITUDE = "aptitude", "Aptitude Questions"
+        PERSONALITY = "personality", "Personality Questions"
+        WORK_STYLE = "work_style", "Work Style Questions"
+        CAREER_VALUES = "career_values", "Career Values"
+        USER_GOALS = "user_goals", "User Goals"
+        COMPLETE = "complete", "Complete"
+
+    PARENT_CHOICES = (
+        ("very_supportive", "Very Supportive"),
+        ("somewhat_supportive", "SomeWhat Supportive"),
+        ("neutral", "Neutral"),
+        ("not_supportive", "Not Supportive"),
+        ("notsure", "Not Sure"),
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="student_assessments",
+    )
+    domain_category = models.ForeignKey(
+        "domain.Domain",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="category_assessments",
+        help_text="Parent category domain selected by the student.",
+    )
+    domain = models.ForeignKey(
+        "domain.Domain",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assessments",
+        help_text="Child domain selected by the student.",
+    )
+    career_direction = models.JSONField(default=list, blank=True, null=True)
+    parent_support = models.CharField(choices=PARENT_CHOICES, max_length=150, null=True, blank=True)
+    concerns = models.JSONField(default=list, blank=True, null=True)
+    career_values = models.JSONField(default=list, blank=True, null=True)
+    user_goals = models.JSONField(default=list, blank=True, null=True)
+    current_screen = models.CharField(
+        max_length=32,
+        choices=Screen.choices,
+        default=Screen.EDUCATION_LEVEL,
+    )
+    is_completed = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "student_assessment"
+        ordering = ["-created_at"]
+    def __str__(self):
+        return f"Assessment {self.id} - User {self.user_id}"
+    

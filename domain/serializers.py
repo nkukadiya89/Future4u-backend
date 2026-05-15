@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+import json
 from base.serializers import AuditFieldsMixin
 from domain.models import Domain, DomainImportBatch, DomainImportError
 from domain.services import domain_service
@@ -15,6 +15,10 @@ class ParentDomainSerializer(serializers.ModelSerializer):
 class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
     parent = ParentDomainSerializer(read_only=True)
     parent_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+    data = serializers.CharField(write_only=True, required=False)
+    domain_image_file = serializers.ImageField(write_only=True, required=False, allow_null=True)
+    domain_code = serializers.CharField(required=False)
+    domain_name = serializers.CharField(required=False)
     created_at = serializers.SerializerMethodField(read_only=True)
     updated_at = serializers.SerializerMethodField(read_only=True)
     created_by = UserQuickSerializer(read_only=True)
@@ -24,27 +28,48 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Domain
         fields = (
+            "data",
+            "domain_image_file",
+            "domain_image",
             "id",
             "domain_code",
             "domain_name",
-            "domain_category",
             "parent",
             "parent_id",
-            "parent_acceptance_level",
-            "future_relevance_score",
             "description",
             "is_active",
-            "interest_weight",
-            "aptitude_weight",
-            "personality_weight",
-            "work_style_weight",
             "is_archived",
             "created_at",
             "created_by",
             "updated_at",
             "updated_by",
         )
-        read_only_fields = ("is_archived",)
+        read_only_fields = ("is_archived", "domain_image")
+
+    def validate(self, attrs):
+        if 'data' in attrs:
+            data = attrs.get('data', '{}')
+            try:
+                parsed_data = json.loads(data) if isinstance(data, str) else data
+            except json.JSONDecodeError:
+                raise serializers.ValidationError({"data": "Invalid JSON format"})
+            attrs.update(parsed_data)
+            attrs['parsed_data'] = parsed_data
+        else:
+            attrs['parsed_data'] = attrs.copy()
+
+        # Validate required fields after parsing (only for create)
+        if not self.instance:
+            errors = {}
+            if not attrs.get('domain_code'):
+                errors['domain_code'] = ['This field is required.']
+            if not attrs.get('domain_name'):
+                errors['domain_name'] = ['This field is required.']
+            if errors:
+                raise serializers.ValidationError(errors)
+
+        attrs['domain_image_file'] = self.context["request"].FILES.get("domain_image")
+        return attrs
 
     def _format_dt(self, value):
         return self.format_audit_datetime(value)
@@ -58,16 +83,6 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
     def get_is_archived(self, obj):
         return bool(getattr(obj, "deleted", False))
 
-    def validate_parent_acceptance_level(self, value):
-        if value < 1 or value > 5:
-            raise serializers.ValidationError("Must be between 1 and 5.")
-        return value
-
-    def validate_future_relevance_score(self, value):
-        if value < 1 or value > 100:
-            raise serializers.ValidationError("Must be between 1 and 100.")
-        return value
-
     def validate_domain_code(self, value):
         value = (value or "").strip()
         if not value:
@@ -79,86 +94,64 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
             )
         return value
 
-    def validate(self, attrs):
-        """
-        Affinity weights validation:
-        - allow all null/omitted (meaning: fallback weights will be used)
-        - if any weight provided, require all 4 and ensure they sum to 1.0
-        """
-        attrs = super().validate(attrs)
-        keys = (
-            "interest_weight",
-            "aptitude_weight",
-            "personality_weight",
-            "work_style_weight",
-        )
-
-        # Determine the final values (include instance values on partial update)
-        values = []
-        provided_count = 0
-        for k in keys:
-            if k in attrs:
-                v = attrs.get(k)
-                provided_count += 1 if v is not None else 0
-                values.append(v)
-            else:
-                v = (
-                    getattr(self.instance, k, None)
-                    if self.instance is not None
-                    else None
-                )
-                values.append(v)
-
-        any_set = any(v is not None for v in values)
-        if not any_set:
-            return attrs
-        if any(v is None for v in values):
-            raise serializers.ValidationError(
-                {k: "Provide all 4 weights, or leave all blank." for k in keys}
-            )
-        total = float(sum(float(v) for v in values))
-        if abs(total - 1.0) > 0.001:
-            raise serializers.ValidationError(
-                {k: "Weights must sum to 1.0." for k in keys}
-            )
-        return attrs
-
     def create(self, validated_data):
-        validated_data.pop("parent_id", None)
+        parsed_data = validated_data.pop("parsed_data", {})
+        domain_image_file = validated_data.pop("domain_image_file", None)
+        
+        validated_data.pop('data', None)
+        
+        parent_id = parsed_data.get("parent_id")
         parent = None
-        if "parent_id" in self.initial_data:
-            raw = self.initial_data.get("parent_id")
-            if raw not in (None, ""):
-                parent = Domain.objects.filter(pk=raw, deleted=False).first()
-                if not parent:
-                    raise serializers.ValidationError({"parent_id": "Invalid parent."})
+        if parent_id and parent_id not in (None, ""):
+            parent = Domain.objects.filter(pk=parent_id, deleted=False).first()
+            if not parent:
+                raise serializers.ValidationError({"parent_id": "Invalid parent."})
+        
         user = self.context["request"].user
-        return domain_service.create_domain(
+        domain = domain_service.create_domain(
             user=user,
-            validated_data=validated_data,
+            validated_data=parsed_data,
             parent=parent,
         )
+        
+        if domain_image_file:
+            domain.upload_domain_image(domain_image_file)
+            domain.refresh_from_db(fields=["domain_image"])
+        
+        return domain
 
     def update(self, instance, validated_data):
-        validated_data.pop("parent_id", None)
+        parsed_data = validated_data.pop("parsed_data", {})
+        domain_image_file = validated_data.pop("domain_image_file", None)
+        
+        # Remove non-model fields from validated_data
+        validated_data.pop('data', None)
+        
         user = self.context["request"].user
-        update_parent = "parent_id" in self.initial_data
+        update_parent = "parent_id" in parsed_data
         parent = None
         if update_parent:
-            raw = self.initial_data.get("parent_id")
-            if raw in (None, ""):
+            parent_id = parsed_data.get("parent_id")
+            if parent_id in (None, ""):
                 parent = None
             else:
-                parent = Domain.objects.filter(pk=raw, deleted=False).first()
+                parent = Domain.objects.filter(pk=parent_id, deleted=False).first()
                 if not parent:
                     raise serializers.ValidationError({"parent_id": "Invalid parent."})
-        return domain_service.update_domain(
+        
+        domain = domain_service.update_domain(
             domain=instance,
             user=user,
-            validated_data=validated_data,
+            validated_data=parsed_data,
             parent=parent,
             update_parent=update_parent,
         )
+        
+        if domain_image_file:
+            domain.upload_domain_image(domain_image_file)
+            domain.refresh_from_db(fields=["domain_image"])
+        
+        return domain
 
 
 class DomainDropdownSerializer(serializers.ModelSerializer):

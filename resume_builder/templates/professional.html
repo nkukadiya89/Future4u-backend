@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Helvetica, Arial, sans-serif; font-size: 10px; color: #9099a0; background: #fff; }
+
+/* ── LEFT COLUMN ── */
+.photo-wrap { width: 186px; height: 186px; border: 7px solid #66cc99; background: #c5d2e0; margin: 0 auto 14px auto; overflow: hidden; }
+.photo-wrap img { width: 186px; height: 186px; display: block; }
+.cname  { font-size: 20px; font-weight: 700; text-transform: uppercase; color: #4a4e51; line-height: 1.1; margin-bottom: 3px; }
+.ctitle { font-size: 9.5px; color: #66cc99; letter-spacing: 1px; margin-bottom: 16px; }
+.clabel { font-weight: 700; color: #4a4e51; font-size: 9px; padding-bottom: 7px; white-space: nowrap; padding-right: 8px; vertical-align: top; }
+.cvalue { font-size: 9px; color: #9099a0; padding-bottom: 7px; word-break: break-all; vertical-align: top; }
+.summary { font-size: 9px; color: #9099a0; line-height: 1.65; margin: 14px 0; }
+.lsec { font-size: 9px; font-weight: 700; color: #4a4e51; text-transform: uppercase; letter-spacing: 1px; margin: 14px 0 7px; border-bottom: 1px solid #e0e0e0; padding-bottom: 3px; }
+.bl { list-style: none; padding: 0; margin: 0 0 10px 0; }
+.bl li { font-size: 9px; color: #9099a0; padding: 2px 0 2px 12px; position: relative; line-height: 1.5; }
+.bl li:before { content: "\2022"; position: absolute; left: 1px; color: #66cc99; font-size: 11px; line-height: 1.2; }
+.cert { font-size: 9px; color: #9099a0; margin-bottom: 5px; line-height: 1.4; }
+.cert-sub { font-size: 8px; color: #66cc99; }
+.meta-row { font-size: 8.5px; color: #9099a0; margin-bottom: 4px; }
+.meta-label { font-weight: 700; color: #4a4e51; }
+
+/* ── RIGHT COLUMN ── */
+.rsec { color: #66cc99; text-transform: uppercase; font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 14px; border-bottom: 1px solid #555; padding-bottom: 4px; }
+.rsec-mt { margin-top: 18px; }
+.ecomp { color: #fff; font-size: 10px; font-weight: 700; }
+.etime { font-size: 8.5px; color: #9099a0; margin-top: 2px; }
+.erole { color: #fff; font-size: 9.5px; font-weight: 600; margin-bottom: 4px; }
+.elist { padding-left: 12px; margin-top: 3px; margin-bottom: 0; }
+.elist li { font-size: 8.5px; color: #9099a0; margin-bottom: 2px; line-height: 1.5; }
+.elist li.it { font-style: italic; }
+.sname { font-size: 9px; color: #9099a0; margin-bottom: 3px; }
+.strk  { height: 5px; background: #4a4e51; border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
+.sfill { height: 5px; background: #66cc99; border-radius: 2px; }
+.einst { color: #fff; font-size: 9.5px; font-weight: 700; }
+.edeg  { font-size: 8.5px; color: #9099a0; }
+.eyr   { font-size: 8.5px; color: #66cc99; margin-bottom: 8px; }
+.ptitle { color: #fff; font-size: 9.5px; font-weight: 700; margin-bottom: 3px; }
+.pgap   { height: 8px; }
+.insight { font-size: 8.5px; color: #9099a0; font-style: italic; margin-bottom: 3px; }
+</style>
+</head>
+<body>
+
+<table width="100%" cellpadding="0" cellspacing="0" style="min-height:297mm;">
+<tr>
+
+  <!-- ══════════════════════════════════════════════════════════
+       LEFT COLUMN
+  ══════════════════════════════════════════════════════════ -->
+  <td width="38%" valign="top" style="background:#ffffff; padding:32px 20px 32px 24px; border-right:1px solid #e0e0e0;">
+
+    <!-- Photo -->
+    <table width="186" cellpadding="0" cellspacing="0" style="margin:0 auto 14px auto; border:7px solid #66cc99; background:#c5d2e0;">
+      <tr>
+        <td width="186" height="186" style="width:186px;height:186px;padding:0;overflow:hidden;">
+          {% if personal_info.photo %}
+            <img src="{{ personal_info.photo }}" width="186" height="186" style="display:block;width:186px;height:186px;" />
+          {% else %}
+            <table width="186" height="186"><tr><td align="center" valign="middle" style="font-size:68px;color:#9099a0;">&#128100;</td></tr></table>
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+
+    <!-- Name & title -->
+    <div class="cname">{{ personal_info.name }}</div>
+    {% if personal_info.designation %}
+      <div class="ctitle">{{ personal_info.designation }}</div>
+    {% elif career_positioning is defined and career_positioning.current_role %}
+      <div class="ctitle">{{ career_positioning.current_role }}</div>
+    {% elif career_direction is defined and career_direction.target_role %}
+      <div class="ctitle">{{ career_direction.target_role }}</div>
+    {% endif %}
+
+    <!-- Contact details -->
+    <table width="100%" cellpadding="0" cellspacing="0">
+      {% if personal_info.phone %}<tr><td class="clabel">Call</td><td class="cvalue">{{ personal_info.phone }}</td></tr>{% endif %}
+      {% if personal_info.email %}<tr><td class="clabel">Mail</td><td class="cvalue">{{ personal_info.email }}</td></tr>{% endif %}
+      {% if personal_info.city %}
+        <tr><td class="clabel">Home</td><td class="cvalue">{{ personal_info.city }}{% if personal_info.state %}, {{ personal_info.state }}{% endif %}{% if personal_info.country %}, {{ personal_info.country }}{% endif %}</td></tr>
+      {% elif personal_info.location %}
+        <tr><td class="clabel">Home</td><td class="cvalue">{{ personal_info.location }}</td></tr>
+      {% endif %}
+      {% if personal_info.linkedin %}<tr><td class="clabel">LinkedIn</td><td class="cvalue">{{ personal_info.linkedin | replace("https://","") }}</td></tr>{% endif %}
+      {% if personal_info.github %}<tr><td class="clabel">GitHub</td><td class="cvalue">{{ personal_info.github | replace("https://","") }}</td></tr>{% endif %}
+      {% if personal_info.portfolio %}<tr><td class="clabel">Web</td><td class="cvalue">{{ personal_info.portfolio | replace("https://","") }}</td></tr>{% endif %}
+    </table>
+
+    <!-- AI Summary -->
+    {% if summary %}
+    <div class="summary">{{ summary }}</div>
+    {% endif %}
+
+    <!-- About Me -->
+    {% if personal_info.about_me %}
+    <div class="lsec">About</div>
+    <div class="summary">{{ personal_info.about_me }}</div>
+    {% endif %}
+
+    <!-- Languages (M2M) -->
+    {% if languages %}
+    <div class="lsec">Languages</div>
+    <ul class="bl">{% for l in languages %}<li>{{ l.name }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <!-- Soft skills / Expertise -->
+    {% if skills is defined and skills.soft is defined and skills.soft %}
+    <div class="lsec">Expertise</div>
+    <ul class="bl">{% for s in skills.soft %}<li>{{ s }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <!-- Leadership -->
+    {% if skills is defined and skills.leadership is defined and skills.leadership %}
+    <div class="lsec">Leadership</div>
+    <ul class="bl">{% for s in skills.leadership %}<li>{{ s }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <!-- Certifications -->
+    {% if certifications %}
+    <div class="lsec">Certifications</div>
+    {% for c in certifications %}
+    <div class="cert">{{ c.name }}<br/><span class="cert-sub">{{ c.issuer }}{% if c.year %}, {{ c.year }}{% endif %}</span></div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Education meta (stream, science track, medium) — fresher only -->
+    {% if resume_type == 'fresher' and education_meta %}
+    {% if education_meta.stream_name or education_meta.science_track or education_meta.medium %}
+    <div class="lsec">Academic Info</div>
+    {% if education_meta.education_level_name %}
+    <div class="meta-row"><span class="meta-label">Level: </span>{{ education_meta.education_level_name }}</div>
+    {% endif %}
+    {% if education_meta.stream_name %}
+    <div class="meta-row"><span class="meta-label">Stream: </span>{{ education_meta.stream_name }}</div>
+    {% endif %}
+    {% if education_meta.science_track %}
+    <div class="meta-row"><span class="meta-label">Track: </span>{{ education_meta.science_track | upper }}</div>
+    {% endif %}
+    {% if education_meta.medium %}
+    <div class="meta-row"><span class="meta-label">Medium: </span>{{ education_meta.medium | capitalize }}</div>
+    {% endif %}
+    {% endif %}
+    {% endif %}
+
+    <!-- Professional meta (employment type, company size) -->
+    {% if resume_type == 'professional' and education_meta %}
+    {% if education_meta.employment_type or education_meta.company_size %}
+    <div class="lsec">Work Info</div>
+    {% if education_meta.employment_type %}
+    <div class="meta-row"><span class="meta-label">Type: </span>{{ education_meta.employment_type | replace("_", " ") | title }}</div>
+    {% endif %}
+    {% if education_meta.company_size %}
+    <div class="meta-row"><span class="meta-label">Company Size: </span>{{ education_meta.company_size }}</div>
+    {% endif %}
+    {% endif %}
+    {% endif %}
+
+  </td>
+
+  <!-- ══════════════════════════════════════════════════════════
+       RIGHT COLUMN
+  ══════════════════════════════════════════════════════════ -->
+  <td width="62%" valign="top" style="background:#3d3e42; padding:32px 28px 32px 24px;">
+
+    <!-- Career Positioning (professional) -->
+    {% if resume_type == 'professional' and career_positioning %}
+    {% if career_positioning.total_experience or career_positioning.target_role or career_positioning.key_expertise %}
+    <div class="rsec">Professional Profile</div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+      {% if career_positioning.total_experience %}
+      <tr><td style="font-size:8.5px;color:#9099a0;padding-bottom:4px;"><span style="color:#fff;font-weight:700;">Experience: </span>{{ career_positioning.total_experience }}</td></tr>
+      {% endif %}
+      {% if career_positioning.target_role %}
+      <tr><td style="font-size:8.5px;color:#9099a0;padding-bottom:4px;"><span style="color:#fff;font-weight:700;">Target Role: </span>{{ career_positioning.target_role }}</td></tr>
+      {% endif %}
+      {% if career_positioning.target_industry %}
+      <tr><td style="font-size:8.5px;color:#9099a0;padding-bottom:4px;"><span style="color:#fff;font-weight:700;">Industry: </span>{{ career_positioning.target_industry }}</td></tr>
+      {% endif %}
+      {% if career_positioning.key_expertise %}
+      <tr><td style="font-size:8.5px;color:#9099a0;padding-bottom:4px;"><span style="color:#fff;font-weight:700;">Key Expertise: </span>{{ career_positioning.key_expertise | join(", ") }}</td></tr>
+      {% endif %}
+    </table>
+    {% endif %}
+    {% endif %}
+
+    <!-- Career Direction (fresher) -->
+    {% if resume_type == 'fresher' and career_direction %}
+    {% if career_direction.target_role or career_direction.target_industry %}
+    <div class="rsec">Career Objective</div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+      {% if career_direction.target_role %}
+      <tr><td style="font-size:8.5px;color:#9099a0;padding-bottom:4px;"><span style="color:#fff;font-weight:700;">Target Role: </span>{{ career_direction.target_role }}</td></tr>
+      {% endif %}
+      {% if career_direction.target_industry %}
+      <tr><td style="font-size:8.5px;color:#9099a0;padding-bottom:4px;"><span style="color:#fff;font-weight:700;">Industry: </span>{{ career_direction.target_industry }}</td></tr>
+      {% endif %}
+      {% if career_direction.why_this_role %}
+      <tr><td style="font-size:8.5px;color:#9099a0;padding-bottom:4px;">{{ career_direction.why_this_role }}</td></tr>
+      {% endif %}
+    </table>
+    {% endif %}
+    {% endif %}
+
+    <!-- Work Experience (professional) -->
+    {% if resume_type == 'professional' and experience %}
+    <div class="rsec">Experience</div>
+    <table width="100%" cellpadding="0" cellspacing="0">
+      {% for exp in experience %}
+      <tr>
+        <td width="34%" valign="top" style="padding-right:12px; padding-bottom:16px;">
+          <div class="ecomp">{{ exp.company }}</div>
+          <div class="etime">{{ exp.duration }}</div>
+        </td>
+        <td width="66%" valign="top" style="padding-bottom:16px;">
+          <div class="erole">{{ exp.role }}</div>
+          <ul class="elist">
+            {% for r in exp.responsibilities %}<li>{{ r }}</li>{% endfor %}
+            {% for a in exp.achievements %}<li class="it">{{ a }}</li>{% endfor %}
+          </ul>
+          {% for p in exp.projects %}
+          <ul class="elist"><li><strong style="color:#fff;">{{ p.name }}</strong> — {{ p.outcome }} ({{ p.technologies | join(", ") }})</li></ul>
+          {% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+
+    <!-- Internships (fresher) -->
+    {% if resume_type == 'fresher' and internships %}
+    <div class="rsec">Experience</div>
+    <table width="100%" cellpadding="0" cellspacing="0">
+      {% for i in internships %}
+      <tr>
+        <td width="34%" valign="top" style="padding-right:12px; padding-bottom:16px;">
+          <div class="ecomp">{{ i.company }}</div>
+          <div class="etime">{{ i.duration }}</div>
+        </td>
+        <td width="66%" valign="top" style="padding-bottom:16px;">
+          <div class="erole">Intern</div>
+          <ul class="elist">
+            {% for r in i.responsibilities %}<li>{{ r }}</li>{% endfor %}
+            {% if i.key_achievement %}<li class="it">{{ i.key_achievement }}</li>{% endif %}
+          </ul>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+
+    <!-- Projects (fresher) -->
+    {% if resume_type == 'fresher' and projects %}
+    <div class="rsec rsec-mt">Projects</div>
+    {% for proj in projects %}
+    <div class="ptitle">{{ proj.title }}</div>
+    <ul class="elist">
+      {% if proj.problem_statement %}<li>{{ proj.problem_statement }}</li>{% endif %}
+      {% if proj.your_role and proj.impact %}<li>{{ proj.your_role }} — {{ proj.impact }}</li>
+      {% elif proj.your_role %}<li>{{ proj.your_role }}</li>
+      {% elif proj.impact %}<li>{{ proj.impact }}</li>{% endif %}
+      {% if proj.technologies %}<li>Stack: {{ proj.technologies | join(", ") }}</li>{% endif %}
+    </ul>
+    <div class="pgap"></div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Technical Skills -->
+    {% if skills is defined and skills.technical %}
+    <div class="rsec rsec-mt">Skills</div>
+    {% for skill in skills.technical %}
+    {% if skills.technical_levels is defined and skill in skills.technical_levels %}{% set pct = skills.technical_levels[skill] %}{% else %}{% set pct = 80 %}{% endif %}
+    <div class="sname">{{ skill }}</div>
+    <div class="strk"><div class="sfill" style="width:{{ pct }}%;"></div></div>
+    {% endfor %}
+    {% if skills.tools is defined and skills.tools %}
+    {% for tool in skills.tools %}
+    {% if skills.tool_levels is defined and tool in skills.tool_levels %}{% set pct = skills.tool_levels[tool] %}{% else %}{% set pct = 75 %}{% endif %}
+    <div class="sname">{{ tool }}</div>
+    <div class="strk"><div class="sfill" style="width:{{ pct }}%;"></div></div>
+    {% endfor %}
+    {% endif %}
+    {% endif %}
+
+    <!-- Domain Knowledge -->
+    {% if skills is defined and skills.domain_knowledge is defined and skills.domain_knowledge %}
+    <div class="rsec rsec-mt">Domain</div>
+    <ul class="elist">{% for d in skills.domain_knowledge %}<li>{{ d }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <!-- Education -->
+    {% if education %}
+    <div class="rsec rsec-mt">Education</div>
+    {% for edu in education %}
+    <div class="einst">{{ edu.institution }}</div>
+    <div class="edeg">{{ edu.degree }}{% if edu.field %} of {{ edu.field }}{% endif %}</div>
+    <div class="eyr">{{ edu.year }}{% if edu.cgpa %} — CGPA: {{ edu.cgpa }}{% endif %}</div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Achievements -->
+    {% if achievements %}
+    <div class="rsec rsec-mt">Achievements</div>
+    <ul class="elist">{% for a in achievements %}<li>{{ a }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <!-- Extra Activities (fresher) -->
+    {% if resume_type == 'fresher' and extra_activities %}
+    <div class="rsec rsec-mt">Activities</div>
+    <ul class="elist">{% for e in extra_activities %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <!-- Key Highlights (professional) -->
+    {% if resume_type == 'professional' and key_highlights is defined and key_highlights %}
+    <div class="rsec rsec-mt">Key Highlights</div>
+    <ul class="elist">{% for h in key_highlights %}<li>{{ h }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <!-- Additional Insights -->
+    {% if additional_insights %}
+    <div class="rsec rsec-mt">Additional Insights</div>
+    <ul class="elist">{% for i in additional_insights %}<li class="insight">{{ i }}</li>{% endfor %}</ul>
+    {% endif %}
+
+  </td>
+</tr>
+</table>
+</body>
+</html>

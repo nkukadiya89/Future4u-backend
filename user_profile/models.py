@@ -12,6 +12,7 @@ from state.models import State
 
 
 class UserProfile(models.Model):
+    """Base profile for Super Admin with language preference"""
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -25,20 +26,31 @@ class UserProfile(models.Model):
         help_text="Preferred languages selected from Language master",
     )
 
-    class CareerGoal(models.TextChoices):
-        STUDY_FURTHER = "study_further", "Study Further"
-        FIND_JOB = "find_job", "Find a Job"
-        INTERNSHIP = "internship", "Internship"
-        SKILL_DEVELOPMENT = "skill_development", "Skill Development"
-        NOT_SURE = "not_sure", "Not Sure Yet"
+    def __str__(self):
+        return f"Profile<{self.user_id}>"
 
-    career_goal = ArrayField(
-        models.CharField(max_length=50, choices=CareerGoal.choices),
-        default=list,
-        null=True,
-        blank=True,
+    class Meta:
+        db_table = "user_profile"
+
+
+class StudentProfile(models.Model):
+    """Student-specific profile with common and educational details"""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="student_profile",
     )
 
+    # Common fields
+    language = models.ManyToManyField(
+        "language_master.Language",
+        blank=True,
+        related_name="student_profiles",
+        help_text="Preferred languages selected from Language master",
+    )
+
+    # Student-specific fields
     class ScienceTrack(models.TextChoices):
         PCM = "pcm", "PCM (Physics, Chemistry, Maths)"
         PCB = "pcb", "PCB (Physics, Chemistry, Biology)"
@@ -49,90 +61,7 @@ class UserProfile(models.Model):
         choices=ScienceTrack.choices,
         null=True,
         blank=True,
-    )
-
-    class ParentSupportLevel(models.TextChoices):
-        VERY_SUPPORTIVE = "very_supportive", "Very Supportive"
-        SOMEWHAT_SUPPORTIVE = "somewhat_supportive", "Somewhat Supportive"
-        NEUTRAL = "neutral", "Neutral"
-        SOMEWHAT_RESTRICTIVE = "somewhat_restrictive", "Somewhat Restrictive"
-        VERY_RESTRICTIVE = "very_restrictive", "Very Restrictive"
-
-    parent_support_level = models.CharField(
-        max_length=25,
-        choices=ParentSupportLevel.choices,
-        null=True,
-        blank=True,
-    )
-
-    class CareerValue(models.TextChoices):
-        HIGH_SALARY = "high_salary_potential", "High Salary Potential"
-        JOB_SECURITY = "job_security_stability", "Job Security and Stability"
-        CREATIVITY = "creativity_innovation", "Creativity and Innovation"
-        WORK_LIFE_BALANCE = "work_life_balance", "Work Life Balance"
-        SOCIAL_IMPACT = "social_impact", "Making an Impact on Society"
-        GROWTH = "growth_and_learning", "Opportunities to Grow and Learn"
-
-    career_values = ArrayField(
-        models.CharField(max_length=50, choices=CareerValue.choices),
-        default=list,
-        null=True,
-        blank=True,
-    )
-
-    class PlatformGoal(models.TextChoices):
-        CAREER_CLARITY = "career_clarity", "Career Clarity"
-        COURSE_RECOMMENDATIONS = "course_recommendations", "Course Recommendations"
-        JOB_INTERNSHIP = (
-            "job_internship_opportunities",
-            "Job / Internship Opportunities",
-        )
-        PARENT_CONFIDENCE = "parent_confidence", "Parent Confidence"
-
-    platform_goals = ArrayField(
-        models.CharField(max_length=50, choices=PlatformGoal.choices),
-        default=list,
-        null=True,
-        blank=True,
-    )
-
-    class InterestCategory(models.TextChoices):
-        TECHNOLOGY = "technology", "Technology / Coding"
-        HEALTHCARE = "healthcare", "Healthcare"
-        BUSINESS_MANAGEMENT = "business_management", "Business Management"
-        AGRICULTURE = "agriculture", "Agriculture / Food"
-        CREATIVE_DESIGN = "creative_design", "Creative / Design"
-        SPORTS_FITNESS = "sports_fitness", "Sports / Fitness"
-        GOVERNMENT = "government", "Government / Public Service"
-        ENGINEERING = "engineering", "Engineering"
-        FINANCE = "finance", "Finance"
-        EDUCATION = "education", "Education"
-        LAW = "law", "Law"
-        SCIENCE_RESEARCH = "science_research", "Science & Research"
-        SOCIAL_WELFARE = "social_welfare", "Social Welfare"
-        HOSPITALITY = "hospitality", "Hospitality"
-        VOCATIONAL = "vocational", "Vocational / Trades"
-
-    interest_categories = ArrayField(
-        models.CharField(max_length=50, choices=InterestCategory.choices),
-        default=list,
-        null=True,
-        blank=True,
-        help_text="Broad interest categories e.g. ['technology', 'healthcare', 'government']",
-    )
-
-    class UserConcern(models.TextChoices):
-        JOB_SECURITY = "job_security", "Job Security"
-        FUTURE_DEMAND = "future_demand", "Future Demand"
-        WRONG_CHOICE = "wrong_career_choice", "Wrong Career Choice"
-        EDUCATION_COST = "high_education_cost", "High Education Cost"
-        LIMITED_GUIDANCE = "limited_guidance", "Limited Guidance"
-
-    user_concerns = ArrayField(
-        models.CharField(max_length=50, choices=UserConcern.choices),
-        default=list,
-        null=True,
-        blank=True,
+        help_text="Science track selection for students",
     )
 
     medium = models.CharField(
@@ -146,47 +75,51 @@ class UserProfile(models.Model):
         blank=True,
         help_text="Instruction medium of student's school",
     )
-    country = models.ForeignKey(
-        Country,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="user_profiles",
-    )
-    state = models.ForeignKey(
-        State,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="user_profiles",
-    )
-    city = models.ForeignKey(
-        City,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="user_profiles",
-    )
+
     education_level = models.ForeignKey(
         "education_level.EducationLevel",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="user_profiles",
+        related_name="student_profiles",
     )
+
     stream = models.ForeignKey(
         "stream.Stream",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="user_profiles",
+        related_name="student_profiles",
     )
+    career_direction = models.JSONField(default=list, blank=True, null=True)
+    education = models.JSONField(default=list, blank=True, null=True)
+    skills = models.JSONField(default=list, null=True, blank=True)
+    projects = models.JSONField(default=list, null=True,blank=True)
+    internships = models.JSONField(default=list, null=True, blank=True)
+    certifications = models.JSONField(default=list, null=True, blank=True)
+    achievements = models.JSONField(default=list, null=True, blank=True)
+    extra_activities = models.JSONField(default=list, null=True, blank=True)
+    additional_insights = models.JSONField(default=list, null=True, blank=True)
+    linkedin_url = models.CharField(max_length=200, null=True, blank=True)
+    github_url = models.CharField(max_length=200, null=True, blank=True)
+    portfolio = models.CharField(max_length=200, null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"Profile<{self.user_id}>"
+        return f"StudentProfile<{self.user_id}>"
 
     class Meta:
-        db_table = "user_profile"
+        db_table = "student_profile"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["education_level"]),
+            models.Index(fields=["stream"]),
+            models.Index(fields=["science_track"]),
+            models.Index(fields=["medium"]),
+        ]
 
 
 class BusinessSetting(models.Model):
@@ -270,9 +203,8 @@ class Profile(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profiles"
     )
 
-    title = models.CharField(max_length=150)  # "Career Switch Plan", etc.
+    title = models.CharField(max_length=150)  
 
-    # Location
     country = models.CharField(max_length=100, null=True, blank=True)
     state = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
@@ -314,151 +246,164 @@ class Profile(models.Model):
 
 
 class ProfessionalProfile(models.Model):
-    profile = models.OneToOneField(
-        Profile, on_delete=models.CASCADE, related_name="professional"
+    
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="professional_profile",
     )
 
-    # About
-    employment_type = models.CharField(
-        max_length=50
-    )  # salaried / self-employed / freelancer / job seeker
+    language = models.ManyToManyField(
+        "language_master.Language",           
+        blank=True,
+        related_name="professional_profiles",
+        help_text="Preferred languages selected from Language master",
+    )
 
-    # Current Role
+    class EmploymentType(models.TextChoices):
+        SALARIED = "salaried_employee", "Salaried Employee"
+        SELF_EMPLOYED = "self_employed", "Self-employed / Business Owner"
+        FREELANCER = "freelancer", "Freelancer"
+        JOB_SEEKER = "job_seeker", "Looking for first job"
+
+    employment_type = models.CharField(
+        max_length=50,
+        choices=EmploymentType.choices,
+        null=True,
+        blank=True,
+        help_text="Current employment status"
+    )
+
+    class ExperienceRange(models.TextChoices):
+        ZERO_TO_ONE = "0-1", "0-1 years"
+        ONE_TO_THREE = "1-3", "1-3 years"
+        THREE_TO_FIVE = "3-5", "3-5 years"
+        FIVE_TO_TEN = "5-10", "5-10 years"
+        TEN_PLUS = "10+", "10+ years"
+
+    years_of_experience = models.CharField(
+        max_length=10,
+        choices=ExperienceRange.choices,
+        null=True,
+        blank=True,
+        help_text="Years of professional experience"
+    )
+
+    education_level = models.ForeignKey(
+        "education_level.EducationLevel",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="professional_profiles",
+    )
+
     current_job_title = models.CharField(max_length=150, null=True, blank=True)
     current_industry = models.CharField(max_length=100, null=True, blank=True)
     company_size = models.CharField(max_length=50, null=True, blank=True)
 
-    # Experience & Education
-    years_of_experience = models.IntegerField(null=True, blank=True)
-    highest_education = models.CharField(max_length=150, null=True, blank=True)
+    # JSONField sections for professional profile
+    career_direction = models.JSONField(default=list, blank=True, null=True)
+    education = models.JSONField(default=list, blank=True, null=True)
+    work_experience = models.JSONField(default=list, null=True, blank=True)
+    skills = models.JSONField(default=list, null=True, blank=True)
+    certifications = models.JSONField(default=list, null=True, blank=True)
+    key_highlights = models.JSONField(default=list, null=True, blank=True)
+    additional_insights = models.JSONField(default=list, null=True, blank=True)
 
-    # Career Goals
-    career_goal = models.CharField(max_length=100)  # promotion / switch / startup etc.
+    # Professional links
+    linkedin_url = models.CharField(max_length=200, null=True, blank=True)
+    github_url = models.CharField(max_length=200, null=True, blank=True)
+    portfolio = models.CharField(max_length=200, null=True, blank=True)
 
-    # Constraints (multi-select → separate table better)
-    # storing as JSON for speed initially
-    constraints = models.JSONField(default=list, blank=True)
-
-    # Work Preferences
-    work_mode = models.CharField(
-        max_length=50, null=True, blank=True
-    )  # remote/hybrid/office
-    work_structure = models.CharField(
-        max_length=50, null=True, blank=True
-    )  # fixed/flexible
-
-    # Industries
-    preferred_industries = models.JSONField(default=list, blank=True)
-
-    # Values
-    career_values = models.JSONField(default=list, blank=True)
-
-    # Salary
-    expected_salary_range = models.CharField(max_length=50, null=True, blank=True)
-
-    # Timeline
-    transition_timeline = models.CharField(max_length=50, null=True, blank=True)
-
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="professional_profile_created",
-    )
     created_at = models.DateTimeField(auto_now_add=True)
-
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="professional_profile_updated",
-    )
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-
-    deleted = models.BooleanField(default=False)
-    deleted_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="professional_profile_deleted",
-    )
-    deleted_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"ProfessionalProfile<{self.id} - {self.profile.title}>"
+        return f"ProfessionalProfile<{self.user_id}>"
 
     class Meta:
         db_table = "professional_profile"
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["education_level"]),
+            models.Index(fields=["employment_type"]),
+            models.Index(fields=["years_of_experience"]),
+        ]
 
 
 class ParentProfile(models.Model):
-    profile = models.OneToOneField(
-        Profile, on_delete=models.CASCADE, related_name="parent"
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True, blank=True,
+        related_name="parent_profile",
+        
     )
 
-    relation = models.CharField(max_length=50)  # mother/father/guardian
+    language = models.ManyToManyField(
+        "language_master.Language",
+        blank=True,
+        related_name="parent_profiles",
+    )
 
-    # Child Info
-    child_name = models.CharField(max_length=150)
-    child_education_level = models.CharField(max_length=100)
-    stream = models.CharField(max_length=100, null=True, blank=True)
-    academic_performance = models.CharField(max_length=50, null=True, blank=True)
+    class Relationship(models.TextChoices):
+        MOTHER = "mother", "Mother"
+        FATHER = "father", "Father"
+        GUARDIAN = "guardian", "Guardian"
+        OTHER = "other", "Other"
 
-    # Interests
-    child_interests = models.ManyToManyField(Domain, blank=True)
-
-    # Parent behavior
-    support_level = models.CharField(max_length=50)
-
-    # Child future plan
-    child_goal = models.CharField(max_length=100)
-
-    # Parent expectations
-    parent_expectations = models.JSONField(default=list, blank=True)
-
-    # Concerns
-    concerns = models.JSONField(default=list, blank=True)
-
-    # Constraints
-    constraints = models.JSONField(default=list, blank=True)
-
-    # Awareness
-    career_awareness = models.CharField(max_length=50)
-
-    # Decision style
-    decision_style = models.CharField(max_length=50)
-
-    # Values
-    values = models.JSONField(default=list, blank=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
+    relationship = models.CharField(
+        max_length=20,
+        choices=Relationship.choices,
         null=True,
-        related_name="parent_profile_updated",
+        blank=True,
     )
-    updated_at = models.DateTimeField(auto_now=True, null=True)
 
-    deleted = models.BooleanField(default=False)
-    deleted_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+    child_name = models.CharField(max_length=150, null=True, blank=True)
+    child_education_level = models.ForeignKey(
+        "education_level.EducationLevel",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="parent_profile_deleted",
+        related_name="parent_profiles",
     )
-    deleted_at = models.DateTimeField(null=True, blank=True)
+    stream = models.ForeignKey(
+        "stream.Stream",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="parent_profiles",
+    )
+    academic_performance = models.CharField(
+        max_length=50,
+        choices=[
+            ("average", "Average"),
+            ("good", "Good"),
+            ("excellent", "Excellent"),
+        ],
+        null=True,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"ParentProfile<{self.id} - {self.profile.title}>"
+        return f"ParentProfile<{self.user_id}>"
 
     class Meta:
         db_table = "parent_profile"
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["child_education_level"]),
+            models.Index(fields=["stream"]),
+        ]
 
 
 class CorporateProfile(models.Model):

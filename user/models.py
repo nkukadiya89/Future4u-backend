@@ -72,6 +72,7 @@ class User(AbstractUser):
     email = models.EmailField(_("email address"), unique=True)
     profile_image = models.CharField(max_length=250, null=True, blank=True)
     otp = models.IntegerField(null=True, blank=True)
+    otp_created_at = models.DateTimeField(null=True, blank=True)
     designation = models.CharField(max_length=30, null=True, blank=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
     is_active = models.BooleanField(default=False)

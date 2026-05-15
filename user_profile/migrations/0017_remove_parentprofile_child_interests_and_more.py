@@ -19,10 +19,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name="parentprofile",
-            name="child_interests",
-        ),
         migrations.CreateModel(
             name="InternshipProfile",
             fields=[

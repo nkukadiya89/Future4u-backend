@@ -1,26 +1,19 @@
 import uuid
+import os
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 
 from base.models import MasterBaseModel
+from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
 
 
 class Domain(MasterBaseModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     domain_code = models.CharField(max_length=64)
     domain_name = models.CharField(max_length=255)
-    domain_category = models.CharField(
-        max_length=64,
-        blank=True,
-        default="",
-        db_index=True,
-        help_text="Broad category e.g. healthcare, technology, government, creative_arts",
-    )
     parent = models.ForeignKey(
         "self",
         null=True,
@@ -28,31 +21,12 @@ class Domain(MasterBaseModel):
         on_delete=models.SET_NULL,
         related_name="child_domains",
     )
-    parent_acceptance_level = models.PositiveSmallIntegerField()
-    future_relevance_score = models.PositiveSmallIntegerField()
     description = models.TextField(blank=True)
-
-    # How much each assessment dimension contributes to this domain's fit score.
-    # Nullable to allow "use default/fallback" behavior.
-    interest_weight = models.FloatField(
+    domain_image = models.CharField(
+        max_length=250,
         null=True,
         blank=True,
-        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
-    )
-    aptitude_weight = models.FloatField(
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
-    )
-    personality_weight = models.FloatField(
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
-    )
-    work_style_weight = models.FloatField(
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        help_text="Upload domain image/icon"
     )
 
     class Meta:
@@ -72,31 +46,36 @@ class Domain(MasterBaseModel):
     def __str__(self):
         return f"{self.domain_code} - {self.domain_name}"
 
-    def clean(self):
-        """
-        Validation for dimension affinity weights:
-        - either all 4 weights are null (meaning: fallback weights will be used), OR all 4 are provided
-        - each weight must be in [0, 1] (field validators)
-        - sum must be ~1.0 when provided
-        """
-        super().clean()
-        fields = (
-            "interest_weight",
-            "aptitude_weight",
-            "personality_weight",
-            "work_style_weight",
-        )
-        values = [getattr(self, f) for f in fields]
-        provided = [v for v in values if v is not None]
-        if not provided:
-            return
-        if len(provided) != 4:
-            raise ValidationError(
-                {f: "Provide all 4 weights, or leave all blank." for f in fields}
+    def upload_domain_image(self, domain_image_file):
+        """Upload domain image to AWS S3 following the same pattern as User model"""
+        allowed_types = [".jpg", ".jpeg", ".png"]
+        
+        file_extension = os.path.splitext(domain_image_file.name)[1].lower()
+        if file_extension not in allowed_types:
+            raise ValueError(
+                f"Invalid file type: {file_extension}. Allowed types are {', '.join(allowed_types)}."
             )
-        total = float(sum(provided))
-        if abs(total - 1.0) > 0.001:
-            raise ValidationError({f: "Weights must sum to 1.0." for f in fields})
+        
+        current_value = getattr(self, "domain_image", None)
+        
+        try:
+            if current_value:
+                delete_uploaded_file(current_value)
+            
+            aws_file_url, presigned_url = upload_file_to_bucket(
+                domain_image_file,
+                allowed_types,
+                "DomainImages/",
+                str(self.id),
+                None,
+            )
+            self.domain_image = aws_file_url
+            self.save(update_fields=["domain_image"])
+            return aws_file_url
+        except ValueError:
+            raise
+        except Exception as e:
+            raise Exception(f"Failed to upload domain image: {str(e)}")
 
 
 class DomainImportBatch(models.Model):
@@ -210,7 +189,6 @@ class DomainCounsellorKnowledge(models.Model):
 class StreamCounsellorKnowledge(models.Model):
     """
     Counsellor message content per stream (insight, tradeoff, action, tension).
-    Loaded via: python manage.py init_stream_counsellor_knowledge
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -253,7 +231,6 @@ class DomainScoringConfig(models.Model):
 class StreamReportMeta(models.Model):
     """
     Student-facing report data per stream (why, subjects, careers, note, next steps).
-    Loaded via: python manage.py init_stream_report_meta
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

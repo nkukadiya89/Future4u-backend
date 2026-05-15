@@ -34,8 +34,6 @@ class StreamSerializer(AuditFieldsMixin, serializers.ModelSerializer):
             "stream_code",
             "stream_name",
             "sequence_order",
-            "parent_safe_label",
-            "traditional_equivalent",
             "description",
             "education_level",
             "education_level_id",
