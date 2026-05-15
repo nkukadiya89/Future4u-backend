@@ -17,7 +17,6 @@ from user.views import (
     ForgetPasswordViewSet,
     ForgotPasswordViewSet,
     LoginWithEmailOtpViewset,
-    LogoutViewSet,
     ResetPasswordViewSet,
     RoleFamilyViewSet,
     UserDetailsViewSet,
@@ -54,7 +53,6 @@ user_router.register(
     VerifyEmailOtpAndGiveTokenViewset,
     basename="verify_otp_give_token",
 )
-user_router.register("logout", LogoutViewSet, basename="logout_api")
 user_router.register("role-family", RoleFamilyViewSet, basename="role_family")
 user_router.register("verified-otp", VerifiedOTPViewSet, basename="verified-otp")
 user_router.register("create-group", GroupViewSet, basename="create_new_group")

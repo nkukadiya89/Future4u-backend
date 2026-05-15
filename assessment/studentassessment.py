@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
+from django.utils import timezone
 from assessment.models import Option, Question, StudentAssessment, UserResponse
 from assessment.serializers import (
     AssessmentResponseSerializer,
@@ -155,7 +155,7 @@ def sync_current_screen(assessment, user):
     next_screen = calculate_current_screen(assessment, user)
     if assessment.current_screen != next_screen:
         assessment.current_screen = next_screen
-        assessment.save(update_fields=["current_screen", "updated_at"])
+        assessment.save(update_fields=["current_screen"])
     return assessment
 
 
@@ -276,9 +276,11 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_200_OK,
                 )
 
-        assessment = StudentAssessment.objects.create(
+        assessment = StudentAssessment(
             user=request.user, is_completed=False
         )
+        assessment._request_user = request.user
+        assessment.save()
         sync_current_screen(assessment, request.user)
         serializer = StudentAssessmentCreateSerializer(assessment)
         return Response(
@@ -292,8 +294,11 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
         )
 
     def perform_update(self, serializer):
+        instance = serializer.instance
+        instance._request_user = self.request.user 
         assessment = serializer.save()
         sync_current_screen(assessment, self.request.user)
+        return assessment
 
     @action(detail=False, methods=["get"], url_path="status")
     def assessment_status(self, request):
@@ -308,7 +313,10 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
         assessment = self.get_object()
         assessment.is_completed = True
         assessment.current_screen = StudentAssessment.Screen.COMPLETE
-        assessment.save(update_fields=["is_completed", "current_screen", "updated_at"])
+        assessment._request_user = request.user
+        assessment.updated_by = request.user
+        assessment.updated_at = timezone.now()
+        assessment.save(update_fields=["is_completed", "current_screen", "updated_at","updated_by"])
 
         return Response(
             {

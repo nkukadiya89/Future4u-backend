@@ -37,6 +37,28 @@ class QuestionSerializer(serializers.ModelSerializer):
             "options",
         ]
 
+#Used for the full response 
+class AssessmentQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = [
+            "id",
+            "question_text",
+            "dimension",
+            "question_type",
+        ]
+
+class AssessmentQuestionResponseSerializer(serializers.ModelSerializer):
+    question = AssessmentQuestionSerializer(read_only=True)
+    selected_option = OptionSerializer(read_only=True)
+
+    class Meta:
+        model = UserResponse
+        fields = [
+            "id",
+            "question",
+            "selected_option",
+        ]
 
 class UserResponseSerializer(serializers.ModelSerializer):
     assessment = serializers.PrimaryKeyRelatedField(queryset=StudentAssessment.objects.all(), required=False)
@@ -86,6 +108,8 @@ class StudentAssessmentSerializer(BaseModelSerializer):
         allow_null=True,
     )
     user = UserQuickSerializer(read_only=True)
+    responses = AssessmentQuestionResponseSerializer(many=True, read_only=True)
+
     
     class Meta:
         model = StudentAssessment
@@ -100,6 +124,7 @@ class StudentAssessmentSerializer(BaseModelSerializer):
             "current_screen",
             "user",
             "is_completed",
+            "responses",
         ]
         read_only_fields = ("id", "user", "current_screen", "created_at", "updated_at")
 
@@ -132,7 +157,7 @@ class StudentAssessmentSerializer(BaseModelSerializer):
 class StudentAssessmentCreateSerializer(BaseModelSerializer):
     class Meta:
         model = StudentAssessment
-        fields = [
+        fields = BaseModelSerializer.Meta.fields +  [
             "id",
             "current_screen",
             "is_completed",
