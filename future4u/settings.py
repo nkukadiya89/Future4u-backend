@@ -261,6 +261,11 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
+        "services.ai": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
         "resume_builder": {
             "handlers": ["console"],
             "level": "INFO",

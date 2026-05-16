@@ -107,8 +107,8 @@ class StudentAssessmentSerializer(BaseModelSerializer):
         required=False,
         allow_null=True,
     )
-    domain_category_name = serializers.CharField(source="domain_category.name", read_only=True, default=None)
-    domain_name = serializers.CharField(source="domain.name", read_only=True, default=None)
+    domain_category_name = serializers.CharField(source="domain_category.domain_name", read_only=True, default=None)
+    domain_name = serializers.CharField(source="domain.domain_name", read_only=True, default=None)
     user = UserQuickSerializer(read_only=True)
     responses = AssessmentQuestionResponseSerializer(many=True, read_only=True)
 

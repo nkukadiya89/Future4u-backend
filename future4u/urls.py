@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from user.user_auth import CustomTokenObtainPairView
 from future4u.routers import future4u_router
+from recommendation.ai_views import AIRecommendationAPIView
 from recommendation.debug_views import RecommendationDebugAPIView
 from recommendation.views import (
     CareerDetailsAPIView,
@@ -29,6 +30,11 @@ from recommendation.views import (
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("get-token/", CustomTokenObtainPairView.as_view(), name="get_token"),
+    path(
+        "api/ai-recommendations/<int:assessment_id>/",
+        AIRecommendationAPIView.as_view(),
+        name="api-ai-recommendations",
+    ),
     path(
         "api/recommendations/",
         RecommendationListAPIView.as_view(),
