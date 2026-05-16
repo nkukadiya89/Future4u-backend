@@ -107,6 +107,8 @@ class StudentAssessmentSerializer(BaseModelSerializer):
         required=False,
         allow_null=True,
     )
+    domain_category_name = serializers.CharField(source="domain_category.name", read_only=True, default=None)
+    domain_name = serializers.CharField(source="domain.name", read_only=True, default=None)
     user = UserQuickSerializer(read_only=True)
     responses = AssessmentQuestionResponseSerializer(many=True, read_only=True)
 
@@ -115,7 +117,9 @@ class StudentAssessmentSerializer(BaseModelSerializer):
         model = StudentAssessment
         fields = BaseModelSerializer.Meta.fields + [
             "domain_category",
+            "domain_category_name",
             "domain",
+            "domain_name",
             "career_direction",
             "parent_support",
             "concerns",

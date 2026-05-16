@@ -221,6 +221,8 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
     
     search_fields = [
         "id",
+        "domain_category_name",
+        "domain_name",
         "career_direction",
         "parent_support",
         "concerns",
