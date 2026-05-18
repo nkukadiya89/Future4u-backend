@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import statistics
+import uuid
+from datetime import date, datetime
+from decimal import Decimal
 from typing import Any
 
 from assessment.models import Question, StudentAssessment, UserResponse
+from assessment.serializers import StudentAssessmentSerializer
 from assessment.studentassessment import get_student_profile
 
 DIMENSIONS = (
@@ -31,15 +35,43 @@ def _normalize_score(raw: float) -> float:
     return round(max(0.0, min(1.0, (raw - 1.0) / 4.0)), 2)
 
 
+def _make_json_safe(value: Any) -> Any:
+    """Recursively convert UUID/datetime values for json.dumps."""
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, uuid.UUID):
+        return str(value)
+    if isinstance(value, (datetime, date)):
+        return value.isoformat()
+    if isinstance(value, Decimal):
+        return float(value)
+    if isinstance(value, dict):
+        return {key: _make_json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_make_json_safe(item) for item in value]
+    return str(value)
+
+
 class AssessmentContextBuilder:
-    """Build compact assessment signals for AI prompts (no raw assessment JSON)."""
+    """Build student assessment context for AI prompts (full API payload + derived signals)."""
 
     @classmethod
     def build(cls, assessment: StudentAssessment) -> dict[str, Any]:
+        payload = cls.serialize_assessment_api(assessment)
+        payload["computed_signals"] = cls.build_computed_signals(assessment)
+        return _make_json_safe(payload)
+
+    @classmethod
+    def serialize_assessment_api(cls, assessment: StudentAssessment) -> dict[str, Any]:
+        """Same shape as GET /api/student/assessments/{id}/ (JSON-safe values)."""
+        serializer = StudentAssessmentSerializer(assessment)
+        return _make_json_safe(dict(serializer.data))
+
+    @classmethod
+    def build_computed_signals(cls, assessment: StudentAssessment) -> dict[str, Any]:
         profile = get_student_profile(assessment.user)
         dimension_scores = cls._dimension_scores(assessment)
         consistency = cls._response_consistency(assessment)
-
         traits = cls._derive_traits(dimension_scores)
         support = cls._support_system_label(assessment.parent_support)
 
@@ -52,15 +84,35 @@ class AssessmentContextBuilder:
                 stream_code = profile.stream.stream_code
 
         domain_name = getattr(assessment.domain, "domain_name", None)
+        domain_code = getattr(assessment.domain, "domain_code", None)
         domain_category_name = getattr(assessment.domain_category, "domain_name", None)
+        domain_category_code = getattr(assessment.domain_category, "domain_code", None)
+
+        profile_block: dict[str, Any] = {}
+        if profile:
+            profile_block = {
+                "education_level": education_level,
+                "education_level_name": (
+                    profile.education_level.display_name
+                    if profile.education_level_id
+                    else None
+                ),
+                "stream": stream_code,
+                "stream_name": (
+                    profile.stream.stream_name if profile.stream_id else None
+                ),
+            }
 
         return {
             "assessment_id": assessment.id,
             "is_completed": assessment.is_completed,
+            "user_profile": profile_block,
             "education_level": education_level,
             "stream": stream_code,
             "domain": domain_name,
+            "domain_code": domain_code,
             "domain_category": domain_category_name,
+            "domain_category_code": domain_category_code,
             "career_direction": cls._compact_list(assessment.career_direction),
             "career_values": cls._compact_list(assessment.career_values),
             "concerns": cls._compact_list(assessment.concerns),

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 
-from decouple import config
 from django.db.models import Prefetch
 
 from assessment.models import Option, StudentAssessment, UserResponse
@@ -12,16 +11,14 @@ from services.ai.exceptions import (
     AssessmentNotFoundError,
     AssessmentNotReadyError,
 )
-from services.ai.clients.openai_client import get_openai_api_key
-from services.ai.context.recommendation_response_builder import RecommendationResponseBuilder
-from services.ai.generators.ai_recommendation_generator import AIRecommendationGenerator
+from services.ai.pipeline.recommendation_pipeline import RecommendationPipeline
 from services.ai.retrieval.career_knowledge_retriever import CareerKnowledgeRetriever
 
 logger = logging.getLogger(__name__)
 
 
 class AIRecommendationService:
-    """Orchestrates assessment → signals → PostgreSQL → OpenAI → validated JSON."""
+    """Assessment + DB career candidates → Groq full AI recommendations."""
 
     def generate(self, *, assessment_id: int, user) -> dict:
         assessment = self._load_assessment(assessment_id)
@@ -31,32 +28,24 @@ class AIRecommendationService:
         self._ensure_ready(assessment)
 
         student_signals = AssessmentContextBuilder.build(assessment)
-        career_candidates = CareerKnowledgeRetriever.retrieve(assessment)
+        computed = student_signals.get("computed_signals") or {}
+        student_signals["goals"] = computed.get("user_goals") or student_signals.get(
+            "user_goals"
+        ) or []
 
+        career_candidates = CareerKnowledgeRetriever.retrieve(assessment)
         if not career_candidates:
             domain_code = getattr(assessment.domain, "domain_code", None)
             raise AssessmentNotReadyError(
                 "No careers found for the selected domain. "
-                f"Ensure domain '{domain_code}' has domain-career mappings "
-                "(python manage.py init_domain_career_mappings) or scoring/report metadata."
+                f"Ensure domain '{domain_code}' has domain-career mappings."
             )
 
-        use_openai = config("AI_USE_OPENAI", default=True, cast=bool)
-        if use_openai:
-            get_openai_api_key()
-            payload = AIRecommendationGenerator.generate(
-                student_signals=student_signals,
-                career_candidates=career_candidates,
-            )
-            return payload.model_dump()
-
-        logger.info(
-            "AI_USE_OPENAI=false: using deterministic builder (dev only; not OpenAI output)"
-        )
-        return RecommendationResponseBuilder.build(
+        payload = RecommendationPipeline.run(
             student_signals=student_signals,
             career_candidates=career_candidates,
-        ).model_dump()
+        )
+        return payload.model_dump()
 
     @staticmethod
     def _load_assessment(assessment_id: int) -> StudentAssessment:
@@ -76,6 +65,9 @@ class AIRecommendationService:
                     "user",
                     "domain",
                     "domain_category",
+                    "created_by",
+                    "updated_by",
+                    "deleted_by",
                 )
                 .prefetch_related(
                     Prefetch("responses", queryset=response_qs),

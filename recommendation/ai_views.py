@@ -60,11 +60,12 @@ class AIRecommendationAPIView(APIView):
             )
         except AIConfigurationError as exc:
             logger.error("AI configuration error: %s", exc)
+            message = "AI recommendation service is not configured"
+            if settings.DEBUG:
+                detail = str(exc).strip() or exc.__class__.__name__
+                message = f"{message}: {detail}"
             return Response(
-                {
-                    "success": False,
-                    "message": "AI recommendation service is not configured",
-                },
+                {"success": False, "message": message},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         except AIGenerationError as exc:

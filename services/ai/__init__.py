@@ -1,1 +1,1 @@
-"""AI recommendation generation (OpenAI + LangChain + PostgreSQL retrieval)."""
+"""AI recommendation generation (Groq + LangChain + PostgreSQL retrieval)."""
