@@ -214,12 +214,16 @@ class CareerKnowledgeRetriever:
             "career__min_education_level",
             "career__max_education_level",
         ).order_by("-weight_score", "career__career_name")
-        seen: set = set()
+        seen_ids: set = set()
+        seen_names: set[str] = set()
         entries: list[tuple[Career, int]] = []
         for mapping in mappings:
-            if mapping.career_id in seen:
+            name_key = (mapping.career.career_name or "").strip().casefold()
+            if mapping.career_id in seen_ids or (name_key and name_key in seen_names):
                 continue
-            seen.add(mapping.career_id)
+            seen_ids.add(mapping.career_id)
+            if name_key:
+                seen_names.add(name_key)
             entries.append((mapping.career, int(mapping.weight_score)))
             if len(entries) >= cls.MAX_CAREERS:
                 break

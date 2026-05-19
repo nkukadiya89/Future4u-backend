@@ -6,19 +6,21 @@ from django.db.models import Prefetch
 
 from assessment.models import Option, StudentAssessment, UserResponse
 from services.ai.context.assessment_context_builder import AssessmentContextBuilder
+from services.ai.config import TOP_SUGGESTION_COUNT
 from services.ai.exceptions import (
     AssessmentAccessDeniedError,
     AssessmentNotFoundError,
     AssessmentNotReadyError,
 )
 from services.ai.pipeline.recommendation_pipeline import RecommendationPipeline
+from services.ai.prompts.ai_recommendation_prompt import career_slots_for_ai
 from services.ai.retrieval.career_knowledge_retriever import CareerKnowledgeRetriever
 
 logger = logging.getLogger(__name__)
 
 
 class AIRecommendationService:
-    """Assessment + DB career candidates → Groq full AI recommendations."""
+    """Assessment + career title slots → Groq generates full recommendation JSON."""
 
     def generate(self, *, assessment_id: int, user) -> dict:
         assessment = self._load_assessment(assessment_id)
@@ -39,6 +41,11 @@ class AIRecommendationService:
             raise AssessmentNotReadyError(
                 "No careers found for the selected domain. "
                 f"Ensure domain '{domain_code}' has domain-career mappings."
+            )
+        if len(career_slots_for_ai(career_candidates)) < TOP_SUGGESTION_COUNT:
+            raise AssessmentNotReadyError(
+                "Not enough unique careers for this domain. "
+                f"Map at least {TOP_SUGGESTION_COUNT} distinct careers."
             )
 
         payload = RecommendationPipeline.run(

@@ -6,7 +6,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from services.ai.clients.llm_client import ensure_ai_provider_configured
-from services.ai.config import ai_llm_enabled
+from services.ai.config import EASY_DECISION_COUNT, TOP_SUGGESTION_COUNT, ai_llm_enabled
 from services.ai.exceptions import AIGenerationError, AIConfigurationError
 from services.ai.generators.ai_recommendation_generator import AIRecommendationGenerator
 from services.ai.pipeline.output_normalizer import normalize_payload
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class RecommendationPipeline:
-    """student_signals + career_candidates → Groq → full recommendation JSON."""
+    """student_signals + career title slots → Groq → full AI recommendation JSON."""
 
     @classmethod
     def run(
@@ -36,7 +36,23 @@ class RecommendationPipeline:
                 student_signals=student_signals,
                 career_candidates=career_candidates,
             )
-            return normalize_payload(raw)
+            normalized = normalize_payload(raw)
+            if len(normalized.top_suggestions) != TOP_SUGGESTION_COUNT:
+                raise AIGenerationError(
+                    "AI recommendations must include 3 unique careers."
+                )
+            names = [
+                s.career_name.strip().casefold() for s in normalized.top_suggestions
+            ]
+            if len(set(names)) != TOP_SUGGESTION_COUNT:
+                raise AIGenerationError(
+                    "AI recommendations must not repeat the same career_name."
+                )
+            if len(normalized.easy_decision_making) < EASY_DECISION_COUNT:
+                raise AIGenerationError(
+                    "AI recommendations missing easy decision cards."
+                )
+            return normalized
         except (ValidationError, AIGenerationError):
             raise
         except AIConfigurationError:

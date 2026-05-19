@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from services.ai.schemas.recommendation_output import clip_roadmap_text
+
 CAREER_ROADMAP_PHASE_KEYS: tuple[str, ...] = (
     "next_3_months",
     "next_3_to_6_months",
@@ -17,7 +19,25 @@ _LEGACY_ROADMAP_KEYS: tuple[str, ...] = (
 
 
 def _task(title: str, description: str) -> dict[str, str]:
-    return {"task_title": title.strip(), "task_description": description.strip()}
+    return {
+        "task_title": clip_roadmap_text(title),
+        "task_description": clip_roadmap_text(description),
+    }
+
+
+def _clip_phase_tasks(tasks: list[Any]) -> list[dict[str, str]]:
+    clipped: list[dict[str, str]] = []
+    for item in tasks[:2]:
+        if not isinstance(item, dict):
+            continue
+        title = clip_roadmap_text(item.get("task_title") or "")
+        description = clip_roadmap_text(item.get("task_description") or "")
+        if not title and not description:
+            continue
+        clipped.append(
+            _task(title or _title_from_step(description), description or title)
+        )
+    return clipped
 
 
 def _title_from_step(description: str) -> str:
@@ -39,7 +59,7 @@ def normalize_career_roadmap(roadmap: dict[str, Any]) -> dict[str, list[dict[str
     """Ensure four 3-month phases; accept legacy 18-month keys from older AI output."""
     if all(roadmap.get(key) for key in CAREER_ROADMAP_PHASE_KEYS):
         return {
-            key: list(roadmap.get(key) or [])[:2]
+            key: _clip_phase_tasks(list(roadmap.get(key) or []))
             for key in CAREER_ROADMAP_PHASE_KEYS
         }
 

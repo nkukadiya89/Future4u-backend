@@ -3,6 +3,9 @@ from __future__ import annotations
 from django.conf import settings
 
 TOP_SUGGESTION_COUNT = 3
+EASY_DECISION_COUNT = 3
+# Easy Decision cards only compare the top two ranked careers.
+EASY_DECISION_CAREER_COUNT = 2
 
 
 def groq_api_key() -> str:

@@ -9,13 +9,19 @@ from langchain_core.messages import HumanMessage
 from pydantic import ValidationError
 
 from services.ai.clients.llm_client import get_chat_model
-from services.ai.config import TOP_SUGGESTION_COUNT
+from services.ai.config import EASY_DECISION_COUNT, TOP_SUGGESTION_COUNT
 from services.ai.exceptions import AIGenerationError
 from services.ai.prompts.ai_recommendation_prompt import (
     build_recommendation_prompt,
+    career_slots_for_ai,
     format_prompt_inputs,
 )
-from services.ai.schemas.recommendation_output import AIRecommendationPayload
+from services.ai.schemas.recommendation_output import (
+    AIRecommendationPayload,
+    WHY_CAREER_MAX_BULLETS,
+    is_valid_ai_insight,
+    is_valid_education_suggestions,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -169,38 +175,75 @@ class AIRecommendationGenerator:
         payload: AIRecommendationPayload,
         career_candidates: list[dict[str, Any]],
     ) -> bool:
-        if not payload.top_suggestions:
+        if len(payload.top_suggestions) != TOP_SUGGESTION_COUNT:
             return False
-        if len(payload.top_suggestions) > TOP_SUGGESTION_COUNT:
+        if len(payload.easy_decision_making) != EASY_DECISION_COUNT:
             return False
 
-        expected = {
-            str(row.get("career_name", "")).strip().casefold()
-            for row in career_candidates
-            if row.get("career_name")
-        }
-        returned = {
+        expected_names = [
+            slot["career_name"].strip().casefold()
+            for slot in career_slots_for_ai(career_candidates)
+        ]
+        if len(expected_names) != TOP_SUGGESTION_COUNT:
+            return False
+        if len(set(expected_names)) != TOP_SUGGESTION_COUNT:
+            return False
+
+        returned_names = [
             item.career_name.strip().casefold() for item in payload.top_suggestions
-        }
-        if expected and not returned.intersection(expected):
+        ]
+        if len(returned_names) != TOP_SUGGESTION_COUNT:
+            return False
+        if len(set(returned_names)) != TOP_SUGGESTION_COUNT:
+            return False
+        if set(returned_names) != set(expected_names):
             return False
 
-        first = payload.top_suggestions[0]
-        roadmap = first.career_roadmap
-        if len(first.why_this_career) > 5:
+        skill_sets: list[frozenset[str]] = []
+        roadmap_signatures: list[tuple[str, ...]] = []
+
+        for item in payload.top_suggestions:
+            roadmap = item.career_roadmap
+            if not (
+                item.career_name.strip()
+                and item.match_percentage > 0
+                and is_valid_ai_insight(item.ai_insight)
+                and item.why_this_career
+                and len(item.why_this_career) <= WHY_CAREER_MAX_BULLETS
+                and item.required_skills
+                and item.required_education
+                and is_valid_education_suggestions(
+                    item.required_education.suggestions
+                )
+                and roadmap.next_3_months
+                and roadmap.next_3_to_6_months
+                and roadmap.next_6_to_9_months
+                and roadmap.next_9_to_12_months
+            ):
+                return False
+
+            skill_sets.append(
+                frozenset(s.strip().casefold() for s in item.required_skills if s.strip())
+            )
+            roadmap_signatures.append(
+                tuple(
+                    task.task_title.strip().casefold()
+                    for phase in (
+                        roadmap.next_3_months,
+                        roadmap.next_3_to_6_months,
+                        roadmap.next_6_to_9_months,
+                        roadmap.next_9_to_12_months,
+                    )
+                    for task in phase
+                )
+            )
+
+        if len(skill_sets) != len(set(skill_sets)):
             return False
-        return bool(
-            first.career_name.strip()
-            and first.match_percentage > 0
-            and first.ai_insight.strip()
-            and first.why_this_career
-            and first.required_skills
-            and roadmap.next_3_months
-            and roadmap.next_3_to_6_months
-            and roadmap.next_6_to_9_months
-            and roadmap.next_9_to_12_months
-            and len(payload.easy_decision_making) >= 1
-        )
+        if len(roadmap_signatures) != len(set(roadmap_signatures)):
+            return False
+
+        return True
 
 
 def _is_function_call_error(exc: Exception) -> bool:
