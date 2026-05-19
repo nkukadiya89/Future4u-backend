@@ -10422,6 +10422,140 @@
               }
             }
           ]
+        },
+        {
+          "name": "7. List career suggestions (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/career-suggestions/?search=&ordering=-created_at&page=1&pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "career-suggestions",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search by nested suggestion career_name"
+                },
+                {
+                  "key": "ordering",
+                  "value": "-created_at",
+                  "description": "id | created_at | updated_at (prefix - for desc)"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Lists stored career recommendations for the authenticated user.\n\nRecords are created/updated by step 6 (AI Recommendations).\n\nResponse (paginated): { success, count, next, previous, data: [ CareerRecommendation, ... ] }\nEach item includes nested suggestions[] with career_name, match_percentage, ai_insight, why_this_career, required_skills, required_education, career_factors, career_roadmap."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || (json.results && json.results.data) || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id !== undefined && first.id !== null) {",
+                  "      pm.collectionVariables.set('career_recommendation_id', String(first.id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7b. List career suggestions — no pagination (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/career-suggestions/?no_pagination=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "career-suggestions",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Returns all career recommendations for the user without pagination: { success, data: [...] }."
+          },
+          "response": []
+        },
+        {
+          "name": "8. Get career suggestion by id (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/career-suggestions/{{career_recommendation_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "career-suggestions",
+                "{{career_recommendation_id}}",
+                ""
+              ]
+            },
+            "description": "Retrieve one career recommendation (must belong to the logged-in user).\n\nSet {{career_recommendation_id}} from step 7 list request or manually.\n\nResponse: { success, data: { id, user, assessment, raw_ai_response, easy_decision_making, last_recommended_at, suggestions: [...] } }"
+          },
+          "response": []
         }
       ]
     },
@@ -14737,6 +14871,10 @@
     },
     {
       "key": "option_id",
+      "value": "1"
+    },
+    {
+      "key": "career_recommendation_id",
       "value": "1"
     }
   ]
