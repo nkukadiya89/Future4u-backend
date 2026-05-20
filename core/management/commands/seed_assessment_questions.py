@@ -100,7 +100,9 @@ class Command(BaseCommand):
             # 1) Legacy: option_1..option_5 where each cell is either "label" or "score: label"
             # 2) Split: option_1_text, option_1_score, ..., option_4_text, option_4_score
             required_base_headers = ("dimension", "question_text", "is_active")
-            missing_base = [h for h in required_base_headers if h not in reader.fieldnames]
+            missing_base = [
+                h for h in required_base_headers if h not in reader.fieldnames
+            ]
             if missing_base:
                 raise ValueError(f"Missing headers: {', '.join(missing_base)}")
 
@@ -387,7 +389,11 @@ class Command(BaseCommand):
                         if not cell:
                             continue
                         # Strip optional "score: " prefix if present
-                        label = cell.split(":", 1)[1].strip() if ":" in cell else cell.strip()
+                        label = (
+                            cell.split(":", 1)[1].strip()
+                            if ":" in cell
+                            else cell.strip()
+                        )
                         if not label:
                             raise ValueError(f"Row {idx}: option label cannot be blank")
 

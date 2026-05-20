@@ -1,9 +1,18 @@
 from rest_framework import serializers
 
+from assessment.models import (
+    AssessmentCareerRecommendation,
+    AssessmentDomainScore,
+    AssessmentSkillScore,
+    Option,
+    Question,
+    StudentAssessment,
+    UserResponse,
+)
 from common.serializers import BaseModelSerializer
-from assessment.models import Option, Question, StudentAssessment, UserResponse
 from domain.models import Domain
 from user.serializers import UserQuickSerializer
+
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,7 +46,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             "options",
         ]
 
-#Used for the full response 
+
 class AssessmentQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
@@ -47,6 +56,7 @@ class AssessmentQuestionSerializer(serializers.ModelSerializer):
             "dimension",
             "question_type",
         ]
+
 
 class AssessmentQuestionResponseSerializer(serializers.ModelSerializer):
     question = AssessmentQuestionSerializer(read_only=True)
@@ -60,8 +70,11 @@ class AssessmentQuestionResponseSerializer(serializers.ModelSerializer):
             "selected_option",
         ]
 
+
 class UserResponseSerializer(serializers.ModelSerializer):
-    assessment = serializers.PrimaryKeyRelatedField(queryset=StudentAssessment.objects.all(), required=False)
+    assessment = serializers.PrimaryKeyRelatedField(
+        queryset=StudentAssessment.objects.all(), required=False
+    )
     user = UserQuickSerializer(read_only=True)
 
     class Meta:
@@ -80,12 +93,16 @@ class UserResponseSerializer(serializers.ModelSerializer):
 
         assessment = attrs.get("assessment")
         if assessment and question:
-            exists = UserResponse.objects.filter(assessment=assessment, question=question)
+            exists = UserResponse.objects.filter(
+                assessment=assessment, question=question
+            )
             if self.instance:
                 exists = exists.exclude(pk=self.instance.pk)
             if exists.exists():
                 raise serializers.ValidationError(
-                    {"question": "Response already exists for this assessment and question."}
+                    {
+                        "question": "Response already exists for this assessment and question."
+                    }
                 )
 
         return attrs
@@ -94,6 +111,69 @@ class UserResponseSerializer(serializers.ModelSerializer):
         request = self.context.get("request") if hasattr(self, "context") else None
         user = getattr(request, "user", None) if request else None
         return UserResponse.objects.create(user=user, **validated_data)
+
+
+class AssessmentCareerRecommendationSerializer(serializers.ModelSerializer):
+    career_name = serializers.CharField(source="career.career_name", read_only=True)
+
+    class Meta:
+        model = AssessmentCareerRecommendation
+        fields = [
+            "id",
+            "career",
+            "career_name",
+            "score",
+            "rank",
+            "match_percentage",
+            "reasoning",
+        ]
+        read_only_fields = [
+            "id",
+            "career",
+            "career_name",
+            "score",
+            "rank",
+            "match_percentage",
+            "reasoning",
+        ]
+
+
+class AssessmentSkillScoreSerializer(serializers.ModelSerializer):
+    skill_name = serializers.CharField(source="skill.skill_name", read_only=True)
+
+    class Meta:
+        model = AssessmentSkillScore
+        fields = [
+            "id",
+            "skill",
+            "skill_name",
+            "score",
+        ]
+        read_only_fields = [
+            "id",
+            "skill",
+            "skill_name",
+            "score",
+        ]
+
+
+class AssessmentDomainScoreSerializer(serializers.ModelSerializer):
+    domain_name = serializers.CharField(source="domain.domain_name", read_only=True)
+
+    class Meta:
+        model = AssessmentDomainScore
+        fields = [
+            "id",
+            "domain",
+            "domain_name",
+            "score",
+        ]
+        read_only_fields = [
+            "id",
+            "domain",
+            "domain_name",
+            "score",
+        ]
 
 
 class StudentAssessmentSerializer(BaseModelSerializer):
@@ -110,13 +190,11 @@ class StudentAssessmentSerializer(BaseModelSerializer):
     user = UserQuickSerializer(read_only=True)
     responses = AssessmentQuestionResponseSerializer(many=True, read_only=True)
 
-    
     class Meta:
         model = StudentAssessment
         fields = BaseModelSerializer.Meta.fields + [
             "domain_category",
             "domain",
-            "career_direction",
             "parent_support",
             "concerns",
             "career_values",
@@ -154,10 +232,11 @@ class StudentAssessmentSerializer(BaseModelSerializer):
 
         return attrs
 
+
 class StudentAssessmentCreateSerializer(BaseModelSerializer):
     class Meta:
         model = StudentAssessment
-        fields = BaseModelSerializer.Meta.fields +  [
+        fields = BaseModelSerializer.Meta.fields + [
             "id",
             "current_screen",
             "is_completed",
@@ -175,6 +254,7 @@ class NextQuestionSerializer(serializers.ModelSerializer):
             "dimension",
             "options",
         ]
+
 
 class AssessmentResponseSerializer(serializers.Serializer):
     assessment = serializers.IntegerField()

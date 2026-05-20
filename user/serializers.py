@@ -114,13 +114,19 @@ class UserSerializer(serializers.ModelSerializer):
     def get_education_level(self, obj):
         if obj.user_type == obj.Role.STUDENT:
             student_profile = getattr(obj, "student_profile", None)
-            return getattr(student_profile, "education_level_id", None) if student_profile else None
+            return (
+                getattr(student_profile, "education_level_id", None)
+                if student_profile
+                else None
+            )
         return None
 
     def get_stream(self, obj):
         if obj.user_type == obj.Role.STUDENT:
             student_profile = getattr(obj, "student_profile", None)
-            return getattr(student_profile, "stream_id", None) if student_profile else None
+            return (
+                getattr(student_profile, "stream_id", None) if student_profile else None
+            )
         return None
 
 
@@ -154,7 +160,7 @@ class UserDetailsSerializer(serializers.ModelSerializer):
             "city",
         ]
         extra_kwargs = {
-            "email": {"read_only": True},  
+            "email": {"read_only": True},
         }
 
     def to_representation(self, instance):

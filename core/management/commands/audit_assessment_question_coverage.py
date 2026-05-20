@@ -61,11 +61,15 @@ class Command(BaseCommand):
             domain_questions = questions_by_domain_id.get(domain.id, [])
             # The runtime question pool uses the specific domain once selected,
             # so coverage for child domains should be evaluated against the child domain alone.
-            combined_questions = list({question.id: question for question in domain_questions}.values())
+            combined_questions = list(
+                {question.id: question for question in domain_questions}.values()
+            )
 
             dimension_counts = {
                 dimension: sum(
-                    1 for question in combined_questions if question.dimension == dimension
+                    1
+                    for question in combined_questions
+                    if question.dimension == dimension
                 )
                 for dimension in DIMENSIONS
             }
@@ -107,9 +111,7 @@ class Command(BaseCommand):
             f"{status}={count}" for status, count in sorted(status_counts.items())
         )
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Wrote {len(rows)} rows to {output_path}. {summary}"
-            )
+            self.style.SUCCESS(f"Wrote {len(rows)} rows to {output_path}. {summary}")
         )
 
     def _coverage_status(self, combined_count, dimension_counts):

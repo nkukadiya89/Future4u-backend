@@ -8,13 +8,16 @@ Provider priority:
 If OpenAI fails (quota, auth, network), automatically retries with Groq.
 Raises ValueError only if both providers are unavailable.
 """
+
 from __future__ import annotations
 
 import logging
 
 from resume_builder.resume_services.config import (
-    OPENAI_API_KEY, OPENAI_MODEL,
-    GROQ_API_KEY,   GROQ_MODEL,
+    OPENAI_API_KEY,
+    OPENAI_MODEL,
+    GROQ_API_KEY,
+    GROQ_MODEL,
 )
 
 logger = logging.getLogger(__name__)
@@ -22,8 +25,10 @@ logger = logging.getLogger(__name__)
 
 # ── OpenAI ────────────────────────────────────────────────────────────────────
 
+
 def _call_openai(prompt: str, max_tokens: int) -> str:
     from openai import OpenAI
+
     client = OpenAI(api_key=OPENAI_API_KEY)
     response = client.chat.completions.create(
         model=OPENAI_MODEL,
@@ -36,8 +41,10 @@ def _call_openai(prompt: str, max_tokens: int) -> str:
 
 # ── Groq ──────────────────────────────────────────────────────────────────────
 
+
 def _call_groq(prompt: str, max_tokens: int) -> str:
     from groq import Groq
+
     client = Groq(api_key=GROQ_API_KEY)
     response = client.chat.completions.create(
         model=GROQ_MODEL,
@@ -49,6 +56,7 @@ def _call_groq(prompt: str, max_tokens: int) -> str:
 
 
 # ── Dispatcher — tries OpenAI first, falls back to Groq ──────────────────────
+
 
 def _call_ai(prompt: str, max_tokens: int) -> str:
     """
@@ -78,6 +86,7 @@ def _call_ai(prompt: str, max_tokens: int) -> str:
 
 
 # ── Public functions ──────────────────────────────────────────────────────────
+
 
 def enhance_fresher_summary(data: dict) -> str:
     """Generate an ATS-optimized objective for a fresher resume."""
@@ -115,9 +124,7 @@ def enhance_professional_summary(data: dict) -> str:
     cp = data["career_positioning"]
     skills = ", ".join(cp["key_expertise"])
     highlights = "; ".join(data.get("key_highlights", [])[:3])
-    experience = "; ".join(
-        f"{e['role']} at {e['company']}" for e in data["experience"]
-    )
+    experience = "; ".join(f"{e['role']} at {e['company']}" for e in data["experience"])
 
     prompt = f"""You are an expert resume writer specializing in senior professional resumes.
 

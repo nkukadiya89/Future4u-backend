@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0018_remove_unused_dimensions'),
+        ("assessment", "0018_remove_unused_dimensions"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='option',
-            name='score_value',
+            model_name="option",
+            name="score_value",
         ),
         migrations.RemoveField(
-            model_name='userresponse',
-            name='score_value',
+            model_name="userresponse",
+            name="score_value",
         ),
     ]

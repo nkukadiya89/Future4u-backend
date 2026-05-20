@@ -131,7 +131,9 @@ class DomainAdmin(BaseAdmin):
     def sample_csv_view(self, request):
         data = domain_service.sample_csv_bytes()
         resp = HttpResponse(data, content_type="text/csv; charset=utf-8")
-        resp["Content-Disposition"] = 'attachment; filename="domain_hierarchy_sample.csv"'
+        resp["Content-Disposition"] = (
+            'attachment; filename="domain_hierarchy_sample.csv"'
+        )
         return resp
 
     def upload_view(self, request):

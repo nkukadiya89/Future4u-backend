@@ -64,7 +64,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--subscription", type=bool, help="Subscription plans data to be seeded"
         )
-                
+
     def handle(self, *args, **kwargs):
         self.stdout.write("Initialise..")
         if kwargs["subscription"]:
@@ -115,7 +115,6 @@ class Command(BaseCommand):
             self.load_assessment_questions()
             return
 
-        
         # If no specific flags, run all initialization
         if (
             kwargs["country"] is None
@@ -633,10 +632,10 @@ class Command(BaseCommand):
             "source",
             "domain_hierarchy.csv",
         )
-        
+
         # Prepare command arguments
         command_args = {"path": file_path}
-        
+
         call_command("init_domain_master", **command_args)
 
     def load_education_levels(self):
@@ -695,9 +694,6 @@ class Command(BaseCommand):
             importer=skill_service.bulk_import_skills,
         )
 
-    
-    
-    
     def load_careers(self):
         self.stdout.write("Loading Careers...")
         file_path = path.join(

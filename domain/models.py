@@ -23,10 +23,7 @@ class Domain(MasterBaseModel):
     )
     description = models.TextField(blank=True)
     domain_image = models.CharField(
-        max_length=250,
-        null=True,
-        blank=True,
-        help_text="Upload domain image/icon"
+        max_length=250, null=True, blank=True, help_text="Upload domain image/icon"
     )
 
     class Meta:
@@ -49,19 +46,19 @@ class Domain(MasterBaseModel):
     def upload_domain_image(self, domain_image_file):
         """Upload domain image to AWS S3 following the same pattern as User model"""
         allowed_types = [".jpg", ".jpeg", ".png"]
-        
+
         file_extension = os.path.splitext(domain_image_file.name)[1].lower()
         if file_extension not in allowed_types:
             raise ValueError(
                 f"Invalid file type: {file_extension}. Allowed types are {', '.join(allowed_types)}."
             )
-        
+
         current_value = getattr(self, "domain_image", None)
-        
+
         try:
             if current_value:
                 delete_uploaded_file(current_value)
-            
+
             aws_file_url, presigned_url = upload_file_to_bucket(
                 domain_image_file,
                 allowed_types,

@@ -10,7 +10,13 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
 
 from activity_log.models import ActivityLog
-from user_profile.models import BusinessSetting, ParentProfile, ProfessionalProfile, StudentProfile, UserProfile
+from user_profile.models import (
+    BusinessSetting,
+    ParentProfile,
+    ProfessionalProfile,
+    StudentProfile,
+    UserProfile,
+)
 from user_profile.serializers import (
     BusinessSettingInfoSerializer,
     BusinessSettingSerializer,
@@ -348,7 +354,10 @@ class UserProfileViewSet(ModelViewSet):
     def list(self, request, *args, **kwargs):
         if request.user.user_type != request.user.Role.SUPER_ADMIN:
             return Response(
-                {"success": False, "message": "Only Super Admin can access this endpoint"},
+                {
+                    "success": False,
+                    "message": "Only Super Admin can access this endpoint",
+                },
                 status=status.HTTP_403_FORBIDDEN,
             )
         profile = UserProfile.objects.filter(user=request.user).first()
@@ -367,7 +376,10 @@ class UserProfileViewSet(ModelViewSet):
         # Only Super Admin can access UserProfile
         if request.user.user_type != request.user.Role.SUPER_ADMIN:
             return Response(
-                {"success": False, "message": "Only Super Admin can access this endpoint"},
+                {
+                    "success": False,
+                    "message": "Only Super Admin can access this endpoint",
+                },
                 status=status.HTTP_403_FORBIDDEN,
             )
         profile = UserProfile.objects.filter(user=request.user).first()
@@ -475,7 +487,9 @@ class ProfessionalProfileViewSet(ModelViewSet):
     throttle_classes = [PerUserBurstRateThrottle]
 
     def get_queryset(self):
-        return ProfessionalProfile.objects.filter(user=self.request.user).select_related(
+        return ProfessionalProfile.objects.filter(
+            user=self.request.user
+        ).select_related(
             "user__country", "user__states", "user__city", "education_level"
         )
 
@@ -499,7 +513,9 @@ class ProfessionalProfileViewSet(ModelViewSet):
                 {"success": False, "message": "Profile not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        ser = ProfessionalProfileUpsertSerializer(profile, data=request.data, partial=True)
+        ser = ProfessionalProfileUpsertSerializer(
+            profile, data=request.data, partial=True
+        )
         if not ser.is_valid():
             return Response(
                 {"success": False, "status": False, "message": ser.errors, "data": {}},
@@ -540,9 +556,11 @@ class ParentProfileViewSet(ModelViewSet):
     throttle_classes = [PerUserBurstRateThrottle]
 
     def get_queryset(self):
-        return ParentProfile.objects.filter(user=self.request.user).select_related(
-            "user__country", "user__states", "user__city"
-        ).prefetch_related("language")
+        return (
+            ParentProfile.objects.filter(user=self.request.user)
+            .select_related("user__country", "user__states", "user__city")
+            .prefetch_related("language")
+        )
 
     def list(self, request, *args, **kwargs):
         profile = ParentProfile.objects.filter(user=request.user).first()
