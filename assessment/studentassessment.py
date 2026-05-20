@@ -1,22 +1,23 @@
-from domain.models import Domain
 from django.db import transaction
 from django.db.models import Q
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from django.utils import timezone
+
 from assessment.models import Option, Question, StudentAssessment, UserResponse
+from assessment.services.recommendation_engine import generate_full_assessment_result
 from assessment.serializers import (
     AssessmentResponseSerializer,
     NextQuestionSerializer,
     StudentAssessmentCreateSerializer,
     StudentAssessmentSerializer,
 )
+from domain.models import Domain
 from utils.pagination import Pagination
-from rest_framework.filters import SearchFilter, OrderingFilter
-
 
 SIGNAL_ORDER = [
     Question.Dimension.INTEREST,
@@ -68,12 +69,16 @@ def get_question_pool(assessment, user, dimension=None):
             pass
 
     # Filter by specific dimension if provided
-    dimensions = [dimension] if dimension else [
-        Question.Dimension.INTEREST,
-        Question.Dimension.APTITUDE,
-        Question.Dimension.PERSONALITY,
-        Question.Dimension.WORK_STYLE,
-    ]
+    dimensions = (
+        [dimension]
+        if dimension
+        else [
+            Question.Dimension.INTEREST,
+            Question.Dimension.APTITUDE,
+            Question.Dimension.PERSONALITY,
+            Question.Dimension.WORK_STYLE,
+        ]
+    )
 
     if len(domain_codes) == 2:
         question_pool = Question.objects.filter(
@@ -105,19 +110,17 @@ def calculate_current_screen(assessment, user):
         return StudentAssessment.Screen.COMPLETE
 
     profile = get_student_profile(user)
-    if not profile or not profile.education_level_id:
+    if not profile or not profile.education_level_id:  # type: ignore
         return StudentAssessment.Screen.EDUCATION_LEVEL
 
-    level_code = (profile.education_level.level_code or "").lower()
-    if level_code in STREAM_REQUIRED_LEVEL_CODES and not profile.stream_id:
+    level_code = (profile.education_level.level_code or "").lower()  # type: ignore
+    if level_code in STREAM_REQUIRED_LEVEL_CODES and not profile.stream_id:  # type: ignore
         return StudentAssessment.Screen.STREAM
 
     if not assessment.domain_category_id:
         return StudentAssessment.Screen.DOMAIN_CATEGORY
     if not assessment.domain_id:
         return StudentAssessment.Screen.DOMAIN
-    if not assessment.career_direction:
-        return StudentAssessment.Screen.CAREER_DIRECTION
     if not assessment.parent_support:
         return StudentAssessment.Screen.PARENT_SUPPORT
     if not assessment.concerns:
@@ -129,15 +132,20 @@ def calculate_current_screen(assessment, user):
         (Question.Dimension.PERSONALITY, StudentAssessment.Screen.PERSONALITY),
         (Question.Dimension.WORK_STYLE, StudentAssessment.Screen.WORK_STYLE),
     ]
-    
+
     for dimension, screen_name in dimensions:
         question_pool = get_question_pool(assessment, user, dimension)
         total_questions = question_pool.count()
         if total_questions:
-            answered_count = UserResponse.objects.filter(
-                assessment=assessment,
-                question__in=question_pool,
-            ).values("question_id").distinct().count()
+            answered_count = (
+                UserResponse.objects.filter(
+                    assessment=assessment,
+                    question__in=question_pool,
+                )
+                .values("question_id")
+                .distinct()
+                .count()
+            )
             if answered_count < total_questions:
                 return screen_name
 
@@ -198,7 +206,7 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     pagination_class = Pagination
     serializer_class = StudentAssessmentSerializer
-    
+
     def get_queryset(self):
         return StudentAssessment.objects.filter(
             user=self.request.user,
@@ -209,12 +217,9 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
         if self.action == "create":
             return StudentAssessmentCreateSerializer
         return StudentAssessmentSerializer
-    
+
     search_fields = [
         "id",
-        "domain_category_name",
-        "domain_name",
-        "career_direction",
         "parent_support",
         "concerns",
         "career_values",
@@ -224,7 +229,6 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
     ordering_fields = [
         "user",
         "domain",
-        "career_direction",
         "parent_support",
         "concerns",
         "career_values",
@@ -233,7 +237,6 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
         "updated_at",
         "is_completed",
     ]
-
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -268,9 +271,7 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_200_OK,
                 )
 
-        assessment = StudentAssessment(
-            user=request.user, is_completed=False
-        )
+        assessment = StudentAssessment(user=request.user, is_completed=False)
         assessment._request_user = request.user
         assessment.save()
         sync_current_screen(assessment, request.user)
@@ -287,7 +288,7 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         instance = serializer.instance
-        instance._request_user = self.request.user 
+        instance._request_user = self.request.user
         assessment = serializer.save()
         sync_current_screen(assessment, self.request.user)
         return assessment
@@ -298,16 +299,24 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
         return Response(assessment_status_payload(assessment, request.user))
 
     @action(detail=True, methods=["post"])
-    @transaction.atomic
     def complete(self, request, pk=None):
         """POST /api/assessments/{id}/complete/"""
         assessment = self.get_object()
-        assessment.is_completed = True
-        assessment.current_screen = StudentAssessment.Screen.COMPLETE
-        assessment._request_user = request.user
-        assessment.updated_by = request.user
-        assessment.updated_at = timezone.now()
-        assessment.save(update_fields=["is_completed", "current_screen", "updated_at","updated_by"])
+        with transaction.atomic():
+            assessment.is_completed = True
+            assessment.current_screen = StudentAssessment.Screen.COMPLETE
+            assessment._request_user = request.user
+            assessment.updated_by = request.user
+            assessment.updated_at = timezone.now()
+            assessment.save(
+                update_fields=[
+                    "is_completed",
+                    "current_screen",
+                    "updated_at",
+                    "updated_by",
+                ]
+            )
+            generate_full_assessment_result(assessment)
 
         return Response(
             {
@@ -356,9 +365,9 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        answered_ids = (
-            UserResponse.objects.filter(assessment=assessment)
-            .values_list("question_id", flat=True)
+        # Get already answered questions for this assessment
+        answered_ids = UserResponse.objects.filter(assessment=assessment).values_list(
+            "question_id", flat=True
         )
 
         current_screen = assessment.current_screen
@@ -369,7 +378,7 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
             StudentAssessment.Screen.PERSONALITY: Question.Dimension.PERSONALITY,
             StudentAssessment.Screen.WORK_STYLE: Question.Dimension.WORK_STYLE,
         }
-        
+
         # Get questions for current dimension
         current_dimension = dimension_map.get(current_screen)
         if not current_dimension:
@@ -382,20 +391,16 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
                 },
                 status=status.HTTP_200_OK,
             )
-        
+
         question_pool = get_question_pool(assessment, request.user, current_dimension)
         total_questions = question_pool.count()
-        
+
         # Get answered questions for this dimension
-        answered_ids = (
-            UserResponse.objects.filter(
-                assessment=assessment,
-                question__in=question_pool
-            )
-            .values_list("question_id", flat=True)
-        )
+        answered_ids = UserResponse.objects.filter(
+            assessment=assessment, question__in=question_pool
+        ).values_list("question_id", flat=True)
         answered_count = len(answered_ids)
-        
+
         qs = question_pool.exclude(id__in=answered_ids)
         next_q = qs.order_by("sequence_order").first()
 
@@ -484,7 +489,7 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
             return Response(
                 {"success": False, "message": "Invalid question"},
                 status=status.HTTP_404_NOT_FOUND,
-            )   
+            )
         except Option.DoesNotExist:
             return Response(
                 {"success": False, "message": "Invalid option for this question"},

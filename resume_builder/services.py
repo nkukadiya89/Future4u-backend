@@ -4,6 +4,7 @@ Resume Builder service — bridges Django user profiles to the resume PDF genera
 All data is sourced directly from StudentProfile / ProfessionalProfile models
 and the related User model. Every available field is mapped.
 """
+
 from __future__ import annotations
 
 
@@ -32,17 +33,20 @@ def build_student_resume_data(profile, user, template: str = "professional") -> 
     """
     # ── Personal info (User model) ────────────────────────────────────────────
     personal_info = {
-        "name": _safe_str(user.full_name) or f"{user.first_name} {user.last_name}".strip(),
+        "name": _safe_str(user.full_name)
+        or f"{user.first_name} {user.last_name}".strip(),
         "email": user.email,
         "phone": _safe_str(user.phone),
         "about_me": _safe_str(user.about_me),
         "designation": _safe_str(user.designation),
         "profile_image": _safe_str(user.profile_image),
         "location": (
-            user.city.name if user.city else (
-                user.states.name if user.states else (
-                    user.country.name if user.country else ""
-                )
+            user.city.name
+            if user.city
+            else (
+                user.states.name
+                if user.states
+                else (user.country.name if user.country else "")
             )
         ),
         "country": user.country.name if user.country else "",
@@ -55,8 +59,12 @@ def build_student_resume_data(profile, user, template: str = "professional") -> 
 
     # ── Education level & stream (FK fields) ──────────────────────────────────
     education_meta = {
-        "education_level_code": profile.education_level.level_code if profile.education_level else None,
-        "education_level_name": profile.education_level.display_name if profile.education_level else None,
+        "education_level_code": (
+            profile.education_level.level_code if profile.education_level else None
+        ),
+        "education_level_name": (
+            profile.education_level.display_name if profile.education_level else None
+        ),
         "stream_code": profile.stream.stream_code if profile.stream else None,
         "stream_name": profile.stream.stream_name if profile.stream else None,
         "science_track": profile.science_track or None,
@@ -90,13 +98,15 @@ def build_student_resume_data(profile, user, template: str = "professional") -> 
     education = []
     for e in raw_edu:
         if isinstance(e, dict):
-            education.append({
-                "institution": e.get("institution", ""),
-                "degree": e.get("degree", ""),
-                "field": e.get("field", ""),
-                "year": int(e.get("year", 0)) if e.get("year") else None,
-                "cgpa": float(e["cgpa"]) if e.get("cgpa") else None,
-            })
+            education.append(
+                {
+                    "institution": e.get("institution", ""),
+                    "degree": e.get("degree", ""),
+                    "field": e.get("field", ""),
+                    "year": int(e.get("year", 0)) if e.get("year") else None,
+                    "cgpa": float(e["cgpa"]) if e.get("cgpa") else None,
+                }
+            )
 
     # ── Skills (JSONField — dict or list) ─────────────────────────────────────
     raw_skills = profile.skills
@@ -116,36 +126,42 @@ def build_student_resume_data(profile, user, template: str = "professional") -> 
     projects = []
     for p in raw_projects:
         if isinstance(p, dict):
-            projects.append({
-                "title": p.get("title", ""),
-                "problem_statement": p.get("problem_statement", ""),
-                "your_role": p.get("your_role", ""),
-                "technologies": p.get("technologies", []),
-                "impact": p.get("impact", ""),
-            })
+            projects.append(
+                {
+                    "title": p.get("title", ""),
+                    "problem_statement": p.get("problem_statement", ""),
+                    "your_role": p.get("your_role", ""),
+                    "technologies": p.get("technologies", []),
+                    "impact": p.get("impact", ""),
+                }
+            )
 
     # ── Internships (JSONField) ───────────────────────────────────────────────
     raw_internships = _safe_list(profile.internships)
     internships = []
     for i in raw_internships:
         if isinstance(i, dict):
-            internships.append({
-                "company": i.get("company", ""),
-                "duration": i.get("duration", ""),
-                "responsibilities": i.get("responsibilities", []),
-                "key_achievement": i.get("key_achievement", None),
-            })
+            internships.append(
+                {
+                    "company": i.get("company", ""),
+                    "duration": i.get("duration", ""),
+                    "responsibilities": i.get("responsibilities", []),
+                    "key_achievement": i.get("key_achievement", None),
+                }
+            )
 
     # ── Certifications (JSONField) ────────────────────────────────────────────
     raw_certs = _safe_list(profile.certifications)
     certifications = []
     for c in raw_certs:
         if isinstance(c, dict):
-            certifications.append({
-                "name": c.get("name", ""),
-                "issuer": c.get("issuer", ""),
-                "year": int(c.get("year", 0)) if c.get("year") else None,
-            })
+            certifications.append(
+                {
+                    "name": c.get("name", ""),
+                    "issuer": c.get("issuer", ""),
+                    "year": int(c.get("year", 0)) if c.get("year") else None,
+                }
+            )
 
     return {
         "resume_type": "fresher",
@@ -167,7 +183,9 @@ def build_student_resume_data(profile, user, template: str = "professional") -> 
     }
 
 
-def build_professional_resume_data(profile, user, template: str = "professional") -> dict:
+def build_professional_resume_data(
+    profile, user, template: str = "professional"
+) -> dict:
     """
     Map ProfessionalProfile + User → resume dict.
 
@@ -181,17 +199,20 @@ def build_professional_resume_data(profile, user, template: str = "professional"
     """
     # ── Personal info (User model) ────────────────────────────────────────────
     personal_info = {
-        "name": _safe_str(user.full_name) or f"{user.first_name} {user.last_name}".strip(),
+        "name": _safe_str(user.full_name)
+        or f"{user.first_name} {user.last_name}".strip(),
         "email": user.email,
         "phone": _safe_str(user.phone),
         "about_me": _safe_str(user.about_me),
         "designation": _safe_str(user.designation),
         "profile_image": _safe_str(user.profile_image),
         "location": (
-            user.city.name if user.city else (
-                user.states.name if user.states else (
-                    user.country.name if user.country else ""
-                )
+            user.city.name
+            if user.city
+            else (
+                user.states.name
+                if user.states
+                else (user.country.name if user.country else "")
             )
         ),
         "country": user.country.name if user.country else "",
@@ -204,8 +225,12 @@ def build_professional_resume_data(profile, user, template: str = "professional"
 
     # ── Education level (FK) ──────────────────────────────────────────────────
     education_meta = {
-        "education_level_code": profile.education_level.level_code if profile.education_level else None,
-        "education_level_name": profile.education_level.display_name if profile.education_level else None,
+        "education_level_code": (
+            profile.education_level.level_code if profile.education_level else None
+        ),
+        "education_level_name": (
+            profile.education_level.display_name if profile.education_level else None
+        ),
         "employment_type": profile.employment_type or None,
         "company_size": profile.company_size or None,
     }
@@ -221,10 +246,14 @@ def build_professional_resume_data(profile, user, template: str = "professional"
     if raw_cd and isinstance(raw_cd[0], dict):
         cd_item = raw_cd[0]
         career_positioning = {
-            "current_role": profile.current_job_title or cd_item.get("current_role", ""),
-            "total_experience": profile.years_of_experience or cd_item.get("total_experience", ""),
+            "current_role": profile.current_job_title
+            or cd_item.get("current_role", ""),
+            "total_experience": profile.years_of_experience
+            or cd_item.get("total_experience", ""),
             "target_role": cd_item.get("target_role", ""),
-            "target_industry": cd_item.get("target_industry", profile.current_industry or ""),
+            "target_industry": cd_item.get(
+                "target_industry", profile.current_industry or ""
+            ),
             "key_expertise": cd_item.get("key_expertise", [])[:5],
         }
     else:
@@ -241,22 +270,25 @@ def build_professional_resume_data(profile, user, template: str = "professional"
     experience = []
     for e in raw_exp:
         if isinstance(e, dict):
-            experience.append({
-                "company": e.get("company", ""),
-                "role": e.get("role", ""),
-                "duration": e.get("duration", ""),
-                "responsibilities": e.get("responsibilities", []),
-                "achievements": e.get("achievements", []),
-                "projects": [
-                    {
-                        "name": p.get("name", ""),
-                        "role": p.get("role", ""),
-                        "outcome": p.get("outcome", ""),
-                        "technologies": p.get("technologies", []),
-                    }
-                    for p in e.get("projects", []) if isinstance(p, dict)
-                ],
-            })
+            experience.append(
+                {
+                    "company": e.get("company", ""),
+                    "role": e.get("role", ""),
+                    "duration": e.get("duration", ""),
+                    "responsibilities": e.get("responsibilities", []),
+                    "achievements": e.get("achievements", []),
+                    "projects": [
+                        {
+                            "name": p.get("name", ""),
+                            "role": p.get("role", ""),
+                            "outcome": p.get("outcome", ""),
+                            "technologies": p.get("technologies", []),
+                        }
+                        for p in e.get("projects", [])
+                        if isinstance(p, dict)
+                    ],
+                }
+            )
 
     # ── Skills (JSONField — dict or list) ─────────────────────────────────────
     raw_skills = profile.skills
@@ -280,24 +312,28 @@ def build_professional_resume_data(profile, user, template: str = "professional"
     education = []
     for e in raw_edu:
         if isinstance(e, dict):
-            education.append({
-                "institution": e.get("institution", ""),
-                "degree": e.get("degree", ""),
-                "field": e.get("field", ""),
-                "year": int(e.get("year", 0)) if e.get("year") else None,
-                "cgpa": float(e["cgpa"]) if e.get("cgpa") else None,
-            })
+            education.append(
+                {
+                    "institution": e.get("institution", ""),
+                    "degree": e.get("degree", ""),
+                    "field": e.get("field", ""),
+                    "year": int(e.get("year", 0)) if e.get("year") else None,
+                    "cgpa": float(e["cgpa"]) if e.get("cgpa") else None,
+                }
+            )
 
     # ── Certifications (JSONField) ────────────────────────────────────────────
     raw_certs = _safe_list(profile.certifications)
     certifications = []
     for c in raw_certs:
         if isinstance(c, dict):
-            certifications.append({
-                "name": c.get("name", ""),
-                "issuer": c.get("issuer", ""),
-                "year": int(c.get("year", 0)) if c.get("year") else None,
-            })
+            certifications.append(
+                {
+                    "name": c.get("name", ""),
+                    "issuer": c.get("issuer", ""),
+                    "year": int(c.get("year", 0)) if c.get("year") else None,
+                }
+            )
 
     return {
         "resume_type": "professional",
@@ -322,7 +358,10 @@ def generate_resume_pdf(resume_data: dict, skip_ai: bool = False) -> bytes:
     Returns raw PDF bytes.
     Pass skip_ai=True to bypass OpenAI and use a placeholder summary (for testing).
     """
-    from resume_builder.resume_services.ai import enhance_fresher_summary, enhance_professional_summary
+    from resume_builder.resume_services.ai import (
+        enhance_fresher_summary,
+        enhance_professional_summary,
+    )
     from resume_builder.resume_services.generator import build_resume
 
     resume_type = resume_data.get("resume_type")

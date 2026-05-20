@@ -1,6 +1,12 @@
 from rest_framework import serializers
 from django.utils.timezone import now
-from user_profile.models import BusinessSetting, ParentProfile, ProfessionalProfile, StudentProfile, UserProfile
+from user_profile.models import (
+    BusinessSetting,
+    ParentProfile,
+    ProfessionalProfile,
+    StudentProfile,
+    UserProfile,
+)
 
 from user_profile.models import (
     BusinessSetting,
@@ -10,7 +16,6 @@ from user_profile.models import (
     Profile,
     UserProfile,
 )
-
 
 
 def validate_json_choices(value, valid_set, field_name):
@@ -26,6 +31,7 @@ def validate_json_choices(value, valid_set, field_name):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Base profile serializer for Super Admin with language preference"""
+
     role = serializers.CharField(source="user.user_type", read_only=True)
     language = serializers.SerializerMethodField()
 
@@ -47,6 +53,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserProfileUpsertSerializer(serializers.ModelSerializer):
     """Base profile upsert serializer for Super Admin"""
+
     language = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=__import__(
@@ -78,6 +85,7 @@ class UserProfileUpsertSerializer(serializers.ModelSerializer):
 
 class StudentProfileSerializer(serializers.ModelSerializer):
     """Student-specific profile serializer with language and educational fields"""
+
     role = serializers.CharField(source="user.user_type", read_only=True)
     education_level_code = serializers.CharField(
         source="education_level.level_code", read_only=True, default=None
@@ -93,12 +101,22 @@ class StudentProfileSerializer(serializers.ModelSerializer):
     )
     language = serializers.SerializerMethodField()
     # Location fields from User model
-    country = serializers.IntegerField(source="user.country.id", read_only=True, default=None)
-    country_name = serializers.CharField(source="user.country.name", read_only=True, default=None)
-    state = serializers.IntegerField(source="user.states.id", read_only=True, default=None)
-    state_name = serializers.CharField(source="user.states.name", read_only=True, default=None)
+    country = serializers.IntegerField(
+        source="user.country.id", read_only=True, default=None
+    )
+    country_name = serializers.CharField(
+        source="user.country.name", read_only=True, default=None
+    )
+    state = serializers.IntegerField(
+        source="user.states.id", read_only=True, default=None
+    )
+    state_name = serializers.CharField(
+        source="user.states.name", read_only=True, default=None
+    )
     city = serializers.IntegerField(source="user.city.id", read_only=True, default=None)
-    city_name = serializers.CharField(source="user.city.name", read_only=True, default=None)
+    city_name = serializers.CharField(
+        source="user.city.name", read_only=True, default=None
+    )
 
     def get_language(self, obj):
         return [
@@ -254,6 +272,7 @@ class BusinessSettingSerializer(serializers.ModelSerializer):
 
 class ProfessionalProfileSerializer(serializers.ModelSerializer):
     """Working Professional-specific profile serializer matching StudentProfile pattern"""
+
     role = serializers.CharField(source="user.user_type", read_only=True)
     education_level_code = serializers.CharField(
         source="education_level.level_code", read_only=True, default=None
@@ -263,12 +282,22 @@ class ProfessionalProfileSerializer(serializers.ModelSerializer):
     )
     language = serializers.SerializerMethodField()
     # Location fields from User model
-    country = serializers.IntegerField(source="user.country.id", read_only=True, default=None)
-    country_name = serializers.CharField(source="user.country.name", read_only=True, default=None)
-    state = serializers.IntegerField(source="user.states.id", read_only=True, default=None)
-    state_name = serializers.CharField(source="user.states.name", read_only=True, default=None)
+    country = serializers.IntegerField(
+        source="user.country.id", read_only=True, default=None
+    )
+    country_name = serializers.CharField(
+        source="user.country.name", read_only=True, default=None
+    )
+    state = serializers.IntegerField(
+        source="user.states.id", read_only=True, default=None
+    )
+    state_name = serializers.CharField(
+        source="user.states.name", read_only=True, default=None
+    )
     city = serializers.IntegerField(source="user.city.id", read_only=True, default=None)
-    city_name = serializers.CharField(source="user.city.name", read_only=True, default=None)
+    city_name = serializers.CharField(
+        source="user.city.name", read_only=True, default=None
+    )
 
     def get_language(self, obj):
         return [
@@ -365,17 +394,32 @@ class ProfessionalProfileUpsertSerializer(serializers.ModelSerializer):
 
 class ParentProfileSerializer(serializers.ModelSerializer):
     """Parent-specific profile serializer"""
+
     role = serializers.CharField(source="user.user_type", read_only=True)
     language = serializers.SerializerMethodField()
-    child_education_level_name = serializers.CharField(source="child_education_level.display_name", read_only=True, default=None)
-    stream_name = serializers.CharField(source="stream.stream_name", read_only=True, default=None)
+    child_education_level_name = serializers.CharField(
+        source="child_education_level.display_name", read_only=True, default=None
+    )
+    stream_name = serializers.CharField(
+        source="stream.stream_name", read_only=True, default=None
+    )
     # Location fields from User model
-    country = serializers.IntegerField(source="user.country.id", read_only=True, default=None)
-    country_name = serializers.CharField(source="user.country.name", read_only=True, default=None)
-    state = serializers.IntegerField(source="user.states.id", read_only=True, default=None)
-    state_name = serializers.CharField(source="user.states.name", read_only=True, default=None)
+    country = serializers.IntegerField(
+        source="user.country.id", read_only=True, default=None
+    )
+    country_name = serializers.CharField(
+        source="user.country.name", read_only=True, default=None
+    )
+    state = serializers.IntegerField(
+        source="user.states.id", read_only=True, default=None
+    )
+    state_name = serializers.CharField(
+        source="user.states.name", read_only=True, default=None
+    )
     city = serializers.IntegerField(source="user.city.id", read_only=True, default=None)
-    city_name = serializers.CharField(source="user.city.name", read_only=True, default=None)
+    city_name = serializers.CharField(
+        source="user.city.name", read_only=True, default=None
+    )
 
     def get_language(self, obj):
         return [
@@ -427,11 +471,12 @@ class ParentProfileUpsertSerializer(serializers.ModelSerializer):
         required=False,
     )
     stream = serializers.PrimaryKeyRelatedField(
-        queryset=__import__(
-            "stream.models", fromlist=["Stream"]
-        ).Stream.objects.filter(is_active=True, deleted=False),
+        queryset=__import__("stream.models", fromlist=["Stream"]).Stream.objects.filter(
+            is_active=True, deleted=False
+        ),
         required=False,
     )
+
     class Meta:
         model = ParentProfile
         fields = [

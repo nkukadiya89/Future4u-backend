@@ -106,7 +106,7 @@ INSTALLED_APPS = [
     "recommendation",
     "services.ai",
     "language_master",
-    "skill_category",
+    # "skill_category",
     "jobs",
     "resume_builder",
     "courses",

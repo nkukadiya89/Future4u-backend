@@ -11,6 +11,7 @@ Endpoints:
   GET /api/resume/preview/
     - Returns the resume data as JSON (useful for frontend preview / debugging)
 """
+
 from __future__ import annotations
 
 import logging
@@ -45,17 +46,31 @@ def _get_profile(user):
 
     if role == user.Role.STUDENT:
         try:
-            return StudentProfile.objects.select_related(
-                "education_level", "stream", "user__country", "user__states", "user__city"
-            ).prefetch_related("language").get(user=user), "fresher"
+            return (
+                StudentProfile.objects.select_related(
+                    "education_level",
+                    "stream",
+                    "user__country",
+                    "user__states",
+                    "user__city",
+                )
+                .prefetch_related("language")
+                .get(user=user),
+                "fresher",
+            )
         except StudentProfile.DoesNotExist:
             return None, "fresher"
 
     if role == user.Role.PROFESSIONAL:
         try:
-            return ProfessionalProfile.objects.select_related(
-                "education_level", "user__country", "user__states", "user__city"
-            ).prefetch_related("language").get(user=user), "professional"
+            return (
+                ProfessionalProfile.objects.select_related(
+                    "education_level", "user__country", "user__states", "user__city"
+                )
+                .prefetch_related("language")
+                .get(user=user),
+                "professional",
+            )
         except ProfessionalProfile.DoesNotExist:
             return None, "professional"
 
@@ -84,19 +99,28 @@ class ResumeGenerateView(APIView):
         template = request.query_params.get("template", "professional").strip()
         if template not in ("standard", "professional"):
             return Response(
-                {"success": False, "message": "template must be 'standard' or 'professional'"},
+                {
+                    "success": False,
+                    "message": "template must be 'standard' or 'professional'",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         profile, resume_type = _get_profile(user)
         if profile is None and resume_type is None:
             return Response(
-                {"success": False, "message": "Resume generation is only available for Student and Professional users."},
+                {
+                    "success": False,
+                    "message": "Resume generation is only available for Student and Professional users.",
+                },
                 status=status.HTTP_403_FORBIDDEN,
             )
         if profile is None:
             return Response(
-                {"success": False, "message": "Profile not found. Please complete your profile first."},
+                {
+                    "success": False,
+                    "message": "Profile not found. Please complete your profile first.",
+                },
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -104,7 +128,9 @@ class ResumeGenerateView(APIView):
         if resume_type == "fresher":
             resume_data = build_student_resume_data(profile, user, template=template)
         else:
-            resume_data = build_professional_resume_data(profile, user, template=template)
+            resume_data = build_professional_resume_data(
+                profile, user, template=template
+            )
 
         # Handle optional photo upload
         tmp_photo_path = None
@@ -135,16 +161,25 @@ class ResumeGenerateView(APIView):
             msg = str(exc)
             if "insufficient_quota" in msg or "429" in msg:
                 return Response(
-                    {"success": False, "message": "AI service quota exceeded. Please contact support."},
+                    {
+                        "success": False,
+                        "message": "AI service quota exceeded. Please contact support.",
+                    },
                     status=status.HTTP_503_SERVICE_UNAVAILABLE,
                 )
             if "401" in msg or "invalid_api_key" in msg:
                 return Response(
-                    {"success": False, "message": "AI service configuration error. Please contact support."},
+                    {
+                        "success": False,
+                        "message": "AI service configuration error. Please contact support.",
+                    },
                     status=status.HTTP_503_SERVICE_UNAVAILABLE,
                 )
             return Response(
-                {"success": False, "message": "Failed to generate resume. Please try again."},
+                {
+                    "success": False,
+                    "message": "Failed to generate resume. Please try again.",
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         finally:
@@ -181,18 +216,28 @@ class ResumePreviewView(APIView):
         profile, resume_type = _get_profile(user)
         if profile is None and resume_type is None:
             return Response(
-                {"success": False, "message": "Resume preview is only available for Student and Professional users."},
+                {
+                    "success": False,
+                    "message": "Resume preview is only available for Student and Professional users.",
+                },
                 status=status.HTTP_403_FORBIDDEN,
             )
         if profile is None:
             return Response(
-                {"success": False, "message": "Profile not found. Please complete your profile first."},
+                {
+                    "success": False,
+                    "message": "Profile not found. Please complete your profile first.",
+                },
                 status=status.HTTP_404_NOT_FOUND,
             )
 
         if resume_type == "fresher":
             resume_data = build_student_resume_data(profile, user, template=template)
         else:
-            resume_data = build_professional_resume_data(profile, user, template=template)
+            resume_data = build_professional_resume_data(
+                profile, user, template=template
+            )
 
-        return Response({"success": True, "data": resume_data}, status=status.HTTP_200_OK)
+        return Response(
+            {"success": True, "data": resume_data}, status=status.HTTP_200_OK
+        )

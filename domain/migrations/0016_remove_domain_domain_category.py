@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('domain', '0015_remove_domain_aptitude_weight_and_more'),
+        ("domain", "0015_remove_domain_aptitude_weight_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='domain',
-            name='domain_category',
+            model_name="domain",
+            name="domain_category",
         ),
     ]

@@ -16,7 +16,9 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
     parent = ParentDomainSerializer(read_only=True)
     parent_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
     data = serializers.CharField(write_only=True, required=False)
-    domain_image_file = serializers.ImageField(write_only=True, required=False, allow_null=True)
+    domain_image_file = serializers.ImageField(
+        write_only=True, required=False, allow_null=True
+    )
     domain_code = serializers.CharField(required=False)
     domain_name = serializers.CharField(required=False)
     created_at = serializers.SerializerMethodField(read_only=True)
@@ -47,28 +49,28 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
         read_only_fields = ("is_archived", "domain_image")
 
     def validate(self, attrs):
-        if 'data' in attrs:
-            data = attrs.get('data', '{}')
+        if "data" in attrs:
+            data = attrs.get("data", "{}")
             try:
                 parsed_data = json.loads(data) if isinstance(data, str) else data
             except json.JSONDecodeError:
                 raise serializers.ValidationError({"data": "Invalid JSON format"})
             attrs.update(parsed_data)
-            attrs['parsed_data'] = parsed_data
+            attrs["parsed_data"] = parsed_data
         else:
-            attrs['parsed_data'] = attrs.copy()
+            attrs["parsed_data"] = attrs.copy()
 
         # Validate required fields after parsing (only for create)
         if not self.instance:
             errors = {}
-            if not attrs.get('domain_code'):
-                errors['domain_code'] = ['This field is required.']
-            if not attrs.get('domain_name'):
-                errors['domain_name'] = ['This field is required.']
+            if not attrs.get("domain_code"):
+                errors["domain_code"] = ["This field is required."]
+            if not attrs.get("domain_name"):
+                errors["domain_name"] = ["This field is required."]
             if errors:
                 raise serializers.ValidationError(errors)
 
-        attrs['domain_image_file'] = self.context["request"].FILES.get("domain_image")
+        attrs["domain_image_file"] = self.context["request"].FILES.get("domain_image")
         return attrs
 
     def _format_dt(self, value):
@@ -97,36 +99,36 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
     def create(self, validated_data):
         parsed_data = validated_data.pop("parsed_data", {})
         domain_image_file = validated_data.pop("domain_image_file", None)
-        
-        validated_data.pop('data', None)
-        
+
+        validated_data.pop("data", None)
+
         parent_id = parsed_data.get("parent_id")
         parent = None
         if parent_id and parent_id not in (None, ""):
             parent = Domain.objects.filter(pk=parent_id, deleted=False).first()
             if not parent:
                 raise serializers.ValidationError({"parent_id": "Invalid parent."})
-        
+
         user = self.context["request"].user
         domain = domain_service.create_domain(
             user=user,
             validated_data=parsed_data,
             parent=parent,
         )
-        
+
         if domain_image_file:
             domain.upload_domain_image(domain_image_file)
             domain.refresh_from_db(fields=["domain_image"])
-        
+
         return domain
 
     def update(self, instance, validated_data):
         parsed_data = validated_data.pop("parsed_data", {})
         domain_image_file = validated_data.pop("domain_image_file", None)
-        
+
         # Remove non-model fields from validated_data
-        validated_data.pop('data', None)
-        
+        validated_data.pop("data", None)
+
         user = self.context["request"].user
         update_parent = "parent_id" in parsed_data
         parent = None
@@ -138,7 +140,7 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
                 parent = Domain.objects.filter(pk=parent_id, deleted=False).first()
                 if not parent:
                     raise serializers.ValidationError({"parent_id": "Invalid parent."})
-        
+
         domain = domain_service.update_domain(
             domain=instance,
             user=user,
@@ -146,11 +148,11 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
             parent=parent,
             update_parent=update_parent,
         )
-        
+
         if domain_image_file:
             domain.upload_domain_image(domain_image_file)
             domain.refresh_from_db(fields=["domain_image"])
-        
+
         return domain
 
 

@@ -134,9 +134,7 @@ class OptionAdmin(admin.ModelAdmin):
         "question__question_text",
     )
 
-    list_filter = (
-        "question__dimension",
-    )
+    list_filter = ("question__dimension",)
 
 
 @admin.register(UserResponse)
@@ -154,9 +152,7 @@ class UserResponseAdmin(admin.ModelAdmin):
         "question__question_text",
     )
 
-    list_filter = (
-        "question__dimension",
-    )
+    list_filter = ("question__dimension",)
 
     @admin.display(description="Score")
     def get_score(self, obj):

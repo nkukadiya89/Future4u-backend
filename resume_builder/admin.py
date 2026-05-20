@@ -6,6 +6,7 @@ to generate/preview a resume PDF for any user directly from admin.
 
 URL:  /admin/resume_builder/resumebuilder/
 """
+
 from django.contrib import admin
 from django.db import models
 from django.http import HttpResponse, JsonResponse
@@ -16,25 +17,32 @@ from django.contrib import messages
 
 # ── Unmanaged proxy model (no DB table needed) ───────────────────────────────
 
+
 class ResumeBuilder(models.Model):
     """Fake unmanaged model — only used to hook into Django admin."""
 
     class Meta:
         app_label = "resume_builder"
-        managed = False                  # no migration, no DB table
+        managed = False  # no migration, no DB table
         verbose_name = "Resume Builder"
         verbose_name_plural = "Resume Builder"
 
 
 # ── Admin class ───────────────────────────────────────────────────────────────
 
+
 @admin.register(ResumeBuilder)
 class ResumeBuilderAdmin(admin.ModelAdmin):
 
     # ── Disable all default CRUD actions ─────────────────────────────────────
-    def has_add_permission(self, request):        return False
-    def has_change_permission(self, request, obj=None): return False
-    def has_delete_permission(self, request, obj=None): return False
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
     # ── Custom URLs ───────────────────────────────────────────────────────────
     def get_urls(self):
@@ -55,26 +63,38 @@ class ResumeBuilderAdmin(admin.ModelAdmin):
     # ── Changelist = custom panel ─────────────────────────────────────────────
     def changelist_view(self, request, extra_context=None):
         from django.contrib.auth import get_user_model
+
         User = get_user_model()
 
         users = (
-            User.objects
-            .filter(user_type__in=["student", "working_professional"], is_active=True)
+            User.objects.filter(
+                user_type__in=["student", "working_professional"], is_active=True
+            )
             .select_related("country", "states", "city")
             .order_by("user_type", "first_name")[:200]
         )
 
         rows = []
         for u in users:
-            rows.append({
-                "id": u.id,
-                "name": u.full_name or u.email,
-                "email": u.email,
-                "role": u.user_type,
-                "gen_professional": reverse("admin:resume_builder_resumebuilder_generate", args=[u.id]) + "?template=professional",
-                "gen_standard":     reverse("admin:resume_builder_resumebuilder_generate", args=[u.id]) + "?template=standard",
-                "preview":          reverse("admin:resume_builder_resumebuilder_preview",  args=[u.id]),
-            })
+            rows.append(
+                {
+                    "id": u.id,
+                    "name": u.full_name or u.email,
+                    "email": u.email,
+                    "role": u.user_type,
+                    "gen_professional": reverse(
+                        "admin:resume_builder_resumebuilder_generate", args=[u.id]
+                    )
+                    + "?template=professional",
+                    "gen_standard": reverse(
+                        "admin:resume_builder_resumebuilder_generate", args=[u.id]
+                    )
+                    + "?template=standard",
+                    "preview": reverse(
+                        "admin:resume_builder_resumebuilder_preview", args=[u.id]
+                    ),
+                }
+            )
 
         context = {
             **self.admin_site.each_context(request),
@@ -83,7 +103,9 @@ class ResumeBuilderAdmin(admin.ModelAdmin):
             "opts": self.model._meta,
             "cl": type("cl", (), {"opts": self.model._meta})(),  # breadcrumb compat
         }
-        return render(request, "admin/resume_builder/resume_builder_panel.html", context)
+        return render(
+            request, "admin/resume_builder/resume_builder_panel.html", context
+        )
 
     # ── Generate PDF view ─────────────────────────────────────────────────────
     def generate_view(self, request, user_id):
@@ -97,7 +119,9 @@ class ResumeBuilderAdmin(admin.ModelAdmin):
 
         User = get_user_model()
         try:
-            user = User.objects.select_related("country", "states", "city").get(pk=user_id)
+            user = User.objects.select_related("country", "states", "city").get(
+                pk=user_id
+            )
         except User.DoesNotExist:
             messages.error(request, f"User {user_id} not found.")
             return self._redirect_panel()
@@ -106,11 +130,16 @@ class ResumeBuilderAdmin(admin.ModelAdmin):
         profile, resume_type = _get_profile(user)
 
         if resume_type is None:
-            messages.error(request, f"{user.email} — role '{user.user_type}' is not supported.")
+            messages.error(
+                request, f"{user.email} — role '{user.user_type}' is not supported."
+            )
             return self._redirect_panel()
 
         if profile is None:
-            messages.error(request, f"{user.email} — profile not found. Ask them to complete their profile.")
+            messages.error(
+                request,
+                f"{user.email} — profile not found. Ask them to complete their profile.",
+            )
             return self._redirect_panel()
 
         try:
@@ -128,7 +157,9 @@ class ResumeBuilderAdmin(admin.ModelAdmin):
 
         name = (user.full_name or user.email).replace(" ", "_")
         response = HttpResponse(pdf_bytes, content_type="application/pdf")
-        response["Content-Disposition"] = f'attachment; filename="{name}_{template}_resume.pdf"'
+        response["Content-Disposition"] = (
+            f'attachment; filename="{name}_{template}_resume.pdf"'
+        )
         return response
 
     # ── Preview JSON view ─────────────────────────────────────────────────────
@@ -142,21 +173,30 @@ class ResumeBuilderAdmin(admin.ModelAdmin):
 
         User = get_user_model()
         try:
-            user = User.objects.select_related("country", "states", "city").get(pk=user_id)
+            user = User.objects.select_related("country", "states", "city").get(
+                pk=user_id
+            )
         except User.DoesNotExist:
-            return JsonResponse({"success": False, "message": f"User {user_id} not found."}, status=404)
+            return JsonResponse(
+                {"success": False, "message": f"User {user_id} not found."}, status=404
+            )
 
         template = request.GET.get("template", "professional")
         profile, resume_type = _get_profile(user)
 
         if resume_type is None:
             return JsonResponse(
-                {"success": False, "message": f"Role '{user.user_type}' is not supported."},
+                {
+                    "success": False,
+                    "message": f"Role '{user.user_type}' is not supported.",
+                },
                 status=400,
             )
 
         if profile is None:
-            return JsonResponse({"success": False, "message": "Profile not found."}, status=404)
+            return JsonResponse(
+                {"success": False, "message": "Profile not found."}, status=404
+            )
 
         if resume_type == "fresher":
             data = build_student_resume_data(profile, user, template=template)
@@ -168,6 +208,7 @@ class ResumeBuilderAdmin(admin.ModelAdmin):
     # ── Helper ────────────────────────────────────────────────────────────────
     def _redirect_panel(self):
         from django.http import HttpResponseRedirect
+
         return HttpResponseRedirect(
             reverse("admin:resume_builder_resumebuilder_changelist")
         )

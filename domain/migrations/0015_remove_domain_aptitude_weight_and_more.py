@@ -6,32 +6,32 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('domain', '0014_domain_domain_image'),
+        ("domain", "0014_domain_domain_image"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='domain',
-            name='aptitude_weight',
+            model_name="domain",
+            name="aptitude_weight",
         ),
         migrations.RemoveField(
-            model_name='domain',
-            name='future_relevance_score',
+            model_name="domain",
+            name="future_relevance_score",
         ),
         migrations.RemoveField(
-            model_name='domain',
-            name='interest_weight',
+            model_name="domain",
+            name="interest_weight",
         ),
         migrations.RemoveField(
-            model_name='domain',
-            name='parent_acceptance_level',
+            model_name="domain",
+            name="parent_acceptance_level",
         ),
         migrations.RemoveField(
-            model_name='domain',
-            name='personality_weight',
+            model_name="domain",
+            name="personality_weight",
         ),
         migrations.RemoveField(
-            model_name='domain',
-            name='work_style_weight',
+            model_name="domain",
+            name="work_style_weight",
         ),
     ]

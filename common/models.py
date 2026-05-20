@@ -76,13 +76,13 @@ class BaseModule(models.Model):
 
     class Meta:
         abstract = True
-    
+
     def save(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
-        if user is None and hasattr(self, '_request_user'):
+        user = kwargs.pop("user", None)
+        if user is None and hasattr(self, "_request_user"):
             user = self._request_user
 
-        update_fields = kwargs.get('update_fields')
+        update_fields = kwargs.get("update_fields")
 
         if self._state.adding:
             if user and not self.created_by:
@@ -96,9 +96,9 @@ class BaseModule(models.Model):
                 if not self.deleted:
                     self.updated_at = timezone.now()
             else:
-                if 'updated_by' in update_fields and user:
+                if "updated_by" in update_fields and user:
                     self.updated_by = user
-                if 'updated_at' in update_fields and not self.deleted:
+                if "updated_at" in update_fields and not self.deleted:
                     self.updated_at = timezone.now()
         super().save(*args, **kwargs)
 
@@ -107,9 +107,11 @@ class BaseModule(models.Model):
         self.deleted_at = timezone.now()
         if user:
             self.deleted_by = user
-        elif hasattr(self, '_request_user'):
+        elif hasattr(self, "_request_user"):
             self.deleted_by = self._request_user
-        super().save(update_fields=['deleted', 'deleted_at', 'deleted_by'])
+        super().save(update_fields=["deleted", "deleted_at", "deleted_by"])
+
+
 """
 NOTE:
 API/view concerns like ArchiveMixin should not live in models modules.

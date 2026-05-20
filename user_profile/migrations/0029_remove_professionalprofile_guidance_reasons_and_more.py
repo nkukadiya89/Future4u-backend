@@ -6,27 +6,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user_profile', '0028_professionalprofile_guidance_reasons_and_more'),
+        ("user_profile", "0028_professionalprofile_guidance_reasons_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='professionalprofile',
-            name='guidance_reasons',
+            model_name="professionalprofile",
+            name="guidance_reasons",
         ),
         migrations.AlterField(
-            model_name='professionalprofile',
-            name='career_goal',
+            model_name="professionalprofile",
+            name="career_goal",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
         migrations.AlterField(
-            model_name='professionalprofile',
-            name='work_mode',
+            model_name="professionalprofile",
+            name="work_mode",
             field=models.CharField(blank=True, max_length=50, null=True),
         ),
         migrations.AlterField(
-            model_name='professionalprofile',
-            name='work_structure',
+            model_name="professionalprofile",
+            name="work_structure",
             field=models.CharField(blank=True, max_length=50, null=True),
         ),
     ]

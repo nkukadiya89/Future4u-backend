@@ -6,13 +6,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0015_alter_studentassessment_parent_support'),
+        ("assessment", "0015_alter_studentassessment_parent_support"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='studentassessment',
-            name='current_screen',
-            field=models.CharField(choices=[('education_level', 'Education Level'), ('stream', 'Stream / Path'), ('domain_category', 'Domain Category'), ('domain', 'Domain'), ('career_direction', 'Career Direction'), ('parent_support', 'Parent Support'), ('concerns', 'Concerns'), ('questions', 'Dynamic Questions'), ('career_values', 'Career Values'), ('user_goals', 'User Goals'), ('complete', 'Complete')], default='education_level', max_length=32),
+            model_name="studentassessment",
+            name="current_screen",
+            field=models.CharField(
+                choices=[
+                    ("education_level", "Education Level"),
+                    ("stream", "Stream / Path"),
+                    ("domain_category", "Domain Category"),
+                    ("domain", "Domain"),
+                    ("career_direction", "Career Direction"),
+                    ("parent_support", "Parent Support"),
+                    ("concerns", "Concerns"),
+                    ("questions", "Dynamic Questions"),
+                    ("career_values", "Career Values"),
+                    ("user_goals", "User Goals"),
+                    ("complete", "Complete"),
+                ],
+                default="education_level",
+                max_length=32,
+            ),
         ),
     ]

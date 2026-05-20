@@ -6,14 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0011_remove_studentassessment_current_step'),
-        ('domain', '0015_remove_domain_aptitude_weight_and_more'),
+        ("assessment", "0011_remove_studentassessment_current_step"),
+        ("domain", "0015_remove_domain_aptitude_weight_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='studentassessment',
-            name='domain',
-            field=models.ManyToManyField(blank=True, related_name='assessments', to='domain.domain'),
+            model_name="studentassessment",
+            name="domain",
+            field=models.ManyToManyField(
+                blank=True, related_name="assessments", to="domain.domain"
+            ),
         ),
     ]

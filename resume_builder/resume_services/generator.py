@@ -3,6 +3,7 @@ PDF generation service.
 
 Flow: resume data → Jinja2 HTML template → xhtml2pdf → PDF bytes
 """
+
 from __future__ import annotations
 
 import os

@@ -8,125 +8,175 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('education_level', '0004_educationlevel_next_steps'),
-        ('language_master', '0001_initial'),
-        ('stream', '0002_initial'),
-        ('user_profile', '0032_rename_linkdin_url_professionalprofile_linkedin_url_and_more'),
+        ("education_level", "0004_educationlevel_next_steps"),
+        ("language_master", "0001_initial"),
+        ("stream", "0002_initial"),
+        (
+            "user_profile",
+            "0032_rename_linkdin_url_professionalprofile_linkedin_url_and_more",
+        ),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='career_awareness',
+            model_name="parentprofile",
+            name="career_awareness",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='child_goal',
-        ),
-                migrations.RemoveField(
-            model_name='parentprofile',
-            name='concerns',
+            model_name="parentprofile",
+            name="child_goal",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='constraints',
+            model_name="parentprofile",
+            name="concerns",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='decision_style',
+            model_name="parentprofile",
+            name="constraints",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='deleted',
+            model_name="parentprofile",
+            name="decision_style",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='deleted_at',
+            model_name="parentprofile",
+            name="deleted",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='deleted_by',
+            model_name="parentprofile",
+            name="deleted_at",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='parent_expectations',
+            model_name="parentprofile",
+            name="deleted_by",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='profile',
+            model_name="parentprofile",
+            name="parent_expectations",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='relation',
+            model_name="parentprofile",
+            name="profile",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='support_level',
+            model_name="parentprofile",
+            name="relation",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='updated_by',
+            model_name="parentprofile",
+            name="support_level",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='values',
+            model_name="parentprofile",
+            name="updated_by",
+        ),
+        migrations.RemoveField(
+            model_name="parentprofile",
+            name="values",
         ),
         migrations.AddField(
-            model_name='parentprofile',
-            name='language',
-            field=models.ManyToManyField(blank=True, related_name='parent_profiles', to='language_master.language'),
+            model_name="parentprofile",
+            name="language",
+            field=models.ManyToManyField(
+                blank=True,
+                related_name="parent_profiles",
+                to="language_master.language",
+            ),
         ),
         migrations.AddField(
-            model_name='parentprofile',
-            name='relationship',
-            field=models.CharField(blank=True, choices=[('mother', 'Mother'), ('father', 'Father'), ('guardian', 'Guardian'), ('other', 'Other')], max_length=20, null=True),
+            model_name="parentprofile",
+            name="relationship",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("mother", "Mother"),
+                    ("father", "Father"),
+                    ("guardian", "Guardian"),
+                    ("other", "Other"),
+                ],
+                max_length=20,
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='parentprofile',
-            name='user',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='parent_profile', to=settings.AUTH_USER_MODEL),
+            model_name="parentprofile",
+            name="user",
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="parent_profile",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='parentprofile',
-            name='child_education_level',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='parent_profiles', to='education_level.educationlevel'),
+            model_name="parentprofile",
+            name="child_education_level",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="parent_profiles",
+                to="education_level.educationlevel",
+            ),
         ),
         migrations.AlterField(
-            model_name='parentprofile',
-            name='child_name',
+            model_name="parentprofile",
+            name="child_name",
             field=models.CharField(blank=True, max_length=150, null=True),
         ),
         migrations.AlterField(
-            model_name='parentprofile',
-            name='created_at',
+            model_name="parentprofile",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True),
         ),
         migrations.AlterField(
-            model_name='parentprofile',
-            name='stream',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='parent_profiles', to='stream.stream'),
+            model_name="parentprofile",
+            name="stream",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="parent_profiles",
+                to="stream.stream",
+            ),
         ),
         migrations.AlterField(
-            model_name='parentprofile',
-            name='updated_at',
+            model_name="parentprofile",
+            name="updated_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='professionalprofile',
-            name='employment_type',
-            field=models.CharField(blank=True, choices=[('salaried_employee', 'Salaried Employee'), ('self_employed', 'Self-employed / Business Owner'), ('freelancer', 'Freelancer'), ('job_seeker', 'Looking for first job')], help_text='Current employment status', max_length=50, null=True),
+            model_name="professionalprofile",
+            name="employment_type",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("salaried_employee", "Salaried Employee"),
+                    ("self_employed", "Self-employed / Business Owner"),
+                    ("freelancer", "Freelancer"),
+                    ("job_seeker", "Looking for first job"),
+                ],
+                help_text="Current employment status",
+                max_length=50,
+                null=True,
+            ),
         ),
         migrations.AddIndex(
-            model_name='parentprofile',
-            index=models.Index(fields=['user'], name='parent_prof_user_id_f9e0a6_idx'),
+            model_name="parentprofile",
+            index=models.Index(fields=["user"], name="parent_prof_user_id_f9e0a6_idx"),
         ),
         migrations.AddIndex(
-            model_name='parentprofile',
-            index=models.Index(fields=['child_education_level'], name='parent_prof_child_e_f7abed_idx'),
+            model_name="parentprofile",
+            index=models.Index(
+                fields=["child_education_level"], name="parent_prof_child_e_f7abed_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='parentprofile',
-            index=models.Index(fields=['stream'], name='parent_prof_stream__ccb9a9_idx'),
+            model_name="parentprofile",
+            index=models.Index(
+                fields=["stream"], name="parent_prof_stream__ccb9a9_idx"
+            ),
         ),
     ]

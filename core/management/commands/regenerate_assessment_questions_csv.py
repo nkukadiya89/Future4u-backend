@@ -75,12 +75,20 @@ def _domain_meta(code: str) -> tuple[str, list[str], list[str]]:
             .first()
         )
         tech = (
-            [str(x).strip() for x in (getattr(k, "technical_keywords", []) or []) if str(x).strip()]
+            [
+                str(x).strip()
+                for x in (getattr(k, "technical_keywords", []) or [])
+                if str(x).strip()
+            ]
             if k
             else []
         )
         domk = (
-            [str(x).strip() for x in (getattr(k, "domain_keywords", []) or []) if str(x).strip()]
+            [
+                str(x).strip()
+                for x in (getattr(k, "domain_keywords", []) or [])
+                if str(x).strip()
+            ]
             if k
             else []
         )
@@ -89,7 +97,9 @@ def _domain_meta(code: str) -> tuple[str, list[str], list[str]]:
         return label, [], []
 
 
-def _pick4(items: list[str], *, fallback: tuple[str, str, str, str]) -> tuple[str, str, str, str]:
+def _pick4(
+    items: list[str], *, fallback: tuple[str, str, str, str]
+) -> tuple[str, str, str, str]:
     dedup: list[str] = []
     seen = set()
     for it in items:
@@ -257,7 +267,9 @@ def _load_codes_from_existing_csv(path: Path) -> list[str]:
     return sorted(codes)
 
 
-def _load_domain_pairs_from_hierarchy(path: Path) -> tuple[list[tuple[str | None, str]], set[str]]:
+def _load_domain_pairs_from_hierarchy(
+    path: Path,
+) -> tuple[list[tuple[str | None, str]], set[str]]:
     """
     Read `domain_hierarchy.csv` and return:
     - pairs: list[(parent_code_or_None, domain_code)]
@@ -279,7 +291,9 @@ def _load_domain_pairs_from_hierarchy(path: Path) -> tuple[list[tuple[str | None
         required = {"domain_code", "parent_code", "is_active"}
         missing = sorted(required - set(reader.fieldnames))
         if missing:
-            raise ValueError(f"domain_hierarchy.csv missing headers: {', '.join(missing)}")
+            raise ValueError(
+                f"domain_hierarchy.csv missing headers: {', '.join(missing)}"
+            )
 
         for idx, row in enumerate(reader, start=2):
             code = (row.get("domain_code") or "").strip()
@@ -289,7 +303,9 @@ def _load_domain_pairs_from_hierarchy(path: Path) -> tuple[list[tuple[str | None
             if not is_active:
                 continue
             if not code:
-                raise ValueError(f"domain_hierarchy.csv row {idx}: domain_code is blank")
+                raise ValueError(
+                    f"domain_hierarchy.csv row {idx}: domain_code is blank"
+                )
             pairs.append((parent, code))
             if parent:
                 parents_with_children.add(parent)
@@ -349,7 +365,9 @@ class Command(BaseCommand):
         if per_dim < 1:
             raise ValueError("--min-per-dimension must be >= 1")
 
-        pairs, _parents_with_children = _load_domain_pairs_from_hierarchy(domain_hierarchy_path)
+        pairs, _parents_with_children = _load_domain_pairs_from_hierarchy(
+            domain_hierarchy_path
+        )
         if not pairs:
             raise ValueError(f"No active domain rows found in {domain_hierarchy_path}")
 
@@ -361,7 +379,9 @@ class Command(BaseCommand):
             seq = 10
             created = 0
             parent_codes = sorted({code for parent, code in pairs if parent is None})
-            child_codes = [(parent, code) for parent, code in pairs if parent is not None]
+            child_codes = [
+                (parent, code) for parent, code in pairs if parent is not None
+            ]
 
             # Domain categories (parent codes)
             for parent_code in parent_codes:
@@ -438,4 +458,3 @@ class Command(BaseCommand):
                 f"Regenerated CSV with {created} questions at {out_path}"
             )
         )
-

@@ -6,13 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user_profile', '0033_remove_parentprofile_career_awareness_and_more'),
+        ("user_profile", "0033_remove_parentprofile_career_awareness_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='parentprofile',
-            name='academic_performance',
-            field=models.CharField(blank=True, choices=[('average', 'Average'), ('good', 'Good'), ('excellent', 'Excellent')], max_length=50, null=True),
+            model_name="parentprofile",
+            name="academic_performance",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("average", "Average"),
+                    ("good", "Good"),
+                    ("excellent", "Excellent"),
+                ],
+                max_length=50,
+                null=True,
+            ),
         ),
     ]
