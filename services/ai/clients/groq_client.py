@@ -31,7 +31,7 @@ def get_groq_chat_model():
         ) from exc
 
     model_name = getattr(settings, "GROQ_MODEL", "llama-3.3-70b-versatile")
-    temperature = float(getattr(settings, "GROQ_TEMPERATURE", 0.2))
+    temperature = float(getattr(settings, "GROQ_TEMPERATURE", 0))
 
     return ChatGroq(
         model=model_name,

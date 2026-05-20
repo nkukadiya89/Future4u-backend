@@ -86,9 +86,8 @@ def normalize_career_roadmap(roadmap: dict[str, Any]) -> dict[str, list[dict[str
 
     if len(ordered) < 4:
         return {
-            key: list(roadmap.get(key) or [])
+            key: _clip_phase_tasks(list(roadmap.get(key) or []))
             for key in CAREER_ROADMAP_PHASE_KEYS
-            if key in roadmap
         }
 
     return {

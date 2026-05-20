@@ -16,14 +16,13 @@ logger = logging.getLogger(__name__)
 
 
 class RecommendationPipeline:
-    """student_signals + career title slots → Groq → full AI recommendation JSON."""
+    """student_signals → Groq → full AI recommendation JSON (careers chosen by LLM)."""
 
     @classmethod
     def run(
         cls,
         *,
         student_signals: dict[str, Any],
-        career_candidates: list[dict[str, Any]],
     ) -> AIRecommendationPayload:
         if not ai_llm_enabled():
             raise AIConfigurationError(
@@ -34,7 +33,6 @@ class RecommendationPipeline:
         try:
             raw = AIRecommendationGenerator.generate(
                 student_signals=student_signals,
-                career_candidates=career_candidates,
             )
             normalized = normalize_payload(raw)
             if len(normalized.top_suggestions) != TOP_SUGGESTION_COUNT:

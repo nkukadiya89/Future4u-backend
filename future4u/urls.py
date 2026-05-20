@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from user.user_auth import CustomTokenObtainPairView
 from future4u.routers import future4u_router
-from recommendation.ai_views import AIRecommendationAPIView
+from services.ai.views import AIRecommendationAPIView
 from recommendation.debug_views import RecommendationDebugAPIView
 from recommendation.views import (
     CareerDetailsAPIView,

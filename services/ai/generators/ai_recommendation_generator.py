@@ -11,9 +11,10 @@ from pydantic import ValidationError
 from services.ai.clients.llm_client import get_chat_model
 from services.ai.config import EASY_DECISION_COUNT, TOP_SUGGESTION_COUNT
 from services.ai.exceptions import AIGenerationError
+from services.ai.pipeline.payload_validator import parse_ai_payload, parse_ai_payload_lenient
 from services.ai.prompts.ai_recommendation_prompt import (
+    RETRY_FORMAT_REMINDER,
     build_recommendation_prompt,
-    career_slots_for_ai,
     format_prompt_inputs,
 )
 from services.ai.schemas.recommendation_output import (
@@ -26,83 +27,100 @@ from services.ai.schemas.recommendation_output import (
 logger = logging.getLogger(__name__)
 
 _STRUCTURED_METHODS = ("json_mode", None)
+_MAX_VALIDATION_RETRIES = 2
 
 
 class AIRecommendationGenerator:
-    """Full AI recommendations from student_signals + career_candidates."""
+    """Full AI recommendations from student_signals only (Groq picks all careers)."""
 
     @classmethod
-    def generate(
-        cls,
-        *,
-        student_signals: dict[str, Any],
-        career_candidates: list[dict[str, Any]],
-    ) -> AIRecommendationPayload:
-        if not career_candidates:
-            raise AIGenerationError(
-                "No career candidates found for the selected domain"
-            )
-
+    def generate(cls, *, student_signals: dict[str, Any]) -> AIRecommendationPayload:
         prompt = build_recommendation_prompt()
-        inputs = format_prompt_inputs(
-            student_signals=student_signals,
-            career_candidates=career_candidates,
-        )
+        inputs = format_prompt_inputs(student_signals=student_signals)
         llm = get_chat_model()
-        return cls._generate_with_llm(
-            prompt=prompt,
-            inputs=inputs,
-            llm=llm,
-            career_candidates=career_candidates,
-        )
+        return cls._generate_with_llm(prompt=prompt, inputs=inputs, llm=llm)
 
     @classmethod
-    def _generate_with_llm(
-        cls,
-        *,
-        prompt,
-        inputs: dict[str, Any],
-        llm,
-        career_candidates: list[dict[str, Any]],
-    ) -> AIRecommendationPayload:
+    def _generate_with_llm(cls, *, prompt, inputs: dict[str, Any], llm) -> AIRecommendationPayload:
         errors: list[str] = []
 
-        for method in _STRUCTURED_METHODS:
-            try:
-                payload = cls._invoke_structured(
-                    prompt=prompt, inputs=inputs, llm=llm, method=method
-                )
-                if cls._has_valid_shape(payload, career_candidates):
-                    return payload
-                errors.append(f"groq ({method or 'default'}): incomplete schema")
-            except ValidationError as exc:
-                logger.warning("Groq output validation failed (%s): %s", method, exc)
-                errors.append(f"groq ({method or 'default'}): validation failed")
-            except Exception as exc:
-                if _is_function_call_error(exc):
+        for attempt in range(_MAX_VALIDATION_RETRIES + 1):
+            retry_inputs = cls._inputs_for_attempt(inputs, attempt)
+            for method in _STRUCTURED_METHODS:
+                try:
+                    payload = cls._invoke_structured(
+                        prompt=prompt,
+                        inputs=retry_inputs,
+                        llm=llm,
+                        method=method,
+                    )
+                    if cls._has_valid_shape(payload):
+                        return payload
+                    errors.append(
+                        f"groq ({method or 'default'}, attempt {attempt + 1}): "
+                        "incomplete schema"
+                    )
+                except ValidationError as exc:
                     logger.warning(
-                        "Groq function-call structured output failed (%s): %s",
+                        "Groq output validation failed (%s, attempt %s): %s",
                         method,
+                        attempt + 1,
                         exc,
                     )
-                    errors.append(f"groq ({method or 'default'}): function call failed")
-                    continue
-                logger.exception("Groq recommendation generation failed")
-                raise AIGenerationError(_format_groq_error(exc)) from exc
+                    errors.append(
+                        f"groq ({method or 'default'}, attempt {attempt + 1}): "
+                        "validation failed"
+                    )
+                except Exception as exc:
+                    if _is_function_call_error(exc):
+                        logger.warning(
+                            "Groq function-call structured output failed (%s): %s",
+                            method,
+                            exc,
+                        )
+                        errors.append(
+                            f"groq ({method or 'default'}): function call failed"
+                        )
+                        continue
+                    logger.exception("Groq recommendation generation failed")
+                    raise AIGenerationError(_format_groq_error(exc)) from exc
 
-        try:
-            payload = cls._invoke_json_fallback(prompt=prompt, inputs=inputs, llm=llm)
-            if cls._has_valid_shape(payload, career_candidates):
-                return payload
-            errors.append("groq: JSON fallback returned incomplete schema")
-        except Exception as exc:
-            logger.warning("Groq JSON fallback failed: %s", exc)
-            errors.append("groq: JSON fallback failed")
+            try:
+                payload = cls._invoke_json_fallback(
+                    prompt=prompt, inputs=retry_inputs, llm=llm
+                )
+                if cls._has_valid_shape(payload):
+                    return payload
+                errors.append(
+                    f"groq: JSON fallback incomplete schema (attempt {attempt + 1})"
+                )
+            except ValidationError as exc:
+                logger.warning(
+                    "Groq JSON fallback validation failed (attempt %s): %s",
+                    attempt + 1,
+                    exc,
+                )
+                errors.append(
+                    f"groq: JSON fallback validation failed (attempt {attempt + 1})"
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Groq JSON fallback failed (attempt %s): %s", attempt + 1, exc
+                )
+                errors.append(f"groq: JSON fallback failed (attempt {attempt + 1})")
 
         detail = "; ".join(errors) if errors else "unknown error"
         raise AIGenerationError(
             f"AI could not produce valid recommendations ({detail}). Retry shortly."
         )
+
+    @staticmethod
+    def _inputs_for_attempt(inputs: dict[str, Any], attempt: int) -> dict[str, Any]:
+        if attempt == 0:
+            return inputs
+        merged = dict(inputs)
+        merged["format_reminder"] = RETRY_FORMAT_REMINDER
+        return merged
 
     @classmethod
     def _invoke_structured(
@@ -154,9 +172,10 @@ class AIRecommendationGenerator:
 
     @staticmethod
     def _coerce_payload(result: Any) -> AIRecommendationPayload:
-        if isinstance(result, AIRecommendationPayload):
-            return result
-        return AIRecommendationPayload.model_validate(result)
+        payload = parse_ai_payload_lenient(result)
+        if payload is not None:
+            return payload
+        return parse_ai_payload(result)
 
     @classmethod
     def _parse_json_payload(cls, text: str) -> AIRecommendationPayload:
@@ -168,25 +187,17 @@ class AIRecommendationGenerator:
         end = raw.rfind("}")
         if start == -1 or end == -1 or end <= start:
             raise AIGenerationError("AI response did not contain JSON")
-        return AIRecommendationPayload.model_validate_json(raw[start : end + 1])
+        data = json.loads(raw[start : end + 1])
+        payload = parse_ai_payload_lenient(data)
+        if payload is not None:
+            return payload
+        return parse_ai_payload(data)
 
     @staticmethod
-    def _has_valid_shape(
-        payload: AIRecommendationPayload,
-        career_candidates: list[dict[str, Any]],
-    ) -> bool:
+    def _has_valid_shape(payload: AIRecommendationPayload) -> bool:
         if len(payload.top_suggestions) != TOP_SUGGESTION_COUNT:
             return False
         if len(payload.easy_decision_making) != EASY_DECISION_COUNT:
-            return False
-
-        expected_names = [
-            slot["career_name"].strip().casefold()
-            for slot in career_slots_for_ai(career_candidates)
-        ]
-        if len(expected_names) != TOP_SUGGESTION_COUNT:
-            return False
-        if len(set(expected_names)) != TOP_SUGGESTION_COUNT:
             return False
 
         returned_names = [
@@ -195,8 +206,6 @@ class AIRecommendationGenerator:
         if len(returned_names) != TOP_SUGGESTION_COUNT:
             return False
         if len(set(returned_names)) != TOP_SUGGESTION_COUNT:
-            return False
-        if set(returned_names) != set(expected_names):
             return False
 
         skill_sets: list[frozenset[str]] = []

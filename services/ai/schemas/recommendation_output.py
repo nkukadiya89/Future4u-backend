@@ -59,7 +59,7 @@ def normalize_risk_level(value: object) -> RiskLevel | None:
         return "Low"
     if "high" in key:
         return "High"
-    return "Medium"
+    return None
 
 
 def _clip_max_words(value: object, *, max_words: int) -> str:
@@ -119,6 +119,15 @@ class CareerRoadmap(BaseModel):
     next_3_to_6_months: list[RoadmapTask] = Field(min_length=1, max_length=2)
     next_6_to_9_months: list[RoadmapTask] = Field(min_length=1, max_length=2)
     next_9_to_12_months: list[RoadmapTask] = Field(min_length=1, max_length=2)
+
+    @model_validator(mode="before")
+    @classmethod
+    def coerce_phases(cls, data: object) -> object:
+        if not isinstance(data, dict):
+            return data
+        from services.ai.pipeline.roadmap_normalizer import normalize_career_roadmap
+
+        return normalize_career_roadmap(data)
 
 
 class RequiredEducation(BaseModel):
@@ -180,6 +189,13 @@ class SalaryFactor(BaseModel):
     average: str | None = Field(default=None, max_length=120)
     growth_rate: str | None = Field(default=None, max_length=200)
 
+    @model_validator(mode="before")
+    @classmethod
+    def coerce_shape(cls, data: object) -> object:
+        from services.ai.pipeline.ai_input_normalizer import normalize_salary
+
+        return normalize_salary(data) or data
+
     @field_validator("average", mode="before")
     @classmethod
     def clip_average(cls, value: object) -> object:
@@ -200,7 +216,27 @@ class JobSecurityFactor(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     level: str | None = Field(default=None, max_length=100)
+    description: str | None = Field(default=None, max_length=500)
     market_demand_growth: str | None = Field(default=None, max_length=100)
+
+    @model_validator(mode="before")
+    @classmethod
+    def coerce_shape(cls, data: object) -> object:
+        from services.ai.pipeline.ai_input_normalizer import normalize_job_security
+
+        return normalize_job_security(data) or data
+
+    @model_validator(mode="after")
+    def sync_description_fields(self) -> JobSecurityFactor:
+        if self.description and not self.market_demand_growth:
+            object.__setattr__(
+                self, "market_demand_growth", _clip(self.description, 100)
+            )
+        elif self.market_demand_growth and not self.description:
+            object.__setattr__(
+                self, "description", _clip(self.market_demand_growth, 500)
+            )
+        return self
 
     @field_validator("level", "market_demand_growth", mode="before")
     @classmethod
@@ -209,12 +245,27 @@ class JobSecurityFactor(BaseModel):
             return value
         return _clip(value, 100)
 
+    @field_validator("description", mode="before")
+    @classmethod
+    def clip_description(cls, value: object) -> object:
+        if value is None:
+            return None
+        text = str(value).strip()
+        return _clip(text, 500) if text else None
+
 
 class LearningCurveFactor(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     level: str | None = Field(default=None, max_length=100)
     description: str | None = Field(default=None, max_length=500)
+
+    @model_validator(mode="before")
+    @classmethod
+    def coerce_shape(cls, data: object) -> object:
+        from services.ai.pipeline.ai_input_normalizer import normalize_learning_curve
+
+        return normalize_learning_curve(data) or data
 
 
 class CareerFactors(BaseModel):
@@ -229,10 +280,27 @@ class CareerFactors(BaseModel):
     )
     learning_curve: LearningCurveFactor | None = None
 
+    @model_validator(mode="before")
+    @classmethod
+    def coerce_nested(cls, data: object) -> object:
+        from services.ai.pipeline.ai_input_normalizer import normalize_career_factors
+
+        return normalize_career_factors(data) or data
+
     @field_validator("risk_level", mode="before")
     @classmethod
     def normalize_risk(cls, value: object) -> object:
         return normalize_risk_level(value)
+
+    @field_validator("skill_match", mode="before")
+    @classmethod
+    def coerce_skill_match(cls, value: object) -> object:
+        if value is None or value == "":
+            return None
+        try:
+            return max(0, min(100, int(round(float(str(value).strip().rstrip("%"))))))
+        except (TypeError, ValueError):
+            return None
 
     @field_validator("growth_potential", "work_life_balance", mode="before")
     @classmethod
@@ -263,6 +331,57 @@ class TopSuggestionItem(BaseModel):
     required_education: RequiredEducation | None = None
     career_factors: CareerFactors | None = None
     career_roadmap: CareerRoadmap
+
+    @field_validator("match_percentage", mode="before")
+    @classmethod
+    def coerce_match(cls, value: object) -> object:
+        if value is None or value == "":
+            raise ValueError("match_percentage is required from AI output")
+        try:
+            return max(0, min(100, int(round(float(str(value).strip().rstrip("%"))))))
+        except (TypeError, ValueError) as exc:
+            raise ValueError("match_percentage must be a number") from exc
+
+    @field_validator("why_this_career", mode="before")
+    @classmethod
+    def coerce_why_list(cls, value: object) -> object:
+        from services.ai.pipeline.ai_input_normalizer import coerce_string_list
+
+        if isinstance(value, list):
+            return value
+        return coerce_string_list(value)
+
+    @field_validator("required_skills", mode="before")
+    @classmethod
+    def coerce_skills_list(cls, value: object) -> object:
+        from services.ai.pipeline.ai_input_normalizer import coerce_string_list
+
+        if isinstance(value, list):
+            return value
+        return coerce_string_list(value)
+
+    @field_validator("required_education", mode="before")
+    @classmethod
+    def coerce_education(cls, value: object) -> object:
+        from services.ai.pipeline.ai_input_normalizer import normalize_required_education
+
+        return normalize_required_education(value) or value
+
+    @field_validator("career_factors", mode="before")
+    @classmethod
+    def coerce_factors(cls, value: object) -> object:
+        from services.ai.pipeline.ai_input_normalizer import normalize_career_factors
+
+        return normalize_career_factors(value) or value
+
+    @field_validator("career_roadmap", mode="before")
+    @classmethod
+    def coerce_roadmap(cls, value: object) -> object:
+        if not isinstance(value, dict):
+            return value
+        from services.ai.pipeline.roadmap_normalizer import normalize_career_roadmap
+
+        return normalize_career_roadmap(value)
 
     @field_validator("ai_insight", mode="before")
     @classmethod
