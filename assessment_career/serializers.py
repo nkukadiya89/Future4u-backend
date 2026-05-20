@@ -20,7 +20,6 @@ class CareerRecommendationSuggestionSerializer(BaseModelSerializer):
         ]
         
 class CareerRecommendationSerializer(BaseModelSerializer):
-    suggestions = CareerRecommendationSuggestionSerializer(many=True, read_only=True)
 
     class Meta:
         model = CareerRecommendation
@@ -29,7 +28,6 @@ class CareerRecommendationSerializer(BaseModelSerializer):
             "user",
             "assessment",
             "raw_ai_response",
-            "suggestions",
             "easy_decision_making",
             "last_recommended_at",
         ]

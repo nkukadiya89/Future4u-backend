@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializers import CareerRecommendationSerializer
+from .serializers import CareerRecommendationSerializer,CareerRecommendationSuggestionSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import CareerRecommendation
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -7,6 +7,9 @@ from utils.pagination import Pagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
+from .models import CareerRecommendationSuggestion
+from rest_framework.decorators import action
+from rest_framework import status
 from rest_framework import status
 
 # Create your views here.
@@ -17,9 +20,6 @@ class CareerSuggestionViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    search_fields = [
-        "suggestions__career_name",
-    ]
     ordering_fields = [
         "id",
         "created_at",
@@ -30,7 +30,6 @@ class CareerSuggestionViewSet(ModelViewSet):
         return (
             CareerRecommendation.objects.filter(deleted=False, user = self.request.user)
             .select_related("assessment","user")
-            .prefetch_related("suggestions")
             .order_by("-id")
         )
     
@@ -55,3 +54,24 @@ class CareerSuggestionViewSet(ModelViewSet):
             return Response({"success":False, "message":"No CareerRecommendation matches the given query"},status=status.HTTP_404_NOT_FOUND)
         serializer = self.get_serializer(instance)
         return Response({"success": True, "data": serializer.data},status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path="compare")
+    def compare(self, request):
+        suggestion_ids = request.query_params.get("suggestion_ids")
+
+        if not suggestion_ids:
+            return Response({"success":False, "message":"Suggestion id's is Required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        suggestion_ids = suggestion_ids.split(",")
+        if len(suggestion_ids) != 2:
+            return Response({"success":False, "message": "Please Provide 2 Suggestion ids"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        suggestions = CareerRecommendationSuggestion.objects.filter(
+            id__in = suggestion_ids, recommendation__user=request.user, deleted=False
+        ).order_by("display_order")
+
+        if suggestions.count() != 2:
+            return Response({"success":False, "message":"Invalid Suggestion Id's"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = CareerRecommendationSuggestionSerializer(suggestions, many=True)
+        return Response({"success":True, "data":serializer.data}, status=status.HTTP_200_OK)

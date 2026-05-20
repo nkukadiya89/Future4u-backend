@@ -10555,7 +10555,80 @@
             },
             "description": "Retrieve one career recommendation (must belong to the logged-in user).\n\nSet {{career_recommendation_id}} from step 7 list request or manually.\n\nResponse: { success, data: { id, user, assessment, raw_ai_response, easy_decision_making, last_recommended_at, suggestions: [...] } }"
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    // CareerRecommendationSerializer no longer returns nested suggestions[].",
+                  "    // Set career_suggestion_id_1/_2 manually (from admin) before calling compare.",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "9. Compare career suggestions (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/career-suggestions/compare/?suggestion_ids={{career_suggestion_id_1}},{{career_suggestion_id_2}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "career-suggestions",
+                "compare",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "suggestion_ids",
+                  "value": "{{career_suggestion_id_1}},{{career_suggestion_id_2}}",
+                  "description": "Exactly two CareerRecommendationSuggestion ids (comma-separated), owned by the logged-in user"
+                }
+              ]
+            },
+            "description": "Compare two career suggestion rows side by side.\n\nQuery param suggestion_ids (required): comma-separated list of exactly 2 suggestion primary keys.\n\nPrerequisites: run step 6 (AI Recommendations) so suggestions exist in DB, then set {{career_suggestion_id_1}} and {{career_suggestion_id_2}} manually (copy ids from Django admin: CareerRecommendationSuggestion).\n\nErrors:\n- 400 if suggestion_ids missing, not exactly 2 ids, or ids invalid/not owned by user\n\nResponse: { success: true, data: [ CareerRecommendationSuggestion, CareerRecommendationSuggestion ] }"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Compare returns two suggestions', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.eql(true);",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "  pm.expect(json.data.length).to.eql(2);",
+                  "});"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -14876,6 +14949,14 @@
     {
       "key": "career_recommendation_id",
       "value": "1"
+    },
+    {
+      "key": "career_suggestion_id_1",
+      "value": "1"
+    },
+    {
+      "key": "career_suggestion_id_2",
+      "value": "2"
     }
   ]
 }

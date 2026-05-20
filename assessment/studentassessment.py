@@ -75,7 +75,6 @@ def get_question_pool(assessment, user, dimension=None):
         Question.Dimension.WORK_STYLE,
     ]
 
-    # If both domain and category, question must be mapped to BOTH (AND logic)
     if len(domain_codes) == 2:
         question_pool = Question.objects.filter(
             is_active=True,
@@ -124,7 +123,6 @@ def calculate_current_screen(assessment, user):
     if not assessment.concerns:
         return StudentAssessment.Screen.CONCERNS
 
-    # Check each dimension in sequence
     dimensions = [
         (Question.Dimension.INTEREST, StudentAssessment.Screen.INTEREST),
         (Question.Dimension.APTITUDE, StudentAssessment.Screen.APTITUDE),
@@ -195,13 +193,6 @@ def assessment_status_payload(assessment, user):
 
 
 class StudentAssessmentViewSet(viewsets.ModelViewSet):
-    """
-    POST   /api/assessments/start/    
-    PATCH  /api/assessments/{id}/      
-    POST   /api/assessments/{id}/complete/
-    GET    /api/assessments/         
-    GET    /api/assessments/{id}/   
-    """
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
@@ -261,7 +252,6 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        """POST /api/assessments/start/ - Resume incomplete assessment or create new."""
         force_new = request.data.get("force_new") is True
         if not force_new:
             assessment = self.get_queryset().filter(is_completed=False).first()
@@ -304,7 +294,6 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="status")
     def assessment_status(self, request):
-        """GET /api/student/assessments/status/ - Latest assessment resume state."""
         assessment = self.get_queryset().order_by("-created_at").first()
         return Response(assessment_status_payload(assessment, request.user))
 
@@ -335,10 +324,6 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
 
 
 class NextQuestionViewSet(viewsets.GenericViewSet):
-    """
-    GET /api/questions/next/?assessment_id={id}
-    Returns the next unanswered question for the given assessment.
-    """
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
@@ -371,16 +356,13 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Get already answered questions for this assessment
         answered_ids = (
             UserResponse.objects.filter(assessment=assessment)
             .values_list("question_id", flat=True)
         )
 
-        # Get current screen to determine which dimension questions to show
         current_screen = assessment.current_screen
         
-        # Map screen to dimension
         dimension_map = {
             StudentAssessment.Screen.INTEREST: Question.Dimension.INTEREST,
             StudentAssessment.Screen.APTITUDE: Question.Dimension.APTITUDE,
@@ -458,11 +440,7 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
 
 
 class AssessmentResponseViewSet(viewsets.GenericViewSet):
-    """
-    POST /api/responses/
-    Body: { "assessment": 101, "question": 1, "selected_option": 11 }
-    Saves a single answer and returns the option's score.
-    """
+    # Body: { "assessment": 101, "question": 1, "selected_option": 11 }
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
@@ -481,7 +459,6 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
         question_id = ser.validated_data["question"]
         option_id = ser.validated_data["selected_option"]
 
-        # Validate assessment belongs to user
         try:
             assessment = StudentAssessment.objects.get(
                 id=assessment_id,
@@ -500,7 +477,6 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Validate question and option
         try:
             question = Question.objects.get(id=question_id, is_active=True)
             option = Option.objects.get(id=option_id, question=question)
@@ -515,7 +491,6 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Enforce: one answer per question per assessment
         UserResponse.objects.update_or_create(
             assessment=assessment,
             user=request.user,
