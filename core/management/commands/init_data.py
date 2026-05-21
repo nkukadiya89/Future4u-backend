@@ -28,6 +28,7 @@ from stream.serializers import StreamSerializer
 from stream.services import stream_service
 from subscription.models import Subscription, SubscriptionFeature
 from user.models import CustomGroup, RoleFamily, User
+from assessment.models import Concern,CareerValue, UserGoal, CareerDirection
 
 try:
     from city_areas.models import CityArea  # type: ignore
@@ -113,6 +114,7 @@ class Command(BaseCommand):
 
         if kwargs["assessment"]:
             self.load_assessment_questions()
+            self.load_assessment_masters()
             return
 
         # If no specific flags, run all initialization
@@ -145,6 +147,7 @@ class Command(BaseCommand):
             self.load_domain_skill_mappings()
             self.load_domain_career_mappings()
             self.load_assessment_questions()
+            self.load_assessment_masters()
             self.load_domain_report_meta()
             self.load_domain_counsellor_knowledge()
             self.load_domain_scoring_config()
@@ -435,6 +438,43 @@ class Command(BaseCommand):
                 ignore_conflicts=True,
             )
         self.stdout.write("Country data uploaded.")
+
+    def load_assessment_masters(self):
+        self.stdout.write("Loading Assessment Masters.")
+
+        Concern.objects.bulk_create([
+            Concern(name="Job Security"),
+            Concern(name="Financial stability / Future demand"),
+            Concern(name="Wrong career choice"),
+            Concern(name="High education cost"),
+            Concern(name="Lack of guidance"),
+            Concern(name="Competitive pressure"),
+        ], ignore_conflicts=True)
+
+        CareerDirection.objects.bulk_create([
+            CareerDirection(name="Study further"),
+            CareerDirection(name="Find a job"),
+            CareerDirection(name="Internship"),
+            CareerDirection(name="Skill development"),
+            CareerDirection(name="Not sure yet"),
+        ],ignore_conflicts=True)
+
+        CareerValue.objects.bulk_create([
+            CareerValue(name="High salary potential"),
+            CareerValue(name="Job security and stability"),
+            CareerValue(name="Creativity and innovation"),
+            CareerValue(name="Work life balance"),
+            CareerValue(name="Making an impact on society"),
+            CareerValue(name="Opportunities to grow and learn"),
+        ],ignore_conflicts=True)
+
+        UserGoal.objects.bulk_create([
+            UserGoal(name="Career clarity"),
+            UserGoal(name="Course recommendation"),
+            UserGoal(name="Job/internship Opportunities"),
+            UserGoal(name="Parent confidence"),
+        ])
+
 
     # State Upload CSV
     def load_state(self, admin_user=None):

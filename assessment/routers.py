@@ -5,6 +5,10 @@ from assessment.studentassessment import (
     AssessmentResponseViewSet,
     NextQuestionViewSet,
     StudentAssessmentViewSet,
+    ConcernViewSet,
+    UserGoalViewSet,
+    CareerValueViewSet,
+    CareerDirectionViewSet,
 )
 
 assessment_router = DefaultRouter()
@@ -31,3 +35,7 @@ assessment_router.register(
     AssessmentRecommendationViewSet,
     basename="assessment_recommendations",
 )
+assessment_router.register("api/assessment-concern", ConcernViewSet, basename="assessment_concern")
+assessment_router.register("api/assessment-usergoal", UserGoalViewSet, basename="assessment_usergoal")
+assessment_router.register("api/assessment-careervalue", CareerValueViewSet, basename="assessment_careervalue")
+assessment_router.register("api/assessment-careerdirection", CareerDirectionViewSet, basename="assessment_careerdirection")

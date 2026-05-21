@@ -5,8 +5,16 @@ from assessment.models import (
     Question,
     StudentAssessment,
     UserResponse,
+    CareerDirection,
+    CareerValue,
+    Concern,
+    UserGoal,
 )
 
+admin.site.register(CareerDirection)
+admin.site.register(CareerValue)
+admin.site.register(Concern)
+admin.site.register(UserGoal)
 
 class OptionInline(admin.TabularInline):
     model = Option

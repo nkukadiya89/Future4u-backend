@@ -131,15 +131,39 @@ class UserResponse(models.Model):
 
 class Concern(BaseModule):
     name = models.CharField(max_length=150)
-
+    
+    def __str__(self):
+        return f"{self.name}"
+    
+    class Meta:
+        db_table = "assessment_concern"
 
 class CareerValue(BaseModule):
     name = models.CharField(max_length=150)
 
+    def __str__(self):
+        return f"{self.name}"
+    
+    class Meta:
+        db_table = "assessment_career_value"
 
 class UserGoal(BaseModule):
     name = models.CharField(max_length=150)
 
+    def __str__(self):
+        return f"{self.name}"
+    
+    class Meta:
+        db_table = "assessment_usergoal"
+
+class CareerDirection(BaseModule):
+    name = models.CharField(max_length=150)
+
+    def __str__(self):
+        return f"{self.name}"
+    
+    class Meta:
+        db_table = "assessment_career_direction"
 
 class StudentAssessment(BaseModule):
     class Screen(models.TextChoices):
@@ -147,6 +171,7 @@ class StudentAssessment(BaseModule):
         STREAM = "stream", "Stream / Path"
         DOMAIN_CATEGORY = "domain_category", "Domain Category"
         DOMAIN = "domain", "Domain"
+        CAREER_DIRECTION = "career_direction", "Career Direction"
         PARENT_SUPPORT = "parent_support", "Parent Support"
         CONCERNS = "concerns", "Concerns"
         INTEREST = "interest", "Interest Questions"
@@ -189,6 +214,7 @@ class StudentAssessment(BaseModule):
         choices=PARENT_CHOICES, max_length=150, null=True, blank=True
     )
     concerns = models.ManyToManyField(Concern, blank=True)
+    career_direction = models.ManyToManyField(CareerDirection, blank=True)
     career_values = models.ManyToManyField(CareerValue, blank=True)
     user_goals = models.ManyToManyField(UserGoal, blank=True)
     current_screen = models.CharField(

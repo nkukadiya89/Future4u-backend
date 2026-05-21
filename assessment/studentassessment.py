@@ -7,15 +7,20 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
-from assessment.models import Option, Question, StudentAssessment, UserResponse
+from assessment.models import Option, Question, StudentAssessment, UserResponse, CareerDirection, CareerValue, Concern, UserGoal
 from assessment.services.recommendation_engine import generate_full_assessment_result
 from assessment.serializers import (
     AssessmentResponseSerializer,
     NextQuestionSerializer,
     StudentAssessmentCreateSerializer,
     StudentAssessmentSerializer,
+    ConcernSerializer,
+    CareerDirectionSerializer,
+    CareerValueSerializer,
+    UserGoalSerializer
 )
+from common.api.mixins import ArchiveMixin
+from common.master_view import BaseModelViewSet
 from domain.models import Domain
 from utils.pagination import Pagination
 
@@ -121,9 +126,11 @@ def calculate_current_screen(assessment, user):
         return StudentAssessment.Screen.DOMAIN_CATEGORY
     if not assessment.domain_id:
         return StudentAssessment.Screen.DOMAIN
+    if not assessment.career_direction.exists():
+        return StudentAssessment.Screen.CAREER_DIRECTION
     if not assessment.parent_support:
         return StudentAssessment.Screen.PARENT_SUPPORT
-    if not assessment.concerns:
+    if not assessment.concerns.exists():
         return StudentAssessment.Screen.CONCERNS
 
     dimensions = [
@@ -149,9 +156,9 @@ def calculate_current_screen(assessment, user):
             if answered_count < total_questions:
                 return screen_name
 
-    if not assessment.career_values:
+    if not assessment.career_values.exists():
         return StudentAssessment.Screen.CAREER_VALUES
-    if not assessment.user_goals:
+    if not assessment.user_goals.exists():
         return StudentAssessment.Screen.USER_GOALS
 
     return StudentAssessment.Screen.COMPLETE
@@ -221,9 +228,12 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
     search_fields = [
         "id",
         "parent_support",
-        "concerns",
-        "career_values",
-        "user_goals",
+        "concerns__name",
+        "career_values__name",
+        "user_goals__name",
+        "domain_category__domain_name",
+        "domain__domain_name",
+        "career_direction__name"
         "is_completed",
     ]
     ordering_fields = [
@@ -233,6 +243,7 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
         "concerns",
         "career_values",
         "user_goals",
+        "career_direction",
         "created_at",
         "updated_at",
         "is_completed",
@@ -516,3 +527,32 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+class ConcernViewSet(BaseModelViewSet, ArchiveMixin):
+    queryset = Concern.objects.all().order_by("-id")
+    serializer_class = ConcernSerializer
+
+    search_fields = BaseModelViewSet.searching_fields + ["name"]
+    ordering_fields = BaseModelViewSet.ordering_fields + ["name"]
+
+class CareerValueViewSet(BaseModelViewSet, ArchiveMixin):
+    queryset = CareerValue.objects.all().order_by("-id")
+    serializer_class = CareerValueSerializer
+
+    search_fields = BaseModelViewSet.searching_fields + ["name"]
+    ordering_fields = BaseModelViewSet.ordering_fields + ["name"]
+
+class UserGoalViewSet(BaseModelViewSet, ArchiveMixin):
+    queryset = UserGoal.objects.all().order_by("-id")
+    serializer_class = UserGoalSerializer
+
+    search_fields = BaseModelViewSet.searching_fields + ["name"]
+    ordering_fields = BaseModelViewSet.ordering_fields + ["name"]
+
+class CareerDirectionViewSet(BaseModelViewSet, ArchiveMixin):
+    queryset = CareerDirection.objects.all().order_by("-id")
+    serializer_class = CareerDirectionSerializer
+
+    search_fields = BaseModelViewSet.searching_fields + ["name"]
+    ordering_fields = BaseModelViewSet.ordering_fields + ["name"]
+    

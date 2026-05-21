@@ -10102,8 +10102,145 @@
       ]
     },
     {
-      "name": "assessment",
-      "item": []
+      "name": "assessment_masters",
+      "item": [
+        {
+          "name": "List concerns (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-concern/?no_pagination=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "assessment-concern",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List user goals (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-usergoal/?no_pagination=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "assessment-usergoal",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List career values (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-careervalue/?no_pagination=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "assessment-careervalue",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List career directions (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/assessment-careerdirection/?no_pagination=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "assessment-careerdirection",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     },
     {
       "name": "student_assessment",
