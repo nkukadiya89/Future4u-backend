@@ -9,20 +9,19 @@ from services.ai.clients.llm_client import ensure_ai_provider_configured
 from services.ai.config import EASY_DECISION_COUNT, TOP_SUGGESTION_COUNT, ai_llm_enabled
 from services.ai.exceptions import AIGenerationError, AIConfigurationError
 from services.ai.generators.ai_recommendation_generator import AIRecommendationGenerator
-from services.ai.pipeline.output_normalizer import normalize_payload
 from services.ai.schemas.recommendation_output import AIRecommendationPayload
 
 logger = logging.getLogger(__name__)
 
 
 class RecommendationPipeline:
-    """student_signals → Groq → full AI recommendation JSON (careers chosen by LLM)."""
+    """structured_assessment → single LLM call → full AI recommendation JSON."""
 
     @classmethod
     def run(
         cls,
         *,
-        student_signals: dict[str, Any],
+        structured_assessment: dict[str, Any],
     ) -> AIRecommendationPayload:
         if not ai_llm_enabled():
             raise AIConfigurationError(
@@ -31,10 +30,9 @@ class RecommendationPipeline:
 
         ensure_ai_provider_configured()
         try:
-            raw = AIRecommendationGenerator.generate(
-                student_signals=student_signals,
+            normalized = AIRecommendationGenerator.generate(
+                structured_assessment=structured_assessment,
             )
-            normalized = normalize_payload(raw)
             if len(normalized.top_suggestions) != TOP_SUGGESTION_COUNT:
                 raise AIGenerationError(
                     "AI recommendations must include 3 unique careers."

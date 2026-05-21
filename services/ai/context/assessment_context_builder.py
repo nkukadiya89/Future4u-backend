@@ -9,6 +9,7 @@ from typing import Any
 from assessment.models import Question, StudentAssessment, UserResponse
 from assessment.serializers import StudentAssessmentSerializer
 from assessment.studentassessment import get_student_profile
+from services.ai.pipeline.assessment_scoring import build_ai_input, calculate_dimension_scores
 
 DIMENSIONS = (
     Question.Dimension.INTEREST,
@@ -53,13 +54,35 @@ def _make_json_safe(value: Any) -> Any:
 
 
 class AssessmentContextBuilder:
-    """Build student assessment context for AI prompts (full API payload + derived signals)."""
+    """Build assessment context for APIs and structured LLM input."""
 
     @classmethod
     def build(cls, assessment: StudentAssessment) -> dict[str, Any]:
         payload = cls.serialize_assessment_api(assessment)
         payload["computed_signals"] = cls.build_computed_signals(assessment)
         return _make_json_safe(payload)
+
+    @classmethod
+    def build_llm_input(cls, assessment: StudentAssessment) -> dict[str, Any]:
+        """
+        LLM payload: MCQ responses → dimension_scores; profile fields unchanged.
+        Same source as GET /api/student/assessments/{id}/ but without raw Q&A.
+        """
+        api = cls.serialize_assessment_api(assessment)
+        structured = build_ai_input(
+            {
+                "domain_name": api.get("domain_name"),
+                "domain_category_name": api.get("domain_category_name"),
+                "responses": api.get("responses") or [],
+                "career_direction": api.get("career_direction"),
+                "parent_support": api.get("parent_support"),
+                "concerns": api.get("concerns"),
+                "career_values": api.get("career_values"),
+                "user_goals": api.get("user_goals"),
+                "is_completed": api.get("is_completed"),
+            }
+        )
+        return _make_json_safe(structured)
 
     @classmethod
     def serialize_assessment_api(cls, assessment: StudentAssessment) -> dict[str, Any]:
@@ -70,7 +93,8 @@ class AssessmentContextBuilder:
     @classmethod
     def build_computed_signals(cls, assessment: StudentAssessment) -> dict[str, Any]:
         profile = get_student_profile(assessment.user)
-        dimension_scores = cls._dimension_scores(assessment)
+        response_dicts = cls._responses_as_dicts(assessment)
+        dimension_scores = calculate_dimension_scores(response_dicts)
         consistency = cls._response_consistency(assessment)
         traits = cls._derive_traits(dimension_scores)
         support = cls._support_system_label(assessment.parent_support)
@@ -131,7 +155,7 @@ class AssessmentContextBuilder:
         }
 
     @classmethod
-    def _dimension_scores(cls, assessment: StudentAssessment) -> dict[str, float]:
+    def _responses_as_dicts(cls, assessment: StudentAssessment) -> list[dict[str, Any]]:
         rows = (
             UserResponse.objects.filter(assessment=assessment)
             .select_related("question", "selected_option")
@@ -141,21 +165,19 @@ class AssessmentContextBuilder:
                 "selected_option__sequence_order",
             )
         )
-        buckets: dict[str, list[float]] = {d.value: [] for d in DIMENSIONS}
-        for row in rows:
-            dim = (row.question.dimension or "").strip().lower()
-            if dim not in buckets:
-                continue
-            buckets[dim].append(_option_score(row.selected_option.sequence_order))
+        return [
+            {
+                "question": {"dimension": row.question.dimension},
+                "selected_option": {
+                    "sequence_order": row.selected_option.sequence_order,
+                },
+            }
+            for row in rows
+        ]
 
-        scores: dict[str, float] = {}
-        for dim in buckets:
-            values = buckets[dim]
-            if values:
-                scores[dim] = _normalize_score(statistics.mean(values))
-            else:
-                scores[dim] = 0.5
-        return scores
+    @classmethod
+    def _dimension_scores(cls, assessment: StudentAssessment) -> dict[str, float]:
+        return calculate_dimension_scores(cls._responses_as_dicts(assessment))
 
     @classmethod
     def _response_consistency(cls, assessment: StudentAssessment) -> str:
