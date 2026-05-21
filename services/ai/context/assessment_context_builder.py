@@ -9,11 +9,7 @@ from typing import Any
 from assessment.models import Question, StudentAssessment, UserResponse
 from assessment.serializers import StudentAssessmentSerializer
 from assessment.studentassessment import get_student_profile
-from services.ai.pipeline.assessment_scoring import (
-    build_ai_input,
-    calculate_dimension_scores,
-    extract_behavior_signals,
-)
+from services.ai.pipeline.assessment_scoring import build_ai_input, calculate_dimension_scores
 
 DIMENSIONS = (
     Question.Dimension.INTEREST,
@@ -99,7 +95,6 @@ class AssessmentContextBuilder:
         profile = get_student_profile(assessment.user)
         response_dicts = cls._responses_as_dicts(assessment)
         dimension_scores = calculate_dimension_scores(response_dicts)
-        behavior_signals = extract_behavior_signals(response_dicts)
         consistency = cls._response_consistency(assessment)
         traits = cls._derive_traits(dimension_scores)
         support = cls._support_system_label(assessment.parent_support)
@@ -148,7 +143,6 @@ class AssessmentContextBuilder:
             "user_goals": cls._compact_list(assessment.user_goals),
             "parent_support": assessment.parent_support,
             "dimension_scores": dimension_scores,
-            "key_behavior_signals": behavior_signals,
             "personality_traits": traits["personality_traits"],
             "creativity": traits["creativity"],
             "analytical_ability": traits["analytical_ability"],
@@ -169,7 +163,6 @@ class AssessmentContextBuilder:
                 "id",
                 "question__dimension",
                 "selected_option__sequence_order",
-                "selected_option__option_text",
             )
         )
         return [
@@ -177,7 +170,6 @@ class AssessmentContextBuilder:
                 "question": {"dimension": row.question.dimension},
                 "selected_option": {
                     "sequence_order": row.selected_option.sequence_order,
-                    "option_text": row.selected_option.option_text,
                 },
             }
             for row in rows
