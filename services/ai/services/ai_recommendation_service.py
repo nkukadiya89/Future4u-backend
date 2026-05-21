@@ -42,14 +42,10 @@ class AIRecommendationService:
                 # Within 365 days — return existing stored data
                 return self._serialize_recommendation(recommendation)
 
-        # First time or 365 days passed — call AI
-        student_signals = AssessmentContextBuilder.build(assessment)
-        computed = student_signals.get("computed_signals") or {}
-        student_signals["goals"] = computed.get("user_goals") or student_signals.get(
-            "user_goals"
-        ) or []
+        # First time or 365 days passed — call AI (structured scores only, no raw Q&A)
+        structured_input = AssessmentContextBuilder.build_llm_input(assessment)
 
-        payload = RecommendationPipeline.run(student_signals=student_signals)
+        payload = RecommendationPipeline.run(structured_assessment=structured_input)
 
         recommendation = self._save_recommendation(assessment, user, payload, recommendation)
         return self._serialize_recommendation(recommendation)
