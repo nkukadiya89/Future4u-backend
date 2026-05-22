@@ -20,7 +20,7 @@ from django.urls import path, include
 from user.user_auth import CustomTokenObtainPairView
 from future4u.routers import future4u_router
 from assessment_career.course_views import AIRecommendationCoursesAPIView
-from services.ai.views import AIRecommendationAPIView
+from recommendation.ai_views import AIRecommendationAPIView
 from recommendation.views import (
     CareerDetailsAPIView,
     RecommendationDomainDetailAPIView,

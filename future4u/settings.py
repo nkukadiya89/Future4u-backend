@@ -103,7 +103,7 @@ INSTALLED_APPS = [
     "user",
     "user_skill",
     "user_profile",
-    "services.ai",
+    "recommendation",
     "language_master",
     # "skill_category",
     "jobs",
@@ -255,14 +255,8 @@ LOGGING = {
             "level": config("DJANGO_LOG_LEVEL", default="WARNING"),
             "propagate": False,
         },
-        "services": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "assessment": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "recommendation": {
-            "handlers": ["console"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "services.ai": {
             "handlers": ["console"],
             "level": "INFO",
             "propagate": False,
