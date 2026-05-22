@@ -10521,56 +10521,6 @@
           "response": []
         },
         {
-          "name": "6. AI Recommendations (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/ai-recommendations/{{assessment_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "ai-recommendations",
-                "{{assessment_id}}",
-                ""
-              ]
-            },
-            "description": "Generates AI career recommendations from a student assessment.\n\nPrerequisites (run in order):\n1. Start Assessment\n2. PATCH domain_category + domain (+ profile education/stream)\n3. Save answers via POST /api/responses/ (repeat until dimensions complete)\n4. Complete Assessment (recommended)\n\nRequires GROQ_API_KEY (and AI_USE_OPENAI=true) in server .env. LangSmith traces when LANGCHAIN_TRACING_V2=true.\n\nResponse: { success, data: { top_suggestions[], easy_decision_making[] } }"
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "  pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test('Success envelope', function () {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.success).to.eql(true);",
-                  "  pm.expect(json.data).to.be.an('object');",
-                  "  pm.expect(json.data.top_suggestions).to.be.an('array');",
-                  "  pm.expect(json.data.easy_decision_making).to.be.an('array');",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
           "name": "7. List career suggestions (GET)",
           "request": {
             "method": "GET",
@@ -10782,6 +10732,56 @@
     {
       "name": "recommendations",
       "item": [
+        {
+          "name": "AI Recommendations (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-recommendations/{{assessment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-recommendations",
+                "{{assessment_id}}",
+                ""
+              ]
+            },
+            "description": "Generates AI career recommendations from a student assessment.\n\nPrerequisites (run in order):\n1. Start Assessment\n2. PATCH domain_category + domain (+ profile education/stream)\n3. Save answers via POST /api/responses/ (repeat until dimensions complete)\n4. Complete Assessment (recommended)\n\nRequires GROQ_API_KEY (and AI_USE_OPENAI=true) in server .env. LangSmith traces when LANGCHAIN_TRACING_V2=true.\n\nResponse: { success, data: { top_suggestions[], easy_decision_making[] } }"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Success envelope', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.eql(true);",
+                  "  pm.expect(json.data).to.be.an('object');",
+                  "  pm.expect(json.data.top_suggestions).to.be.an('array');",
+                  "  pm.expect(json.data.easy_decision_making).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
         {
           "name": "domain detail (GET)",
           "request": {
