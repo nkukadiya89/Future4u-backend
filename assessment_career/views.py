@@ -1,15 +1,15 @@
-from django.shortcuts import render
-from .serializers import CareerRecommendationSerializer,CareerRecommendationSuggestionSerializer
+from .serializers import (
+    CareerRecommendationSerializer,
+    CareerRecommendationSuggestionSerializer,
+)
 from rest_framework.viewsets import ModelViewSet
-from .models import CareerRecommendation
+from .models import CareerRecommendation, CareerRecommendationSuggestion
 from rest_framework.filters import SearchFilter, OrderingFilter
 from utils.pagination import Pagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
-from .models import CareerRecommendationSuggestion
 from rest_framework.decorators import action
-from rest_framework import status
 from rest_framework import status
 
 # Create your views here.
@@ -28,8 +28,8 @@ class CareerSuggestionViewSet(ModelViewSet):
 
     def get_queryset(self):
         return (
-            CareerRecommendation.objects.filter(deleted=False, user = self.request.user)
-            .select_related("assessment","user")
+            CareerRecommendation.objects.filter(deleted=False, user=self.request.user)
+            .select_related("assessment", "user")
             .order_by("-id")
         )
     

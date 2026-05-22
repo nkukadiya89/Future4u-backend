@@ -1,18 +1,14 @@
 from rest_framework import serializers
 
 from assessment.models import (
-    AssessmentCareerRecommendation,
-    AssessmentDomainScore,
-    AssessmentSkillScore,
+    CareerDirection,
+    CareerValue,
+    Concern,
     Option,
     Question,
     StudentAssessment,
-    UserResponse,
-    Concern,
-    CareerValue,
     UserGoal,
-    Concern,
-    CareerDirection,
+    UserResponse,
 )
 from common.serializers import BaseModelSerializer
 from domain.models import Domain
@@ -116,69 +112,6 @@ class UserResponseSerializer(serializers.ModelSerializer):
         request = self.context.get("request") if hasattr(self, "context") else None
         user = getattr(request, "user", None) if request else None
         return UserResponse.objects.create(user=user, **validated_data)
-
-
-class AssessmentCareerRecommendationSerializer(serializers.ModelSerializer):
-    career_name = serializers.CharField(source="career.career_name", read_only=True)
-
-    class Meta:
-        model = AssessmentCareerRecommendation
-        fields = [
-            "id",
-            "career",
-            "career_name",
-            "score",
-            "rank",
-            "match_percentage",
-            "reasoning",
-        ]
-        read_only_fields = [
-            "id",
-            "career",
-            "career_name",
-            "score",
-            "rank",
-            "match_percentage",
-            "reasoning",
-        ]
-
-
-class AssessmentSkillScoreSerializer(serializers.ModelSerializer):
-    skill_name = serializers.CharField(source="skill.skill_name", read_only=True)
-
-    class Meta:
-        model = AssessmentSkillScore
-        fields = [
-            "id",
-            "skill",
-            "skill_name",
-            "score",
-        ]
-        read_only_fields = [
-            "id",
-            "skill",
-            "skill_name",
-            "score",
-        ]
-
-
-class AssessmentDomainScoreSerializer(serializers.ModelSerializer):
-    domain_name = serializers.CharField(source="domain.domain_name", read_only=True)
-
-    class Meta:
-        model = AssessmentDomainScore
-        fields = [
-            "id",
-            "domain",
-            "domain_name",
-            "score",
-        ]
-        read_only_fields = [
-            "id",
-            "domain",
-            "domain_name",
-            "score",
-        ]
 
 
 class StudentAssessmentSerializer(BaseModelSerializer):

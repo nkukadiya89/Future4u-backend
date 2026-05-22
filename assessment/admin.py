@@ -1,14 +1,15 @@
 from django.contrib import admin
 
 from assessment.models import (
-    Option,
-    Question,
-    StudentAssessment,
-    UserResponse,
     CareerDirection,
     CareerValue,
     Concern,
+    CourseCareerMapping,
+    Option,
+    Question,
+    StudentAssessment,
     UserGoal,
+    UserResponse,
 )
 
 admin.site.register(CareerDirection)
@@ -168,6 +169,15 @@ class UserResponseAdmin(admin.ModelAdmin):
             return getattr(obj.selected_option, "score_value", None)
 
         return None
+
+
+@admin.register(CourseCareerMapping)
+class CourseCareerMappingAdmin(admin.ModelAdmin):
+    list_display = ("id", "course", "career", "relevance_score")
+    list_filter = ("career",)
+    search_fields = ("course__title", "career__career_name", "career__career_code")
+    raw_id_fields = ("course", "career")
+    ordering = ("-relevance_score", "id")
 
 
 @admin.register(StudentAssessment)

@@ -232,135 +232,9 @@ class StudentAssessment(BaseModule):
         return f"Assessment {self.id} - User {self.user_id}"
 
 
-class OptionCareerMapping(models.Model):
-    option = models.ForeignKey(
-        Option,
-        on_delete=models.CASCADE,
-        related_name="career_mappings",
-    )
-    career = models.ForeignKey(
-        "career.Career",
-        on_delete=models.CASCADE,
-        related_name="option_mappings",
-    )
-    weight = models.FloatField(default=1)
-
-    class Meta:
-        db_table = "assessment_option_career_mapping"
-        ordering = ["option_id", "career_id"]
-        unique_together = ("option", "career")
-
-    def __str__(self):
-        return f"OptionCareerMapping(option={self.option_id}, career={self.career_id}, weight={self.weight})"
-
-
-class OptionSkillMapping(models.Model):
-    option = models.ForeignKey(
-        Option,
-        on_delete=models.CASCADE,
-        related_name="skill_mappings",
-    )
-    skill = models.ForeignKey(
-        "skill.Skill",
-        on_delete=models.CASCADE,
-        related_name="option_mappings",
-    )
-    weight = models.FloatField(default=1)
-
-    class Meta:
-        db_table = "assessment_option_skill_mapping"
-        ordering = ["option_id", "skill_id"]
-        unique_together = ("option", "skill")
-
-    def __str__(self):
-        return f"OptionSkillMapping(option={self.option_id}, skill={self.skill_id}, weight={self.weight})"
-
-
-class AssessmentCareerRecommendation(models.Model):
-    assessment = models.ForeignKey(
-        StudentAssessment,
-        on_delete=models.CASCADE,
-        related_name="career_recommendations",
-    )
-    career = models.ForeignKey(
-        "career.Career",
-        on_delete=models.CASCADE,
-        related_name="career_recommendations",
-    )
-    score = models.FloatField(default=0)
-    rank = models.PositiveSmallIntegerField(default=1)
-    match_percentage = models.FloatField(default=0)
-    reasoning = models.JSONField(default=list, blank=True)
-    is_recommended = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = "assessment_career_recommendation"
-        ordering = ["rank", "-score"]
-        unique_together = ("assessment", "career")
-        indexes = [
-            models.Index(fields=["assessment"]),
-            models.Index(fields=["career"]),
-        ]
-
-    def __str__(self):
-        return (
-            f"AssessmentCareerRecommendation(assessment={self.assessment_id}, "
-            f"career={self.career_id}, rank={self.rank})"
-        )
-
-
-class AssessmentSkillScore(models.Model):
-    assessment = models.ForeignKey(
-        StudentAssessment,
-        on_delete=models.CASCADE,
-        related_name="skill_scores",
-    )
-    skill = models.ForeignKey(
-        "skill.Skill",
-        on_delete=models.CASCADE,
-        related_name="assessment_skill_scores",
-    )
-    score = models.FloatField(default=0)
-
-    class Meta:
-        db_table = "assessment_skill_score"
-        ordering = ["assessment_id", "-score"]
-        unique_together = ("assessment", "skill")
-        indexes = [
-            models.Index(fields=["assessment", "skill"]),
-        ]
-
-    def __str__(self):
-        return f"AssessmentSkillScore(assessment={self.assessment_id}, skill={self.skill_id}, score={self.score})"
-
-
-class AssessmentDomainScore(models.Model):
-    assessment = models.ForeignKey(
-        StudentAssessment,
-        on_delete=models.CASCADE,
-        related_name="domain_scores",
-    )
-    domain = models.ForeignKey(
-        "domain.Domain",
-        on_delete=models.CASCADE,
-        related_name="assessment_domain_scores",
-    )
-    score = models.FloatField(default=0)
-
-    class Meta:
-        db_table = "assessment_domain_score"
-        ordering = ["assessment_id", "-score"]
-        unique_together = ("assessment", "domain")
-        indexes = [
-            models.Index(fields=["assessment", "domain"]),
-        ]
-
-    def __str__(self):
-        return f"AssessmentDomainScore(assessment={self.assessment_id}, domain={self.domain_id}, score={self.score})"
-
-
 class CourseCareerMapping(models.Model):
+    """Links catalog courses to careers (used after LLM career suggestions)."""
+
     course = models.ForeignKey(
         "courses.Course",
         on_delete=models.CASCADE,
@@ -376,7 +250,12 @@ class CourseCareerMapping(models.Model):
     class Meta:
         db_table = "course_career_mapping"
         ordering = ["career_id", "-relevance_score"]
-        unique_together = ("course", "career")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("course", "career"),
+                name="course_career_mapping_course_career_uniq",
+            ),
+        ]
         indexes = [
             models.Index(fields=["career", "course"]),
         ]

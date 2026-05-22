@@ -5802,8 +5802,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/resume/generate/?template=professional",
-              "host": ["{{base_url}}"],
-              "path": ["resume", "generate"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "resume",
+                "generate"
+              ],
               "query": [
                 {
                   "key": "template",
@@ -5842,8 +5847,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/resume/preview/?template=professional",
-              "host": ["{{base_url}}"],
-              "path": ["resume", "preview"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "resume",
+                "preview"
+              ],
               "query": [
                 {
                   "key": "template",
@@ -10536,7 +10546,7 @@
                 ""
               ]
             },
-            "description": "Generates AI career recommendations from a student assessment.\n\nPrerequisites (run in order):\n1. Start Assessment\n2. PATCH domain_category + domain (+ profile education/stream)\n3. Save answers via POST /api/responses/ (repeat until dimensions complete)\n4. Complete Assessment (recommended)\n\nRequires OPENAI_API_KEY in server .env. LangSmith traces when LANGCHAIN_TRACING_V2=true.\n\nResponse: { success, data: { top_suggestions[], easy_decision_making[] } }"
+            "description": "Generates AI career recommendations from a student assessment.\n\nPrerequisites (run in order):\n1. Start Assessment\n2. PATCH domain_category + domain (+ profile education/stream)\n3. Save answers via POST /api/responses/ (repeat until dimensions complete)\n4. Complete Assessment (recommended)\n\nRequires GROQ_API_KEY (and AI_USE_OPENAI=true) in server .env. LangSmith traces when LANGCHAIN_TRACING_V2=true.\n\nResponse: { success, data: { top_suggestions[], easy_decision_making[] } }"
           },
           "response": [],
           "event": [
@@ -10773,34 +10783,6 @@
       "name": "recommendations",
       "item": [
         {
-          "name": "recommendations (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/recommendations/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "recommendations",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
           "name": "domain detail (GET)",
           "request": {
             "method": "GET",
@@ -10827,36 +10809,6 @@
                 ""
               ]
             }
-          },
-          "response": []
-        },
-        {
-          "name": "AI recommendations by assessment (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/ai-recommendations/{{assessment_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "ai-recommendations",
-                "{{assessment_id}}",
-                ""
-              ]
-            },
-            "description": "OpenAI-powered recommendations for a completed assessment. Set {{assessment_id}} from student_assessment flow or manually. Server needs OPENAI_API_KEY; optional LangSmith tracing (LANGCHAIN_TRACING_V2=true)."
           },
           "response": []
         }
@@ -14312,8 +14264,14 @@
             ],
             "url": {
               "raw": "{{base_url}}/auth/logout/",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "logout", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout",
+                ""
+              ]
             }
           },
           "response": []

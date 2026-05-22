@@ -19,12 +19,11 @@ from django.contrib import admin
 from django.urls import path, include
 from user.user_auth import CustomTokenObtainPairView
 from future4u.routers import future4u_router
+from assessment_career.course_views import AIRecommendationCoursesAPIView
 from services.ai.views import AIRecommendationAPIView
-from recommendation.debug_views import RecommendationDebugAPIView
 from recommendation.views import (
     CareerDetailsAPIView,
     RecommendationDomainDetailAPIView,
-    RecommendationListAPIView,
 )
 
 urlpatterns = [
@@ -36,9 +35,9 @@ urlpatterns = [
         name="api-ai-recommendations",
     ),
     path(
-        "api/recommendations/",
-        RecommendationListAPIView.as_view(),
-        name="api-recommendations",
+        "api/ai-recommendations/<int:assessment_id>/courses/",
+        AIRecommendationCoursesAPIView.as_view(),
+        name="api-ai-recommendations-courses",
     ),
     path(
         "api/recommendations/domain/<uuid:id>/",
@@ -49,11 +48,6 @@ urlpatterns = [
         "api/careers/<uuid:id>/details/",
         CareerDetailsAPIView.as_view(),
         name="api-career-details",
-    ),
-    path(
-        "api/system/recommendation-debug/",
-        RecommendationDebugAPIView.as_view(),
-        name="api-system-recommendation-debug",
     ),
     path("", include(future4u_router.urls)),
     path("", include("subscription.urls")),

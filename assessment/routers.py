@@ -1,6 +1,5 @@
 from rest_framework.routers import DefaultRouter
 
-from assessment.views.recommendation_views import AssessmentRecommendationViewSet
 from assessment.studentassessment import (
     AssessmentResponseViewSet,
     NextQuestionViewSet,
@@ -28,12 +27,6 @@ assessment_router.register(
     "api/responses",
     AssessmentResponseViewSet,
     basename="assessment_responses_stored",
-)
-# Recommendation endpoints
-assessment_router.register(
-    "api/recommendations",
-    AssessmentRecommendationViewSet,
-    basename="assessment_recommendations",
 )
 assessment_router.register("api/assessment-concern", ConcernViewSet, basename="assessment_concern")
 assessment_router.register("api/assessment-usergoal", UserGoalViewSet, basename="assessment_usergoal")

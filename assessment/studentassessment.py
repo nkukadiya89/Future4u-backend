@@ -8,7 +8,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from assessment.models import Option, Question, StudentAssessment, UserResponse, CareerDirection, CareerValue, Concern, UserGoal
-from assessment.services.recommendation_engine import generate_full_assessment_result
 from assessment.serializers import (
     AssessmentResponseSerializer,
     NextQuestionSerializer,
@@ -327,8 +326,6 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
                     "updated_by",
                 ]
             )
-            generate_full_assessment_result(assessment)
-
         return Response(
             {
                 "success": True,

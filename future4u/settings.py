@@ -103,7 +103,6 @@ INSTALLED_APPS = [
     "user",
     "user_skill",
     "user_profile",
-    "recommendation",
     "services.ai",
     "language_master",
     # "skill_category",
