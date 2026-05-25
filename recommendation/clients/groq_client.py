@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from django.conf import settings
 
-from recommendation.clients.openai_client import configure_langsmith
 from recommendation.config import groq_api_key
 from recommendation.exceptions import AIConfigurationError
 
@@ -20,7 +19,6 @@ def get_groq_api_key() -> str:
 
 def get_groq_chat_model():
     """LangChain chat model for Groq (structured output compatible)."""
-    configure_langsmith()
     api_key = get_groq_api_key()
 
     try:

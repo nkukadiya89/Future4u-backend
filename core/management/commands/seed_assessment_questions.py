@@ -296,19 +296,28 @@ class Command(BaseCommand):
                     "education_level": education_level_obj,
                     "target_stream": target_stream_obj,
                 }
-                q = Question.objects.filter(
-                    dimension=dim,
-                    question_text=qt,
-                ).first()
-                if not q and has_sequence_order_column and sequence_order:
+                q = None
+                if has_sequence_order_column and sequence_order:
                     sequence_matches = Question.objects.filter(
                         dimension=dim,
                         sequence_order=sequence_order,
                     )
                     if sequence_matches.count() == 1:
                         q = sequence_matches.first()
+                if not q and not (has_sequence_order_column and sequence_order):
+                    q = Question.objects.filter(
+                        dimension=dim,
+                        question_text=qt,
+                    ).first()
                 if q:
                     q_created = False
+                elif has_sequence_order_column and sequence_order:
+                    q = Question.objects.create(
+                        dimension=dim,
+                        question_text=qt,
+                        **defaults,
+                    )
+                    q_created = True
                 else:
                     q, q_created = Question.objects.get_or_create(
                         dimension=dim,
@@ -382,6 +391,11 @@ class Command(BaseCommand):
                                 o.option_text = label
                                 o.save(update_fields=["option_text"])
                                 updated_o += 1
+                    stale_options = q.options.filter(sequence_order__gt=4)
+                    deleted_options = stale_options.count()
+                    if deleted_options:
+                        stale_options.delete()
+                        updated_o += deleted_options
                 else:
                     # Legacy option_1..option_5 format (text only, ignore score prefix).
                     for i in range(1, 6):

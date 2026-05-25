@@ -10758,7 +10758,7 @@
                 ""
               ]
             },
-            "description": "Generates AI career recommendations from a student assessment.\n\nPrerequisites (run in order):\n1. Start Assessment\n2. PATCH domain_category + domain (+ profile education/stream)\n3. Save answers via POST /api/responses/ (repeat until dimensions complete)\n4. Complete Assessment (recommended)\n\nRequires GROQ_API_KEY (and AI_USE_OPENAI=true) in server .env. LangSmith traces when LANGCHAIN_TRACING_V2=true.\n\nResponse: { success, data: { top_suggestions[], easy_decision_making[] } }"
+            "description": "Generates AI career recommendations from a student assessment.\n\nPrerequisites (run in order):\n1. Start Assessment\n2. PATCH domain_category + domain (+ profile education/stream)\n3. Save answers via POST /api/responses/ (repeat until dimensions complete)\n4. Complete Assessment (recommended)\n\nRequires GROQ_API_KEY and AI_RECOMMENDATIONS_ENABLED=true in server .env. Optional tracing uses AI_TRACING_ENABLED=true with LANGSMITH_API_KEY.\n\nResponse: { success, data: { top_suggestions[], easy_decision_making[] } }"
           },
           "response": [],
           "event": [

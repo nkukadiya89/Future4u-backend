@@ -18,7 +18,7 @@ from django.shortcuts import render
 
 from assessment.models import StudentAssessment
 from recommendation.clients.groq_client import get_groq_api_key_optional
-from recommendation.config import ai_use_openai
+from recommendation.config import ai_recommendations_enabled
 from recommendation.exceptions import (
     AIConfigurationError,
     AIGenerationError,
@@ -40,16 +40,21 @@ def _pretty_json(value) -> str:
 
 def _provider_status() -> dict:
     groq_ok = bool(get_groq_api_key_optional())
-    use_llm = ai_use_openai()
+    use_llm = ai_recommendations_enabled()
+    if not use_llm:
+        mode = "disabled"
+    elif not groq_ok:
+        mode = "enabled, Groq key missing"
+    else:
+        mode = "Groq AI recommendations"
     return {
-        "ai_use_openai": use_llm,
+        "ai_recommendations_enabled": use_llm,
         "groq_configured": groq_ok,
-        "groq_model": getattr(settings, "GROQ_MODEL", "llama-3.3-70b-versatile"),
-        "langsmith_tracing": str(
-            getattr(settings, "LANGCHAIN_TRACING_V2", "false")
+        "ai_tracing_enabled": str(
+            getattr(settings, "AI_TRACING_ENABLED", "false")
         ).lower()
         in ("1", "true", "yes"),
-        "mode": "Groq full AI (signals + career candidates)" if use_llm else "disabled",
+        "mode": mode,
     }
 
 

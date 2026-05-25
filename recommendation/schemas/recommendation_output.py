@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator
 
 from recommendation.config import EASY_DECISION_COUNT, TOP_SUGGESTION_COUNT
 
@@ -72,6 +72,18 @@ def _clip_max_words(value: object, *, max_words: int) -> str:
     return " ".join(words[:max_words])
 
 
+def _coerce_string_list(value: object) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        text = value.strip()
+        return [text] if text else []
+    if isinstance(value, (list, tuple)):
+        return [str(item).strip() for item in value if str(item).strip()]
+    text = str(value).strip()
+    return [text] if text else []
+
+
 def clip_why_career_reason(value: object) -> str:
     """Keep why_this_career bullets to at most 7 words."""
     return _clip_max_words(value, max_words=WHY_CAREER_MAX_WORDS)
@@ -87,13 +99,20 @@ def clip_ai_insight(value: object) -> str:
     return _clip_max_words(value, max_words=AI_INSIGHT_MAX_WORDS)
 
 
-def ai_insight_word_count(value: object) -> int:
-    return len(str(value or "").split())
-
-
-def is_valid_ai_insight(value: object) -> bool:
-    count = ai_insight_word_count(value)
-    return AI_INSIGHT_MIN_WORDS <= count <= AI_INSIGHT_MAX_WORDS
+def normalize_education_suggestions(raw: list[str]) -> list[str]:
+    """Dedupe and clip AI-generated education suggestions."""
+    cleaned: list[str] = []
+    seen: set[str] = set()
+    for item in raw:
+        text = _clip(str(item).strip(), 255)
+        if not text:
+            continue
+        key = text.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        cleaned.append(text)
+    return cleaned[:EDUCATION_SUGGESTION_MAX]
 
 
 class RoadmapTask(BaseModel):
@@ -120,15 +139,6 @@ class CareerRoadmap(BaseModel):
     next_6_to_9_months: list[RoadmapTask] = Field(min_length=1, max_length=2)
     next_9_to_12_months: list[RoadmapTask] = Field(min_length=1, max_length=2)
 
-    @model_validator(mode="before")
-    @classmethod
-    def coerce_phases(cls, data: object) -> object:
-        if not isinstance(data, dict):
-            return data
-        from recommendation.pipeline.roadmap_normalizer import normalize_career_roadmap
-
-        return normalize_career_roadmap(data)
-
 
 class RequiredEducation(BaseModel):
     suggestions: list[str] = Field(
@@ -137,64 +147,15 @@ class RequiredEducation(BaseModel):
         description="2-3 degree or qualification suggestions for this career.",
     )
 
-    @model_validator(mode="before")
-    @classmethod
-    def migrate_legacy_shape(cls, data: object) -> object:
-        if not isinstance(data, dict):
-            return data
-        if "suggestions" not in data and data.get("primary_degree"):
-            return {"suggestions": [data["primary_degree"]]}
-        suggestions = data.get("suggestions")
-        if isinstance(suggestions, str):
-            return {**data, "suggestions": [suggestions]}
-        return data
-
     @field_validator("suggestions")
     @classmethod
     def clean_suggestions(cls, value: list[str]) -> list[str]:
-        cleaned: list[str] = []
-        seen: set[str] = set()
-        for item in value:
-            text = _clip(str(item).strip(), 255)
-            if not text:
-                continue
-            key = text.casefold()
-            if key in seen:
-                continue
-            seen.add(key)
-            cleaned.append(text)
-        return cleaned[:EDUCATION_SUGGESTION_MAX]
-
-def normalize_education_suggestions(raw: list[str]) -> list[str]:
-    """Dedupe and clip AI-generated education suggestions (no DB fallbacks)."""
-    cleaned: list[str] = []
-    seen: set[str] = set()
-    for item in raw:
-        text = _clip(str(item).strip(), 255)
-        if not text:
-            continue
-        key = text.casefold()
-        if key in seen:
-            continue
-        seen.add(key)
-        cleaned.append(text)
-    return cleaned[:EDUCATION_SUGGESTION_MAX]
-
-
-def is_valid_education_suggestions(suggestions: list[str]) -> bool:
-    return EDUCATION_SUGGESTION_MIN <= len(suggestions) <= EDUCATION_SUGGESTION_MAX
+        return normalize_education_suggestions(value)
 
 
 class SalaryFactor(BaseModel):
     average: str | None = Field(default=None, max_length=120)
     growth_rate: str | None = Field(default=None, max_length=200)
-
-    @model_validator(mode="before")
-    @classmethod
-    def coerce_shape(cls, data: object) -> object:
-        from recommendation.pipeline.ai_input_normalizer import normalize_salary
-
-        return normalize_salary(data) or data
 
     @field_validator("average", mode="before")
     @classmethod
@@ -213,30 +174,9 @@ class SalaryFactor(BaseModel):
 
 
 class JobSecurityFactor(BaseModel):
-    model_config = ConfigDict(extra="allow")
-
     level: str | None = Field(default=None, max_length=100)
     description: str | None = Field(default=None, max_length=500)
     market_demand_growth: str | None = Field(default=None, max_length=100)
-
-    @model_validator(mode="before")
-    @classmethod
-    def coerce_shape(cls, data: object) -> object:
-        from recommendation.pipeline.ai_input_normalizer import normalize_job_security
-
-        return normalize_job_security(data) or data
-
-    @model_validator(mode="after")
-    def sync_description_fields(self) -> JobSecurityFactor:
-        if self.description and not self.market_demand_growth:
-            object.__setattr__(
-                self, "market_demand_growth", _clip(self.description, 100)
-            )
-        elif self.market_demand_growth and not self.description:
-            object.__setattr__(
-                self, "description", _clip(self.market_demand_growth, 500)
-            )
-        return self
 
     @field_validator("level", "market_demand_growth", mode="before")
     @classmethod
@@ -255,17 +195,8 @@ class JobSecurityFactor(BaseModel):
 
 
 class LearningCurveFactor(BaseModel):
-    model_config = ConfigDict(extra="allow")
-
     level: str | None = Field(default=None, max_length=100)
     description: str | None = Field(default=None, max_length=500)
-
-    @model_validator(mode="before")
-    @classmethod
-    def coerce_shape(cls, data: object) -> object:
-        from recommendation.pipeline.ai_input_normalizer import normalize_learning_curve
-
-        return normalize_learning_curve(data) or data
 
 
 class CareerFactors(BaseModel):
@@ -279,13 +210,6 @@ class CareerFactors(BaseModel):
         description='Must be exactly one of: "Low", "Medium", "High".',
     )
     learning_curve: LearningCurveFactor | None = None
-
-    @model_validator(mode="before")
-    @classmethod
-    def coerce_nested(cls, data: object) -> object:
-        from recommendation.pipeline.ai_input_normalizer import normalize_career_factors
-
-        return normalize_career_factors(data) or data
 
     @field_validator("risk_level", mode="before")
     @classmethod
@@ -345,43 +269,16 @@ class TopSuggestionItem(BaseModel):
     @field_validator("why_this_career", mode="before")
     @classmethod
     def coerce_why_list(cls, value: object) -> object:
-        from recommendation.pipeline.ai_input_normalizer import coerce_string_list
-
         if isinstance(value, list):
             return value
-        return coerce_string_list(value)
+        return _coerce_string_list(value)
 
     @field_validator("required_skills", mode="before")
     @classmethod
     def coerce_skills_list(cls, value: object) -> object:
-        from recommendation.pipeline.ai_input_normalizer import coerce_string_list
-
         if isinstance(value, list):
             return value
-        return coerce_string_list(value)
-
-    @field_validator("required_education", mode="before")
-    @classmethod
-    def coerce_education(cls, value: object) -> object:
-        from recommendation.pipeline.ai_input_normalizer import normalize_required_education
-
-        return normalize_required_education(value) or value
-
-    @field_validator("career_factors", mode="before")
-    @classmethod
-    def coerce_factors(cls, value: object) -> object:
-        from recommendation.pipeline.ai_input_normalizer import normalize_career_factors
-
-        return normalize_career_factors(value) or value
-
-    @field_validator("career_roadmap", mode="before")
-    @classmethod
-    def coerce_roadmap(cls, value: object) -> object:
-        if not isinstance(value, dict):
-            return value
-        from recommendation.pipeline.roadmap_normalizer import normalize_career_roadmap
-
-        return normalize_career_roadmap(value)
+        return _coerce_string_list(value)
 
     @field_validator("ai_insight", mode="before")
     @classmethod
@@ -391,9 +288,7 @@ class TopSuggestionItem(BaseModel):
     @field_validator("why_this_career")
     @classmethod
     def strip_reasons(cls, value: list[str]) -> list[str]:
-        cleaned = [
-            clip_why_career_reason(v) for v in value if str(v).strip()
-        ]
+        cleaned = [clip_why_career_reason(v) for v in value if str(v).strip()]
         cleaned = [c for c in cleaned if c]
         if not cleaned:
             raise ValueError("why_this_career must contain at least one item")
@@ -406,6 +301,7 @@ class TopSuggestionItem(BaseModel):
         if not cleaned:
             raise ValueError("required_skills must contain at least one item")
         return cleaned[:20]
+
 
 class EasyDecisionItem(BaseModel):
     title: str = Field(min_length=1, max_length=200)

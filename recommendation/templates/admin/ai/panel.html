@@ -13,11 +13,9 @@
       <table>
         <tbody>
           <tr><th scope="row">{% translate "Mode" %}</th><td>{{ provider.mode }}</td></tr>
-          <tr><th scope="row">{% translate "AI_USE_OPENAI" %}</th><td>{{ provider.ai_use_openai }}</td></tr>
-          <tr><th scope="row">{% translate "Groq" %}</th><td>
-            {% if provider.groq_configured %}configured ({{ provider.groq_model }}){% else %}not configured{% endif %}
-          </td></tr>
-          <tr><th scope="row">{% translate "LangSmith tracing" %}</th><td>{{ provider.langsmith_tracing }}</td></tr>
+          <tr><th scope="row">{% translate "AI recommendations enabled" %}</th><td>{{ provider.ai_recommendations_enabled }}</td></tr>
+          <tr><th scope="row">{% translate "Groq" %}</th><td>{% if provider.groq_configured %}configured{% else %}not configured{% endif %}</td></tr>
+          <tr><th scope="row">{% translate "AI tracing enabled" %}</th><td>{{ provider.ai_tracing_enabled }}</td></tr>
         </tbody>
       </table>
     </div>

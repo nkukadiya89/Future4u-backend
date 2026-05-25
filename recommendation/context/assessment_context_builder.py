@@ -74,11 +74,11 @@ class AssessmentContextBuilder:
                 "domain_name": api.get("domain_name"),
                 "domain_category_name": api.get("domain_category_name"),
                 "responses": api.get("responses") or [],
-                "career_direction_name": api.get("career_direction_name"),
+                "career_direction": api.get("career_direction_name"),
                 "parent_support": api.get("parent_support"),
-                "concerns_name": api.get("concerns_name"),
-                "career_values_name": api.get("career_values_name"),
-                "user_goals_name": api.get("user_goals_name"),
+                "concerns": api.get("concerns_name"),
+                "career_values": api.get("career_values_name"),
+                "user_goals": api.get("user_goals_name"),
                 "is_completed": api.get("is_completed"),
             }
         )
@@ -137,10 +137,10 @@ class AssessmentContextBuilder:
             "domain_code": domain_code,
             "domain_category": domain_category_name,
             "domain_category_code": domain_category_code,
-            "career_direction": cls._related_names(assessment.career_direction),
-            "career_values": cls._related_names(assessment.career_values),
-            "concerns": cls._related_names(assessment.concerns),
-            "user_goals": cls._related_names(assessment.user_goals),
+            "career_direction": cls._names(assessment.career_direction),
+            "career_values": cls._names(assessment.career_values),
+            "concerns": cls._names(assessment.concerns),
+            "user_goals": cls._names(assessment.user_goals),
             "parent_support": assessment.parent_support,
             "dimension_scores": dimension_scores,
             "personality_traits": traits["personality_traits"],
@@ -294,3 +294,13 @@ class AssessmentContextBuilder:
             return [str(v).strip() for v in value if str(v).strip()][:8]
         text = str(value).strip()
         return [text] if text else []
+
+    @staticmethod
+    def _names(manager) -> list[str]:
+        if not manager:
+            return []
+        return [
+            str(name).strip()
+            for name in manager.values_list("name", flat=True)[:8]
+            if str(name).strip()
+        ]

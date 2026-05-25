@@ -5,11 +5,11 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from recommendation.config import EASY_DECISION_COUNT, TOP_SUGGESTION_COUNT
 from recommendation.clients.llm_client import get_chat_model
 from recommendation.exceptions import AIGenerationError
 from recommendation.pipeline.output_normalizer import normalize_payload
-from recommendation.pipeline.payload_repair import describe_shape_gaps
-from recommendation.pipeline.payload_validator import parse_ai_payload, parse_ai_payload_lenient
+from recommendation.pipeline.payload_validator import parse_ai_payload
 from recommendation.prompts.ai_recommendation_prompt import (
     build_recommendation_prompt,
     format_prompt_inputs,
@@ -50,9 +50,9 @@ class AIRecommendationGenerator:
             logger.exception("LLM recommendation generation failed")
             raise AIGenerationError(_format_llm_error(exc)) from exc
 
-        gaps = describe_shape_gaps(payload)
+        gaps = _payload_gaps(payload)
         if gaps:
-            logger.warning("AI payload shape gaps after repair: %s", "; ".join(gaps))
+            logger.warning("AI payload shape gaps: %s", "; ".join(gaps))
             raise AIGenerationError(
                 "AI response did not meet the required recommendation schema. "
                 f"Details: {'; '.join(gaps)}"
@@ -61,9 +61,6 @@ class AIRecommendationGenerator:
 
     @staticmethod
     def _coerce_payload(result: Any) -> AIRecommendationPayload:
-        payload = parse_ai_payload_lenient(result)
-        if payload is not None:
-            return payload
         return parse_ai_payload(result)
 
 
@@ -72,3 +69,21 @@ def _format_llm_error(exc: Exception) -> str:
     if "429" in message:
         return "LLM rate limit reached. Retry in a few moments."
     return message
+
+
+def _payload_gaps(payload: AIRecommendationPayload) -> list[str]:
+    issues: list[str] = []
+    if len(payload.top_suggestions) != TOP_SUGGESTION_COUNT:
+        issues.append(
+            f"expected {TOP_SUGGESTION_COUNT} top_suggestions, "
+            f"got {len(payload.top_suggestions)}"
+        )
+    names = [s.career_name.strip().casefold() for s in payload.top_suggestions]
+    if len(set(names)) != len(names):
+        issues.append("duplicate career_name in top_suggestions")
+    if len(payload.easy_decision_making) != EASY_DECISION_COUNT:
+        issues.append(
+            f"expected {EASY_DECISION_COUNT} easy_decision_making, "
+            f"got {len(payload.easy_decision_making)}"
+        )
+    return issues

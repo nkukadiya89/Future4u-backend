@@ -165,8 +165,8 @@ class AIRecommendationService:
                 .prefetch_related(
                     Prefetch("responses", queryset=response_qs),
                     "career_direction",
-                    "concerns",
                     "career_values",
+                    "concerns",
                     "user_goals",
                 )
                 .get(id=assessment_id)
@@ -185,6 +185,8 @@ class AIRecommendationService:
             assessment.career_direction.exists()
             or assessment.career_values.exists()
             or assessment.user_goals.exists()
+            or assessment.concerns.exists()
+            or bool(assessment.parent_support)
         )
         if not has_responses and not has_profile_data and not assessment.is_completed:
             raise AssessmentNotReadyError(

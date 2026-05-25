@@ -12,11 +12,11 @@ def groq_api_key() -> str:
     return getattr(settings, "GROQ_API_KEY", "") or ""
 
 
-def ai_use_openai() -> bool:
+def ai_recommendations_enabled() -> bool:
     """When False, the AI recommendations endpoint is disabled."""
-    return bool(getattr(settings, "AI_USE_OPENAI", True))
+    return bool(getattr(settings, "AI_RECOMMENDATIONS_ENABLED", True))
 
 
 def ai_llm_enabled() -> bool:
     """Groq LLM is configured and recommendations are enabled."""
-    return ai_use_openai() and bool(groq_api_key())
+    return ai_recommendations_enabled() and bool(groq_api_key())

@@ -37,6 +37,15 @@ STREAM_REQUIRED_LEVEL_CODES = {
     "diploma",
 }
 
+QUESTION_DIMENSIONS = [
+    Question.Dimension.INTEREST,
+    Question.Dimension.APTITUDE,
+    Question.Dimension.PERSONALITY,
+    Question.Dimension.WORK_STYLE,
+]
+
+QUESTIONS_PER_DIMENSION = 3
+
 
 def get_student_profile(user):
     try:
@@ -61,52 +70,57 @@ def get_question_pool(assessment, user, dimension=None):
     except Domain.DoesNotExist:
         return Question.objects.none()
 
-    # Start with child domain questions
-    domain_codes = [domain.domain_code]
+    dimensions = [dimension] if dimension else QUESTION_DIMENSIONS
 
-    # If category exists, filter questions mapped to BOTH domain AND category
-    if assessment.domain_category_id:
-        try:
-            category = Domain.objects.get(id=assessment.domain_category_id)
-            domain_codes = [domain.domain_code, category.domain_code]
-        except Domain.DoesNotExist:
-            pass
-
-    # Filter by specific dimension if provided
-    dimensions = (
-        [dimension]
-        if dimension
-        else [
-            Question.Dimension.INTEREST,
-            Question.Dimension.APTITUDE,
-            Question.Dimension.PERSONALITY,
-            Question.Dimension.WORK_STYLE,
-        ]
-    )
-
-    if len(domain_codes) == 2:
-        question_pool = Question.objects.filter(
-            is_active=True,
-            dimension__in=dimensions,
-            mapped_domains__domain_code=domain_codes[0],
-        ).filter(
-            mapped_domains__domain_code=domain_codes[1],
-        )
-    else:
-        question_pool = Question.objects.filter(
-            is_active=True,
-            mapped_domains__domain_code__in=domain_codes,
-            dimension__in=dimensions,
-        )
+    base_pool = Question.objects.filter(is_active=True, dimension__in=dimensions)
 
     profile = get_student_profile(user)
     education_level = profile.education_level if profile else None
     if education_level:
-        question_pool = question_pool.filter(
+        base_pool = base_pool.filter(
             Q(education_level=education_level) | Q(education_level__isnull=True)
         )
+    else:
+        base_pool = base_pool.filter(education_level__isnull=True)
 
-    return question_pool.distinct()
+    stream = profile.stream if profile else None
+    if stream:
+        base_pool = base_pool.filter(
+            Q(target_stream=stream) | Q(target_stream__isnull=True)
+        )
+    else:
+        base_pool = base_pool.filter(target_stream__isnull=True)
+
+    question_pool = base_pool.filter(mapped_domains__domain_code=domain.domain_code)
+
+    # Product rule: selected child domain is the main source. Parent/category
+    # questions are only a fallback when that child has no questions.
+    if not question_pool.exists() and assessment.domain_category_id:
+        try:
+            category = Domain.objects.get(id=assessment.domain_category_id)
+            question_pool = base_pool.filter(
+                mapped_domains__domain_code=category.domain_code
+            )
+        except Domain.DoesNotExist:
+            pass
+
+    ordered_pool = question_pool.distinct().order_by("sequence_order", "id")
+    if dimension:
+        ids = list(
+            ordered_pool.values_list("id", flat=True)[:QUESTIONS_PER_DIMENSION]
+        )
+        return Question.objects.filter(id__in=ids).order_by("sequence_order", "id")
+
+    ids = []
+    for dim in QUESTION_DIMENSIONS:
+        ids.extend(
+            ordered_pool.filter(dimension=dim).values_list("id", flat=True)[
+                :QUESTIONS_PER_DIMENSION
+            ]
+        )
+    return Question.objects.filter(id__in=ids).order_by(
+        "dimension", "sequence_order", "id"
+    )
 
 
 def calculate_current_screen(assessment, user):
@@ -232,7 +246,7 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
         "user_goals__name",
         "domain_category__domain_name",
         "domain__domain_name",
-        "career_direction__name"
+        "career_direction__name",
         "is_completed",
     ]
     ordering_fields = [
@@ -302,6 +316,28 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
         assessment = serializer.save()
         sync_current_screen(assessment, self.request.user)
         return assessment
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if not serializer.is_valid():
+            return Response(
+                {"success": False, "message": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        assessment = self.perform_update(serializer)
+        serializer = self.get_serializer(assessment)
+        return Response(
+            {"success": True, "data": serializer.data},
+            status=status.HTTP_200_OK,
+        )
+
+    def partial_update(self, request, *args, **kwargs):
+        kwargs["partial"] = True
+        return self.update(request, *args, **kwargs)
 
     @action(detail=False, methods=["get"], url_path="status")
     def assessment_status(self, request):
@@ -373,10 +409,7 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Get already answered questions for this assessment
-        answered_ids = UserResponse.objects.filter(assessment=assessment).values_list(
-            "question_id", flat=True
-        )
+        sync_current_screen(assessment, request.user)
 
         current_screen = assessment.current_screen
         
@@ -490,14 +523,37 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            question = Question.objects.get(id=question_id, is_active=True)
-            option = Option.objects.get(id=option_id, question=question)
-        except Question.DoesNotExist:
+        sync_current_screen(assessment, request.user)
+        dimension_map = {
+            StudentAssessment.Screen.INTEREST: Question.Dimension.INTEREST,
+            StudentAssessment.Screen.APTITUDE: Question.Dimension.APTITUDE,
+            StudentAssessment.Screen.PERSONALITY: Question.Dimension.PERSONALITY,
+            StudentAssessment.Screen.WORK_STYLE: Question.Dimension.WORK_STYLE,
+        }
+        current_dimension = dimension_map.get(assessment.current_screen)
+        if not current_dimension:
             return Response(
-                {"success": False, "message": "Invalid question"},
-                status=status.HTTP_404_NOT_FOUND,
+                {
+                    "success": False,
+                    "message": "Assessment is not currently on a question screen",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
+
+        question = get_question_pool(
+            assessment, request.user, current_dimension
+        ).filter(id=question_id).first()
+        if not question:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Invalid question for current assessment step",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            option = Option.objects.get(id=option_id, question=question)
         except Option.DoesNotExist:
             return Response(
                 {"success": False, "message": "Invalid option for this question"},
@@ -552,4 +608,3 @@ class CareerDirectionViewSet(BaseModelViewSet, ArchiveMixin):
 
     search_fields = BaseModelViewSet.searching_fields + ["name"]
     ordering_fields = BaseModelViewSet.ordering_fields + ["name"]
-    

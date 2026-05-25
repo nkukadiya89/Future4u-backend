@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 from recommendation.config import (
-    EASY_DECISION_CAREER_COUNT,
     EASY_DECISION_COUNT,
     TOP_SUGGESTION_COUNT,
 )
-from recommendation.pipeline.payload_repair import repair_easy_decision_making, repair_payload
 from recommendation.pipeline.roadmap_normalizer import normalize_career_roadmap
 from recommendation.schemas.recommendation_output import (
     AIRecommendationPayload,
@@ -23,9 +21,7 @@ def _clamp_match(value: int) -> int:
 
 
 def normalize_payload(payload: AIRecommendationPayload) -> AIRecommendationPayload:
-    """Repair, clip, and order AI output (no DB template injection)."""
-    payload = repair_payload(payload)
-
+    """Clip and order valid AI output without inventing missing content."""
     seen_names: set[str] = set()
     suggestions: list[TopSuggestionItem] = []
 
@@ -65,13 +61,7 @@ def normalize_payload(payload: AIRecommendationPayload) -> AIRecommendationPaylo
     suggestions.sort(key=lambda s: s.match_percentage, reverse=True)
     suggestions = suggestions[:TOP_SUGGESTION_COUNT]
 
-    interim = AIRecommendationPayload(
-        top_suggestions=suggestions,
-        easy_decision_making=payload.easy_decision_making,
-    )
-    easy = repair_easy_decision_making(interim)[:EASY_DECISION_COUNT]
-
     return AIRecommendationPayload(
         top_suggestions=suggestions,
-        easy_decision_making=easy,
+        easy_decision_making=payload.easy_decision_making[:EASY_DECISION_COUNT],
     )

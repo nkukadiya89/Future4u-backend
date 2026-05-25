@@ -274,14 +274,20 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
 }
 
-# AI recommendations (OpenAI primary, Groq fallback)
+# AI providers
 OPENAI_API_KEY = config("OPENAI_API_KEY", default="").strip()
-GROQ_API_KEY = config("GROQ_API_KEY", default="").strip()
 OPENAI_MODEL = config("OPENAI_MODEL", default="gpt-4.1-mini")
 OPENAI_TEMPERATURE = config("OPENAI_TEMPERATURE", default=0.2, cast=float)
+GROQ_API_KEY = config("GROQ_API_KEY", default="").strip()
 GROQ_MODEL = config("GROQ_MODEL", default="llama-3.3-70b-versatile")
 GROQ_TEMPERATURE = config("GROQ_TEMPERATURE", default=0.2, cast=float)
-AI_USE_OPENAI = config("AI_USE_OPENAI", default=True, cast=bool)
-LANGCHAIN_TRACING_V2 = config("LANGCHAIN_TRACING_V2", default="false")
-LANGCHAIN_API_KEY = config("LANGCHAIN_API_KEY", default="").strip()
-LANGCHAIN_PROJECT = config("LANGCHAIN_PROJECT", default="future4u")
+
+# AI career recommendations currently use Groq.
+AI_RECOMMENDATIONS_ENABLED = config(
+    "AI_RECOMMENDATIONS_ENABLED",
+    default=True,
+    cast=bool,
+)
+AI_TRACING_ENABLED = config("AI_TRACING_ENABLED", default=False, cast=bool)
+LANGSMITH_API_KEY = config("LANGSMITH_API_KEY", default="").strip()
+LANGSMITH_PROJECT = config("LANGSMITH_PROJECT", default="future4u")

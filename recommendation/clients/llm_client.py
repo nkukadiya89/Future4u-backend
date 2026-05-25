@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Any
 
 from recommendation.clients.groq_client import get_groq_api_key_optional, get_groq_chat_model
-from recommendation.clients.openai_client import configure_langsmith
 from recommendation.exceptions import AIConfigurationError
+from recommendation.observability import configure_langsmith_tracing
 
 
 def ensure_ai_provider_configured() -> None:
@@ -15,7 +15,7 @@ def ensure_ai_provider_configured() -> None:
 
 
 def get_chat_model() -> Any:
-    """Return the Groq chat model (LangSmith tracing configured when enabled)."""
-    configure_langsmith()
+    """Return the Groq chat model used for AI career recommendations."""
+    configure_langsmith_tracing()
     ensure_ai_provider_configured()
     return get_groq_chat_model()
