@@ -21,14 +21,8 @@ _INSIGHT_PAD_WORDS = (
     "aligned",
     "with",
     "your",
-    "assessment",
     "profile",
-    "and",
-    "career",
-    "goals",
 )
-
-_WHY_PAD_WORDS = ("matches", "your", "profile", "well", "here")
 
 _EASY_DECISION_TITLES = (
     "Best for quick start",
@@ -38,27 +32,19 @@ _EASY_DECISION_TITLES = (
 
 
 def ensure_ai_insight_word_band(text: str) -> str:
-    """Groq often returns <14 words; expand then clip to schema band."""
+    """If below the minimum word count, pad just enough to reach the floor."""
     words = clip_ai_insight(text).split()
     if len(words) < AI_INSIGHT_MIN_WORDS:
         for word in _INSIGHT_PAD_WORDS:
-            if len(words) >= AI_INSIGHT_MAX_WORDS:
+            if len(words) >= AI_INSIGHT_MIN_WORDS:
                 break
             words.append(word)
     return " ".join(words[:AI_INSIGHT_MAX_WORDS])
 
 
 def ensure_why_bullet(text: str) -> str:
-    clipped = clip_why_career_reason(text)
-    words = clipped.split()
-    from recommendation.schemas.recommendation_output import WHY_CAREER_MIN_WORDS
-
-    if len(words) < WHY_CAREER_MIN_WORDS:
-        for word in _WHY_PAD_WORDS:
-            if len(words) >= WHY_CAREER_MIN_WORDS:
-                break
-            words.append(word)
-    return clip_why_career_reason(" ".join(words))
+    """Clip to max words; no longer pads with filler."""
+    return clip_why_career_reason(text)
 
 
 def repair_required_education(

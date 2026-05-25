@@ -164,6 +164,10 @@ class AIRecommendationService:
                 )
                 .prefetch_related(
                     Prefetch("responses", queryset=response_qs),
+                    "career_direction",
+                    "concerns",
+                    "career_values",
+                    "user_goals",
                 )
                 .get(id=assessment_id)
             )
@@ -177,10 +181,10 @@ class AIRecommendationService:
                 "Assessment domain is not set. Complete domain selection before AI recommendations."
             )
         has_responses = UserResponse.objects.filter(assessment=assessment).exists()
-        has_profile_data = bool(
-            assessment.career_direction
-            or assessment.career_values
-            or assessment.user_goals
+        has_profile_data = (
+            assessment.career_direction.exists()
+            or assessment.career_values.exists()
+            or assessment.user_goals.exists()
         )
         if not has_responses and not has_profile_data and not assessment.is_completed:
             raise AssessmentNotReadyError(

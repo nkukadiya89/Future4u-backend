@@ -56,6 +56,11 @@ def _compact_string_list(value: Any, *, limit: int = 8) -> list[str]:
     return [text] if text else []
 
 
+def _profile_labels(data: dict[str, Any], key: str) -> list[str]:
+    """Prefer human-readable *_name lists; fall back to legacy key."""
+    return _compact_string_list(data.get(f"{key}_name") or data.get(key))
+
+
 def build_ai_input(data: dict[str, Any]) -> dict[str, Any]:
     """
     LLM payload: responses → dimension_scores; profile fields unchanged.
@@ -81,10 +86,10 @@ def build_ai_input(data: dict[str, Any]) -> dict[str, Any]:
         "domain": str(domain).strip() if domain else None,
         "domain_category": str(domain_category).strip() if domain_category else None,
         "dimension_scores": calculate_dimension_scores(responses),
-        "career_direction": _compact_string_list(data.get("career_direction")),
+        "career_direction": _profile_labels(data, "career_direction"),
         "parent_support": (str(data.get("parent_support") or "").strip() or None),
-        "concerns": _compact_string_list(data.get("concerns")),
-        "career_values": _compact_string_list(data.get("career_values")),
-        "user_goals": _compact_string_list(data.get("user_goals")),
+        "concerns": _profile_labels(data, "concerns"),
+        "career_values": _profile_labels(data, "career_values"),
+        "user_goals": _profile_labels(data, "user_goals"),
         "is_completed": bool(data.get("is_completed")),
     }

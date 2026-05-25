@@ -65,8 +65,8 @@ class AssessmentContextBuilder:
     @classmethod
     def build_llm_input(cls, assessment: StudentAssessment) -> dict[str, Any]:
         """
-        LLM payload: MCQ responses → dimension_scores; profile fields unchanged.
-        Same source as GET /api/student/assessments/{id}/ but without raw Q&A.
+        LLM payload: MCQ responses → dimension_scores; profile labels by name.
+        Uses the same serializer as GET /api/student/assessments/{id}/ (*_name fields).
         """
         api = cls.serialize_assessment_api(assessment)
         structured = build_ai_input(
@@ -74,11 +74,11 @@ class AssessmentContextBuilder:
                 "domain_name": api.get("domain_name"),
                 "domain_category_name": api.get("domain_category_name"),
                 "responses": api.get("responses") or [],
-                "career_direction": api.get("career_direction"),
+                "career_direction_name": api.get("career_direction_name"),
                 "parent_support": api.get("parent_support"),
-                "concerns": api.get("concerns"),
-                "career_values": api.get("career_values"),
-                "user_goals": api.get("user_goals"),
+                "concerns_name": api.get("concerns_name"),
+                "career_values_name": api.get("career_values_name"),
+                "user_goals_name": api.get("user_goals_name"),
                 "is_completed": api.get("is_completed"),
             }
         )
@@ -137,10 +137,10 @@ class AssessmentContextBuilder:
             "domain_code": domain_code,
             "domain_category": domain_category_name,
             "domain_category_code": domain_category_code,
-            "career_direction": cls._compact_list(assessment.career_direction),
-            "career_values": cls._compact_list(assessment.career_values),
-            "concerns": cls._compact_list(assessment.concerns),
-            "user_goals": cls._compact_list(assessment.user_goals),
+            "career_direction": cls._related_names(assessment.career_direction),
+            "career_values": cls._related_names(assessment.career_values),
+            "concerns": cls._related_names(assessment.concerns),
+            "user_goals": cls._related_names(assessment.user_goals),
             "parent_support": assessment.parent_support,
             "dimension_scores": dimension_scores,
             "personality_traits": traits["personality_traits"],
@@ -272,6 +272,19 @@ class AssessmentContextBuilder:
             "notsure": "uncertain family support",
         }
         return mapping.get(parent_support or "", "support level not specified")
+
+    @staticmethod
+    def _related_names(relation) -> list[str]:
+        """Resolve M2M profile choices to display names (uses prefetch when loaded)."""
+        if relation is None:
+            return []
+        if hasattr(relation, "all"):
+            names = [
+                (getattr(item, "name", None) or "").strip()
+                for item in relation.all()
+            ]
+            return [name for name in names if name][:8]
+        return AssessmentContextBuilder._compact_list(relation)
 
     @staticmethod
     def _compact_list(value) -> list[str]:

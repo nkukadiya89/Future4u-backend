@@ -16,11 +16,11 @@ def _clip(value: object, max_len: int) -> str:
 
 # Limits shared by the Groq system prompt and post-generation validation/clipping.
 WHY_CAREER_MIN_WORDS = 5
-WHY_CAREER_MAX_WORDS = 7
+WHY_CAREER_MAX_WORDS = 12
 WHY_CAREER_MAX_BULLETS = 5
 ROADMAP_MIN_WORDS = 8
 ROADMAP_MAX_WORDS = 14
-AI_INSIGHT_MIN_WORDS = 14
+AI_INSIGHT_MIN_WORDS = 8
 AI_INSIGHT_MAX_WORDS = 18
 EDUCATION_SUGGESTION_MIN = 2
 EDUCATION_SUGGESTION_MAX = 3
