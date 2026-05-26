@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from recommendation.pipeline.ai_input_normalizer import normalize_raw_payload
+from recommendation.pipeline.ai_output_normalizer import normalize_raw_payload
 from recommendation.schemas.recommendation_output import AIRecommendationPayload
 
 

@@ -5,7 +5,7 @@
   <div class="content">
     <p>
       Test the AI career recommendation pipeline for a student assessment.
-      Results are not saved — this panel only runs <code>AIRecommendationService</code> and shows the JSON output.
+      This runs the same flow used by the API, saves the recommendation, and shows the JSON output.
     </p>
 
     <div class="module" style="margin-bottom: 16px;">
@@ -20,7 +20,8 @@
       </table>
     </div>
 
-    <form method="get" style="margin: 16px 0;">
+    <form method="post" style="margin: 16px 0;">
+      {% csrf_token %}
       <fieldset class="module aligned">
         {{ form.as_p }}
       </fieldset>

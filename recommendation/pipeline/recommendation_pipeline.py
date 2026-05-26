@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class RecommendationPipeline:
-    """structured_assessment → single LLM call → full AI recommendation JSON."""
+    """structured_assessment -> single LLM call -> full AI recommendation JSON."""
 
     @classmethod
     def run(

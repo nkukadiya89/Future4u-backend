@@ -43,27 +43,28 @@ LOGIC:
 RULES:
 - Generate every output field yourself; no pre-selected career list from backend.
 - required_skills, education, roadmap, and insights must be UNIQUE per career.
-- why_this_career: max {why_career_max_bullets} bullets, {why_career_min_words}–{why_career_max_words} words each.
-- ai_insight: exactly {ai_insight_min_words}–{ai_insight_max_words} words (count before returning), one sentence.
-- match_percentage: integers 60–95, descending across the three careers.
-- required_education.suggestions: {education_suggestion_min}–{education_suggestion_max} items.
-- career_roadmap: 4 phases with task_title + task_description ({roadmap_min_words}–{roadmap_max_words} words each).
-- career_factors (required, all from you — backend never fills defaults). Match the Career Factors UI card exactly:
-  - salary.average: INR text e.g. "₹6-10 LPA" or "₹18L+"
+- why_this_career: max {why_career_max_bullets} bullets, {why_career_min_words}-{why_career_max_words} words each.
+- ai_insight: exactly {ai_insight_min_words}-{ai_insight_max_words} words (count before returning), one sentence.
+- match_percentage: integers 60-95, descending across the three careers.
+- required_education.suggestions: {education_suggestion_min}-{education_suggestion_max} items.
+- career_roadmap: 4 phases with task_title + task_description ({roadmap_min_words}-{roadmap_max_words} words each).
+- career_factors (required, all from you; backend never fills defaults). Match the Career Factors UI card exactly:
+  - salary.average: INR text e.g. "INR 6-10 LPA" or "INR 18L+"
   - salary.growth_rate: parenthetical badge e.g. "(+125%)" or "(+10%)" (not "5% YoY")
   - growth_potential: Low | Medium | High
   - work_life_balance: Poor | Fair | Good | Excellent
   - job_security.level: Low | Medium | High
   - job_security.market_demand_growth: demand trend only, format "5% | 25%" (two percentages, pipe-separated)
-  - skill_match: integer 0–100 (UI shows as percent)
+  - skill_match: integer 0-100 (UI shows as percent)
   - learning_curve.level: Low | Medium | High (use Medium not Moderate)
   - learning_curve.description: short subtitle e.g. "To become proficient"
   - risk_level: Low | Medium | High
-- easy_decision_making: exactly {easy_decision_count} items comparing top {easy_decision_career_count} careers; titles from: "Best for quick start", "Best for high salary", "Best long term bet", "Most stable career".
+- easy_decision_making: exactly {easy_decision_count} items comparing top {easy_decision_career_count} careers.
+- easy_decision_making titles must be exactly: "Best for quick start", "Best for high salary", "Best long term bet", "Most stable career".
 
 Return ONLY valid JSON. No markdown.
 
-Example shape:
+Shortened example shape; still follow the exact counts in the rules:
 {json_shape_example}
 """
 
@@ -77,7 +78,7 @@ _JSON_SHAPE_EXAMPLE = """{
       "required_skills": ["Excel", "SQL", "Python basics"],
       "required_education": {"suggestions": ["B.Sc Statistics", "B.Tech IT"]},
       "career_factors": {
-        "salary": {"average": "₹6-10 LPA", "growth_rate": "(+12%)"},
+        "salary": {"average": "INR 6-10 LPA", "growth_rate": "(+12%)"},
         "growth_potential": "High",
         "work_life_balance": "Good",
         "job_security": {
@@ -101,7 +102,9 @@ _JSON_SHAPE_EXAMPLE = """{
   ],
   "easy_decision_making": [
     {"title": "Best for quick start", "career_name": "Data Analyst"},
-    {"title": "Best for high salary", "career_name": "Product Manager"}
+    {"title": "Best for high salary", "career_name": "Data Analyst"},
+    {"title": "Best long term bet", "career_name": "Data Analyst"},
+    {"title": "Most stable career", "career_name": "Data Analyst"}
   ]
 }"""
 

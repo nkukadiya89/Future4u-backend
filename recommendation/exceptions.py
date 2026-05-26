@@ -20,7 +20,3 @@ class AIConfigurationError(AIRecommendationError):
 
 class AIGenerationError(AIRecommendationError):
     pass
-
-
-class RecommendationDataIncompleteError(AIRecommendationError):
-    """Required career knowledge is missing from the database."""

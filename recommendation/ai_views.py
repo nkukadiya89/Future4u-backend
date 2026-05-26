@@ -13,7 +13,6 @@ from recommendation.exceptions import (
     AssessmentAccessDeniedError,
     AssessmentNotFoundError,
     AssessmentNotReadyError,
-    RecommendationDataIncompleteError,
 )
 from recommendation.services.ai_recommendation_service import AIRecommendationService
 from utils.throttles import RecommendationRateThrottle
@@ -53,11 +52,6 @@ class AIRecommendationAPIView(APIView):
                 {"success": False, "message": str(exc)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        except RecommendationDataIncompleteError as exc:
-            return Response(
-                {"success": False, "message": str(exc)},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
         except AIConfigurationError as exc:
             logger.error("AI configuration error: %s", exc)
             message = "AI recommendation service is not configured"
@@ -70,8 +64,12 @@ class AIRecommendationAPIView(APIView):
             )
         except AIGenerationError as exc:
             logger.exception("AI generation failed")
+            message = "Unable to generate recommendations right now. Please try again."
+            if settings.DEBUG:
+                detail = str(exc).strip() or exc.__class__.__name__
+                message = f"{message}: {detail}"
             return Response(
-                {"success": False, "message": str(exc)},
+                {"success": False, "message": message},
                 status=status.HTTP_502_BAD_GATEWAY,
             )
         except Exception as exc:

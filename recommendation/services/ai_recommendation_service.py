@@ -22,7 +22,7 @@ RECOMMENDATION_CYCLE_DAYS = 365
 
 
 class AIRecommendationService:
-    """Assessment signals → Groq generates full recommendation JSON (all careers from LLM)."""
+    """Assessment signals -> Groq generates full recommendation JSON."""
 
     def generate(self, *, assessment_id: int, user) -> dict:
         assessment = self._load_assessment(assessment_id)
@@ -37,17 +37,24 @@ class AIRecommendationService:
         ).prefetch_related("suggestions").first()
 
         if recommendation and recommendation.last_recommended_at:
-            next_allowed = recommendation.last_recommended_at + timedelta(days=RECOMMENDATION_CYCLE_DAYS)
+            next_allowed = recommendation.last_recommended_at + timedelta(
+                days=RECOMMENDATION_CYCLE_DAYS
+            )
             if timezone.now() < next_allowed:
-                # Within 365 days — return existing stored data
+                # Within 365 days, return existing stored data.
                 return self._serialize_recommendation(recommendation)
 
-        # First time or 365 days passed — call AI (structured scores only, no raw Q&A)
+        # First time or 365 days passed: call AI with structured assessment signals.
         structured_input = AssessmentContextBuilder.build_llm_input(assessment)
 
         payload = RecommendationPipeline.run(structured_assessment=structured_input)
 
-        recommendation = self._save_recommendation(assessment, user, payload, recommendation)
+        recommendation = self._save_recommendation(
+            assessment,
+            user,
+            payload,
+            recommendation,
+        )
         return self._serialize_recommendation(recommendation)
 
     @staticmethod
@@ -60,7 +67,15 @@ class AIRecommendationService:
             existing.easy_decision_making = payload_dict.get("easy_decision_making", [])
             existing.last_recommended_at = now
             existing._request_user = user
-            existing.save(update_fields=["raw_ai_response", "easy_decision_making", "last_recommended_at", "updated_at", "updated_by"])
+            existing.save(
+                update_fields=[
+                    "raw_ai_response",
+                    "easy_decision_making",
+                    "last_recommended_at",
+                    "updated_at",
+                    "updated_by",
+                ]
+            )
             recommendation = existing
         else:
             recommendation = CareerRecommendation(
@@ -74,10 +89,20 @@ class AIRecommendationService:
             recommendation.save()
 
         # Replace suggestions
-        existing_suggestions = list(recommendation.suggestions.all().order_by("display_order"))
+        existing_suggestions = list(
+            recommendation.suggestions.filter(deleted=False).order_by("display_order")
+        )
         for order, suggestion in enumerate(payload.top_suggestions, start=1):
-            edu = suggestion.required_education.model_dump() if suggestion.required_education else {}
-            factors = suggestion.career_factors.model_dump() if suggestion.career_factors else {}
+            edu = (
+                suggestion.required_education.model_dump()
+                if suggestion.required_education
+                else {}
+            )
+            factors = (
+                suggestion.career_factors.model_dump()
+                if suggestion.career_factors
+                else {}
+            )
             roadmap = suggestion.career_roadmap.model_dump()
 
             if order - 1 < len(existing_suggestions):
@@ -93,12 +118,21 @@ class AIRecommendationService:
                 s.career_roadmap = roadmap
                 s.display_order = order
                 s._request_user = user
-                s.save(update_fields=[
-                    "career_name", "match_percentage", "ai_insight",
-                    "why_this_career", "required_skills", "required_education",
-                    "career_factors", "career_roadmap", "display_order",
-                    "updated_at", "updated_by",
-                ])
+                s.save(
+                    update_fields=[
+                        "career_name",
+                        "match_percentage",
+                        "ai_insight",
+                        "why_this_career",
+                        "required_skills",
+                        "required_education",
+                        "career_factors",
+                        "career_roadmap",
+                        "display_order",
+                        "updated_at",
+                        "updated_by",
+                    ]
+                )
             else:
                 # Create if somehow fewer suggestions exist
                 s = CareerRecommendationSuggestion(
@@ -115,6 +149,9 @@ class AIRecommendationService:
                 )
                 s._request_user = user
                 s.save()
+
+        for stale_suggestion in existing_suggestions[len(payload.top_suggestions):]:
+            stale_suggestion.soft_delete(user=user)
 
         return recommendation
 
@@ -135,6 +172,8 @@ class AIRecommendationService:
     def _serialize_recommendation(recommendation):
         suggestions = [
             {
+                "id": s.id,
+                "recommendation": s.recommendation_id,
                 "career_name": s.career_name,
                 "match_percentage": s.match_percentage,
                 "ai_insight": s.ai_insight,
@@ -147,12 +186,18 @@ class AIRecommendationService:
                 "career_roadmap": s.career_roadmap,
                 "display_order": s.display_order,
             }
-            for s in recommendation.suggestions.all().order_by("display_order")
+            for s in recommendation.suggestions.filter(deleted=False).order_by(
+                "display_order"
+            )
         ]
         return {
             "top_suggestions": suggestions,
             "easy_decision_making": recommendation.easy_decision_making,
-            "last_recommended_at": recommendation.last_recommended_at.isoformat() if recommendation.last_recommended_at else None,
+            "last_recommended_at": (
+                recommendation.last_recommended_at.isoformat()
+                if recommendation.last_recommended_at
+                else None
+            ),
         }
 
     @staticmethod

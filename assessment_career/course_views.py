@@ -29,8 +29,7 @@ class AIRecommendationCoursesAPIView(APIView):
                 "message": (
                     "Recommendations fetched successfully"
                     if courses
-                    else "No course mappings found for AI-suggested careers. "
-                    "Run AI recommendations first and seed CourseCareerMapping."
+                    else "No matching courses found for these career suggestions yet."
                 ),
                 "data": serializer.data,
             },

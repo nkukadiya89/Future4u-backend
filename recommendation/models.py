@@ -2,7 +2,7 @@ from django.db import models
 
 
 class AIRecommendationPanel(models.Model):
-    """Unmanaged proxy — hooks AI recommendation tooling into Django admin."""
+    """Unmanaged proxy for AI recommendation tooling in Django admin."""
 
     class Meta:
         app_label = "recommendation"

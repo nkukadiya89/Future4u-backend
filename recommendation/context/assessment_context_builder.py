@@ -28,12 +28,8 @@ def _level_label(score: float) -> str:
 
 
 def _option_score(sequence_order: int) -> float:
-    """Map option order to a 1–5 agreement scale."""
-    return float(max(1, min(5, int(sequence_order or 1))))
-
-
-def _normalize_score(raw: float) -> float:
-    return round(max(0.0, min(1.0, (raw - 1.0) / 4.0)), 2)
+    """Map option order to a 1-4 agreement scale."""
+    return float(max(1, min(4, int(sequence_order or 1))))
 
 
 def _make_json_safe(value: Any) -> Any:
@@ -65,7 +61,7 @@ class AssessmentContextBuilder:
     @classmethod
     def build_llm_input(cls, assessment: StudentAssessment) -> dict[str, Any]:
         """
-        LLM payload: MCQ responses → dimension_scores; profile labels by name.
+        LLM payload: MCQ responses -> dimension_scores; profile labels by name.
         Uses the same serializer as GET /api/student/assessments/{id}/ (*_name fields).
         """
         api = cls.serialize_assessment_api(assessment)
@@ -176,10 +172,6 @@ class AssessmentContextBuilder:
         ]
 
     @classmethod
-    def _dimension_scores(cls, assessment: StudentAssessment) -> dict[str, float]:
-        return calculate_dimension_scores(cls._responses_as_dicts(assessment))
-
-    @classmethod
     def _response_consistency(cls, assessment: StudentAssessment) -> str:
         values = list(
             UserResponse.objects.filter(assessment=assessment)
@@ -272,19 +264,6 @@ class AssessmentContextBuilder:
             "notsure": "uncertain family support",
         }
         return mapping.get(parent_support or "", "support level not specified")
-
-    @staticmethod
-    def _related_names(relation) -> list[str]:
-        """Resolve M2M profile choices to display names (uses prefetch when loaded)."""
-        if relation is None:
-            return []
-        if hasattr(relation, "all"):
-            names = [
-                (getattr(item, "name", None) or "").strip()
-                for item in relation.all()
-            ]
-            return [name for name in names if name][:8]
-        return AssessmentContextBuilder._compact_list(relation)
 
     @staticmethod
     def _compact_list(value) -> list[str]:

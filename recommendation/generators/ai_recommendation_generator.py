@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class AIRecommendationGenerator:
-    """Single LLM call: structured_assessment → career recommendations."""
+    """Single LLM call: structured_assessment -> career recommendations."""
 
     @classmethod
     def generate(

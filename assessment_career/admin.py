@@ -15,6 +15,9 @@ class CareerRecommendationSuggestionInline(admin.TabularInline):
     ordering = ("display_order", "id")
     show_change_link = True
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(deleted=False)
+
 
 @admin.register(CareerRecommendation)
 class CareerRecommendationAdmin(admin.ModelAdmin):
@@ -60,7 +63,7 @@ class CareerRecommendationAdmin(admin.ModelAdmin):
 
     @admin.display(description="Suggestions")
     def suggestion_count(self, obj):
-        return obj.suggestions.count()
+        return obj.suggestions.filter(deleted=False).count()
 
 
 @admin.register(CareerRecommendationSuggestion)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from recommendation.config import EASY_DECISION_COUNT, TOP_SUGGESTION_COUNT
 
@@ -207,7 +207,7 @@ def _coerce_string_list(value: object) -> list[str]:
 
 
 def clip_why_career_reason(value: object) -> str:
-    """Keep why_this_career bullets to at most 7 words."""
+    """Keep why_this_career bullets to at most 12 words."""
     return _clip_max_words(value, max_words=WHY_CAREER_MAX_WORDS)
 
 
@@ -279,7 +279,7 @@ class SalaryFactor(BaseModel):
     average: str = Field(
         min_length=1,
         max_length=120,
-        description='Annual salary for UI, e.g. "₹6-10 LPA" or "₹18L+".',
+        description='Annual salary for UI, e.g. "INR 6-10 LPA" or "INR 18L+".',
     )
     growth_rate: str = Field(
         min_length=1,
@@ -359,7 +359,7 @@ class LearningCurveFactor(BaseModel):
 
 
 class CareerFactors(BaseModel):
-    """Career Factors card — field order matches mobile UI rows."""
+    """Career Factors card; field order matches mobile UI rows."""
 
     salary: SalaryFactor
     growth_potential: GrowthPotentialLevel = Field(
@@ -369,7 +369,7 @@ class CareerFactors(BaseModel):
         description='UI row label value: "Poor", "Fair", "Good", or "Excellent".',
     )
     job_security: JobSecurityFactor
-    skill_match: int = Field(ge=0, le=100, description="Integer 0–100; UI appends %.")
+    skill_match: int = Field(ge=0, le=100, description="Integer 0-100; UI appends %.")
     learning_curve: LearningCurveFactor
     risk_level: RiskLevel = Field(
         description='UI row label value: "Low", "Medium", or "High".',
@@ -391,7 +391,7 @@ class CareerFactors(BaseModel):
         try:
             return max(0, min(100, int(round(float(str(value).strip().rstrip("%"))))))
         except (TypeError, ValueError) as exc:
-            raise ValueError("skill_match must be an integer 0–100") from exc
+            raise ValueError("skill_match must be an integer 0-100") from exc
 
     @field_validator("growth_potential", mode="before")
     @classmethod
@@ -418,13 +418,13 @@ class TopSuggestionItem(BaseModel):
     ai_insight: str = Field(
         min_length=1,
         max_length=200,
-        description="14-18 words only; one short personalized sentence.",
+        description="8-18 words only; one short personalized sentence.",
     )
     why_this_career: list[str] = Field(
         min_length=1,
         max_length=5,
         description=(
-            "Up to 5 short reasons; each reason must be 5-7 words only "
+            "Up to 5 short reasons; each reason must be 5-12 words only "
             "(phrase, not a sentence)."
         ),
     )
@@ -485,6 +485,14 @@ class EasyDecisionItem(BaseModel):
     career_name: str = Field(min_length=1, max_length=255)
 
 
+EASY_DECISION_TITLES = (
+    "Best for quick start",
+    "Best for high salary",
+    "Best long term bet",
+    "Most stable career",
+)
+
+
 class AIRecommendationPayload(BaseModel):
     top_suggestions: list[TopSuggestionItem] = Field(
         min_length=1, max_length=TOP_SUGGESTION_COUNT
@@ -521,3 +529,30 @@ class AIRecommendationPayload(BaseModel):
                 item = {k: v for k, v in item.items() if k != "reason"}
             cleaned.append(item)
         return cleaned
+
+    @field_validator("easy_decision_making")
+    @classmethod
+    def require_easy_decision_titles(
+        cls, value: list[EasyDecisionItem]
+    ) -> list[EasyDecisionItem]:
+        titles = {item.title.strip() for item in value}
+        missing = [title for title in EASY_DECISION_TITLES if title not in titles]
+        if missing:
+            raise ValueError(
+                "easy_decision_making missing required titles: "
+                + ", ".join(missing)
+            )
+        return value[:EASY_DECISION_COUNT]
+
+    @model_validator(mode="after")
+    def require_easy_decision_careers_from_top_suggestions(self) -> AIRecommendationPayload:
+        top_careers = {
+            item.career_name.strip().casefold() for item in self.top_suggestions
+        }
+        for card in self.easy_decision_making:
+            if card.career_name.strip().casefold() not in top_careers:
+                raise ValueError(
+                    "easy_decision_making career_name must match top_suggestions: "
+                    + card.career_name
+                )
+        return self

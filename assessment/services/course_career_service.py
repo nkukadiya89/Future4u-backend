@@ -22,16 +22,6 @@ def resolve_career_ids_from_names(names: list[str]) -> list:
             .only("id")
             .first()
         )
-        if career is None:
-            career = (
-                Career.objects.filter(
-                    deleted=False,
-                    is_active=True,
-                    career_name__icontains=name,
-                )
-                .only("id")
-                .first()
-            )
         if career and career.id not in seen:
             seen.add(career.id)
             career_ids.append(career.id)

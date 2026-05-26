@@ -31,6 +31,8 @@ class CareerRecommendationSerializer(BaseModelSerializer):
     DB suggestion rows exist for compare/?suggestion_ids= only.
     """
 
+    suggestions = serializers.SerializerMethodField()
+
     class Meta:
         model = CareerRecommendation
         fields = BaseModelSerializer.Meta.fields + [
@@ -39,5 +41,14 @@ class CareerRecommendationSerializer(BaseModelSerializer):
             "assessment",
             "raw_ai_response",
             "easy_decision_making",
+            "suggestions",
             "last_recommended_at",
         ]
+
+    def get_suggestions(self, obj):
+        suggestions = getattr(obj, "active_suggestions", None)
+        if suggestions is None:
+            suggestions = obj.suggestions.filter(deleted=False).order_by(
+                "display_order"
+            )
+        return CareerRecommendationSuggestionSerializer(suggestions, many=True).data

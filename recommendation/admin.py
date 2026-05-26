@@ -1,7 +1,7 @@
 """
 Django admin for AI career recommendations (recommendation).
 
-No database table — changelist is a live panel to test AI recommendations
+No database table; changelist is a live panel to test AI recommendations
 against student assessments.
 
 URL: /admin/recommendation/airecommendationpanel/
@@ -25,7 +25,6 @@ from recommendation.exceptions import (
     AssessmentAccessDeniedError,
     AssessmentNotFoundError,
     AssessmentNotReadyError,
-    RecommendationDataIncompleteError,
 )
 from recommendation.models import AIRecommendationPanel
 from recommendation.services.ai_recommendation_service import AIRecommendationService
@@ -119,12 +118,12 @@ class AIRecommendationPanelAdmin(admin.ModelAdmin):
         return False
 
     def changelist_view(self, request, extra_context=None):
-        form = AIRecommendationRunForm(request.GET or None)
+        form = AIRecommendationRunForm(request.POST or None)
         result = None
         diagnostics = None
         error = None
 
-        if form.is_valid():
+        if request.method == "POST" and form.is_valid():
             assessment = form.cleaned_data["assessment"]
             try:
                 diagnostics = {
@@ -145,8 +144,6 @@ class AIRecommendationPanelAdmin(admin.ModelAdmin):
             except AssessmentAccessDeniedError:
                 error = "Assessment access denied."
             except AssessmentNotReadyError as exc:
-                error = str(exc)
-            except RecommendationDataIncompleteError as exc:
                 error = str(exc)
             except AIConfigurationError as exc:
                 error = f"AI not configured: {exc}"
