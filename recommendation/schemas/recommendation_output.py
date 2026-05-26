@@ -26,6 +26,10 @@ EDUCATION_SUGGESTION_MIN = 2
 EDUCATION_SUGGESTION_MAX = 3
 
 RiskLevel = Literal["Low", "Medium", "High"]
+GrowthPotentialLevel = Literal["Low", "Medium", "High"]
+WorkLifeBalanceLevel = Literal["Poor", "Fair", "Good", "Excellent"]
+JobSecurityLevel = Literal["Low", "Medium", "High"]
+LearningCurveLevel = Literal["Low", "Medium", "High"]
 
 _RISK_LEVEL_ALIASES: dict[str, RiskLevel] = {
     "low": "Low",
@@ -60,6 +64,124 @@ def normalize_risk_level(value: object) -> RiskLevel | None:
     if "high" in key:
         return "High"
     return None
+
+
+_GROWTH_POTENTIAL_ALIASES: dict[str, GrowthPotentialLevel] = dict(_RISK_LEVEL_ALIASES)
+
+_WORK_LIFE_BALANCE_ALIASES: dict[str, WorkLifeBalanceLevel] = {
+    "poor": "Poor",
+    "bad": "Poor",
+    "low": "Poor",
+    "weak": "Poor",
+    "challenging": "Poor",
+    "demanding": "Poor",
+    "stressful": "Poor",
+    "fair": "Fair",
+    "average": "Fair",
+    "moderate": "Fair",
+    "medium": "Fair",
+    "med": "Fair",
+    "okay": "Fair",
+    "ok": "Fair",
+    "good": "Good",
+    "balanced": "Good",
+    "healthy": "Good",
+    "positive": "Good",
+    "excellent": "Excellent",
+    "great": "Excellent",
+    "strong": "Excellent",
+    "very good": "Excellent",
+}
+
+
+def _factor_label_key(value: object) -> str:
+    text = str(value).strip()
+    if not text:
+        return ""
+    for sep in ("—", "–", "-", ",", "|", ":"):
+        if sep in text:
+            text = text.split(sep, 1)[0].strip()
+            break
+    return " ".join(text.lower().split())
+
+
+def normalize_growth_potential(value: object) -> GrowthPotentialLevel | None:
+    if value is None:
+        return None
+    if isinstance(value, dict):
+        nested = value.get("level") or value.get("label") or value.get("rating")
+        if nested is not None:
+            return normalize_growth_potential(nested)
+        return None
+    key = _factor_label_key(value)
+    if not key:
+        return None
+    if key in _GROWTH_POTENTIAL_ALIASES:
+        return _GROWTH_POTENTIAL_ALIASES[key]
+    for level in ("Low", "Medium", "High"):
+        if level.lower() == key:
+            return level
+    return normalize_risk_level(value)
+
+
+def normalize_work_life_balance(value: object) -> WorkLifeBalanceLevel | None:
+    if value is None:
+        return None
+    if isinstance(value, dict):
+        nested = value.get("level") or value.get("label") or value.get("rating")
+        if nested is not None:
+            return normalize_work_life_balance(nested)
+        return None
+    key = _factor_label_key(value)
+    if not key:
+        return None
+    if key in _WORK_LIFE_BALANCE_ALIASES:
+        return _WORK_LIFE_BALANCE_ALIASES[key]
+    for level in ("Poor", "Fair", "Good", "Excellent"):
+        if level.lower() == key:
+            return level
+    if "excellent" in key or "great" in key:
+        return "Excellent"
+    if "good" in key or "balance" in key:
+        return "Good"
+    if "fair" in key or "moderate" in key or "average" in key:
+        return "Fair"
+    if "poor" in key or "bad" in key or "demanding" in key or "long hour" in key:
+        return "Poor"
+    return None
+
+
+_LEARNING_CURVE_ALIASES: dict[str, LearningCurveLevel] = {
+    "low": "Low",
+    "easy": "Low",
+    "beginner": "Low",
+    "medium": "Medium",
+    "moderate": "Medium",
+    "med": "Medium",
+    "high": "High",
+    "steep": "High",
+    "hard": "High",
+    "difficult": "High",
+}
+
+
+def normalize_learning_curve_level(value: object) -> LearningCurveLevel | None:
+    if value is None:
+        return None
+    if isinstance(value, dict):
+        nested = value.get("level") or value.get("label") or value.get("curve")
+        if nested is not None:
+            return normalize_learning_curve_level(nested)
+        return None
+    key = _factor_label_key(value)
+    if not key:
+        return None
+    if key in _LEARNING_CURVE_ALIASES:
+        return _LEARNING_CURVE_ALIASES[key]
+    for level in ("Low", "Medium", "High"):
+        if level.lower() == key:
+            return level
+    return normalize_risk_level(value)
 
 
 def _clip_max_words(value: object, *, max_words: int) -> str:
@@ -154,85 +276,140 @@ class RequiredEducation(BaseModel):
 
 
 class SalaryFactor(BaseModel):
-    average: str | None = Field(default=None, max_length=120)
-    growth_rate: str | None = Field(default=None, max_length=200)
+    average: str = Field(
+        min_length=1,
+        max_length=120,
+        description='Annual salary for UI, e.g. "₹6-10 LPA" or "₹18L+".',
+    )
+    growth_rate: str = Field(
+        min_length=1,
+        max_length=50,
+        description='Salary growth badge for UI, e.g. "(+125%)" or "(+10%)".',
+    )
 
     @field_validator("average", mode="before")
     @classmethod
     def clip_average(cls, value: object) -> object:
-        if value is None:
-            return None
         text = str(value).strip()
-        return _clip(text, 120) if text else None
+        if not text:
+            raise ValueError("salary.average is required from AI output")
+        return _clip(text, 120)
 
     @field_validator("growth_rate", mode="before")
     @classmethod
     def clip_growth(cls, value: object) -> object:
-        if value is None:
-            return value
-        return _clip(value, 200)
+        text = str(value).strip()
+        if not text:
+            raise ValueError("salary.growth_rate is required from AI output")
+        return _clip(text, 50)
 
 
 class JobSecurityFactor(BaseModel):
-    level: str | None = Field(default=None, max_length=100)
-    description: str | None = Field(default=None, max_length=500)
-    market_demand_growth: str | None = Field(default=None, max_length=100)
+    level: JobSecurityLevel = Field(
+        description='Job security label for UI: "Low", "Medium", or "High".',
+    )
+    market_demand_growth: str = Field(
+        min_length=1,
+        max_length=100,
+        description='Demand trend for UI subtitle, e.g. "5% | 25%".',
+    )
 
-    @field_validator("level", "market_demand_growth", mode="before")
+    @field_validator("level", mode="before")
     @classmethod
-    def clip_security_text(cls, value: object) -> object:
-        if value is None:
-            return value
-        return _clip(value, 100)
+    def normalize_level(cls, value: object) -> object:
+        normalized = normalize_risk_level(value)
+        if normalized is None:
+            raise ValueError('job_security.level must be "Low", "Medium", or "High"')
+        return normalized
+
+    @field_validator("market_demand_growth", mode="before")
+    @classmethod
+    def clip_demand_trend(cls, value: object) -> object:
+        text = str(value).strip()
+        if not text:
+            raise ValueError("job_security.market_demand_growth is required from AI output")
+        return _clip(text, 100)
+
+
+class LearningCurveFactor(BaseModel):
+    level: LearningCurveLevel = Field(
+        description='Learning curve label for UI: "Low", "Medium", or "High".',
+    )
+    description: str = Field(
+        min_length=1,
+        max_length=200,
+        description='Short UI subtitle, e.g. "To become proficient".',
+    )
+
+    @field_validator("level", mode="before")
+    @classmethod
+    def normalize_level(cls, value: object) -> object:
+        normalized = normalize_learning_curve_level(value)
+        if normalized is None:
+            raise ValueError('learning_curve.level must be "Low", "Medium", or "High"')
+        return normalized
 
     @field_validator("description", mode="before")
     @classmethod
     def clip_description(cls, value: object) -> object:
-        if value is None:
-            return None
         text = str(value).strip()
-        return _clip(text, 500) if text else None
-
-
-class LearningCurveFactor(BaseModel):
-    level: str | None = Field(default=None, max_length=100)
-    description: str | None = Field(default=None, max_length=500)
+        if not text:
+            raise ValueError("learning_curve.description is required from AI output")
+        return _clip(text, 200)
 
 
 class CareerFactors(BaseModel):
-    salary: SalaryFactor | None = None
-    growth_potential: str | None = Field(default=None, max_length=200)
-    work_life_balance: str | None = Field(default=None, max_length=200)
-    job_security: JobSecurityFactor | None = None
-    skill_match: int | None = Field(default=None, ge=0, le=100)
-    risk_level: RiskLevel | None = Field(
-        default=None,
-        description='Must be exactly one of: "Low", "Medium", "High".',
+    """Career Factors card — field order matches mobile UI rows."""
+
+    salary: SalaryFactor
+    growth_potential: GrowthPotentialLevel = Field(
+        description='UI row label value: "Low", "Medium", or "High".',
     )
-    learning_curve: LearningCurveFactor | None = None
+    work_life_balance: WorkLifeBalanceLevel = Field(
+        description='UI row label value: "Poor", "Fair", "Good", or "Excellent".',
+    )
+    job_security: JobSecurityFactor
+    skill_match: int = Field(ge=0, le=100, description="Integer 0–100; UI appends %.")
+    learning_curve: LearningCurveFactor
+    risk_level: RiskLevel = Field(
+        description='UI row label value: "Low", "Medium", or "High".',
+    )
 
     @field_validator("risk_level", mode="before")
     @classmethod
     def normalize_risk(cls, value: object) -> object:
-        return normalize_risk_level(value)
+        normalized = normalize_risk_level(value)
+        if normalized is None:
+            raise ValueError('risk_level must be "Low", "Medium", or "High"')
+        return normalized
 
     @field_validator("skill_match", mode="before")
     @classmethod
     def coerce_skill_match(cls, value: object) -> object:
         if value is None or value == "":
-            return None
+            raise ValueError("skill_match is required from AI output")
         try:
             return max(0, min(100, int(round(float(str(value).strip().rstrip("%"))))))
-        except (TypeError, ValueError):
-            return None
+        except (TypeError, ValueError) as exc:
+            raise ValueError("skill_match must be an integer 0–100") from exc
 
-    @field_validator("growth_potential", "work_life_balance", mode="before")
+    @field_validator("growth_potential", mode="before")
     @classmethod
-    def clip_factor_labels(cls, value: object) -> object:
-        if value is None:
-            return None
-        text = str(value).strip()
-        return _clip(text, 200) if text else None
+    def normalize_growth(cls, value: object) -> object:
+        normalized = normalize_growth_potential(value)
+        if normalized is None:
+            raise ValueError('growth_potential must be "Low", "Medium", or "High"')
+        return normalized
+
+    @field_validator("work_life_balance", mode="before")
+    @classmethod
+    def normalize_balance(cls, value: object) -> object:
+        normalized = normalize_work_life_balance(value)
+        if normalized is None:
+            raise ValueError(
+                'work_life_balance must be "Poor", "Fair", "Good", or "Excellent"'
+            )
+        return normalized
 
 
 class TopSuggestionItem(BaseModel):
@@ -253,7 +430,7 @@ class TopSuggestionItem(BaseModel):
     )
     required_skills: list[str] = Field(min_length=1, max_length=20)
     required_education: RequiredEducation | None = None
-    career_factors: CareerFactors | None = None
+    career_factors: CareerFactors
     career_roadmap: CareerRoadmap
 
     @field_validator("match_percentage", mode="before")

@@ -119,6 +119,19 @@ class AIRecommendationService:
         return recommendation
 
     @staticmethod
+    def _public_career_factors(factors):
+        if not isinstance(factors, dict):
+            return factors
+        job_security = factors.get("job_security")
+        if not isinstance(job_security, dict) or "description" not in job_security:
+            return factors
+        cleaned = dict(factors)
+        cleaned["job_security"] = {
+            key: value for key, value in job_security.items() if key != "description"
+        }
+        return cleaned
+
+    @staticmethod
     def _serialize_recommendation(recommendation):
         suggestions = [
             {
@@ -128,7 +141,9 @@ class AIRecommendationService:
                 "why_this_career": s.why_this_career,
                 "required_skills": s.required_skills,
                 "required_education": s.required_education,
-                "career_factors": s.career_factors,
+                "career_factors": AIRecommendationService._public_career_factors(
+                    s.career_factors
+                ),
                 "career_roadmap": s.career_roadmap,
                 "display_order": s.display_order,
             }

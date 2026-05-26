@@ -48,7 +48,17 @@ RULES:
 - match_percentage: integers 60–95, descending across the three careers.
 - required_education.suggestions: {education_suggestion_min}–{education_suggestion_max} items.
 - career_roadmap: 4 phases with task_title + task_description ({roadmap_min_words}–{roadmap_max_words} words each).
-- career_factors: salary object, job_security object, learning_curve object, risk_level (Low|Medium|High), skill_match 0–100.
+- career_factors (required, all from you — backend never fills defaults). Match the Career Factors UI card exactly:
+  - salary.average: INR text e.g. "₹6-10 LPA" or "₹18L+"
+  - salary.growth_rate: parenthetical badge e.g. "(+125%)" or "(+10%)" (not "5% YoY")
+  - growth_potential: Low | Medium | High
+  - work_life_balance: Poor | Fair | Good | Excellent
+  - job_security.level: Low | Medium | High
+  - job_security.market_demand_growth: demand trend only, format "5% | 25%" (two percentages, pipe-separated)
+  - skill_match: integer 0–100 (UI shows as percent)
+  - learning_curve.level: Low | Medium | High (use Medium not Moderate)
+  - learning_curve.description: short subtitle e.g. "To become proficient"
+  - risk_level: Low | Medium | High
 - easy_decision_making: exactly {easy_decision_count} items comparing top {easy_decision_career_count} careers; titles from: "Best for quick start", "Best for high salary", "Best long term bet", "Most stable career".
 
 Return ONLY valid JSON. No markdown.
@@ -67,11 +77,19 @@ _JSON_SHAPE_EXAMPLE = """{
       "required_skills": ["Excel", "SQL", "Python basics"],
       "required_education": {"suggestions": ["B.Sc Statistics", "B.Tech IT"]},
       "career_factors": {
-        "salary": {"average": "5-8 LPA", "growth_rate": "10% YoY"},
-        "job_security": {"level": "Medium", "description": "Steady hiring in metros"},
-        "learning_curve": {"level": "Moderate", "description": "Tool practice over six months"},
-        "risk_level": "Medium",
-        "skill_match": 84
+        "salary": {"average": "₹6-10 LPA", "growth_rate": "(+12%)"},
+        "growth_potential": "High",
+        "work_life_balance": "Good",
+        "job_security": {
+          "level": "High",
+          "market_demand_growth": "5% | 25%"
+        },
+        "skill_match": 84,
+        "learning_curve": {
+          "level": "Medium",
+          "description": "To become proficient"
+        },
+        "risk_level": "Medium"
       },
       "career_roadmap": {
         "next_3_months": [{"task_title": "Learn SQL fundamentals", "task_description": "Complete beginner SQL course with weekly practice"}],

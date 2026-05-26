@@ -12,7 +12,10 @@ from recommendation.schemas.recommendation_output import (
     clip_ai_insight,
     clip_why_career_reason,
     normalize_education_suggestions,
+    normalize_growth_potential,
+    normalize_learning_curve_level,
     normalize_risk_level,
+    normalize_work_life_balance,
 )
 
 _TOP_SUGGESTION_KEYS: tuple[str, ...] = (
@@ -82,23 +85,19 @@ def normalize_job_security(value: Any) -> dict[str, Any] | None:
         text = value.strip()
         if not text:
             return None
-        return {"level": text, "description": None, "market_demand_growth": None}
+        level = normalize_risk_level(text)
+        return {"level": level, "market_demand_growth": None}
     if not isinstance(value, dict):
         return None
     data = dict(value)
-    level = str(data.get("level") or data.get("security") or "").strip() or None
-    description = str(
-        data.get("description")
-        or data.get("market_demand_growth")
+    level = normalize_risk_level(data.get("level") or data.get("security"))
+    market = str(
+        data.get("market_demand_growth")
+        or data.get("demand_trend")
         or data.get("demand")
         or ""
-    ).strip()
-    market = str(data.get("market_demand_growth") or description or "").strip()
-    return {
-        "level": level,
-        "description": description or None,
-        "market_demand_growth": market or None,
-    }
+    ).strip() or None
+    return {"level": level, "market_demand_growth": market}
 
 
 def normalize_learning_curve(value: Any) -> dict[str, Any] | None:
@@ -108,13 +107,36 @@ def normalize_learning_curve(value: Any) -> dict[str, Any] | None:
         text = value.strip()
         if not text:
             return None
-        return {"level": text, "description": None}
+        level = normalize_learning_curve_level(text)
+        return {"level": level, "description": None}
     if not isinstance(value, dict):
         return None
     data = dict(value)
-    level = str(data.get("level") or data.get("curve") or "").strip() or None
-    description = str(data.get("description") or data.get("detail") or "").strip()
-    return {"level": level, "description": description or None}
+    level = normalize_learning_curve_level(data.get("level") or data.get("curve"))
+    description = str(data.get("description") or data.get("detail") or "").strip() or None
+    return {"level": level, "description": description}
+
+
+_GROWTH_POTENTIAL_KEYS: tuple[str, ...] = (
+    "growth_potential",
+    "growthPotential",
+    "growth",
+    "career_growth",
+)
+_WORK_LIFE_BALANCE_KEYS: tuple[str, ...] = (
+    "work_life_balance",
+    "workLifeBalance",
+    "work_life",
+    "work_balance",
+    "wlb",
+)
+
+
+def _pick_first_key(data: dict[str, Any], keys: tuple[str, ...]) -> Any:
+    for key in keys:
+        if key in data and data[key] is not None:
+            return data[key]
+    return None
 
 
 def normalize_salary(value: Any) -> dict[str, Any] | None:
@@ -156,6 +178,18 @@ def normalize_career_factors(value: Any) -> dict[str, Any] | None:
         data["risk_level"] = normalize_risk_level(data.get("risk_level"))
     if "skill_match" in data:
         data["skill_match"] = coerce_int(data.get("skill_match"))
+    growth_raw = data.get("growth_potential") or _pick_first_key(data, _GROWTH_POTENTIAL_KEYS)
+    if growth_raw is not None:
+        growth_level = normalize_growth_potential(growth_raw)
+        if growth_level is not None:
+            data["growth_potential"] = growth_level
+    balance_raw = data.get("work_life_balance") or _pick_first_key(
+        data, _WORK_LIFE_BALANCE_KEYS
+    )
+    if balance_raw is not None:
+        balance_level = normalize_work_life_balance(balance_raw)
+        if balance_level is not None:
+            data["work_life_balance"] = balance_level
     return data
 
 
@@ -283,7 +317,14 @@ def normalize_top_suggestion(item: Any) -> dict[str, Any] | None:
     if not all(career_roadmap.get(phase) for phase in CAREER_ROADMAP_PHASE_KEYS):
         return None
 
-    normalized: dict[str, Any] = {
+    factors_raw = data.get("career_factors") or data.get("careerFactors")
+    if factors_raw is None:
+        return None
+    career_factors = normalize_career_factors(factors_raw)
+    if not career_factors:
+        return None
+
+    return {
         "career_name": career_name,
         "match_percentage": match,
         "ai_insight": ai_insight,
@@ -291,10 +332,8 @@ def normalize_top_suggestion(item: Any) -> dict[str, Any] | None:
         "required_skills": skills,
         "required_education": education,
         "career_roadmap": career_roadmap,
+        "career_factors": career_factors,
     }
-    if item.get("career_factors") is not None:
-        normalized["career_factors"] = normalize_career_factors(item.get("career_factors"))
-    return normalized
 
 
 def normalize_easy_decision_item(item: Any) -> dict[str, Any] | None:

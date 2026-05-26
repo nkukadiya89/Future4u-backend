@@ -86,4 +86,17 @@ def _payload_gaps(payload: AIRecommendationPayload) -> list[str]:
             f"expected {EASY_DECISION_COUNT} easy_decision_making, "
             f"got {len(payload.easy_decision_making)}"
         )
+    for suggestion in payload.top_suggestions:
+        name = suggestion.career_name
+        factors = suggestion.career_factors
+        if not factors.salary.average.strip():
+            issues.append(f"missing salary.average for {name}")
+        if not factors.salary.growth_rate.strip():
+            issues.append(f"missing salary.growth_rate for {name}")
+        if not factors.job_security.market_demand_growth.strip():
+            issues.append(f"missing job_security.market_demand_growth for {name}")
+        if "|" not in factors.job_security.market_demand_growth:
+            issues.append(f"job_security.market_demand_growth must use 'X% | Y%' for {name}")
+        if not factors.learning_curve.description.strip():
+            issues.append(f"missing learning_curve.description for {name}")
     return issues
