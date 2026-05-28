@@ -1,6 +1,11 @@
 from django.contrib import admin
 
-from .models import CareerRecommendation, CareerRecommendationSuggestion
+from .models import (
+    CareerRecommendation,
+    CareerRecommendationChatMessage,
+    CareerRecommendationChatSession,
+    CareerRecommendationSuggestion,
+)
 
 
 class CareerRecommendationSuggestionInline(admin.TabularInline):
@@ -18,6 +23,18 @@ class CareerRecommendationSuggestionInline(admin.TabularInline):
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(deleted=False)
+
+
+class CareerRecommendationChatMessageInline(admin.TabularInline):
+    model = CareerRecommendationChatMessage
+    extra = 0
+    fields = ("id", "role", "content", "created_at")
+    readonly_fields = ("id", "role", "content", "created_at")
+    can_delete = False
+    ordering = ("created_at", "id")
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(CareerRecommendation)
@@ -178,3 +195,20 @@ class CareerRecommendationSuggestionAdmin(admin.ModelAdmin):
         ),
     )
     ordering = ("recommendation", "display_order", "id")
+
+
+@admin.register(CareerRecommendationChatSession)
+class CareerRecommendationChatSessionAdmin(admin.ModelAdmin):
+    list_display = ("id", "suggestion", "message_count", "updated_at", "created_at")
+    search_fields = (
+        "suggestion__career_name",
+        "suggestion__recommendation__user__email",
+        "suggestion__recommendation__assessment__id",
+    )
+    raw_id_fields = ("suggestion",)
+    readonly_fields = ("summary", "created_at", "updated_at")
+    inlines = [CareerRecommendationChatMessageInline]
+
+    @admin.display(description="Messages")
+    def message_count(self, obj):
+        return obj.messages.filter(deleted=False).count()

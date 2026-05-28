@@ -17,8 +17,8 @@ def get_groq_api_key() -> str:
     return key
 
 
-def get_groq_chat_model():
-    """LangChain chat model for Groq (structured output compatible)."""
+def get_groq_chat_model(*, max_tokens: int | None = None):
+    """LangChain chat model for Groq AI features."""
     api_key = get_groq_api_key()
 
     try:
@@ -28,12 +28,17 @@ def get_groq_chat_model():
             "langchain-groq is not installed. Run: pip install -r requirements.txt"
         ) from exc
 
-    model_name = getattr(settings, "GROQ_MODEL", "llama-3.3-70b-versatile")
-    temperature = float(getattr(settings, "GROQ_TEMPERATURE", 0))
+    model_name = getattr(settings, "GROQ_MODEL", "openai/gpt-oss-120b")
+    kwargs = {
+        "model": model_name,
+        "temperature": float(getattr(settings, "GROQ_TEMPERATURE", 0.2)),
+        "max_tokens": int(max_tokens or getattr(settings, "GROQ_MAX_TOKENS", 4400)),
+        "max_retries": 2,
+        "api_key": api_key,
+    }
+    if model_name.startswith("openai/gpt-oss"):
+        kwargs["reasoning_effort"] = str(
+            getattr(settings, "GROQ_REASONING_EFFORT", "low") or "low"
+        )
 
-    return ChatGroq(
-        model=model_name,
-        temperature=temperature,
-        max_retries=2,
-        api_key=api_key,
-    )
+    return ChatGroq(**kwargs)

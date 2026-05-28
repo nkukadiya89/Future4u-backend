@@ -14,8 +14,8 @@ def ensure_ai_provider_configured() -> None:
         )
 
 
-def get_chat_model() -> Any:
-    """Return the Groq chat model used for AI career recommendations."""
+def get_chat_model(*, max_tokens: int | None = None) -> Any:
+    """Return the Groq chat model used by AI features."""
     configure_langsmith_tracing()
     ensure_ai_provider_configured()
-    return get_groq_chat_model()
+    return get_groq_chat_model(max_tokens=max_tokens)

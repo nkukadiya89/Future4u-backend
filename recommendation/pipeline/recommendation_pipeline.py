@@ -23,7 +23,7 @@ class RecommendationPipeline:
     ) -> AIRecommendationPayload:
         if not ai_llm_enabled():
             raise AIConfigurationError(
-                "AI recommendations are not configured. Set GROQ_API_KEY and AI_RECOMMENDATIONS_ENABLED=true."
+                "AI recommendations are temporarily unavailable"
             )
 
         ensure_ai_provider_configured()

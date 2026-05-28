@@ -356,7 +356,7 @@ def generate_resume_pdf(resume_data: dict, skip_ai: bool = False) -> bytes:
     """
     Given a fully-built resume dict, call AI enhancement + PDF generation.
     Returns raw PDF bytes.
-    Pass skip_ai=True to bypass OpenAI and use a placeholder summary (for testing).
+    Pass skip_ai=True to bypass AI and use a placeholder summary (for testing).
     """
     from resume_builder.resume_services.ai import (
         enhance_fresher_summary,

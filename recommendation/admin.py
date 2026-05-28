@@ -45,7 +45,7 @@ def _provider_status() -> dict:
     elif not groq_ok:
         mode = "enabled, Groq key missing"
     else:
-        mode = "Groq AI recommendations"
+        mode = "Groq GPT OSS recommendations"
     return {
         "ai_recommendations_enabled": use_llm,
         "groq_configured": groq_ok,

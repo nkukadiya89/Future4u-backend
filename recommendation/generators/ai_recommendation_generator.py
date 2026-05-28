@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class AIRecommendationGenerator:
-    """Single LLM call: structured_assessment -> career recommendations."""
+    """LLM call: structured_assessment -> career recommendations."""
 
     @classmethod
     def generate(
@@ -29,11 +29,21 @@ class AIRecommendationGenerator:
         prompt = build_recommendation_prompt()
         inputs = format_prompt_inputs(structured_assessment=structured_assessment)
         llm = get_chat_model()
-        return cls._invoke_once(prompt=prompt, inputs=inputs, llm=llm)
+        last_error: AIGenerationError | None = None
+        for attempt in range(2):
+            try:
+                return cls._invoke_once(prompt=prompt, inputs=inputs, llm=llm)
+            except AIGenerationError as exc:
+                last_error = exc
+                if not _is_retryable_generation_error(exc) or attempt == 1:
+                    raise
+                logger.warning("Retrying AI recommendation after invalid response")
+
+        raise last_error or AIGenerationError("AI recommendation failed")
 
     @classmethod
     def _invoke_once(cls, *, prompt, inputs: dict[str, Any], llm) -> AIRecommendationPayload:
-        """Exactly one provider invocation (no retries, no fallback chain)."""
+        """Exactly one provider invocation."""
         try:
             structured_llm = llm.with_structured_output(
                 AIRecommendationPayload,
@@ -48,6 +58,8 @@ class AIRecommendationGenerator:
             raise AIGenerationError("AI response failed validation") from exc
         except Exception as exc:
             logger.exception("LLM recommendation generation failed")
+            if _is_invalid_model_output(exc):
+                raise AIGenerationError("AI response failed validation") from exc
             raise AIGenerationError(_format_llm_error(exc)) from exc
 
         gaps = _payload_gaps(payload)
@@ -66,9 +78,28 @@ class AIRecommendationGenerator:
 
 def _format_llm_error(exc: Exception) -> str:
     message = str(exc).strip() or exc.__class__.__name__
-    if "429" in message:
-        return "LLM rate limit reached. Retry in a few moments."
-    return message
+    lowered = message.lower()
+    if "insufficient_quota" in lowered or "quota" in lowered or "429" in lowered:
+        return "AI recommendations are busy right now. Please try again shortly."
+    return "Unable to generate recommendations right now. Please try again."
+
+
+def _is_retryable_generation_error(exc: AIGenerationError) -> bool:
+    message = str(exc).lower()
+    return (
+        "validation" in message
+        or "schema" in message
+        or "required recommendation" in message
+    )
+
+
+def _is_invalid_model_output(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return (
+        "failed to generate json" in message
+        or "json_validate_failed" in message
+        or "failed_generation" in message
+    )
 
 
 def _payload_gaps(payload: AIRecommendationPayload) -> list[str]:

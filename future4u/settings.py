@@ -274,15 +274,13 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
 }
 
-# AI providers
-OPENAI_API_KEY = config("OPENAI_API_KEY", default="").strip()
-OPENAI_MODEL = config("OPENAI_MODEL", default="gpt-4.1-mini")
-OPENAI_TEMPERATURE = config("OPENAI_TEMPERATURE", default=0.2, cast=float)
-GROQ_API_KEY = config("GROQ_API_KEY", default="").strip()
-GROQ_MODEL = config("GROQ_MODEL", default="llama-3.3-70b-versatile")
-GROQ_TEMPERATURE = config("GROQ_TEMPERATURE", default=0.2, cast=float)
 
-# AI career recommendations currently use Groq.
+GROQ_API_KEY = config("GROQ_API_KEY", default="").strip()
+GROQ_MODEL = config("GROQ_MODEL", default="openai/gpt-oss-120b")
+GROQ_TEMPERATURE = config("GROQ_TEMPERATURE", default=0.2, cast=float)
+GROQ_MAX_TOKENS = config("GROQ_MAX_TOKENS", default=3000, cast=int)
+GROQ_REASONING_EFFORT = config("GROQ_REASONING_EFFORT", default="low").strip()
+
 AI_RECOMMENDATIONS_ENABLED = config(
     "AI_RECOMMENDATIONS_ENABLED",
     default=True,

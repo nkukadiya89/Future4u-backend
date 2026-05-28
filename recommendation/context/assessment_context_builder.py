@@ -67,8 +67,13 @@ class AssessmentContextBuilder:
         api = cls.serialize_assessment_api(assessment)
         structured = build_ai_input(
             {
+                "education_level": api.get("education_level_name")
+                or api.get("education_level"),
+                "stream": api.get("stream_name") or api.get("stream"),
                 "domain_name": api.get("domain_name"),
+                "domain_code": api.get("domain_code"),
                 "domain_category_name": api.get("domain_category_name"),
+                "domain_category_code": api.get("domain_category_code"),
                 "responses": api.get("responses") or [],
                 "career_direction": api.get("career_direction_name"),
                 "parent_support": api.get("parent_support"),

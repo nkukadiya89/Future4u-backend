@@ -14,7 +14,7 @@ def _clip(value: object, max_len: int) -> str:
     return text[: max_len - 3].rstrip() + "..."
 
 
-# Limits shared by the Groq system prompt and post-generation validation/clipping.
+# Limits shared by the AI prompt and post-generation validation/clipping.
 WHY_CAREER_MIN_WORDS = 5
 WHY_CAREER_MAX_WORDS = 12
 WHY_CAREER_MAX_BULLETS = 5

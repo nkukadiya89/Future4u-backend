@@ -152,18 +152,20 @@ class ResumeGenerateView(APIView):
         except ValueError as exc:
             logger.error("Resume generation error: %s", exc)
             return Response(
-                {"success": False, "message": str(exc)},
+                {
+                    "success": False,
+                    "message": "Unable to generate resume right now. Please try again.",
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         except Exception as exc:
             logger.exception("Unexpected resume generation error")
-            # Surface OpenAI quota/auth errors clearly
             msg = str(exc)
             if "insufficient_quota" in msg or "429" in msg:
                 return Response(
                     {
                         "success": False,
-                        "message": "AI service quota exceeded. Please contact support.",
+                        "message": "Resume AI is busy right now. Please try again shortly.",
                     },
                     status=status.HTTP_503_SERVICE_UNAVAILABLE,
                 )
@@ -171,7 +173,7 @@ class ResumeGenerateView(APIView):
                 return Response(
                     {
                         "success": False,
-                        "message": "AI service configuration error. Please contact support.",
+                        "message": "Resume AI is temporarily unavailable.",
                     },
                     status=status.HTTP_503_SERVICE_UNAVAILABLE,
                 )

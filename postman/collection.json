@@ -10728,7 +10728,7 @@
                 ""
               ]
             },
-            "description": "Generates AI career recommendations from a student assessment.\n\nPrerequisites (run in order):\n1. Start Assessment\n2. PATCH domain_category + domain (+ profile education/stream)\n3. Save answers via POST /api/responses/ (repeat until dimensions complete)\n4. Complete Assessment (recommended)\n\nRequires GROQ_API_KEY and AI_RECOMMENDATIONS_ENABLED=true in server .env. Optional tracing uses AI_TRACING_ENABLED=true with LANGSMITH_API_KEY.\n\nResponse: { success, data: { top_suggestions[{ id, recommendation, ... }], easy_decision_making[] } }"
+            "description": "Generates AI career recommendations from a student assessment.\n\nPrerequisites (run in order):\n1. Start Assessment\n2. PATCH domain_category + domain (+ profile education/stream)\n3. Save answers via POST /api/responses/ (repeat until dimensions complete)\n4. Complete Assessment (recommended)\n\nRequires GROQ_API_KEY and AI_RECOMMENDATIONS_ENABLED=true in server .env. Optional tracing uses AI_TRACING_ENABLED=true with LANGSMITH_API_KEY.\n\nResponse: { success, data: { ai_disclaimer, top_suggestions[{ id, recommendation, ... }], easy_decision_making[] } }"
           },
           "response": [],
           "event": [
@@ -10746,6 +10746,117 @@
                   "  pm.expect(json.data).to.be.an('object');",
                   "  pm.expect(json.data.top_suggestions).to.be.an('array');",
                   "  pm.expect(json.data.easy_decision_making).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "AI Recommendation Chat Context (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-recommendations/{{assessment_id}}/chat/?suggestion_id={{career_suggestion_id_1}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-recommendations",
+                "{{assessment_id}}",
+                "chat",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "suggestion_id",
+                  "value": "{{career_suggestion_id_1}}"
+                }
+              ]
+            },
+            "description": "Loads selected career context, saved chat messages, and dynamic chips for the Ask AI screen without calling the AI model.\n\nPrerequisite: run AI Recommendations first and set {{career_suggestion_id_1}} from a returned top_suggestions/suggestions id.\n\nResponse: { success, data: { career_name, suggestion_id, match_percentage, ai_insight, why_this_career, chips, disclaimer, messages } }"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Chat context has chips', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.eql(true);",
+                  "  pm.expect(json.data.chips).to.be.an('array');",
+                  "  pm.expect(json.data.messages).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "AI Recommendation Chat (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"suggestion_id\": {{career_suggestion_id_1}},\n  \"message\": \"What skills should I build first?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ai-recommendations/{{assessment_id}}/chat/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-recommendations",
+                "{{assessment_id}}",
+                "chat",
+                ""
+              ]
+            },
+            "description": "Asks the career-specific AI assistant about a saved recommendation suggestion.\n\nPrerequisite: run AI Recommendations first and set {{career_suggestion_id_1}} from a returned top_suggestions/suggestions id. Use Chat Context (GET) to load chips and saved messages before the first message without calling AI.\n\nRequest body:\n- suggestion_id: saved career suggestion id\n- message: user's career-related question\n\nBackend saves the chat and sends only a compact conversation summary to AI, not full history.\n\nResponse: { success, data: { career_name, suggestion_id, match_percentage, ai_insight, why_this_career, answer, chips, disclaimer, messages } }"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Chat response has answer', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.eql(true);",
+                  "  pm.expect(json.data.answer).to.be.a('string');",
+                  "  pm.expect(json.data.chips).to.be.an('array');",
+                  "  pm.expect(json.data.messages).to.be.an('array');",
                   "});"
                 ]
               }

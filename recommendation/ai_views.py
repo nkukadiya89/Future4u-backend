@@ -1,6 +1,4 @@
 import logging
-
-from django.conf import settings
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -54,31 +52,25 @@ class AIRecommendationAPIView(APIView):
             )
         except AIConfigurationError as exc:
             logger.error("AI configuration error: %s", exc)
-            message = "AI recommendation service is not configured"
-            if settings.DEBUG:
-                detail = str(exc).strip() or exc.__class__.__name__
-                message = f"{message}: {detail}"
             return Response(
-                {"success": False, "message": message},
+                {
+                    "success": False,
+                    "message": "AI recommendations are temporarily unavailable",
+                },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         except AIGenerationError as exc:
             logger.exception("AI generation failed")
-            message = "Unable to generate recommendations right now. Please try again."
-            if settings.DEBUG:
-                detail = str(exc).strip() or exc.__class__.__name__
-                message = f"{message}: {detail}"
             return Response(
-                {"success": False, "message": message},
+                {
+                    "success": False,
+                    "message": "Unable to generate recommendations right now. Please try again.",
+                },
                 status=status.HTTP_502_BAD_GATEWAY,
             )
         except Exception as exc:
             logger.exception("Unexpected AI recommendation error")
-            message = "Unable to generate AI recommendations"
-            if settings.DEBUG:
-                detail = str(exc).strip() or exc.__class__.__name__
-                message = f"{message}: {detail}"
             return Response(
-                {"success": False, "message": message},
+                {"success": False, "message": "Unable to generate AI recommendations"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

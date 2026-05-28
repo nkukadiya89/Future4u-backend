@@ -17,6 +17,6 @@ def _raw_to_dict(raw: Any) -> dict[str, Any]:
 
 
 def parse_ai_payload(raw: Any) -> AIRecommendationPayload:
-    """Normalize then validate Groq output only (no template/DB field injection)."""
+    """Normalize then validate model output only (no template/DB field injection)."""
     normalized = normalize_raw_payload(_raw_to_dict(raw))
     return AIRecommendationPayload.model_validate(normalized)

@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import Any
 
 DIMENSION_KEYS = ("interest", "aptitude", "personality", "work_style")
+SIGNAL_WORD_LIMIT = 12
+SIGNALS_PER_DIMENSION = 6
 
 
 def _clamp_sequence_order(raw: Any) -> int:
@@ -24,9 +26,33 @@ def _response_sequence_order(response: dict[str, Any]) -> int:
     return _clamp_sequence_order(option.get("sequence_order"))
 
 
+def _compact_words(value: Any, *, limit: int) -> str:
+    text = " ".join(str(value or "").strip().split())
+    if not text:
+        return ""
+    words = text.split()
+    return " ".join(words[:limit])
+
+
+def _answer_signal(response: dict[str, Any]) -> str:
+    question = response.get("question") or {}
+    option = response.get("selected_option") or {}
+    question_text = _compact_words(
+        question.get("question_text"),
+        limit=SIGNAL_WORD_LIMIT,
+    )
+    option_text = _compact_words(
+        option.get("option_text"),
+        limit=SIGNAL_WORD_LIMIT,
+    )
+    if question_text and option_text:
+        return f"{question_text} -> {option_text}"
+    return option_text
+
+
 def calculate_dimension_scores(responses: list[dict[str, Any]]) -> dict[str, float]:
     """
-    Keep numeric scores conservative.
+    Keep numeric scores conservative; they are only a support signal.
 
     Most questions are MCQ preference questions, where option order is not a
     reliable low-to-high scale. Only scale/yes-no questions use option order as
@@ -57,11 +83,10 @@ def selected_answer_signals(responses: list[dict[str, Any]]) -> dict[str, list[s
         dim = _response_dimension(response)
         if not dim:
             continue
-        option = response.get("selected_option") or {}
-        text = str(option.get("option_text") or "").strip()
+        text = _answer_signal(response)
         if text and text not in signals[dim]:
             signals[dim].append(text)
-    return {key: values[:6] for key, values in signals.items()}
+    return {key: values[:SIGNALS_PER_DIMENSION] for key, values in signals.items()}
 
 
 def _compact_string_list(value: Any, *, limit: int = 8) -> list[str]:
@@ -80,9 +105,9 @@ def _profile_labels(data: dict[str, Any], key: str) -> list[str]:
 
 def build_ai_input(data: dict[str, Any]) -> dict[str, Any]:
     """
-    LLM payload: selected option meanings + conservative dimension scores.
-    We avoid raw question text, but keep selected option text because MCQ option
-    order is not always a real score.
+    LLM payload: compact answer signals + conservative support scores.
+    We avoid full raw Q&A, but include a short question context with the
+    selected option because that carries the assessment meaning for MCQs.
     """
     responses = data.get("responses") or []
     if not isinstance(responses, list):
@@ -97,12 +122,21 @@ def build_ai_input(data: dict[str, Any]) -> dict[str, Any]:
     domain_category = (
         data.get("domain_category")
         or data.get("domain_category_name")
+        or data.get("domain_category_code")
         or ""
     )
 
     return {
+        "education_level": (
+            str(data.get("education_level") or "").strip() or None
+        ),
+        "stream": str(data.get("stream") or "").strip() or None,
         "domain": str(domain).strip() if domain else None,
+        "domain_code": str(data.get("domain_code") or "").strip() or None,
         "domain_category": str(domain_category).strip() if domain_category else None,
+        "domain_category_code": (
+            str(data.get("domain_category_code") or "").strip() or None
+        ),
         "dimension_scores": calculate_dimension_scores(responses),
         "selected_answer_signals": selected_answer_signals(responses),
         "career_direction": _compact_string_list(data.get("career_direction")),

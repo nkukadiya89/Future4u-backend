@@ -19,6 +19,11 @@ from recommendation.pipeline.recommendation_pipeline import RecommendationPipeli
 logger = logging.getLogger(__name__)
 
 RECOMMENDATION_CYCLE_DAYS = 365
+AI_RECOMMENDATION_DISCLAIMER = (
+    "These AI recommendations are only guidance and do not guarantee any career, "
+    "education, admission, job, or salary outcome. Please use them as a starting "
+    "point and confirm important decisions with a qualified professional."
+)
 
 
 class AIRecommendationService:
@@ -191,6 +196,7 @@ class AIRecommendationService:
             )
         ]
         return {
+            "ai_disclaimer": AI_RECOMMENDATION_DISCLAIMER,
             "top_suggestions": suggestions,
             "easy_decision_making": recommendation.easy_decision_making,
             "last_recommended_at": (
