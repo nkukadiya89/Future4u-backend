@@ -230,35 +230,3 @@ class StudentAssessment(BaseModule):
 
     def __str__(self):
         return f"Assessment {self.id} - User {self.user_id}"
-
-
-class CourseCareerMapping(models.Model):
-    """Links catalog courses to careers (used after LLM career suggestions)."""
-
-    course = models.ForeignKey(
-        "courses.Course",
-        on_delete=models.CASCADE,
-        related_name="career_mappings",
-    )
-    career = models.ForeignKey(
-        "career.Career",
-        on_delete=models.CASCADE,
-        related_name="course_mappings",
-    )
-    relevance_score = models.FloatField(default=1)
-
-    class Meta:
-        db_table = "course_career_mapping"
-        ordering = ["career_id", "-relevance_score"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=("course", "career"),
-                name="course_career_mapping_course_career_uniq",
-            ),
-        ]
-        indexes = [
-            models.Index(fields=["career", "course"]),
-        ]
-
-    def __str__(self):
-        return f"CourseCareerMapping(course={self.course_id}, career={self.career_id})"

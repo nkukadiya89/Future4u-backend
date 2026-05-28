@@ -101,10 +101,6 @@ class Migration(migrations.Migration):
             options={"ordering": ["assessment_id", "-score"]},
         ),
         migrations.AlterModelOptions(
-            name="coursecareermapping",
-            options={"ordering": ["career_id", "-relevance_score"]},
-        ),
-        migrations.AlterModelOptions(
             name="optioncareermapping",
             options={"ordering": ["option_id", "career_id"]},
         ),
@@ -131,11 +127,6 @@ class Migration(migrations.Migration):
             model_name="assessmentskillscore",
             new_name="assessment__assessm_21e698_idx",
             old_name="ask_assessment_skill_idx",
-        ),
-        migrations.RenameIndex(
-            model_name="coursecareermapping",
-            new_name="course_care_career__e51669_idx",
-            old_name="ccm_career_course_idx",
         ),
         migrations.RemoveField(
             model_name="studentassessment",

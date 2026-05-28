@@ -9,7 +9,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ("assessment", "0020_alter_studentassessment_updated_at"),
         ("career", "0003_alter_career_updated_at"),
-        ("courses", "0001_initial"),
         ("domain", "0018_alter_domain_updated_at"),
         ("skill", "0003_alter_skill_updated_at"),
     ]
@@ -222,48 +221,6 @@ class Migration(migrations.Migration):
                     models.Index(
                         fields=["assessment", "domain"],
                         name="ads_assessment_domain_idx",
-                    ),
-                ],
-            },
-        ),
-        migrations.CreateModel(
-            name="CourseCareerMapping",
-            fields=[
-                (
-                    "id",
-                    models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("relevance_score", models.FloatField(default=1)),
-                (
-                    "career",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="course_mappings",
-                        to="career.career",
-                    ),
-                ),
-                (
-                    "course",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="career_mappings",
-                        to="courses.course",
-                    ),
-                ),
-            ],
-            options={
-                "db_table": "course_career_mapping",
-                "ordering": ("career_id", "-relevance_score"),
-                "unique_together": {("course", "career")},
-                "indexes": [
-                    models.Index(
-                        fields=["career", "course"],
-                        name="ccm_career_course_idx",
                     ),
                 ],
             },

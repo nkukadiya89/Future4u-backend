@@ -73,8 +73,8 @@ class CoursesViewSet(BaseModelViewSet):
             )
         
         ai_skills = career.required_skills or []
-        ai_education = career.required_education.get("suggestions", [])
-
+        ai_education = career.required_education or {}
+        
         courses = match_courses(
             ai_skills=ai_skills,
             ai_education=ai_education,

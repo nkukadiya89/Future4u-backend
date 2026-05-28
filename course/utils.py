@@ -23,3 +23,23 @@ def is_match(ai_value, course_values):
         if match:
             return True
     return False
+
+def get_next_levels(user_edu):
+    mapping = {
+        "secondary": ["higher_secondary", "diploma", "iti"],
+
+        "higher_secondary": ["graduation", "diploma"],
+        
+        "iti": ["diploma", "graduation"],
+
+        "diploma": ["graduation"],
+
+        "graduation": ["post_graduation", "professional"],
+
+        "post_graduation": ["doctorate", "professional"],
+
+        "doctorate": [],
+
+        "professional": [],
+    }
+    return mapping.get(user_edu, [])

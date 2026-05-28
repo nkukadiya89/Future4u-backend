@@ -19,7 +19,6 @@ from django.contrib import admin
 from django.urls import path, include
 from user.user_auth import CustomTokenObtainPairView
 from future4u.routers import future4u_router
-from assessment_career.course_views import AIRecommendationCoursesAPIView
 from recommendation.ai_views import AIRecommendationAPIView
 from recommendation.chat_views import AIRecommendationChatAPIView
 from recommendation.views import (
@@ -34,16 +33,6 @@ urlpatterns = [
         "api/ai-recommendations/<int:assessment_id>/",
         AIRecommendationAPIView.as_view(),
         name="api-ai-recommendations",
-    ),
-    path(
-        "api/ai-recommendations/<int:assessment_id>/courses/",
-        AIRecommendationCoursesAPIView.as_view(),
-        name="api-ai-recommendations-courses",
-    ),
-    path(
-        "api/ai-recommendations/<int:assessment_id>/chat/",
-        AIRecommendationChatAPIView.as_view(),
-        name="api-ai-recommendations-chat",
     ),
     path(
         "api/recommendations/domain/<uuid:id>/",

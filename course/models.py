@@ -8,7 +8,7 @@ class Courses(BaseModule):
     
     COURSE_TYPE_CHOICES = (
         ("degree", "Degree"),
-        ("course", "Course"),
+        ("certification", "Certification"),
         ("training", "Training"),
     )
 

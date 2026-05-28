@@ -107,7 +107,6 @@ INSTALLED_APPS = [
     "language_master",
     "jobs",
     "resume_builder",
-    "courses",
     "assessment_career",
     "course"
 ]

@@ -39,14 +39,6 @@ class Migration(migrations.Migration):
             name='assessment__assessm_21e698_idx',
         ),
         migrations.AlterUniqueTogether(
-            name='coursecareermapping',
-            unique_together=None,
-        ),
-        migrations.RemoveIndex(
-            model_name='coursecareermapping',
-            name='course_care_career__e51669_idx',
-        ),
-        migrations.AlterUniqueTogether(
             name='optionskillmapping',
             unique_together=None,
         ),
@@ -82,14 +74,6 @@ class Migration(migrations.Migration):
             model_name='assessmentskillscore',
             name='skill',
         ),
-        migrations.RemoveField(
-            model_name='coursecareermapping',
-            name='career',
-        ),
-        migrations.RemoveField(
-            model_name='coursecareermapping',
-            name='course',
-        ),
         migrations.DeleteModel(
             name='OptionCareerMapping',
         ),
@@ -104,8 +88,5 @@ class Migration(migrations.Migration):
         ),
         migrations.DeleteModel(
             name='AssessmentSkillScore',
-        ),
-        migrations.DeleteModel(
-            name='CourseCareerMapping',
         ),
     ]
