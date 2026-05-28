@@ -8,11 +8,11 @@ from recommendation.pipeline.roadmap_normalizer import normalize_career_roadmap
 from recommendation.schemas.recommendation_output import (
     AIRecommendationPayload,
     CareerRoadmap,
+    EducationLevel,
     RequiredEducation,
     TopSuggestionItem,
     clip_ai_insight,
     clip_why_career_reason,
-    normalize_education_suggestions,
 )
 
 
@@ -41,9 +41,12 @@ def normalize_payload(payload: AIRecommendationPayload) -> AIRecommendationPaylo
 
         education: RequiredEducation | None = item.required_education
         if education:
-            suggestions_edu = normalize_education_suggestions(education.suggestions)
-            if suggestions_edu:
-                education = RequiredEducation(suggestions=suggestions_edu)
+            cleaned_levels: list[EducationLevel] = []
+            for level in education.levels:
+                if not level.type or not level.level_key or not level.name:
+                    continue
+                cleaned_levels.append(level)
+            education = RequiredEducation(levels=cleaned_levels)
 
         suggestions.append(
             item.model_copy(

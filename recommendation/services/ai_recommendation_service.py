@@ -175,16 +175,30 @@ class AIRecommendationService:
 
     @staticmethod
     def _serialize_recommendation(recommendation):
+        first_suggestion = (
+            recommendation.suggestions.filter(deleted=False).order_by("display_order").first()
+        )
+        top_ai_insight = str(getattr(first_suggestion, "ai_insight", "") or "").strip()
+
         suggestions = [
             {
                 "id": s.id,
                 "recommendation": s.recommendation_id,
                 "career_name": s.career_name,
                 "match_percentage": s.match_percentage,
-                "ai_insight": s.ai_insight,
                 "why_this_career": s.why_this_career,
                 "required_skills": s.required_skills,
-                "required_education": s.required_education,
+                "required_education": (
+                    {
+                        "levels": (
+                            (s.required_education or {}).get("levels", [])
+                            if isinstance(s.required_education, dict)
+                            else []
+                        )
+                    }
+                    if s.required_education
+                    else {"levels": []}
+                ),
                 "career_factors": AIRecommendationService._public_career_factors(
                     s.career_factors
                 ),
@@ -197,6 +211,7 @@ class AIRecommendationService:
         ]
         return {
             "ai_disclaimer": AI_RECOMMENDATION_DISCLAIMER,
+            "ai_insight": top_ai_insight,
             "top_suggestions": suggestions,
             "easy_decision_making": recommendation.easy_decision_making,
             "last_recommended_at": (

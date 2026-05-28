@@ -44,7 +44,10 @@ RULES:
 - why_this_career: max {why_career_max_bullets} bullets, {why_career_min_words}-{why_career_max_words} words each.
 - ai_insight: {ai_insight_min_words}-{ai_insight_max_words} words, one sentence.
 - match_percentage: integers 60-95, descending across the three careers.
-- required_education.suggestions: {education_suggestion_min}-{education_suggestion_max} items.
+- required_education.levels: an array of objects with EXACT keys: type, level_key, name.
+- required_education.levels.level_key MUST be one of:
+  secondary, higher_secondary, diploma, graduation, post_graduation, doctorate, professional, certification
+- If you do not know levels, return required_education.levels as [] (empty array). Never use null.
 - career_roadmap: 4 phases with task_title + task_description ({roadmap_min_words}-{roadmap_max_words} words each).
 - career_factors must include:
   - salary.average: INR annual range, e.g. "INR 6-10 LPA"
@@ -73,7 +76,12 @@ OUTPUT_SHAPE = """{
       "ai_insight": "Your strong aptitude score and analytical signals align with data storytelling roles.",
       "why_this_career": ["High aptitude fit", "Goals mention data impact"],
       "required_skills": ["Excel", "SQL", "Python basics"],
-      "required_education": {"suggestions": ["B.Sc Statistics", "B.Tech IT"]},
+      "required_education": {
+        "levels": [
+          {"type": "Undergraduate", "level_key": "graduation", "name": "B.Sc Statistics"},
+          {"type": "Undergraduate", "level_key": "graduation", "name": "B.Tech IT"}
+        ]
+      },
       "career_factors": {
         "salary": {"average": "INR 6-10 LPA", "growth_rate": "(+12%)"},
         "growth_potential": "High",

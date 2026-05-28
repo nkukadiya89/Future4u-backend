@@ -8,7 +8,6 @@ from recommendation.pipeline.roadmap_normalizer import (
     normalize_career_roadmap,
 )
 from recommendation.schemas.recommendation_output import (
-    EDUCATION_SUGGESTION_MIN,
     clip_ai_insight,
     clip_why_career_reason,
     normalize_education_suggestions,
@@ -194,28 +193,122 @@ def normalize_career_factors(value: Any) -> dict[str, Any] | None:
 
 
 def normalize_required_education(value: Any) -> dict[str, Any] | None:
-    """Coerce shape only; never invent degree suggestions."""
+    """Coerce required_education into a levels-only shape.
+
+    Input may contain legacy "suggestions" (strings). We convert those into levels
+    heuristically so the API always returns:
+      {"levels": [{"type": "...", "level_key": "...", "name": "..."}]}
+    """
     if value is None:
         return None
+    data: dict[str, Any] = {}
+    legacy_suggestions: list[str] = []
     if isinstance(value, str):
-        suggestions = normalize_education_suggestions([value])
+        legacy_suggestions = normalize_education_suggestions([value])
     elif isinstance(value, list):
-        suggestions = normalize_education_suggestions(coerce_string_list(value))
+        legacy_suggestions = normalize_education_suggestions(coerce_string_list(value))
     elif isinstance(value, dict):
         data = dict(value)
         raw = data.get("suggestions")
         if raw is None and data.get("primary_degree"):
             raw = [data["primary_degree"]]
-        suggestions = normalize_education_suggestions(coerce_string_list(raw))
+        legacy_suggestions = normalize_education_suggestions(coerce_string_list(raw))
     else:
         return None
 
-    if not suggestions:
-        return None
-    if len(suggestions) < EDUCATION_SUGGESTION_MIN and len(suggestions) >= 1:
-        while len(suggestions) < EDUCATION_SUGGESTION_MIN:
-            suggestions.append(suggestions[-1])
-    return {"suggestions": suggestions}
+    def _normalize_level_key(raw: Any) -> str:
+        text = str(raw or "").strip().lower()
+        text = text.replace("-", "_").replace(" ", "_")
+        aliases = {
+            "10th": "secondary",
+            "tenth": "secondary",
+            "secondary": "secondary",
+            "12th": "higher_secondary",
+            "twelfth": "higher_secondary",
+            "higher_secondary": "higher_secondary",
+            "high_school": "higher_secondary",
+            "intermediate": "higher_secondary",
+            "diploma": "diploma",
+            "graduation": "graduation",
+            "undergraduate": "graduation",
+            "bachelor": "graduation",
+            "bachelors": "graduation",
+            "post_graduation": "post_graduation",
+            "postgraduate": "post_graduation",
+            "masters": "post_graduation",
+            "master": "post_graduation",
+            "doctorate": "doctorate",
+            "phd": "doctorate",
+            "professional": "professional",
+            # API expects "professional" for certifications (legacy AI may send certification/certificate).
+            "certification": "professional",
+            "certificate": "professional",
+        }
+        return aliases.get(text, "")
+
+    def _normalize_type_label(raw: Any) -> str:
+        text = " ".join(str(raw or "").strip().split())
+        if not text:
+            return ""
+        key = text.casefold()
+        aliases = {
+            "undergraduate": "Undergraduate",
+            "ug": "Undergraduate",
+            "graduation": "Undergraduate",
+            "graduate": "Undergraduate",
+            "postgraduate": "Postgraduate",
+            "post_graduation": "Postgraduate",
+            "pg": "Postgraduate",
+            "masters": "Postgraduate",
+            "certification": "Certification",
+            "certificate": "Certification",
+            "professional": "Certification",
+        }
+        return aliases.get(key, text)
+
+    def _infer_level_from_name(name: str) -> tuple[str, str]:
+        n = name.casefold()
+        if any(k in n for k in ("mba", "m.tech", "mtech", "mca", "m.sc", "msc", "master")):
+            return ("Postgraduate", "post_graduation")
+        if any(k in n for k in ("b.tech", "btech", "bca", "b.sc", "bsc", "bachelor")):
+            return ("Undergraduate", "graduation")
+        return ("Certification", "professional")
+
+    def _clean_levels(raw_levels: Any) -> list[dict[str, str]]:
+        if raw_levels is None:
+            return []
+        if isinstance(raw_levels, dict):
+            raw_levels = [raw_levels]
+        if not isinstance(raw_levels, (list, tuple)):
+            return []
+        cleaned: list[dict[str, str]] = []
+        for item in raw_levels:
+            if not isinstance(item, dict):
+                continue
+            type_label = _normalize_type_label(item.get("type") or item.get("label"))
+            level_key = _normalize_level_key(
+                item.get("level_key") or item.get("levelKey") or item.get("key") or item.get("level")
+            )
+            name = str(item.get("name") or item.get("degree") or item.get("course") or "").strip()
+            if not type_label or not level_key or not name:
+                continue
+            cleaned.append({"type": type_label, "level_key": level_key, "name": name})
+        return cleaned
+
+    levels: list[dict[str, str]] = []
+    if isinstance(value, dict):
+        levels = _clean_levels(data.get("levels"))
+
+    # Convert legacy suggestions into levels if levels are missing/empty.
+    if not levels and legacy_suggestions:
+        converted: list[dict[str, str]] = []
+        for s in legacy_suggestions:
+            type_label, level_key = _infer_level_from_name(s)
+            converted.append({"type": type_label, "level_key": level_key, "name": s})
+        levels = converted
+
+    # Always return levels-only; never expose suggestions in API shape.
+    return {"levels": levels}
 
 
 def extract_top_suggestions_raw(payload: dict[str, Any]) -> list[Any]:

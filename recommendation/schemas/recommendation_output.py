@@ -31,6 +31,17 @@ WorkLifeBalanceLevel = Literal["Poor", "Fair", "Good", "Excellent"]
 JobSecurityLevel = Literal["Low", "Medium", "High"]
 LearningCurveLevel = Literal["Low", "Medium", "High"]
 
+EducationLevelKey = Literal[
+    "secondary",
+    "higher_secondary",
+    "diploma",
+    "graduation",
+    "post_graduation",
+    "doctorate",
+    "professional",
+    "certification",
+]
+
 _RISK_LEVEL_ALIASES: dict[str, RiskLevel] = {
     "low": "Low",
     "medium": "Medium",
@@ -262,17 +273,22 @@ class CareerRoadmap(BaseModel):
     next_9_to_12_months: list[RoadmapTask] = Field(min_length=1, max_length=2)
 
 
-class RequiredEducation(BaseModel):
-    suggestions: list[str] = Field(
-        default_factory=list,
-        max_length=EDUCATION_SUGGESTION_MAX,
-        description="2-3 degree or qualification suggestions for this career.",
-    )
+class EducationLevel(BaseModel):
+    type: str = Field(min_length=1, max_length=100, description="Display label.")
+    level_key: EducationLevelKey = Field(description="Standardized education level key.")
+    name: str = Field(min_length=1, max_length=255, description="Degree/course name.")
 
-    @field_validator("suggestions")
+    @field_validator("type", "name", mode="before")
     @classmethod
-    def clean_suggestions(cls, value: list[str]) -> list[str]:
-        return normalize_education_suggestions(value)
+    def strip_fields(cls, value: object) -> object:
+        return str(value or "").strip()
+
+
+class RequiredEducation(BaseModel):
+    levels: list[EducationLevel] = Field(
+        default_factory=list,
+        description="Structured education requirements; always an array.",
+    )
 
 
 class SalaryFactor(BaseModel):
