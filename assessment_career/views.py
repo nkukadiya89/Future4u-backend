@@ -11,9 +11,20 @@ from utils.pagination import Pagination
 
 from .models import CareerRecommendation, CareerRecommendationSuggestion
 from .serializers import (
+    CareerRecommendationDetailSerializer,
     CareerRecommendationSerializer,
     CareerRecommendationSuggestionSerializer,
 )
+from rest_framework.viewsets import ModelViewSet
+from .models import CareerRecommendation, CareerRecommendationSuggestion
+from rest_framework.filters import SearchFilter, OrderingFilter
+from utils.pagination import Pagination
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework import status
+from common.master_view import BaseModelViewSet
 
 
 class CareerSuggestionViewSet(ModelViewSet):
@@ -30,21 +41,12 @@ class CareerSuggestionViewSet(ModelViewSet):
     ]
 
     def get_queryset(self):
-        return (
-            CareerRecommendation.objects.filter(deleted=False, user=self.request.user)
-            .select_related("assessment", "user")
-            .prefetch_related(
-                Prefetch(
-                    "suggestions",
-                    queryset=CareerRecommendationSuggestion.objects.filter(
-                        deleted=False
-                    ).order_by("display_order"),
-                    to_attr="active_suggestions",
-                )
-            )
-            .order_by("-id")
-        )
-
+        queryset = CareerRecommendation.objects.filter(deleted=False, user=self.request.user).select_related("assessment", "user").prefetch_related("suggestions").order_by("-id")
+        assessment_id = self.request.query_params.get("assessment_id")
+        if assessment_id:
+            queryset = queryset.filter(assessment_id=assessment_id)
+        return queryset
+    
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         no_pagination = request.query_params.get("no_pagination")
@@ -63,14 +65,8 @@ class CareerSuggestionViewSet(ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         if not instance:
-            return Response(
-                {
-                    "success": False,
-                    "message": "No CareerRecommendation matches the given query",
-                },
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        serializer = self.get_serializer(instance)
+            return Response({"success":False, "message":"No CareerRecommendation matches the given query"},status=status.HTTP_404_NOT_FOUND)
+        serializer = self.serializer_class(instance)
         return Response(
             {"success": True, "data": serializer.data},
             status=status.HTTP_200_OK,
@@ -132,7 +128,13 @@ class CareerSuggestionViewSet(ModelViewSet):
             )
 
         serializer = CareerRecommendationSuggestionSerializer(suggestions, many=True)
-        return Response(
-            {"success": True, "data": serializer.data},
-            status=status.HTTP_200_OK,
+        return Response({"success":True, "data":serializer.data}, status=status.HTTP_200_OK)
+    
+class CareerSuggestionDetailViewSet(BaseModelViewSet):
+    serializer_class = CareerRecommendationSuggestionSerializer
+    
+    def get_queryset(self):
+        return CareerRecommendationSuggestion.objects.filter(
+            deleted=False,
+            recommendation__user=self.request.user
         )

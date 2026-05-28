@@ -5,9 +5,31 @@ from common.serializers import BaseModelSerializer
 from .models import CareerRecommendation, CareerRecommendationSuggestion
 
 
-class CareerRecommendationSuggestionSerializer(BaseModelSerializer):
-    """Used by compare API (needs suggestion row ids)."""
+class CareerRecommendationSuggestionSortSerializer(BaseModelSerializer):
+    class Meta:
+        model = CareerRecommendationSuggestion
+        fields = [
+            "id",
+            "career_name",
+            "match_percentage",
+         ]
 
+class CareerRecommendationSerializer(BaseModelSerializer):
+    suggestions = CareerRecommendationSuggestionSortSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CareerRecommendation
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "user",
+            "assessment",
+            "suggestions",
+            "easy_decision_making",
+            "last_recommended_at",
+
+        ]
+
+class CareerRecommendationSuggestionSerializer(BaseModelSerializer):
     class Meta:
         model = CareerRecommendationSuggestion
         fields = BaseModelSerializer.Meta.fields + [
@@ -24,12 +46,8 @@ class CareerRecommendationSuggestionSerializer(BaseModelSerializer):
             "display_order",
         ]
 
-
-class CareerRecommendationSerializer(BaseModelSerializer):
-    """
-    Career payload lives in raw_ai_response (top_suggestions, easy_decision_making).
-    DB suggestion rows exist for compare/?suggestion_ids= only.
-    """
+class CareerRecommendationDetailSerializer(BaseModelSerializer):
+    suggestions = CareerRecommendationSuggestionSerializer(many=True, read_only=True)
 
     suggestions = serializers.SerializerMethodField()
 
@@ -37,9 +55,8 @@ class CareerRecommendationSerializer(BaseModelSerializer):
         model = CareerRecommendation
         fields = BaseModelSerializer.Meta.fields + [
             "id",
-            "user",
             "assessment",
-            "raw_ai_response",
+            "suggestions",
             "easy_decision_making",
             "suggestions",
             "last_recommended_at",

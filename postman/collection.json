@@ -10535,7 +10535,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/career-suggestions/?search=&ordering=-created_at&page=1&pagesize=10",
+              "raw": "{{base_url}}/api/career-suggestions/?assessment_id={{assessment_id}}&ordering=-created_at&page=1&pagesize=10",
               "host": [
                 "{{base_url}}"
               ],
@@ -10546,9 +10546,9 @@
               ],
               "query": [
                 {
-                  "key": "search",
-                  "value": "",
-                  "description": "Search by nested suggestion career_name"
+                  "key": "assessment_id",
+                  "value": "{{assessment_id}}",
+                  "description": "Optional — filter to one student assessment"
                 },
                 {
                   "key": "ordering",
@@ -10565,7 +10565,7 @@
                 }
               ]
             },
-            "description": "Lists stored career recommendations for the authenticated user.\n\nRecords are created/updated by step 6 (AI Recommendations).\n\nResponse (paginated): { success, count, next, previous, data: [ CareerRecommendation, ... ] }\nEach item includes nested suggestions[] with career_name, match_percentage, ai_insight, why_this_career, required_skills, required_education, career_factors, career_roadmap."
+            "description": "Lists stored AI career recommendations for the logged-in user.\n\nQuery: assessment_id (optional), ordering, page/pagesize.\n\nRecords are created/updated by step 6 (AI Recommendations).\n\nResponse (paginated): { success, count, next, previous, data: [...] }\nList shape per item: { id, user, assessment, suggestions: [{ id, career_name, match_percentage }] }."
           },
           "response": [],
           "event": [
@@ -10579,8 +10579,10 @@
                   "    const json = pm.response.json();",
                   "    const rows = json.data || (json.results && json.results.data) || [];",
                   "    const first = Array.isArray(rows) ? rows[0] : null;",
-                  "    if (first && first.id !== undefined && first.id !== null) {",
-                  "      pm.collectionVariables.set('career_recommendation_id', String(first.id));",
+                  "    const suggestions = first && first.suggestions;",
+                  "    if (Array.isArray(suggestions) && suggestions.length >= 2) {",
+                  "      pm.collectionVariables.set('career_suggestion_id_1', String(suggestions[0].id));",
+                  "      pm.collectionVariables.set('career_suggestion_id_2', String(suggestions[1].id));",
                   "    }",
                   "  } catch (e) {}",
                   "}"
@@ -10590,7 +10592,7 @@
           ]
         },
         {
-          "name": "7b. List career suggestions — no pagination (GET)",
+          "name": "7b. Get career suggestions Detail by Id (GET)",
           "request": {
             "method": "GET",
             "header": [
@@ -10604,53 +10606,18 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/career-suggestions/?no_pagination=1",
+              "raw": "{{base_url}}/api/career-suggestions/1/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
                 "career-suggestions",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1"
-                }
-              ]
-            },
-            "description": "Returns all career recommendations for the user without pagination: { success, data: [...] }."
-          },
-          "response": []
-        },
-        {
-          "name": "8. Get career suggestion by id (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/career-suggestions/{{career_recommendation_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "career-suggestions",
-                "{{career_recommendation_id}}",
+                "25",
                 ""
               ]
             },
-            "description": "Retrieve one career recommendation (must belong to the logged-in user).\n\nSet {{career_recommendation_id}} from step 7 list request or manually.\n\nResponse: { success, data: { id, user, assessment, raw_ai_response, easy_decision_making, last_recommended_at, suggestions: [...] } }"
+            "description": "Get stored AI career recommendation for one assessment.\n\nPath param: assessment id (e.g. 25). Replace 25 with your assessment id from step 1 / student assessment flow.\n\nPrerequisite: step 6 (AI Recommendations) for that assessment.\n\nResponse: { success, data: { id, user, assessment, easy_decision_making, last_recommended_at, suggestions: [{ id, career_name, match_percentage }] } }"
           },
           "response": [],
           "event": [
@@ -10662,10 +10629,10 @@
                   "if (pm.response.code === 200) {",
                   "  try {",
                   "    const json = pm.response.json();",
-                  "    const suggestions = json.data && json.data.suggestions ? json.data.suggestions : [];",
-                  "    if (suggestions.length >= 2) {",
-                  "      pm.collectionVariables.set('career_suggestion_id_1', suggestions[0].id);",
-                  "      pm.collectionVariables.set('career_suggestion_id_2', suggestions[1].id);",
+                  "    const suggestions = json.data && json.data.suggestions;",
+                  "    if (Array.isArray(suggestions) && suggestions.length >= 2) {",
+                  "      pm.collectionVariables.set('career_suggestion_id_1', String(suggestions[0].id));",
+                  "      pm.collectionVariables.set('career_suggestion_id_2', String(suggestions[1].id));",
                   "    }",
                   "  } catch (e) {}",
                   "}"
@@ -10675,7 +10642,7 @@
           ]
         },
         {
-          "name": "9. Compare career suggestions (GET)",
+          "name": "8. Compare career suggestions (GET)",
           "request": {
             "method": "GET",
             "header": [
@@ -10707,7 +10674,7 @@
                 }
               ]
             },
-            "description": "Compare two career suggestion rows side by side.\n\nQuery param suggestion_ids (required): comma-separated list of exactly 2 suggestion primary keys.\n\nPrerequisites: run AI Recommendations or retrieve a stored career recommendation. Both responses include suggestion ids in top_suggestions/suggestions. Set {{career_suggestion_id_1}} and {{career_suggestion_id_2}} from those ids.\n\nErrors:\n- 400 if suggestion_ids are missing, not exactly 2 ids, invalid, not owned by user, or from different recommendations\n\nResponse: { success: true, data: [ CareerRecommendationSuggestion, CareerRecommendationSuggestion ] }"
+            "description": "Compare two career suggestion rows side by side.\n\nQuery param suggestion_ids (required): comma-separated list of exactly 2 suggestion primary keys.\n\nPrerequisites: step 6 then step 7b (ids auto-set from data.suggestions[]) or set {{career_suggestion_id_1}} / {{career_suggestion_id_2}} manually.\n\nErrors:\n- 400 if suggestion_ids are missing, not exactly 2 ids, invalid, not owned by user, or from different recommendations\n\nResponse: { success: true, data: [ CareerRecommendationSuggestion, CareerRecommendationSuggestion ] }"
           },
           "response": [],
           "event": [
@@ -14249,7 +14216,190 @@
               ]
             }
           },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    if (json.user_id != null) {",
+                  "      pm.collectionVariables.set('user_id', String(json.user_id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "list users (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/?page=1&pagesize=10&search=&ordering=-id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "email, name, phone, designation, user_type, status, country/state/city name"
+                },
+                {
+                  "key": "ordering",
+                  "value": "-id",
+                  "description": "id | email | first_name | date_joined | user_type | is_active | ..."
+                },
+                {
+                  "key": "user_type",
+                  "value": "",
+                  "description": "student | parent | working_professional | super_admin | ...",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "pending | active | inactive",
+                  "disabled": true
+                },
+                {
+                  "key": "is_active",
+                  "value": "",
+                  "description": "true | false",
+                  "disabled": true
+                },
+                {
+                  "key": "country",
+                  "value": "{{country_id}}",
+                  "description": "Filter by country id",
+                  "disabled": true
+                },
+                {
+                  "key": "state",
+                  "value": "{{state_id}}",
+                  "description": "Filter by state id",
+                  "disabled": true
+                },
+                {
+                  "key": "city",
+                  "value": "{{city_id}}",
+                  "description": "Filter by city id",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List users (paginated). Same pattern as GET /country/.\n\nRequires Bearer {{access_token}}.\n\nEnable optional query params: user_type, status, is_active, country, state, city.\n\nResponse fields: id, username, email, first_name, last_name, full_name, about_me, phone, profile_image, designation, user_type, status, is_active, is_staff, is_superuser, email_verified, keep_me_logged_in, terms_accepted, date_joined, last_login, password_last_changed, country, country_name, states, state_name, city, city_name.\n\nExcludes: password, otp, otp_created_at."
+          },
           "response": []
+        },
+        {
+          "name": "list users — no pagination (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/?no_pagination=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Returns all users in one response: { success, data: [...] }."
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve user (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{user_id}}",
+                ""
+              ]
+            },
+            "description": "Get one user by id. Set {{user_id}} from register response (user_id) or list."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const row = json.data || json;",
+                  "    const id = row.id || row.user_id;",
+                  "    if (id != null) pm.collectionVariables.set('user_id', String(id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "logout (POST)",
@@ -14897,6 +15047,284 @@
       ]
     },
     {
+      "name": "course",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course/?page=1&pagesize=10&search=&ordering=-created_at",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search by name"
+                },
+                {
+                  "key": "ordering",
+                  "value": "-created_at"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || (json.results && json.results.data) || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('course_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Python for Data Science\",\n  \"course_type\": \"course\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\", \"Data Analysis\"],\n  \"education_tags\": [\"higher_secondary\"],\n  \"duration\": \"8 weeks\",\n  \"provider\": {{user_id}},\n  \"city\": {{city_id}},\n  \"course_overview\": \"Learn Python from basics to ML.\",\n  \"why_this_course\": [\"High demand skills\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\", \"Pandas\", \"ML basics\"]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course/{{course_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course",
+                "{{course_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course/{{course_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course",
+                "{{course_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Python for Data Science Updated\",\n  \"course_type\": \"course\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\"],\n  \"education_tags\": [\"higher_secondary\"],\n  \"duration\": \"10 weeks\",\n  \"provider\": {{user_id}},\n  \"city\": {{city_id}},\n  \"course_overview\": \"Updated overview\",\n  \"why_this_course\": [\"Updated\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\"]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course/{{course_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course",
+                "{{course_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Python for Data Science (patched)\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course/{{course_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course",
+                "{{course_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "recommended (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course/recommended/?career_id={{career_suggestion_id_1}}&mode=&city_id=&course_type=&search=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course",
+                "recommended",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "career_id",
+                  "value": "{{career_suggestion_id_1}}",
+                  "description": "CareerRecommendationSuggestion id"
+                },
+                {
+                  "key": "mode",
+                  "value": "",
+                  "description": "online | offline",
+                  "disabled": true
+                },
+                {
+                  "key": "city_id",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "course_type",
+                  "value": "",
+                  "description": "degree | course | training",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Recommended courses for an AI career suggestion.\n\nRequires career_id (CareerRecommendationSuggestion id). Optional filters: mode, city_id, course_type, search."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "resume_builder",
       "item": [
         {
@@ -15045,16 +15473,20 @@
       "value": "1"
     },
     {
-      "key": "career_recommendation_id",
-      "value": "1"
-    },
-    {
       "key": "career_suggestion_id_1",
       "value": "1"
     },
     {
       "key": "career_suggestion_id_2",
       "value": "2"
+    },
+    {
+      "key": "course_id",
+      "value": "1"
+    },
+    {
+      "key": "user_id",
+      "value": "1"
     }
   ]
 }

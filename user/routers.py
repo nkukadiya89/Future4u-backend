@@ -20,6 +20,7 @@ from user.views import (
     ResetPasswordViewSet,
     RoleFamilyViewSet,
     UserDetailsViewSet,
+    UserListViewSet,
     VerifyEmailOtpAndGiveTokenViewset,
     VerifyOtpViewSet,
 )
@@ -84,3 +85,4 @@ user_router.register(
 )
 
 user_router.register("auth", AuthViewSet, basename="auth")
+user_router.register("users", UserListViewSet, basename="users")

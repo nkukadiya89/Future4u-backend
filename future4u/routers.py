@@ -22,6 +22,7 @@ from user.routers import user_router
 from user_profile.routers import user_profile_router
 from user_skill.routers import user_skill_router
 from assessment_career.routers import assessment_career_router
+from course.routers import courses_router
 # from subscription.routers import subscription_router
 
 try:
@@ -59,4 +60,5 @@ future4u_router.registry.extend(user_skill_router.registry)
 future4u_router.registry.extend(user_router.registry)
 future4u_router.registry.extend(job_router.registry)
 future4u_router.registry.extend(course_router.registry)
+future4u_router.registry.extend(courses_router.registry)
 # future4u_router.registry.extend(subscription_router.registry)

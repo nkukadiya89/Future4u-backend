@@ -105,11 +105,11 @@ INSTALLED_APPS = [
     "user_profile",
     "recommendation",
     "language_master",
-    # "skill_category",
     "jobs",
     "resume_builder",
     "courses",
     "assessment_career",
+    "course"
 ]
 
 MIDDLEWARE = [
@@ -270,7 +270,7 @@ LOGGING = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=365),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=365),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
 }
 

@@ -9,6 +9,7 @@ from django.core.exceptions import MultipleObjectsReturned
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -24,6 +25,7 @@ from user.serializers import (
     LoginWithEmailOtpSerializer,
     RoleFamilySerializer,
     UserDetailsSerializer,
+    UserListSerializer,
     VerifyLoginWithEmailOtpSerializer,
     VerifyOTPSerializer,
 )
@@ -632,3 +634,90 @@ class RoleFamilyViewSet(ModelViewSet):
             {"success": True, "message": "Role Family Deleted SuccessFully."},
             status=status.HTTP_200_OK,
         )
+
+class UserListViewSet(ModelViewSet):
+    queryset = User.objects.select_related("country", "states", "city").order_by("-id")
+    serializer_class = UserListSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+    pagination_class = Pagination
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    http_method_names = ["get", "head", "options"]
+
+    search_fields = [
+        "id",
+        "username",
+        "email",
+        "first_name",
+        "last_name",
+        "full_name",
+        "about_me",
+        "phone",
+        "designation",
+        "profile_image",
+        "user_type",
+        "status",
+        "country__name",
+        "states__name",
+        "city__name",
+    ]
+
+    ordering_fields = [
+        "id",
+        "username",
+        "email",
+        "first_name",
+        "last_name",
+        "full_name",
+        "phone",
+        "user_type",
+        "status",
+        "is_active",
+        "is_staff",
+        "is_superuser",
+        "email_verified",
+        "date_joined",
+        "last_login",
+        "password_last_changed",
+    ]
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+        user_type = self.request.query_params.get("user_type")
+        if user_type:
+            queryset = queryset.filter(user_type=user_type)
+        status_param = self.request.query_params.get("status")
+        if status_param:
+            queryset = queryset.filter(status=status_param)
+        is_active = self.request.query_params.get("is_active")
+        if is_active not in (None, ""):
+            queryset = queryset.filter(
+                is_active=str(is_active).lower() in ("1", "true", "yes")
+            )
+        country_id = self.request.query_params.get("country")
+        if country_id:
+            queryset = queryset.filter(country_id=country_id)
+        state_id = self.request.query_params.get("state")
+        if state_id:
+            queryset = queryset.filter(states_id=state_id)
+        city_id = self.request.query_params.get("city")
+        if city_id:
+            queryset = queryset.filter(city_id=city_id)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        no_pagination = request.query_params.get("no_pagination")
+        if no_pagination:
+            serializer = self.serializer_class(queryset, many=True)
+            return Response({"success": True, "data": serializer.data})
+
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = UserListSerializer(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+        serializer = UserListSerializer(queryset, many=True)
+        return self.get_paginated_response({"success": True, "data": serializer.data})

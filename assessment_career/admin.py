@@ -7,11 +7,12 @@ class CareerRecommendationSuggestionInline(admin.TabularInline):
     model = CareerRecommendationSuggestion
     extra = 0
     fields = (
+        "id",
         "display_order",
         "career_name",
         "match_percentage",
-        "ai_insight",
     )
+    readonly_fields = ("id",)
     ordering = ("display_order", "id")
     show_change_link = True
 
@@ -50,6 +51,43 @@ class CareerRecommendationAdmin(admin.ModelAdmin):
         "updated_by",
         "deleted_at",
         "deleted_by",
+        "raw_ai_response",
+        "easy_decision_making",
+        "last_recommended_at",
+    )
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "user",
+                    "assessment",
+                    "last_recommended_at",
+                    "deleted",
+                )
+            },
+        ),
+        (
+            "AI payload",
+            {
+                "classes": ("collapse",),
+                "fields": ("easy_decision_making", "raw_ai_response"),
+            },
+        ),
+        (
+            "Audit",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "created_at",
+                    "updated_at",
+                    "created_by",
+                    "updated_by",
+                    "deleted_at",
+                    "deleted_by",
+                ),
+            },
+        ),
     )
     inlines = [CareerRecommendationSuggestionInline]
 
@@ -89,4 +127,54 @@ class CareerRecommendationSuggestionAdmin(admin.ModelAdmin):
         "recommendation__assessment__id",
     )
     raw_id_fields = ("recommendation",)
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+        "created_by",
+        "updated_by",
+        "deleted_at",
+        "deleted_by",
+    )
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "recommendation",
+                    "career_name",
+                    "match_percentage",
+                    "display_order",
+                    "ai_insight",
+                    "deleted",
+                )
+            },
+        ),
+        (
+            "Structured data",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "why_this_career",
+                    "required_skills",
+                    "required_education",
+                    "career_factors",
+                    "career_roadmap",
+                ),
+            },
+        ),
+        (
+            "Audit",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "created_at",
+                    "updated_at",
+                    "created_by",
+                    "updated_by",
+                    "deleted_at",
+                    "deleted_by",
+                ),
+            },
+        ),
+    )
     ordering = ("recommendation", "display_order", "id")

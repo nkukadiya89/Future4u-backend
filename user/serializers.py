@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from user.models import ContentTypeModel, CustomGroup, RoleFamily, User
 from user.user_auth import get_user_groups, get_user_permissions
+from utils.datetime_formatter import format_datetime
 
 
 class CustomGroupSerializers(serializers.ModelSerializer):
@@ -207,3 +208,62 @@ class UserQuickSerializer(serializers.ModelSerializer):
 
     def get_full_name(self, obj):
         return obj.get_full_name()
+
+
+class UserListSerializer(serializers.ModelSerializer):
+    country_name = serializers.SerializerMethodField(read_only=True)
+    state_name = serializers.SerializerMethodField(read_only=True)
+    city_name = serializers.SerializerMethodField(read_only=True)
+    date_joined = serializers.SerializerMethodField(read_only=True)
+    last_login = serializers.SerializerMethodField(read_only=True)
+    password_last_changed = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "full_name",
+            "about_me",
+            "phone",
+            "profile_image",
+            "designation",
+            "user_type",
+            "status",
+            "is_active",
+            "is_staff",
+            "is_superuser",
+            "email_verified",
+            "keep_me_logged_in",
+            "terms_accepted",
+            "date_joined",
+            "last_login",
+            "password_last_changed",
+            "country",
+            "country_name",
+            "states",
+            "state_name",
+            "city",
+            "city_name",
+        ]
+
+    def get_country_name(self, obj):
+        return obj.country.name if obj.country_id else None
+
+    def get_state_name(self, obj):
+        return obj.states.name if obj.states_id else None
+
+    def get_city_name(self, obj):
+        return obj.city.name if obj.city_id else None
+
+    def get_date_joined(self, obj):
+        return format_datetime(getattr(obj, "date_joined", None))
+
+    def get_last_login(self, obj):
+        return format_datetime(getattr(obj, "last_login", None))
+
+    def get_password_last_changed(self, obj):
+        return format_datetime(getattr(obj, "password_last_changed", None))
