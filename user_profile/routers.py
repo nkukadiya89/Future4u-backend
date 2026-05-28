@@ -8,9 +8,7 @@ from user_profile.views import (
 from rest_framework.routers import DefaultRouter
 
 user_profile_router = DefaultRouter()
-user_profile_router.register(
-    "api/profile", UserProfileViewSet, basename="profile"
-)
+user_profile_router.register("api/profile", UserProfileViewSet, basename="profile")
 user_profile_router.register(
     "business-settings", BusinessSettingViewSet, basename="business_settings"
 )
@@ -18,10 +16,13 @@ user_profile_router.register(
     "api/student-profile", StudentProfileViewSet, basename="student_profile"
 )
 user_profile_router.register(
-    "api/professional-profile", ProfessionalProfileViewSet, basename="professional_profile"
+    "api/professional-profile",
+    ProfessionalProfileViewSet,
+    basename="professional_profile",
 )
 user_profile_router.register(
-    "api/parent-profile", ParentProfileViewSet, basename="parent_profile")
+    "api/parent-profile", ParentProfileViewSet, basename="parent_profile"
+)
 
 from user_profile.internship_views import (
     InternshipApplicationViewSet,
@@ -40,4 +41,3 @@ user_profile_router.register(
     InternshipApplicationViewSet,
     basename="internship-applications",
 )
-

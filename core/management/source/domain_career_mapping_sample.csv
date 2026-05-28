@@ -132,6 +132,17 @@ marketing,content_creator,88,1
 marketing,entrepreneur,78,1
 marketing,product_manager,72,1
 marketing,journalist,70,1
+ADVERTISING,digital_marketer,94,1
+ADVERTISING,content_creator,91,1
+ADVERTISING,graphic_designer,89,1
+ADVERTISING,journalist,76,1
+ADVERTISING,junior_content_creator,72,1
+DIGITAL_MARKETING,digital_marketer,95,1
+DIGITAL_MARKETING,seo_specialist,92,1
+DIGITAL_MARKETING,content_creator,88,1
+BRAND_MANAGEMENT,product_manager,90,1
+BRAND_MANAGEMENT,digital_marketer,86,1
+BRAND_MANAGEMENT,graphic_designer,84,1
 manufacturing,field_technician,92,1
 manufacturing,robotics_engineer,80,1
 manufacturing,software_engineer,65,1

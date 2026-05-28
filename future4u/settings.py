@@ -105,10 +105,10 @@ INSTALLED_APPS = [
     "user_profile",
     "recommendation",
     "language_master",
-    "skill_category",
     "jobs",
     "resume_builder",
-    "courses",
+    "assessment_career",
+    "course"
 ]
 
 MIDDLEWARE = [
@@ -254,7 +254,6 @@ LOGGING = {
             "level": config("DJANGO_LOG_LEVEL", default="WARNING"),
             "propagate": False,
         },
-        "services": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "assessment": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "recommendation": {
             "handlers": ["console"],
@@ -270,6 +269,22 @@ LOGGING = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=365),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=365),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
 }
+
+
+GROQ_API_KEY = config("GROQ_API_KEY", default="").strip()
+GROQ_MODEL = config("GROQ_MODEL", default="openai/gpt-oss-120b")
+GROQ_TEMPERATURE = config("GROQ_TEMPERATURE", default=0.2, cast=float)
+GROQ_MAX_TOKENS = config("GROQ_MAX_TOKENS", default=3000, cast=int)
+GROQ_REASONING_EFFORT = config("GROQ_REASONING_EFFORT", default="low").strip()
+
+AI_RECOMMENDATIONS_ENABLED = config(
+    "AI_RECOMMENDATIONS_ENABLED",
+    default=True,
+    cast=bool,
+)
+AI_TRACING_ENABLED = config("AI_TRACING_ENABLED", default=False, cast=bool)
+LANGSMITH_API_KEY = config("LANGSMITH_API_KEY", default="").strip()
+LANGSMITH_PROJECT = config("LANGSMITH_PROJECT", default="future4u")

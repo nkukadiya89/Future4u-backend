@@ -1,12 +1,20 @@
 from django.contrib import admin
 
 from assessment.models import (
+    CareerDirection,
+    CareerValue,
+    Concern,
     Option,
     Question,
     StudentAssessment,
+    UserGoal,
     UserResponse,
 )
 
+admin.site.register(CareerDirection)
+admin.site.register(CareerValue)
+admin.site.register(Concern)
+admin.site.register(UserGoal)
 
 class OptionInline(admin.TabularInline):
     model = Option
@@ -134,9 +142,7 @@ class OptionAdmin(admin.ModelAdmin):
         "question__question_text",
     )
 
-    list_filter = (
-        "question__dimension",
-    )
+    list_filter = ("question__dimension",)
 
 
 @admin.register(UserResponse)
@@ -154,9 +160,7 @@ class UserResponseAdmin(admin.ModelAdmin):
         "question__question_text",
     )
 
-    list_filter = (
-        "question__dimension",
-    )
+    list_filter = ("question__dimension",)
 
     @admin.display(description="Score")
     def get_score(self, obj):

@@ -100,7 +100,9 @@ class Command(BaseCommand):
             # 1) Legacy: option_1..option_5 where each cell is either "label" or "score: label"
             # 2) Split: option_1_text, option_1_score, ..., option_4_text, option_4_score
             required_base_headers = ("dimension", "question_text", "is_active")
-            missing_base = [h for h in required_base_headers if h not in reader.fieldnames]
+            missing_base = [
+                h for h in required_base_headers if h not in reader.fieldnames
+            ]
             if missing_base:
                 raise ValueError(f"Missing headers: {', '.join(missing_base)}")
 
@@ -294,19 +296,28 @@ class Command(BaseCommand):
                     "education_level": education_level_obj,
                     "target_stream": target_stream_obj,
                 }
-                q = Question.objects.filter(
-                    dimension=dim,
-                    question_text=qt,
-                ).first()
-                if not q and has_sequence_order_column and sequence_order:
+                q = None
+                if has_sequence_order_column and sequence_order:
                     sequence_matches = Question.objects.filter(
                         dimension=dim,
                         sequence_order=sequence_order,
                     )
                     if sequence_matches.count() == 1:
                         q = sequence_matches.first()
+                if not q and not (has_sequence_order_column and sequence_order):
+                    q = Question.objects.filter(
+                        dimension=dim,
+                        question_text=qt,
+                    ).first()
                 if q:
                     q_created = False
+                elif has_sequence_order_column and sequence_order:
+                    q = Question.objects.create(
+                        dimension=dim,
+                        question_text=qt,
+                        **defaults,
+                    )
+                    q_created = True
                 else:
                     q, q_created = Question.objects.get_or_create(
                         dimension=dim,
@@ -380,6 +391,11 @@ class Command(BaseCommand):
                                 o.option_text = label
                                 o.save(update_fields=["option_text"])
                                 updated_o += 1
+                    stale_options = q.options.filter(sequence_order__gt=4)
+                    deleted_options = stale_options.count()
+                    if deleted_options:
+                        stale_options.delete()
+                        updated_o += deleted_options
                 else:
                     # Legacy option_1..option_5 format (text only, ignore score prefix).
                     for i in range(1, 6):
@@ -387,7 +403,11 @@ class Command(BaseCommand):
                         if not cell:
                             continue
                         # Strip optional "score: " prefix if present
-                        label = cell.split(":", 1)[1].strip() if ":" in cell else cell.strip()
+                        label = (
+                            cell.split(":", 1)[1].strip()
+                            if ":" in cell
+                            else cell.strip()
+                        )
                         if not label:
                             raise ValueError(f"Row {idx}: option label cannot be blank")
 

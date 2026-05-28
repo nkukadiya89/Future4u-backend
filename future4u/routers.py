@@ -7,7 +7,6 @@ from career.routers import career_router
 from city.routers import city_router
 from company.routers import company_router
 from country.routers import country_router
-from courses.routers import course_router
 from domain_career_mapping.routers import domain_career_mapping_router
 from domain_skill_mapping.routers import domain_skill_mapping_router
 from education_level.routers import education_level_router
@@ -21,7 +20,8 @@ from stream_domain_mapping.routers import stream_domain_mapping_router
 from user.routers import user_router
 from user_profile.routers import user_profile_router
 from user_skill.routers import user_skill_router
-
+from assessment_career.routers import assessment_career_router
+from course.routers import courses_router
 # from subscription.routers import subscription_router
 
 try:
@@ -35,6 +35,7 @@ from language_master.routers import language_router
 future4u_router = routers.DefaultRouter()
 
 future4u_router.registry.extend(activity_log_router.registry)
+future4u_router.registry.extend(assessment_career_router.registry)
 future4u_router.registry.extend(language_router.registry)
 future4u_router.registry.extend(assessment_router.registry)
 future4u_router.registry.extend(bussiness_category_router.registry)
@@ -57,6 +58,5 @@ future4u_router.registry.extend(user_profile_router.registry)
 future4u_router.registry.extend(user_skill_router.registry)
 future4u_router.registry.extend(user_router.registry)
 future4u_router.registry.extend(job_router.registry)
-future4u_router.registry.extend(user_profile_router.registry)
-future4u_router.registry.extend(course_router.registry)
+future4u_router.registry.extend(courses_router.registry)
 # future4u_router.registry.extend(subscription_router.registry)

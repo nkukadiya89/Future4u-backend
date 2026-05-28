@@ -6,13 +6,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0014_alter_question_dimension_and_more'),
+        ("assessment", "0014_alter_question_dimension_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='studentassessment',
-            name='parent_support',
-            field=models.CharField(blank=True, choices=[('very_supportive', 'Very Supportive'), ('somewhat_supportive', 'SomeWhat Supportive'), ('neutral', 'Neutral'), ('not_supportive', 'Not Supportive'), ('notsure', 'Not Sure')], max_length=150, null=True),
+            model_name="studentassessment",
+            name="parent_support",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("very_supportive", "Very Supportive"),
+                    ("somewhat_supportive", "SomeWhat Supportive"),
+                    ("neutral", "Neutral"),
+                    ("not_supportive", "Not Supportive"),
+                    ("notsure", "Not Sure"),
+                ],
+                max_length=150,
+                null=True,
+            ),
         ),
     ]

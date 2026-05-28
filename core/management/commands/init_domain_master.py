@@ -62,11 +62,7 @@ class Command(BaseCommand):
 
         if images_folder is None:
             images_folder = (
-                Path(settings.BASE_DIR)
-                / "core"
-                / "management"
-                / "source"
-                / "images"
+                Path(settings.BASE_DIR) / "core" / "management" / "source" / "images"
             )
         else:
             images_folder = Path(images_folder)
@@ -124,34 +120,22 @@ class Command(BaseCommand):
             missing = required - set(row.keys())
 
             if missing:
-                raise CommandError(
-                    f"Missing columns: {', '.join(sorted(missing))}"
-                )
+                raise CommandError(f"Missing columns: {', '.join(sorted(missing))}")
 
             code = (row.get("domain_code") or "").strip()
 
             name = (row.get("domain_name") or "").strip()
 
-            parent_code = (
-                row.get("parent_code")
-                or row.get("parent")
-                or ""
-            ).strip()
+            parent_code = (row.get("parent_code") or row.get("parent") or "").strip()
 
             if not code:
-                raise CommandError(
-                    f"Row {idx}: domain_code is required."
-                )
+                raise CommandError(f"Row {idx}: domain_code is required.")
 
             if not name:
-                raise CommandError(
-                    f"Row {idx}: domain_name is required."
-                )
+                raise CommandError(f"Row {idx}: domain_name is required.")
 
             if code.lower() in seen:
-                raise CommandError(
-                    f"Row {idx}: duplicate domain_code '{code}'"
-                )
+                raise CommandError(f"Row {idx}: duplicate domain_code '{code}'")
 
             seen.add(code.lower())
 
@@ -181,9 +165,7 @@ class Command(BaseCommand):
 
             code = row["domain_code"]
 
-            domain = Domain.objects.filter(
-                domain_code__iexact=code
-            ).first()
+            domain = Domain.objects.filter(domain_code__iexact=code).first()
 
             if domain is None:
                 domain = Domain(domain_code=code)
@@ -230,8 +212,7 @@ class Command(BaseCommand):
 
                         self.stdout.write(
                             self.style.WARNING(
-                                f"Failed to upload image for "
-                                f"domain {code}: {e}"
+                                f"Failed to upload image for " f"domain {code}: {e}"
                             )
                         )
 
@@ -239,8 +220,7 @@ class Command(BaseCommand):
 
                     self.stdout.write(
                         self.style.WARNING(
-                            f"Image file not found for "
-                            f"domain {code}: {image_path}"
+                            f"Image file not found for " f"domain {code}: {image_path}"
                         )
                     )
 
@@ -284,8 +264,7 @@ class Command(BaseCommand):
 
                 self.stdout.write(
                     self.style.WARNING(
-                        f"Parent domain not found for "
-                        f"{code}: {parent_code}"
+                        f"Parent domain not found for " f"{code}: {parent_code}"
                     )
                 )
 

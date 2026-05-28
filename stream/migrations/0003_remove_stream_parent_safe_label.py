@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('stream', '0002_initial'),
+        ("stream", "0002_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='stream',
-            name='parent_safe_label',
+            model_name="stream",
+            name="parent_safe_label",
         ),
     ]

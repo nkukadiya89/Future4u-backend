@@ -94,7 +94,7 @@ class StudentProfile(models.Model):
     career_direction = models.JSONField(default=list, blank=True, null=True)
     education = models.JSONField(default=list, blank=True, null=True)
     skills = models.JSONField(default=list, null=True, blank=True)
-    projects = models.JSONField(default=list, null=True,blank=True)
+    projects = models.JSONField(default=list, null=True, blank=True)
     internships = models.JSONField(default=list, null=True, blank=True)
     certifications = models.JSONField(default=list, null=True, blank=True)
     achievements = models.JSONField(default=list, null=True, blank=True)
@@ -103,7 +103,7 @@ class StudentProfile(models.Model):
     linkedin_url = models.CharField(max_length=200, null=True, blank=True)
     github_url = models.CharField(max_length=200, null=True, blank=True)
     portfolio = models.CharField(max_length=200, null=True, blank=True)
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True, blank=True)
 
@@ -203,7 +203,7 @@ class Profile(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profiles"
     )
 
-    title = models.CharField(max_length=150)  
+    title = models.CharField(max_length=150)
 
     country = models.CharField(max_length=100, null=True, blank=True)
     state = models.CharField(max_length=100, null=True, blank=True)
@@ -246,7 +246,6 @@ class Profile(models.Model):
 
 
 class ProfessionalProfile(models.Model):
-    
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -257,7 +256,7 @@ class ProfessionalProfile(models.Model):
     )
 
     language = models.ManyToManyField(
-        "language_master.Language",           
+        "language_master.Language",
         blank=True,
         related_name="professional_profiles",
         help_text="Preferred languages selected from Language master",
@@ -274,7 +273,7 @@ class ProfessionalProfile(models.Model):
         choices=EmploymentType.choices,
         null=True,
         blank=True,
-        help_text="Current employment status"
+        help_text="Current employment status",
     )
 
     class ExperienceRange(models.TextChoices):
@@ -289,7 +288,7 @@ class ProfessionalProfile(models.Model):
         choices=ExperienceRange.choices,
         null=True,
         blank=True,
-        help_text="Years of professional experience"
+        help_text="Years of professional experience",
     )
 
     education_level = models.ForeignKey(
@@ -340,9 +339,9 @@ class ParentProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        null=True, blank=True,
+        null=True,
+        blank=True,
         related_name="parent_profile",
-        
     )
 
     language = models.ManyToManyField(

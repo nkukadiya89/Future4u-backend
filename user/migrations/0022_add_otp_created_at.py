@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0021_alter_customgroup_created_at_and_more'),
+        ("user", "0021_alter_customgroup_created_at_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='otp_created_at',
+            model_name="user",
+            name="otp_created_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

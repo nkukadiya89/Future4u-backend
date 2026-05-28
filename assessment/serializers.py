@@ -1,9 +1,19 @@
 from rest_framework import serializers
 
+from assessment.models import (
+    CareerDirection,
+    CareerValue,
+    Concern,
+    Option,
+    Question,
+    StudentAssessment,
+    UserGoal,
+    UserResponse,
+)
 from common.serializers import BaseModelSerializer
-from assessment.models import Option, Question, StudentAssessment, UserResponse
 from domain.models import Domain
 from user.serializers import UserQuickSerializer
+
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,7 +47,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             "options",
         ]
 
-#Used for the full response 
+
 class AssessmentQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
@@ -47,6 +57,7 @@ class AssessmentQuestionSerializer(serializers.ModelSerializer):
             "dimension",
             "question_type",
         ]
+
 
 class AssessmentQuestionResponseSerializer(serializers.ModelSerializer):
     question = AssessmentQuestionSerializer(read_only=True)
@@ -60,8 +71,11 @@ class AssessmentQuestionResponseSerializer(serializers.ModelSerializer):
             "selected_option",
         ]
 
+
 class UserResponseSerializer(serializers.ModelSerializer):
-    assessment = serializers.PrimaryKeyRelatedField(queryset=StudentAssessment.objects.all(), required=False)
+    assessment = serializers.PrimaryKeyRelatedField(
+        queryset=StudentAssessment.objects.all(), required=False
+    )
     user = UserQuickSerializer(read_only=True)
 
     class Meta:
@@ -80,12 +94,16 @@ class UserResponseSerializer(serializers.ModelSerializer):
 
         assessment = attrs.get("assessment")
         if assessment and question:
-            exists = UserResponse.objects.filter(assessment=assessment, question=question)
+            exists = UserResponse.objects.filter(
+                assessment=assessment, question=question
+            )
             if self.instance:
                 exists = exists.exclude(pk=self.instance.pk)
             if exists.exists():
                 raise serializers.ValidationError(
-                    {"question": "Response already exists for this assessment and question."}
+                    {
+                        "question": "Response already exists for this assessment and question."
+                    }
                 )
 
         return attrs
@@ -107,20 +125,31 @@ class StudentAssessmentSerializer(BaseModelSerializer):
         required=False,
         allow_null=True,
     )
+    domain_category_name = serializers.CharField(source="domain_category.domain_name", read_only=True, default=None)
+    domain_name = serializers.CharField(source="domain.domain_name", read_only=True, default=None)
+    career_direction_name = serializers.SerializerMethodField()
+    concerns_name = serializers.SerializerMethodField()
+    career_values_name = serializers.SerializerMethodField()
+    user_goals_name = serializers.SerializerMethodField()
     user = UserQuickSerializer(read_only=True)
     responses = AssessmentQuestionResponseSerializer(many=True, read_only=True)
 
-    
     class Meta:
         model = StudentAssessment
         fields = BaseModelSerializer.Meta.fields + [
             "domain_category",
+            "domain_category_name",
             "domain",
+            "domain_name",
             "career_direction",
+            "career_direction_name",
             "parent_support",
             "concerns",
+            "concerns_name",
             "career_values",
+            "career_values_name",
             "user_goals",
+            "user_goals_name",
             "current_screen",
             "user",
             "is_completed",
@@ -153,11 +182,22 @@ class StudentAssessmentSerializer(BaseModelSerializer):
             )
 
         return attrs
+    def get_career_direction_name(self, obj):
+        return list(obj.career_direction.values_list('name', flat=True))
+    
+    def get_concerns_name(self, obj):
+        return list(obj.concerns.values_list("name", flat=True))
+
+    def get_career_values_name(self, obj):
+        return list(obj.career_values.values_list("name", flat=True))
+
+    def get_user_goals_name(self, obj):
+        return list(obj.user_goals.values_list("name", flat=True))
 
 class StudentAssessmentCreateSerializer(BaseModelSerializer):
     class Meta:
         model = StudentAssessment
-        fields = BaseModelSerializer.Meta.fields +  [
+        fields = BaseModelSerializer.Meta.fields + [
             "id",
             "current_screen",
             "is_completed",
@@ -176,7 +216,30 @@ class NextQuestionSerializer(serializers.ModelSerializer):
             "options",
         ]
 
+
 class AssessmentResponseSerializer(serializers.Serializer):
     assessment = serializers.IntegerField()
     question = serializers.IntegerField()
     selected_option = serializers.IntegerField()
+
+
+
+class ConcernSerializer(BaseModelSerializer):
+    class Meta:
+        model = Concern
+        fields = BaseModelSerializer.Meta.fields + ["name"]
+
+class CareerValueSerializer(BaseModelSerializer):
+    class Meta:
+        model = CareerValue
+        fields = BaseModelSerializer.Meta.fields + ["name"]
+
+class UserGoalSerializer(BaseModelSerializer):
+    class Meta:
+        model = UserGoal
+        fields = BaseModelSerializer.Meta.fields + ["name"]
+
+class CareerDirectionSerializer(BaseModelSerializer):
+    class Meta:
+        model = CareerDirection
+        fields = BaseModelSerializer.Meta.fields + ["name"]

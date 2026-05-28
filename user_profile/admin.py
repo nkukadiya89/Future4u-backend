@@ -1,7 +1,13 @@
 from django import forms
 from django.contrib import admin
 
-from user_profile.models import BusinessSetting, ParentProfile, ProfessionalProfile, StudentProfile, UserProfile
+from user_profile.models import (
+    BusinessSetting,
+    ParentProfile,
+    ProfessionalProfile,
+    StudentProfile,
+    UserProfile,
+)
 
 admin.site.register(BusinessSetting)
 
@@ -46,6 +52,7 @@ class UserProfileAdminForm(forms.ModelForm):
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
     """Base profile admin for Super Admin with language preference"""
+
     form = UserProfileAdminForm
     list_display = (
         "user",
@@ -80,6 +87,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
     """Student-specific profile admin with language and educational fields"""
+
     list_display = (
         "user",
         "science_track",
@@ -159,7 +167,14 @@ class StudentProfileAdmin(admin.ModelAdmin):
 @admin.register(ParentProfile)
 class ParentProfileAdmin(admin.ModelAdmin):
     """Parent-specific profile admin"""
-    list_display = ("user", "relationship", "child_name", "child_education_level", "stream")
+
+    list_display = (
+        "user",
+        "relationship",
+        "child_name",
+        "child_education_level",
+        "stream",
+    )
     search_fields = ("user__email", "user__first_name", "user__last_name", "child_name")
     list_filter = ("relationship", "child_education_level", "stream")
     readonly_fields = ("user", "created_at", "updated_at")
@@ -178,7 +193,17 @@ class ParentProfileAdmin(admin.ModelAdmin):
         ("Identity", {"fields": ("user",)}),
         ("Language", {"fields": ("language",)}),
         ("About", {"fields": ("relationship",)}),
-        ("Child Information", {"fields": ("child_name", "child_education_level", "stream", "academic_performance")}),
+        (
+            "Child Information",
+            {
+                "fields": (
+                    "child_name",
+                    "child_education_level",
+                    "stream",
+                    "academic_performance",
+                )
+            },
+        ),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
 
@@ -186,6 +211,7 @@ class ParentProfileAdmin(admin.ModelAdmin):
 @admin.register(ProfessionalProfile)
 class ProfessionalProfileAdmin(admin.ModelAdmin):
     """Professional-specific profile admin"""
+
     list_display = (
         "user",
         "employment_type",
@@ -193,7 +219,12 @@ class ProfessionalProfileAdmin(admin.ModelAdmin):
         "education_level",
         "current_job_title",
     )
-    search_fields = ("user__email", "user__first_name", "user__last_name", "current_job_title")
+    search_fields = (
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+        "current_job_title",
+    )
     list_filter = ("employment_type", "years_of_experience")
     readonly_fields = ("user", "created_at", "updated_at")
     raw_id_fields = ("user", "education_level")
@@ -215,7 +246,15 @@ class ProfessionalProfileAdmin(admin.ModelAdmin):
         ("Language", {"fields": ("language",)}),
         (
             "Employment",
-            {"fields": ("employment_type", "years_of_experience", "current_job_title", "current_industry", "company_size")},
+            {
+                "fields": (
+                    "employment_type",
+                    "years_of_experience",
+                    "current_job_title",
+                    "current_industry",
+                    "company_size",
+                )
+            },
         ),
         (
             "Education",

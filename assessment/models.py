@@ -128,6 +128,43 @@ class UserResponse(models.Model):
     def __str__(self):
         return f"user={self.user_id}, question={self.question_id}, option={self.selected_option_id}"
 
+
+class Concern(BaseModule):
+    name = models.CharField(max_length=150)
+    
+    def __str__(self):
+        return f"{self.name}"
+    
+    class Meta:
+        db_table = "assessment_concern"
+
+class CareerValue(BaseModule):
+    name = models.CharField(max_length=150)
+
+    def __str__(self):
+        return f"{self.name}"
+    
+    class Meta:
+        db_table = "assessment_career_value"
+
+class UserGoal(BaseModule):
+    name = models.CharField(max_length=150)
+
+    def __str__(self):
+        return f"{self.name}"
+    
+    class Meta:
+        db_table = "assessment_usergoal"
+
+class CareerDirection(BaseModule):
+    name = models.CharField(max_length=150)
+
+    def __str__(self):
+        return f"{self.name}"
+    
+    class Meta:
+        db_table = "assessment_career_direction"
+
 class StudentAssessment(BaseModule):
     class Screen(models.TextChoices):
         EDUCATION_LEVEL = "education_level", "Education Level"
@@ -173,11 +210,13 @@ class StudentAssessment(BaseModule):
         related_name="assessments",
         help_text="Child domain selected by the student.",
     )
-    career_direction = models.JSONField(default=list, blank=True, null=True)
-    parent_support = models.CharField(choices=PARENT_CHOICES, max_length=150, null=True, blank=True)
-    concerns = models.JSONField(default=list, blank=True, null=True)
-    career_values = models.JSONField(default=list, blank=True, null=True)
-    user_goals = models.JSONField(default=list, blank=True, null=True)
+    parent_support = models.CharField(
+        choices=PARENT_CHOICES, max_length=150, null=True, blank=True
+    )
+    concerns = models.ManyToManyField(Concern, blank=True)
+    career_direction = models.ManyToManyField(CareerDirection, blank=True)
+    career_values = models.ManyToManyField(CareerValue, blank=True)
+    user_goals = models.ManyToManyField(UserGoal, blank=True)
     current_screen = models.CharField(
         max_length=32,
         choices=Screen.choices,
@@ -188,6 +227,6 @@ class StudentAssessment(BaseModule):
     class Meta:
         db_table = "student_assessment"
         ordering = ["-created_at"]
+
     def __str__(self):
         return f"Assessment {self.id} - User {self.user_id}"
-    

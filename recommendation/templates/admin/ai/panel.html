@@ -1,0 +1,63 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content %}
+  <div class="content">
+    <p>
+      Test the AI career recommendation pipeline for a student assessment.
+      This runs the same flow used by the API, saves the recommendation, and shows the JSON output.
+    </p>
+
+    <div class="module" style="margin-bottom: 16px;">
+      <h2>{% translate "Provider status" %}</h2>
+      <table>
+        <tbody>
+          <tr><th scope="row">{% translate "Mode" %}</th><td>{{ provider.mode }}</td></tr>
+          <tr><th scope="row">{% translate "AI recommendations enabled" %}</th><td>{{ provider.ai_recommendations_enabled }}</td></tr>
+          <tr><th scope="row">{% translate "Groq" %}</th><td>{% if provider.groq_configured %}configured{% else %}not configured{% endif %}</td></tr>
+          <tr><th scope="row">{% translate "AI tracing enabled" %}</th><td>{{ provider.ai_tracing_enabled }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <form method="post" style="margin: 16px 0;">
+      {% csrf_token %}
+      <fieldset class="module aligned">
+        {{ form.as_p }}
+      </fieldset>
+      <div class="submit-row">
+        <input type="submit" class="default" value="{% translate 'Generate AI recommendations' %}" />
+      </div>
+    </form>
+
+    {% if form.errors %}
+      <ul class="messagelist">
+        {% for field_errors in form.errors.values %}
+          {% for message in field_errors %}
+            <li class="error">{{ message }}</li>
+          {% endfor %}
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% if error %}
+      <ul class="messagelist">
+        <li class="error">{{ error }}</li>
+      </ul>
+    {% endif %}
+
+    {% if diagnostics_pretty %}
+      <div class="module">
+        <h2>{% translate "Run context" %}</h2>
+        <pre style="white-space: pre-wrap; word-break: break-word;">{{ diagnostics_pretty }}</pre>
+      </div>
+    {% endif %}
+
+    {% if result_pretty %}
+      <div class="module">
+        <h2>{% translate "AI output" %}</h2>
+        <pre style="white-space: pre-wrap; word-break: break-word;">{{ result_pretty }}</pre>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
