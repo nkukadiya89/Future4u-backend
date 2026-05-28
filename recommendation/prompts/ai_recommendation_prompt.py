@@ -39,7 +39,7 @@ RULES:
 - Adapt education and roadmap to the student's current education level and stream.
 - Keep careers, skills, education, roadmap, and insights unique per career.
 - Reasons must be concrete: mention actual skills, work style, concern, goal, or field reality.
-- ai_insight must name 1-2 specific signals from the input, such as selected answer meaning, education level, stream, concern, value, goal, parent support, or a clearly high/low dimension score.
+- ai_insight is one warm mentor-tone sentence grounded in the student's actual profile data — not generic observations.
 - Use respectful student-facing language; avoid labels like "low-skill", "weak", "poor fit", or wording that sounds discouraging.
 - why_this_career: max {why_career_max_bullets} bullets, {why_career_min_words}-{why_career_max_words} words each.
 - ai_insight: {ai_insight_min_words}-{ai_insight_max_words} words, one sentence.

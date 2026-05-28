@@ -35,6 +35,11 @@ urlpatterns = [
         name="api-ai-recommendations",
     ),
     path(
+        "api/ai-recommendations/<int:assessment_id>/chat/",
+        AIRecommendationChatAPIView.as_view(),
+        name="api-ai-recommendations-chat",
+    ),
+    path(
         "api/recommendations/domain/<uuid:id>/",
         RecommendationDomainDetailAPIView.as_view(),
         name="api-recommendations-domain-detail",

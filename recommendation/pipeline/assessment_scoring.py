@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 DIMENSION_KEYS = ("interest", "aptitude", "personality", "work_style")
-SIGNAL_WORD_LIMIT = 12
+SIGNAL_WORD_LIMIT = 20
 SIGNALS_PER_DIMENSION = 6
 
 

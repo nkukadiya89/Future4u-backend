@@ -83,6 +83,10 @@ class AssessmentContextBuilder:
                 "is_completed": api.get("is_completed"),
             }
         )
+        computed = cls.build_computed_signals(assessment)
+        structured["personality_traits"] = computed.get("personality_traits")
+        structured["strengths"] = computed.get("strengths")
+        structured["consistency"] = computed.get("consistency")
         return _make_json_safe(structured)
 
     @classmethod
