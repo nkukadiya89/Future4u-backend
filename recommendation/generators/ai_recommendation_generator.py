@@ -51,8 +51,6 @@ class AIRecommendationGenerator:
             )
             chain = prompt | structured_llm
             result = chain.invoke(inputs)
-            raw = cls._coerce_payload(result)
-            payload = normalize_payload(raw)
         except ValidationError as exc:
             logger.warning("LLM output validation failed: %s", exc)
             raise AIGenerationError("AI response failed validation") from exc
@@ -61,6 +59,13 @@ class AIRecommendationGenerator:
             if _is_invalid_model_output(exc):
                 raise AIGenerationError("AI response failed validation") from exc
             raise AIGenerationError(_format_llm_error(exc)) from exc
+
+        try:
+            raw = cls._coerce_payload(result)
+            payload = normalize_payload(raw)
+        except ValidationError as exc:
+            logger.warning("LLM output validation failed: %s", exc)
+            raise AIGenerationError("AI response failed validation") from exc
 
         gaps = _payload_gaps(payload)
         if gaps:

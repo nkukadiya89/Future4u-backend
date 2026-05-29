@@ -286,5 +286,26 @@ AI_RECOMMENDATIONS_ENABLED = config(
     cast=bool,
 )
 AI_TRACING_ENABLED = config("AI_TRACING_ENABLED", default=False, cast=bool)
-LANGSMITH_API_KEY = config("LANGSMITH_API_KEY", default="").strip()
-LANGSMITH_PROJECT = config("LANGSMITH_PROJECT", default="future4u")
+
+# LangSmith only — private settings; never used in recommendation pipeline or API output.
+_LANGSMITH_TRACING_ENABLED = AI_TRACING_ENABLED or config(
+    "LANGCHAIN_TRACING_V2",
+    default=config("LANGSMITH_TRACING_V2", default=False),
+    cast=bool,
+)
+_LANGSMITH_API_KEY = config(
+    "LANGSMITH_API_KEY",
+    default=config("LANGCHAIN_API_KEY", default=""),
+).strip()
+_LANGSMITH_PROJECT = config(
+    "LANGSMITH_PROJECT",
+    default=config("LANGCHAIN_PROJECT", default="future4u"),
+)
+
+from future4u.langsmith_tracing import apply_langsmith_tracing_env
+
+apply_langsmith_tracing_env(
+    enabled=_LANGSMITH_TRACING_ENABLED,
+    api_key=_LANGSMITH_API_KEY,
+    project=_LANGSMITH_PROJECT,
+)
