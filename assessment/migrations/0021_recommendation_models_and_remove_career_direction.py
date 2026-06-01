@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("assessment", "0020_alter_studentassessment_updated_at"),
-        ("career", "0003_alter_career_updated_at"),
+        # career dependency removed — career app is deleted; migration already applied in production
         ("domain", "0018_alter_domain_updated_at"),
         ("skill", "0003_alter_skill_updated_at"),
     ]

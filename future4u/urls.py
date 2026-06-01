@@ -21,10 +21,6 @@ from user.user_auth import CustomTokenObtainPairView
 from future4u.routers import future4u_router
 from recommendation.ai_views import AIRecommendationAPIView
 from recommendation.chat_views import AIRecommendationChatAPIView
-from recommendation.views import (
-    CareerDetailsAPIView,
-    RecommendationDomainDetailAPIView,
-)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -38,16 +34,6 @@ urlpatterns = [
         "api/ai-recommendations/<int:assessment_id>/chat/",
         AIRecommendationChatAPIView.as_view(),
         name="api-ai-recommendations-chat",
-    ),
-    path(
-        "api/recommendations/domain/<uuid:id>/",
-        RecommendationDomainDetailAPIView.as_view(),
-        name="api-recommendations-domain-detail",
-    ),
-    path(
-        "api/careers/<uuid:id>/details/",
-        CareerDetailsAPIView.as_view(),
-        name="api-career-details",
     ),
     path("", include(future4u_router.urls)),
     path("", include("subscription.urls")),
