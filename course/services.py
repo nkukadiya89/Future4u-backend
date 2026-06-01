@@ -25,7 +25,6 @@ def _get_user_education_level(user):
     except ObjectDoesNotExist:
         pass
 
-    # Fallback: direct attribute on User (legacy support)
     return getattr(user, "education_level", None)
 
 
@@ -48,22 +47,15 @@ def match_courses(ai_skills, ai_education, user, courses_qs):
         course_skills = normalize_list(course.skills)
         course_levels = course.education_tags or []
 
-        # --- Education-level gate ---
         if has_education:
-            # User's current level matches the course entry requirement
-            current_level_match = user_level in course_levels
-            # Course is a next-step progression from the user's level
             next_level_match = any(
                 level in course_levels for level in next_levels
             )
-            # Certifications are always available for upskilling
             if not (
-                current_level_match
-                or next_level_match
+                next_level_match
                 or course.course_type == "certification"
             ):
                 continue
-        # else: no education level on profile → show all course types
 
         skill_matches = [
             s for s in ai_skills if is_match(s, course_skills)
@@ -75,10 +67,8 @@ def match_courses(ai_skills, ai_education, user, courses_qs):
         score = 0
         score += len(skill_matches) * 10
 
-        # Boost for educationally relevant courses
-        if has_education and (
-            user_level in course_levels
-            or any(level in course_levels for level in next_levels)
+        if has_education and any(
+            level in course_levels for level in next_levels
         ):
             score += 10
 
@@ -104,5 +94,4 @@ def match_courses(ai_skills, ai_education, user, courses_qs):
         result.append({"course": course, "score": score})
 
     result.sort(key=lambda x: x["score"], reverse=True)
-
-    return [item["course"] for item in result]
+    return result[:20]

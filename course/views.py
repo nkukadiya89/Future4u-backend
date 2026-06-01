@@ -81,13 +81,21 @@ class CoursesViewSet(BaseModelViewSet):
             user=request.user,
             courses_qs=courses_qs,
             )
-        serializer = self.get_serializer(courses, many=True)
+        data = []
+
+        for item in courses:
+            serialized_course = self.get_serializer(item["course"]).data
+
+            data.append({
+                "score":item["score"],
+                "courses":serialized_course,
+            })
         return Response(
             {
                 "success": True,
-                "count": len(serializer.data),
+                "count": len(data),
                 "message": "Recommended courses",
-                "data": serializer.data,
+                "data": data,
             },
             status=status.HTTP_200_OK,
         )
