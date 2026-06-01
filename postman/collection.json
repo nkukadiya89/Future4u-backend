@@ -10363,7 +10363,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain_category\": \"{{domain_category_id}}\",\n  \"domain\": \"{{domain_id}}\",\n  \"career_direction\": [\"study further\", \"Internship\"],\n  \"parent_support\": \"very_supportive\",\n  \"concerns\": [\"Job Security\", \"Wrong career choice\"],\n  \"career_values\": [\"High Salary\"],\n  \"user_goals\": [\"Career Clarity\"]\n}"
+              "raw": "{\n  \"domain_category\": \"{{domain_category_id}}\",\n  \"domain\": \"{{domain_id}}\",\n  \"career_direction\": [1],\n  \"parent_support\": \"very_supportive\",\n  \"concerns\": [1,2],\n  \"career_values\": [2],\n  \"user_goals\": [1]\n}"
             }
           },
           "response": []
@@ -10606,14 +10606,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/career-suggestions/1/",
+              "raw": "{{base_url}}/api/career-suggestions-detail/1/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
-                "career-suggestions",
-                "25",
+                "career-suggestions-detail",
+                "2",
                 ""
               ]
             },
@@ -15250,7 +15250,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Python for Data Science\",\n  \"course_type\": \"course\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\", \"Data Analysis\"],\n  \"education_tags\": [\"higher_secondary\"],\n  \"duration\": \"8 weeks\",\n  \"provider\": {{user_id}},\n  \"city\": {{city_id}},\n  \"course_overview\": \"Learn Python from basics to ML.\",\n  \"why_this_course\": [\"High demand skills\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\", \"Pandas\", \"ML basics\"]\n}"
+              "raw": "{\n  \"name\": \"Python for Data Science\",\n  \"course_type\": \"certification\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\", \"Data Analysis\"],\n  \"education_tags\": [\"higher_secondary\"],\n  \"duration\": \"8 weeks\",\n  \"provider\": {{user_id}},\n  \"city\": {{city_id}},\n  \"course_overview\": \"Learn Python from basics to ML.\",\n  \"why_this_course\": [\"High demand skills\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\", \"Pandas\", \"ML basics\"]\n}"
             }
           },
           "response": []

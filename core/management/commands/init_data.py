@@ -299,6 +299,8 @@ class Command(BaseCommand):
             "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
+            "course|Can view courses",
+            "assessment_career|Can view career recommendation suggestions"
         ]
 
         # Parent Permissions - View linked child's data
@@ -332,6 +334,10 @@ class Command(BaseCommand):
             "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
+            "course|Can view courses",
+            "course|Can add courses",
+            "course|Can change courses",
+            "course|Can delete courses",
         ]
 
         # Institute Permissions - Manage courses, grade students
@@ -345,6 +351,10 @@ class Command(BaseCommand):
             "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
+            "course|Can view courses",
+            "course|Can add courses",
+            "course|Can change courses",
+            "course|Can delete courses",
         ]
 
         # Corporate Permissions - Post jobs, view candidates
@@ -356,6 +366,10 @@ class Command(BaseCommand):
             "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
+            "course|Can view courses",
+            "course|Can add courses",
+            "course|Can change courses",
+            "course|Can delete courses",
         ]
 
         # Assign superuser to Super Admin group
