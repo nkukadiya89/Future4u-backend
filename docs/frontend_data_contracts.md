@@ -231,40 +231,30 @@ Progress object fields:
 
 ## 3) Recommendation APIs
 
-### GET `/api/recommendations/`
+### GET `/api/ai-recommendations/{assessment_id}/`
 - **Auth**: Bearer JWT
 - **Response**
   - `success`: boolean
   - `data`: object
 
 `data` fields:
-- `top_domains`: array
-- `top_careers`: array
-- `skill_gaps`: array
+- `ai_disclaimer`: string
+- `ai_insight`: string
+- `top_suggestions`: array
+- `easy_decision_making`: array
+- `last_recommended_at`: datetime string
 
-### GET `/api/recommendations/domain/{id}/`
+### GET `/api/ai-recommendations/{assessment_id}/chat/?suggestion_id={id}`
 - **Auth**: Bearer JWT
 - **Response**
   - `success`: boolean
   - `data`: object
 
-`data` fields:
-- `domain`: object
-- `related_careers`: array of `{ id, name }`
-- `required_skills`: array of `{ id, name }`
-
-### GET `/api/careers/{id}/details/`
+### POST `/api/ai-recommendations/{assessment_id}/chat/`
 - **Auth**: Bearer JWT
-- **Response**
-  - `success`: boolean
-  - `data`: object
-
-`data` fields:
-- `id`, `code`, `name`, `description`
-- `required_skills`: array of `{ id, name }`
-- `eligibility`: object
-  - `min_education_level`: `{ id, name }`
-  - `max_education_level`: `{ id, name }`
+- **Body**
+  - `suggestion_id`: integer
+  - `message`: string
 
 ## 4) User Skill APIs
 

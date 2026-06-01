@@ -10,18 +10,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterUniqueTogether(
-            name='assessmentcareerrecommendation',
-            unique_together=None,
-        ),
-        migrations.RemoveIndex(
-            model_name='assessmentcareerrecommendation',
-            name='assessment__assessm_3f7799_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='assessmentcareerrecommendation',
-            name='assessment__career__6f2798_idx',
-        ),
+        # OptionCareerMapping + AssessmentCareerRecommendation removed — referenced deleted career.Career
         migrations.AlterUniqueTogether(
             name='assessmentdomainscore',
             unique_together=None,
@@ -51,14 +40,6 @@ class Migration(migrations.Migration):
             name='skill',
         ),
         migrations.RemoveField(
-            model_name='assessmentcareerrecommendation',
-            name='assessment',
-        ),
-        migrations.RemoveField(
-            model_name='assessmentcareerrecommendation',
-            name='career',
-        ),
-        migrations.RemoveField(
             model_name='assessmentdomainscore',
             name='assessment',
         ),
@@ -75,13 +56,7 @@ class Migration(migrations.Migration):
             name='skill',
         ),
         migrations.DeleteModel(
-            name='OptionCareerMapping',
-        ),
-        migrations.DeleteModel(
             name='OptionSkillMapping',
-        ),
-        migrations.DeleteModel(
-            name='AssessmentCareerRecommendation',
         ),
         migrations.DeleteModel(
             name='AssessmentDomainScore',
