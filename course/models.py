@@ -7,6 +7,7 @@ from city.models import City
 class Courses(BaseModule):
     
     COURSE_TYPE_CHOICES = (
+        ("diploma", "Diploma"),
         ("degree", "Degree"),
         ("certification", "Certification"),
         ("training", "Training"),
