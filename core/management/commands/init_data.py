@@ -279,6 +279,8 @@ class Command(BaseCommand):
             "stream|Can view stream",
             "user|Can view user",
             "course|Can view courses",
+            "course|Can add course inquiry",
+            "course|Can view course inquiry",
             "assessment_career|Can view career recommendation suggestions"
         ]
 
@@ -300,6 +302,7 @@ class Command(BaseCommand):
             "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
+            "course|Can view course inquiry",
         ]
 
         # School/College Permissions - Manage their students
@@ -314,6 +317,7 @@ class Command(BaseCommand):
             "course|Can add courses",
             "course|Can change courses",
             "course|Can delete courses",
+            "course|Can view course inquiry",
         ]
 
         # Institute Permissions - Manage courses, grade students
@@ -330,6 +334,7 @@ class Command(BaseCommand):
             "course|Can add courses",
             "course|Can change courses",
             "course|Can delete courses",
+            "course|Can view course inquiry",
         ]
 
         # Corporate Permissions - Post jobs, view candidates
@@ -344,6 +349,7 @@ class Command(BaseCommand):
             "course|Can add courses",
             "course|Can change courses",
             "course|Can delete courses",
+            "course|Can view course inquiry",
         ]
 
         # Assign superuser to Super Admin group

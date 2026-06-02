@@ -74,7 +74,7 @@ class User(AbstractUser):
     otp = models.IntegerField(null=True, blank=True)
     otp_created_at = models.DateTimeField(null=True, blank=True)
     designation = models.CharField(max_length=30, null=True, blank=True)
-    phone = models.CharField(max_length=15, null=True, blank=True)
+    phone = models.CharField(max_length=15, null=True, blank=True, unique=True)
     is_active = models.BooleanField(default=False)
     status = models.CharField(choices=STATUS_CHOICES, default="pending", max_length=25)
     user_type = models.CharField(max_length=20, choices=Role.choices)

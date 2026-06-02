@@ -13792,6 +13792,71 @@
           ]
         },
         {
+          "name": "my-inquiries (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/my-inquiries/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "my-inquiries",
+                ""
+              ]
+            },
+            "description": "Returns inquiries submitted by the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "recevied-inquiries (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/recevied-inquiries/?course_id={{course_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "recevied-inquiries",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "course_id",
+                  "value": "{{course_id}}",
+                  "description": "Required. Course id whose provider is the authenticated user."
+                }
+              ]
+            },
+            "description": "Returns inquiries received for courses where the authenticated user is the provider. Requires course_id."
+          },
+          "response": []
+        },
+        {
           "name": "create (POST)",
           "request": {
             "method": "POST",
@@ -14003,6 +14068,246 @@
       ]
     },
     {
+      "name": "course-inquiry",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/?page=1&pagesize=10&search=&ordering=-created_at",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search by name, email, phone, message"
+                },
+                {
+                  "key": "ordering",
+                  "value": "-created_at"
+                }
+              ]
+            },
+            "description": "List course inquiries. Optional: course filter via search params if configured on the viewset."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || (json.results && json.results.data) || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('course_inquiry_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"course\": {{course_id}},\n  \"name\": \"John Doe\",\n  \"phone\": \"9876543210\",\n  \"email\": \"john@example.com\",\n  \"message\": \"I would like more information about this course.\"\n}"
+            },
+            "description": "Submit a course inquiry. user and created_by are set from the authenticated user."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const row = json.data;",
+                  "    if (row && row.id != null) pm.collectionVariables.set('course_inquiry_id', String(row.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/{{course_inquiry_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "{{course_inquiry_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/{{course_inquiry_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "{{course_inquiry_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"course\": {{course_id}},\n  \"name\": \"John Doe Updated\",\n  \"phone\": \"9876543210\",\n  \"email\": \"john.updated@example.com\",\n  \"message\": \"Updated inquiry message.\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/{{course_inquiry_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "{{course_inquiry_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Follow-up: please share batch timings.\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/{{course_inquiry_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "{{course_inquiry_id}}",
+                ""
+              ]
+            },
+            "description": "Soft-deletes (archives) the inquiry record."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "resume_builder",
       "item": [
         {
@@ -14160,6 +14465,10 @@
     },
     {
       "key": "course_id",
+      "value": "1"
+    },
+    {
+      "key": "course_inquiry_id",
       "value": "1"
     },
     {

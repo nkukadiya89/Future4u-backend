@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Courses
+from .models import Courses, CourseInquiry
 from common.serializers import BaseModelSerializer
 
 class CoursesSerializer(BaseModelSerializer):
@@ -30,3 +30,21 @@ class CoursesSerializer(BaseModelSerializer):
         if obj.provider:
             return obj.provider.full_name
         return None
+    
+
+class CourseInquirySerializer(BaseModelSerializer):
+    course_name = serializers.CharField(source="course.name", read_only=True)
+    user_name = serializers.CharField(source="user.full_name", read_only=True)
+    class Meta:
+        model = CourseInquiry
+        fields = [
+            "id",
+            "course",
+            "course_name",
+            "user",
+            "user_name",
+            "name",
+            "phone",
+            "email",
+            "message",
+        ]

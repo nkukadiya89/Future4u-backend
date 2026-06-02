@@ -2,18 +2,40 @@ from django.shortcuts import render
 from common.master_view import BaseModelViewSet
 from course.services import match_courses
 from .models import Courses
-from .serializers import CoursesSerializer
+from .serializers import CourseInquirySerializer, CoursesSerializer
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import status
 from assessment_career.models import CareerRecommendationSuggestion
 from django.utils import timezone
+from .models import CourseInquiry
 # Create your views here.
 
 class CoursesViewSet(BaseModelViewSet):
     queryset = Courses.objects.all()
     serializer_class = CoursesSerializer
+
+    search_fields = BaseModelViewSet.searching_fields +[
+        "name",
+        "course_type",
+        "skills",
+        "education_tags",
+        "mode",
+        "duration",
+        "city__name",
+        "course_content",
+        "course_overview",
+        "certification_info",
+    ]
+    ordering_fields = BaseModelViewSet.ordering_fields + [
+        "name",
+        "course_type",
+        "mode",
+        "provider",
+        "city",
+        "duration",
+    ]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -98,4 +120,71 @@ class CoursesViewSet(BaseModelViewSet):
                 "data": data,
             },
             status=status.HTTP_200_OK,
+        )
+class CourseInquiryViewSet(BaseModelViewSet):
+    queryset = CourseInquiry.objects.all()
+    serializer_class = CourseInquirySerializer  
+
+    def create(self, request,*args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            course = serializer.validated_data.get("course")
+            if CourseInquiry.objects.filter(
+                user = request.user,
+                course=course
+            ).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message":"You have already submitted an inquiry for this course.",
+                    }
+                )
+            serializer.save(
+                created_by=request.user,
+                user = request.user,
+                created_at=timezone.now(),
+            )
+            return Response(
+                {"success": True, "message":"Inquiry Created Successfully","data": serializer.data},
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(
+            {"success": False, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    @action(detail=False, methods=["get"], url_path="my-inquiries")
+    def cours_inquiries(self, request):
+        inquiries = CourseInquiry.objects.filter(
+            user = request.user
+        ).select_related("course")
+
+        serializer = self.get_serializer(inquiries, many=True)
+        return Response({
+            "success":True,
+            "count":inquiries.count(),
+            "data":serializer.data
+        })
+
+    @action(detail=False, methods=["get"], url_path="recevied-inquiries")
+    def recevied_inquiries(self, request):
+        inquiries = CourseInquiry.objects.filter(
+            course__provider = request.user
+        )
+
+        course_id = request.query_params.get("course_id")
+        if not course_id :
+            return Response(
+                {"success":False,"message":"course_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if course_id:
+            inquiries = inquiries.filter(course_id=course_id)
+        serializer = self.get_serializer(inquiries, many=True)
+        return Response(
+            {
+                "success":True,
+                "count":inquiries.count(),
+                "data":serializer.data
+            }
         )
