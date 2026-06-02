@@ -114,48 +114,6 @@ Used in scoring:
 """
 
 
-class JobSkill(models.Model):
-    LEVEL_CHOICES = (
-        ("beginner", "Beginner"),
-        ("intermediate", "Intermediate"),
-        ("advanced", "Advanced"),
-    )
-
-    job = models.ForeignKey(
-        Job, on_delete=models.CASCADE, related_name="skill_requirements"
-    )
-    skill = models.ForeignKey("skill.Skill", on_delete=models.CASCADE)
-
-    required_level = models.CharField(max_length=20, choices=LEVEL_CHOICES)
-
-    is_mandatory = models.BooleanField(default=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="jobskill_updated",
-    )
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-    deleted = models.BooleanField(default=False)
-    deleted_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="jobskill_deleted",
-    )
-    deleted_at = models.DateTimeField(null=True, blank=True)
-
-    def __str__(self):
-        return f"JobSkill<{self.id} - {self.skill.name}>"  # type: ignore
-
-    class Meta:
-        db_table = "job_skill"
-        ordering = ["-created_at"]
-
-
 """
 Defines hidden expectations of a job beyond hard requirements.
 
@@ -190,7 +148,6 @@ class JobPreference(models.Model):
 
     preferred_industries = models.JSONField(default=list, blank=True)
 
-    soft_skills = models.ManyToManyField("skill.Skill", blank=True)
 
     education_requirement = models.CharField(max_length=150, null=True, blank=True)
 

@@ -38,7 +38,6 @@ class AuthViewSet(viewsets.ViewSet):
             return Response(
                 {
                     "success": True,
-                    "message": "User registered successfully",
                     "user_id": user.id,
                     "user_type": user.user_type,
                 },
@@ -96,7 +95,7 @@ class AuthViewSet(viewsets.ViewSet):
         user.otp_created_at = None
         user.save()
         return Response(
-            {"success": True, "message": "Email verified successfully"},
+            {"success": True, "message": "Your email has been verified, and your account has been created successfully"},
             status=status.HTTP_200_OK,
         )
 

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from jobs.models import Job, JobApplication, JobPreference, JobSkill, SavedJob
+from jobs.models import Job, JobApplication, JobPreference, SavedJob
 
 
 class JobSerializer(serializers.ModelSerializer):
@@ -15,21 +15,6 @@ class JobSerializer(serializers.ModelSerializer):
             "deleted_by",
             "deleted_at",
         ]
-
-
-class JobSkillSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = JobSkill
-        fields = "__all__"
-        read_only_fields = [
-            "created_at",
-            "updated_at",
-            "updated_by",
-            "deleted",
-            "deleted_by",
-            "deleted_at",
-        ]
-
 
 class JobPreferenceSerializer(serializers.ModelSerializer):
     class Meta:

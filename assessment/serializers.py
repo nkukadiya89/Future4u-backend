@@ -69,6 +69,7 @@ class AssessmentQuestionResponseSerializer(serializers.ModelSerializer):
             "id",
             "question",
             "selected_option",
+            "text_answer",
         ]
 
 
@@ -80,16 +81,27 @@ class UserResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserResponse
-        fields = ["id", "assessment", "user", "question", "selected_option"]
+        fields = ["id", "assessment", "user", "question", "selected_option", "text_answer"]
         read_only_fields = ["id", "user"]
 
     def validate(self, attrs):
         question = attrs.get("question")
         selected_option = attrs.get("selected_option")
+        text_answer = attrs.get("text_answer", "")
 
         if selected_option and question and selected_option.question_id != question.id:
             raise serializers.ValidationError(
                 {"selected_option": "Selected option does not belong to this question."}
+            )
+
+        if question and question.question_type == Question.QuestionType.TEXT:
+            if not text_answer and not selected_option:
+                raise serializers.ValidationError(
+                    {"text_answer": "This field is required for text questions."}
+                )
+        elif not selected_option:
+            raise serializers.ValidationError(
+                {"selected_option": "This field is required for non-text questions."}
             )
 
         assessment = attrs.get("assessment")
@@ -213,6 +225,7 @@ class NextQuestionSerializer(serializers.ModelSerializer):
             "id",
             "question_text",
             "dimension",
+            "question_type",
             "options",
         ]
 
@@ -220,7 +233,13 @@ class NextQuestionSerializer(serializers.ModelSerializer):
 class AssessmentResponseSerializer(serializers.Serializer):
     assessment = serializers.IntegerField()
     question = serializers.IntegerField()
-    selected_option = serializers.IntegerField()
+    selected_option = serializers.IntegerField(required=False, allow_null=True)
+    text_answer = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        default="",
+        max_length=1000,
+    )
 
 
 

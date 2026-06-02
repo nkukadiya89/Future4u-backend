@@ -31,7 +31,6 @@ SIGNAL_ORDER = [
 ]
 
 STREAM_REQUIRED_LEVEL_CODES = {
-    "secondary",
     "higher_secondary",
     "iti",
     "diploma",
@@ -104,7 +103,7 @@ def get_question_pool(assessment, user, dimension=None):
         except Domain.DoesNotExist:
             pass
 
-    ordered_pool = question_pool.distinct().order_by("sequence_order", "id")
+    ordered_pool = question_pool.distinct().order_by("-signal_strength", "sequence_order", "id")
     if dimension:
         ids = list(
             ordered_pool.values_list("id", flat=True)[:QUESTIONS_PER_DIMENSION]
@@ -443,7 +442,7 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
         answered_count = len(answered_ids)
 
         qs = question_pool.exclude(id__in=answered_ids)
-        next_q = qs.order_by("sequence_order").first()
+        next_q = qs.order_by("-signal_strength", "sequence_order").first()
 
         if not next_q:
             sync_current_screen(assessment, request.user)
@@ -486,7 +485,7 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
 
 
 class AssessmentResponseViewSet(viewsets.GenericViewSet):
-    # Body: { "assessment": 101, "question": 1, "selected_option": 11 }
+    # Body: MCQ answers use selected_option; text questions use text_answer.
 
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
@@ -503,7 +502,6 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
 
         assessment_id = ser.validated_data["assessment"]
         question_id = ser.validated_data["question"]
-        option_id = ser.validated_data["selected_option"]
 
         try:
             assessment = StudentAssessment.objects.get(
@@ -552,22 +550,46 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            option = Option.objects.get(id=option_id, question=question)
-        except Option.DoesNotExist:
-            return Response(
-                {"success": False, "message": "Invalid option for this question"},
-                status=status.HTTP_400_BAD_REQUEST,
+        if question.question_type == Question.QuestionType.TEXT:
+            text_answer = ser.validated_data.get("text_answer", "").strip()
+            if not text_answer:
+                return Response(
+                    {"success": False, "message": "text_answer is required for this question"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            UserResponse.objects.update_or_create(
+                assessment=assessment,
+                user=request.user,
+                question=question,
+                defaults={
+                    "selected_option": None,
+                    "text_answer": text_answer,
+                },
+            )
+        else:
+            option_id = ser.validated_data.get("selected_option")
+            if not option_id:
+                return Response(
+                    {"success": False, "message": "selected_option is required for this question"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            try:
+                option = Option.objects.get(id=option_id, question=question)
+            except Option.DoesNotExist:
+                return Response(
+                    {"success": False, "message": "Invalid option for this question"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            UserResponse.objects.update_or_create(
+                assessment=assessment,
+                user=request.user,
+                question=question,
+                defaults={
+                    "selected_option": option,
+                    "text_answer": "",
+                },
             )
 
-        UserResponse.objects.update_or_create(
-            assessment=assessment,
-            user=request.user,
-            question=question,
-            defaults={
-                "selected_option": option,
-            },
-        )
         sync_current_screen(assessment, request.user)
 
         return Response(

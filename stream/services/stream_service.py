@@ -301,6 +301,7 @@ def bulk_import_rows(
     )
     imported = 0
     errors: list[StreamImportError] = []
+    seen_sequences: set[int] = set()
     for idx, raw_row in enumerate(rows, start=1):
         row = dict(raw_row)
         try:
@@ -330,6 +331,17 @@ def bulk_import_rows(
             row["education_level"] = str(edu.pk) if edu else None
         existing = None
         stream_code = (row.get("stream_code") or "").strip().lower()
+        sequence_order = row.get("sequence_order")
+        if sequence_order in seen_sequences:
+            errors.append(
+                StreamImportError(
+                    batch=batch,
+                    row_number=idx,
+                    message="Duplicate sequence_order in import file",
+                    row_data=row if isinstance(row, dict) else {},
+                )
+            )
+            continue
         if stream_code:
             existing = Stream.objects.filter(stream_code__iexact=stream_code).first()
         ser = serializer_class(
@@ -364,6 +376,8 @@ def bulk_import_rows(
                             "updated_at",
                         ]
                     )
+                if sequence_order is not None:
+                    seen_sequences.add(sequence_order)
                 imported += 1
         except ValidationError as e:
             detail = e.detail

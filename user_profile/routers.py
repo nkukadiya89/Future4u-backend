@@ -26,16 +26,12 @@ user_profile_router.register(
 
 from user_profile.internship_views import (
     InternshipApplicationViewSet,
-    InternshipProfileSkillViewSet,
 )
 from user_profile.views import BusinessSettingViewSet
 
 # from user_profile.parent_views import ParentProfileViewSet
 # from user_profile.profile_views import ProfileViewSet
 # user_profile_router.register("profiles", ProfileViewSet, basename="profiles")
-user_profile_router.register(
-    "internship-skills", InternshipProfileSkillViewSet, basename="internship-skills"
-)
 user_profile_router.register(
     "internship-applications",
     InternshipApplicationViewSet,

@@ -18,6 +18,12 @@ class DomainAdminForm(forms.ModelForm):
         model = Domain
         fields = "__all__"
 
+    domain_image_upload = forms.FileField(
+        required=False,
+        label="Upload new image",
+        help_text="Select a .jpg, .jpeg, or .png file to replace the current image.",
+    )
+
     def clean(self):
         cleaned = super().clean()
         parent = cleaned.get("parent")
@@ -41,6 +47,7 @@ class DomainAdminForm(forms.ModelForm):
 @admin.register(Domain)
 class DomainAdmin(BaseAdmin):
     form = DomainAdminForm
+    change_form_template = "admin/domain/domain/change_form.html"
     change_list_template = "admin/domain/domain/change_list.html"
 
     list_display = (
@@ -76,6 +83,7 @@ class DomainAdmin(BaseAdmin):
                     "parent",
                     "description",
                     "domain_image",
+                    "domain_image_upload",
                     "is_active",
                 )
             },
@@ -207,6 +215,8 @@ class DomainAdmin(BaseAdmin):
 
     def save_model(self, request, obj, form, change):
         obj.save(user=request.user)
+        if "domain_image_upload" in request.FILES:
+            obj.upload_domain_image(request.FILES["domain_image_upload"])
 
     @admin.action(description="Activate selected")
     def activate_selected(self, request, queryset):
@@ -235,64 +245,3 @@ class DomainAdmin(BaseAdmin):
             domain_service.restore_domain(domain=obj, user=request.user)
             n += 1
         self.message_user(request, f"{n} domain(s) restored.")
-
-
-from domain.models import (
-    DomainScoringConfig,
-    DomainReportMeta,
-    DomainCounsellorKnowledge,
-    StreamReportMeta,
-)
-
-
-@admin.register(DomainScoringConfig)
-class DomainScoringConfigAdmin(admin.ModelAdmin):
-    list_display = ("domain_code", "is_active")
-    list_filter = ("is_active",)
-    search_fields = ("domain_code",)
-    ordering = ("domain_code",)
-
-
-@admin.register(DomainReportMeta)
-class DomainReportMetaAdmin(admin.ModelAdmin):
-    list_display = ("domain_code", "note")
-    search_fields = ("domain_code",)
-    ordering = ("domain_code",)
-    fieldsets = (
-        (
-            None,
-            {
-                "fields": (
-                    "domain_code",
-                    "degrees",
-                    "careers",
-                    "note",
-                    "direction_why",
-                    "how_to_choose_hint",
-                )
-            },
-        ),
-        ("Next Steps", {"fields": ("next_step_1", "next_step_2", "next_step_3")}),
-    )
-
-
-@admin.register(DomainCounsellorKnowledge)
-class DomainCounsellorKnowledgeAdmin(admin.ModelAdmin):
-    list_display = ("domain_code",)
-    search_fields = ("domain_code",)
-    ordering = ("domain_code",)
-    fieldsets = (
-        (None, {"fields": ("domain_code", "insight", "tradeoff", "action", "tension")}),
-        ("Keywords", {"fields": ("technical_keywords", "domain_keywords")}),
-    )
-
-
-@admin.register(StreamReportMeta)
-class StreamReportMetaAdmin(admin.ModelAdmin):
-    list_display = ("stream_code", "note")
-    search_fields = ("stream_code",)
-    ordering = ("stream_code",)
-    fieldsets = (
-        (None, {"fields": ("stream_code", "why", "subjects", "careers", "note")}),
-        ("Next Steps", {"fields": ("next_step_1", "next_step_2", "next_step_3")}),
-    )

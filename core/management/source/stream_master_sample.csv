@@ -1,28 +1,73 @@
 stream_code,stream_name,sequence_order,description,is_active,education_level
-secondary_science,Science,1,Interested in science subjects after 10th,1,secondary
-secondary_commerce,Commerce,2,Interested in commerce business or accounts after 10th,1,secondary
-secondary_arts_humanities,Arts / Humanities,3,Interested in humanities social science languages or public issues after 10th,1,secondary
-secondary_skill_based,Skill-based Course,4,Interested in practical skill-based courses after 10th,1,secondary
-secondary_not_sure,Not Sure Yet,5,Not sure which path to choose after 10th,1,secondary
-secondary_other,Other,6,Another preferred path after 10th,1,secondary
-science,Science,7,Physics Chemistry Mathematics Biology focused stream,1,higher_secondary
-commerce,Commerce,8,Accounts Business Studies Economics focused stream,1,higher_secondary
-arts_humanities,Arts / Humanities,9,History Geography Political Science Sociology languages or humanities stream,1,higher_secondary
-vocational_skills,Skill-based / Vocational,10,Practical skill-based education in 11th and 12th,1,higher_secondary
-higher_secondary_other,Other,11,Another higher secondary stream or path,1,higher_secondary
-iti_electrical,Electrical Work,12,Electrical wiring repair maintenance and related trade work,1,iti
-iti_fitter_mechanical,Mechanical / Fitter,13,Mechanical fitting machine work tools and workshop practice,1,iti
-iti_computer_it,Computer / IT,14,Computer basics hardware networking software or IT support,1,iti
-iti_automobile,Automobile,15,Vehicle repair maintenance and automobile systems,1,iti
-iti_welding_fabrication,Welding / Fabrication,16,Welding fabrication metal work and workshop practice,1,iti
-iti_electronics,Electronics,17,Electronic circuits devices repair and maintenance,1,iti
-iti_beauty_wellness,Beauty & Wellness,18,Beauty wellness grooming and personal care services,1,iti
-iti_healthcare_assistant,Healthcare Assistant,19,Basic healthcare support patient care and clinical assistance,1,iti
-iti_other_vocational,Other Vocational,20,Another ITI or vocational trade,1,iti
-diploma_engineering_technical,Engineering / Technical,21,Engineering diploma paths such as mechanical civil electrical electronics or automobile,1,diploma
-diploma_computer_it,Computer / IT,22,Computer engineering information technology software networking or IT diploma paths,1,diploma
-diploma_health_paramedical,Healthcare / Paramedical,23,Paramedical healthcare lab nursing assistant or allied health diploma paths,1,diploma
-diploma_business_commerce,Business / Commerce,24,Business management office administration finance or commerce diploma paths,1,diploma
-diploma_design_creative,Design / Creative,25,Design fashion animation interior or other creative diploma paths,1,diploma
-diploma_hospitality_tourism,Hotel / Travel,26,Hotel management travel tourism culinary or hospitality diploma paths,1,diploma
-diploma_other,Other,27,Another diploma path,1,diploma
+science_pcm,Science (PCM),1,Physics Chemistry Mathematics,1,higher_secondary
+science_pcb,Science (PCB),2,Physics Chemistry Biology,1,higher_secondary
+commerce,Commerce,3,Accountancy Business Studies Economics,1,higher_secondary
+arts,Arts & Humanities,4,History Political Science Psychology Sociology,1,higher_secondary
+vocational,Vocational / Skill-Based,5,Practical job-oriented skill-based programs,1,higher_secondary
+higher_secondary_other,Other / Not Listed,6,Stream not listed above,1,higher_secondary
+iti_electrician,Electrician / Wireman,101,Electrical wiring installation repair and maintenance,1,iti
+iti_fitter,Fitter / Machinist,102,Fitting machining and workshop practice,1,iti
+iti_welder,Welder / Fabricator,103,Welding fabrication and metalwork,1,iti
+iti_electronics,Electronics Technician,104,Electronic circuits devices and repair,1,iti
+iti_computer_it,Computer Hardware & IT Support,105,Computer hardware networking and IT support,1,iti
+iti_automobile,Automobile Technician,106,Vehicle servicing repair and diagnostics,1,iti
+iti_carpenter,Carpenter,107,Woodwork furniture making and interiors,1,iti
+iti_plumber,Plumber,108,Piping plumbing sanitation installation and maintenance,1,iti
+iti_beauty_wellness,Beauty & Wellness,109,Beauty grooming salon and personal care,1,iti
+iti_healthcare,Healthcare Assistant,110,Patient support and basic clinical assistance,1,iti
+iti_other,Other ITI Trade,111,Trade not listed above,1,iti
+diploma_engineering,Engineering Diploma,201,Civil mechanical electrical electronics and automobile,1,diploma
+diploma_computer_it,Computer Science & IT Diploma,202,Computer engineering software and networking,1,diploma
+diploma_medical,Medical Lab & Paramedical Diploma,203,Medical lab pharmacy nursing and allied healthcare,1,diploma
+diploma_business,Business & Management Diploma,204,Business management office administration and finance,1,diploma
+diploma_hotel_management,Hospitality & Tourism Diploma,205,Hotel management travel tourism and culinary,1,diploma
+diploma_design,Design & Creative Diploma,206,Fashion design animation interior and creative arts,1,diploma
+diploma_agriculture,Agriculture Diploma,207,Agriculture horticulture and dairy technology,1,diploma
+diploma_other,Other Diploma,208,Diploma specialization not listed above,1,diploma
+grad_science_pcm,Science PCM (B.Sc.),301,Physics Chemistry Mathematics Statistics,1,graduation
+grad_science_pcb,Science PCB (B.Sc.),302,Biology Chemistry Biotechnology Microbiology,1,graduation
+grad_commerce,Commerce (B.Com),303,Accounting Finance Banking Taxation Business Studies,1,graduation
+grad_arts,Arts & Humanities (B.A.),304,History Political Science Psychology Sociology Economics English Literature Geography,1,graduation
+grad_engineering,Engineering & Technology (B.Tech/BE),305,Computer Science Mechanical Civil Electrical Electronics Chemical Aerospace,1,graduation
+grad_medical,Medical & Health Sciences,306,MBBS BDS BAMS BHMS B.Pharm B.Sc Nursing BPT,1,graduation
+grad_management,Business Administration (BBA/BMS),307,Marketing Finance Human Resources Operations Entrepreneurship,1,graduation
+grad_computer_app,Computer Applications (BCA),308,Software Development Web Technologies Database Management Programming,1,graduation
+grad_law,Law (LL.B / Integrated),309,LL.B BA-LLB BBA-LLB Constitutional Corporate and Criminal Law,1,graduation
+grad_agriculture,Agriculture & Allied,310,Agriculture Horticulture Forestry Fisheries Dairy Technology Food Science,1,graduation
+grad_design,Design & Creative Arts (B.Des),311,Fashion Design Graphic Design Interior Design Animation Industrial Design,1,graduation
+grad_hotel_management,Hotel Management & Tourism (BHM),312,Hospitality Hotel Administration Travel Tourism Culinary Arts,1,graduation
+grad_media,Media & Mass Communication,313,Journalism Broadcast Media Digital Media Advertising Public Relations,1,graduation
+grad_education,Education (B.Ed),314,Teaching Pedagogy Educational Psychology Curriculum Design,1,graduation
+grad_other,Other / Not Listed,315,Graduation major not listed above,1,graduation
+pg_science,Science (M.Sc.),401,Physics Chemistry Mathematics Biology Data Science Environmental Science Biotechnology,1,post_graduation
+pg_commerce,Commerce (M.Com),402,Accounting Finance Taxation International Business Banking,1,post_graduation
+pg_arts,Arts & Humanities (M.A.),403,History Psychology Sociology Economics Literature Political Science Linguistics,1,post_graduation
+pg_engineering,Engineering & Technology (M.Tech/ME),404,Computer Science VLSI Structural Thermal Power Systems AI-ML,1,post_graduation
+pg_management,Management (MBA/PGDM),405,Marketing Finance Human Resources Operations Business Analytics Strategy,1,post_graduation
+pg_computer_app,Computer Applications (MCA),406,Software Engineering Cloud Computing AI-ML Data Analytics Cybersecurity,1,post_graduation
+pg_medical,Medical Specialization (MD/MS),407,General Medicine Surgery Pediatrics Gynecology Orthopedics Radiology Psychiatry,1,post_graduation
+pg_pharmacy,Pharmacy (M.Pharm),408,Pharmaceutics Pharmacology Pharmacognosy Pharmaceutical Chemistry,1,post_graduation
+pg_nursing,Nursing & Paramedical,409,M.Sc. Nursing MPT MPH Medical Lab Technology Optometry,1,post_graduation
+pg_law,Law (LL.M),410,Constitutional Law Corporate Law International Law Human Rights Criminal Law,1,post_graduation
+pg_education,Education (M.Ed),411,Educational Leadership Curriculum Development Special Education EdTech,1,post_graduation
+pg_other,Other / Not Listed,412,Postgraduate specialization not listed above,1,post_graduation
+phd_sciences,STEM Sciences,501,Physics Chemistry Biology Mathematics Computer Science Engineering,1,doctorate
+phd_medical,Medical & Health Sciences,502,Medicine Public Health Pharmacy Nursing Biotechnology Epidemiology,1,doctorate
+phd_arts_humanities,Arts & Humanities,503,History Literature Philosophy Languages Cultural Studies Linguistics,1,doctorate
+phd_social_sciences,Social Sciences,504,Economics Sociology Political Science Psychology Geography Anthropology,1,doctorate
+phd_management,Management & Commerce,505,Finance Marketing Organizational Behavior Strategy Economics,1,doctorate
+phd_law,Law & Legal Studies,506,Constitutional Law Jurisprudence International Law Legal Philosophy,1,doctorate
+phd_education,Education,507,Educational Policy Pedagogy Curriculum Studies Educational Psychology,1,doctorate
+phd_agriculture,Agriculture & Allied,508,Agronomy Plant Science Soil Science Food Technology Veterinary Science,1,doctorate
+phd_interdisciplinary,Interdisciplinary,509,Cross-disciplinary research across multiple fields,1,doctorate
+phd_other,Other / Not Listed,510,Doctoral research field not listed above,1,doctorate
+prof_finance,Finance & Accounting,601,CA CFA ACCA CMA CFP CPA,1,professional
+prof_corporate_law,Company Secretary (CS),602,Corporate Governance Compliance Secretarial Practice,1,professional
+prof_tech,Technology Certifications,603,AWS Azure GCP PMP PRINCE2 Scrum Master DevOps ITIL,1,professional
+prof_data_science,Data Science & AI,604,Machine Learning Data Engineering Business Intelligence Deep Learning NLP,1,professional
+prof_cybersecurity,Cybersecurity,605,CEH CISSP CISM CompTIA Security+ CISA,1,professional
+prof_digital_marketing,Digital Marketing,606,Google Analytics HubSpot SEO SEM Social Media Marketing Content Strategy,1,professional
+prof_healthcare,Healthcare Certifications,607,Medical Coding CPC Clinical Research Pharmacovigilance Health Administration,1,professional
+prof_supply_chain,Supply Chain & Logistics,608,CSCP CPSM CLTD Six Sigma Green Belt Lean Management,1,professional
+prof_hr,Human Resources,609,SHRM-CP SHRM-SCP CIPD Talent Management HR Analytics,1,professional
+prof_other,Other / Not Listed,610,Certification not listed above,1,professional

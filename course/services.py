@@ -1,11 +1,39 @@
-from .models import Courses
-from .utils import normalize_list, is_match, normalize_text,get_next_levels
+from django.core.exceptions import ObjectDoesNotExist
 
-def match_courses(ai_skills, ai_education, user,courses_qs):
+from .models import Courses
+from .utils import normalize_list, is_match, normalize_text, get_next_levels
+
+
+def _get_user_education_level(user):
+    """
+    Get the user's current education level code from their profile.
+
+    Checks StudentProfile first, then ProfessionalProfile, then falls
+    back to a direct attribute on the User model for backward compatibility.
+    """
+    try:
+        edu_level = user.student_profile.education_level
+        if edu_level:
+            return edu_level.level_code
+    except ObjectDoesNotExist:
+        pass
+
+    try:
+        edu_level = user.professional_profile.education_level
+        if edu_level:
+            return edu_level.level_code
+    except ObjectDoesNotExist:
+        pass
+
+    return getattr(user, "education_level", None)
+
+
+def match_courses(ai_skills, ai_education, user, courses_qs):
 
     ai_skills = normalize_list(ai_skills)
-    user_level = getattr(user, "education_level", None)
-    next_levels = get_next_levels(user_level)
+    user_level = _get_user_education_level(user)
+    has_education = bool(user_level)
+    next_levels = get_next_levels(user_level) if user_level else []
 
     ai_levels = [
         item.get("level_key")
@@ -19,9 +47,15 @@ def match_courses(ai_skills, ai_education, user,courses_qs):
         course_skills = normalize_list(course.skills)
         course_levels = course.education_tags or []
 
-        if not any(level in course_levels for level in next_levels) \
-           and course.course_type != "certification":
-            continue
+        if has_education:
+            next_level_match = any(
+                level in course_levels for level in next_levels
+            )
+            if not (
+                next_level_match
+                or course.course_type == "certification"
+            ):
+                continue
 
         skill_matches = [
             s for s in ai_skills if is_match(s, course_skills)
@@ -33,7 +67,9 @@ def match_courses(ai_skills, ai_education, user,courses_qs):
         score = 0
         score += len(skill_matches) * 10
 
-        if any(level in course_levels for level in next_levels):
+        if has_education and any(
+            level in course_levels for level in next_levels
+        ):
             score += 10
 
         if course.course_type == "certification":
@@ -41,7 +77,8 @@ def match_courses(ai_skills, ai_education, user,courses_qs):
 
         for level in ai_levels:
             if level in course_levels or (
-                level == "professional" and course.course_type == "certification"
+                level == "professional"
+                and course.course_type == "certification"
             ):
                 score += 3
                 break
@@ -57,5 +94,4 @@ def match_courses(ai_skills, ai_education, user,courses_qs):
         result.append({"course": course, "score": score})
 
     result.sort(key=lambda x: x["score"], reverse=True)
-
-    return [item["course"] for item in result]
+    return result[:20]

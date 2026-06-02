@@ -12,7 +12,6 @@ from user_profile.models import (
     BusinessSetting,
     InternshipApplication,
     InternshipProfile,
-    InternshipProfileSkill,
     Profile,
     UserProfile,
 )
@@ -563,21 +562,6 @@ class InternshipProfileSerializer(serializers.ModelSerializer):
             "deleted_by",
             "deleted_at",
         ]
-
-
-class InternshipProfileSkillSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = InternshipProfileSkill
-        fields = "__all__"
-        read_only_fields = [
-            "created_at",
-            "updated_at",
-            "updated_by",
-            "deleted",
-            "deleted_by",
-            "deleted_at",
-        ]
-
 
 class InternshipApplicationSerializer(serializers.ModelSerializer):
     class Meta:

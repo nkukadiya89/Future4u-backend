@@ -1,6 +1,6 @@
 import django_filters
 
-from jobs.models import Job, JobApplication, JobPreference, JobSkill, SavedJob
+from jobs.models import Job, JobApplication, JobPreference, SavedJob
 
 
 class JobFilters(django_filters.FilterSet):
@@ -50,23 +50,8 @@ class JobFilters(django_filters.FilterSet):
             "application_deadline_after",
         ]
 
-
-class JobSkillFilter(django_filters.FilterSet):
-    skill_name = django_filters.CharFilter(
-        field_name="skill__name", lookup_expr="icontains"
-    )
-    job = django_filters.NumberFilter(field_name="job_id")
-
-    class Meta:
-        model = JobSkill
-        fields = ["skill_name", "job"]
-
-
 class JobPreferenceFilter(django_filters.FilterSet):
     preferred_industries = django_filters.CharFilter(lookup_expr="icontains")
-    soft_skills = django_filters.CharFilter(
-        field_name="soft_skills__name", lookup_expr="icontains"
-    )
     education_requirement = django_filters.CharFilter(lookup_expr="icontains")
     notice_period_days = django_filters.NumberFilter(lookup_expr="lte")
     job = django_filters.NumberFilter(field_name="job_id")
@@ -75,7 +60,6 @@ class JobPreferenceFilter(django_filters.FilterSet):
         model = JobPreference
         fields = [
             "preferred_industries",
-            "soft_skills",
             "education_requirement",
             "notice_period_days",
             "job",

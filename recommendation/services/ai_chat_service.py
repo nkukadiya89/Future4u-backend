@@ -20,7 +20,7 @@ from recommendation.prompts.ai_chat_prompt import build_ai_chat_prompt
 from recommendation.services.ai_recommendation_service import AI_RECOMMENDATION_DISCLAIMER
 
 MAX_QUESTION_LENGTH = 500
-CHAT_MAX_TOKENS = 350
+CHAT_MAX_TOKENS = 450
 SUMMARY_MAX_CHARS = 900
 SUMMARY_MAX_TURNS = 4
 MESSAGE_PREVIEW_MAX_CHARS = 180

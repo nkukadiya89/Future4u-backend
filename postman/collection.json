@@ -10363,7 +10363,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"domain_category\": \"{{domain_category_id}}\",\n  \"domain\": \"{{domain_id}}\",\n  \"career_direction\": [\"study further\", \"Internship\"],\n  \"parent_support\": \"very_supportive\",\n  \"concerns\": [\"Job Security\", \"Wrong career choice\"],\n  \"career_values\": [\"High Salary\"],\n  \"user_goals\": [\"Career Clarity\"]\n}"
+              "raw": "{\n  \"domain_category\": \"{{domain_category_id}}\",\n  \"domain\": \"{{domain_id}}\",\n  \"career_direction\": [1],\n  \"parent_support\": \"very_supportive\",\n  \"concerns\": [1,2],\n  \"career_values\": [2],\n  \"user_goals\": [1]\n}"
             }
           },
           "response": []
@@ -10403,7 +10403,7 @@
           "response": []
         },
         {
-          "name": "4. Save Answer (POST)",
+          "name": "4. Save MCQ Answer (POST)",
           "request": {
             "method": "POST",
             "header": [
@@ -10429,6 +10429,37 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"assessment\": {{assessment_id}},\n  \"question\": {{question_id}},\n  \"selected_option\": {{option_id}}\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4b. Save Text Answer (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/responses/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "responses"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assessment\": {{assessment_id}},\n  \"question\": {{question_id}},\n  \"text_answer\": \"I enjoy solving practical problems with technology.\"\n}"
             }
           },
           "response": []
@@ -10606,14 +10637,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/career-suggestions/1/",
+              "raw": "{{base_url}}/api/career-suggestions-detail/1/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
-                "career-suggestions",
-                "25",
+                "career-suggestions-detail",
+                "2",
                 ""
               ]
             },
@@ -10862,131 +10893,6 @@
               }
             }
           ]
-        },
-        {
-          "name": "domain detail (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/recommendations/domain/{{domain_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "recommendations",
-                "domain",
-                "{{domain_id}}",
-                ""
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "user_skill",
-      "item": [
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/user-skills/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "user-skills",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/user-skills/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "user-skills",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"skill\": \"{{skill_id}}\",\n  \"proficiency_score\": 70,\n  \"is_active\": true\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/user-skills/{{user_skill_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "user-skills",
-                "{{user_skill_id}}",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"proficiency_score\": 80\n}"
-            }
-          },
-          "response": []
         }
       ]
     },
@@ -11518,521 +11424,6 @@
               "path": [
                 "api",
                 "domains",
-                "error-report",
-                "download",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "batch_id",
-                  "value": ""
-                }
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Skill Master",
-      "item": [
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/?search=&skill_type=&is_active=",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "search",
-                  "value": ""
-                },
-                {
-                  "key": "skill_type",
-                  "value": ""
-                },
-                {
-                  "key": "is_active",
-                  "value": ""
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/{{skill_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                "{{skill_id}}",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"skill_code\": \"python\",\n  \"skill_name\": \"Python\",\n  \"skill_type\": \"technical\",\n  \"description\": \"Programming language\",\n  \"is_active\": true\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/{{skill_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                "{{skill_id}}",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"skill_code\": \"python\",\n  \"skill_name\": \"Python Advanced\",\n  \"skill_type\": \"technical\",\n  \"description\": \"Updated\",\n  \"is_active\": true\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/{{skill_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                "{{skill_id}}",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"skill_name\": \"Python\"\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy soft-delete (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/{{skill_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                "{{skill_id}}",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "change-status (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/{{skill_id}}/change-status/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                "{{skill_id}}",
-                "change-status",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"is_active\": false\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "dropdown (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/dropdown/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                "dropdown",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "archived list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/archived/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                "archived",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "bulk-archive (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/bulk-archive/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                "bulk-archive",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ids\": [\"{{skill_id}}\"]\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "bulk-restore (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/bulk-restore/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                "bulk-restore",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ids\": [\"{{skill_id}}\"]\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "bulk-import (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/bulk-import/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                "bulk-import",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"rows\": [\n    {\n      \"skill_code\": \"sql\",\n      \"skill_name\": \"SQL\",\n      \"skill_type\": \"technical\",\n      \"description\": \"Database querying\",\n      \"is_active\": true\n    }\n  ]\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "bulk-upload (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/bulk-upload/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                "bulk-upload",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "import-logs (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/import-logs/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                "import-logs",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "import-errors (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/import-errors/?batch_id=",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
-                "import-errors",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "batch_id",
-                  "value": ""
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "error-report download (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/skills/error-report/download/?batch_id=",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "skills",
                 "error-report",
                 "download",
                 ""
@@ -12882,1409 +12273,6 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"rows\": [\n    {\n      \"stream_code\": \"commerce\",\n      \"stream_name\": \"Commerce\",\n      \"sequence_order\": 2,\n      \"description\": \"Accounts Business Studies Economics focused stream\",\n      \"education_level\": \"{{education_level_id}}\",\n      \"is_active\": true\n    }\n  ]\n}"
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Stream Domain Mapping",
-      "item": [
-        {
-          "name": "change-status (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/stream-domain-mappings/{{mapping_id}}/change-status/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "stream-domain-mappings",
-                "{{mapping_id}}",
-                "change-status",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"is_active\": false\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Mapping",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/stream-domain-mappings/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "stream-domain-mappings",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"stream\": \"{{stream_id}}\",\n  \"domain\": \"{{domain_id}}\",\n  \"weight_score\": 85,\n  \"is_primary\": true,\n  \"is_active\": true\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/stream-domain-mappings/?stream=&domain=&is_active=",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "stream-domain-mappings",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "stream",
-                  "value": ""
-                },
-                {
-                  "key": "domain",
-                  "value": ""
-                },
-                {
-                  "key": "is_active",
-                  "value": ""
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Detail",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/stream-domain-mappings/{{mapping_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "stream-domain-mappings",
-                "{{mapping_id}}",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/stream-domain-mappings/{{mapping_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "stream-domain-mappings",
-                "{{mapping_id}}",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"stream\": \"{{stream_id}}\",\n  \"domain\": \"{{domain_id}}\",\n  \"weight_score\": 90,\n  \"is_primary\": false,\n  \"is_active\": true\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Patch",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/stream-domain-mappings/{{mapping_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "stream-domain-mappings",
-                "{{mapping_id}}",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"weight_score\": 92\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete (Archive)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/stream-domain-mappings/{{mapping_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "stream-domain-mappings",
-                "{{mapping_id}}",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "By Stream",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/stream-domain-mappings/by-stream/{{stream_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "stream-domain-mappings",
-                "by-stream",
-                "{{stream_id}}",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Bulk Import",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/stream-domain-mappings/bulk-import/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "stream-domain-mappings",
-                "bulk-import",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"rows\": [\n    {\n      \"stream_code\": \"science\",\n      \"domain_code\": \"engineering\",\n      \"weight_score\": 95,\n      \"is_primary\": true,\n      \"is_active\": true\n    }\n  ]\n}"
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Domain Skill Mapping",
-      "item": [
-        {
-          "name": "archived alias (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-skill-mappings/archived/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-skill-mappings",
-                "archived",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "bulk-archive alias (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-skill-mappings/bulk-archive/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-skill-mappings",
-                "bulk-archive",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ids\": [\n    \"{{mapping_id}}\"\n  ]\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "change-status (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-skill-mappings/{{mapping_id}}/change-status/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-skill-mappings",
-                "{{mapping_id}}",
-                "change-status",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"is_active\": false\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Mapping",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-skill-mappings/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-skill-mappings",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"domain\": \"{{domain_id}}\",\n  \"skill\": \"{{skill_id}}\",\n  \"weight_score\": 85,\n  \"is_core\": true,\n  \"is_active\": true\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "List",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-skill-mappings/?domain=&skill=&is_active=",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-skill-mappings",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "domain",
-                  "value": ""
-                },
-                {
-                  "key": "skill",
-                  "value": ""
-                },
-                {
-                  "key": "is_active",
-                  "value": ""
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Detail",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-skill-mappings/{{mapping_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-skill-mappings",
-                "{{mapping_id}}",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-skill-mappings/{{mapping_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-skill-mappings",
-                "{{mapping_id}}",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"domain\": \"{{domain_id}}\",\n  \"skill\": \"{{skill_id}}\",\n  \"weight_score\": 90,\n  \"is_core\": false,\n  \"is_active\": true\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Patch",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-skill-mappings/{{mapping_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-skill-mappings",
-                "{{mapping_id}}",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"weight_score\": 92\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete (Archive)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-skill-mappings/{{mapping_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-skill-mappings",
-                "{{mapping_id}}",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Deleted (Soft)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-skill-mappings/deleted/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-skill-mappings",
-                "deleted",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Bulk Delete",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-skill-mappings/bulk-delete/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-skill-mappings",
-                "bulk-delete",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ids\": [\"{{mapping_id}}\"]\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Bulk Restore",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-skill-mappings/bulk-restore/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-skill-mappings",
-                "bulk-restore",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ids\": [\"{{mapping_id}}\"]\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "By Domain",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-skill-mappings/by-domain/{{domain_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-skill-mappings",
-                "by-domain",
-                "{{domain_id}}",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Bulk Import",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-skill-mappings/bulk-import/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-skill-mappings",
-                "bulk-import",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"rows\": [\n    {\n      \"domain_code\": \"engineering\",\n      \"skill_code\": \"python\",\n      \"weight_score\": 95,\n      \"is_core\": true,\n      \"is_active\": true\n    }\n  ]\n}"
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Domain Career Mapping",
-      "item": [
-        {
-          "name": "archived alias (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-career-mappings/archived/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-career-mappings",
-                "archived",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "bulk-archive alias (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-career-mappings/bulk-archive/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-career-mappings",
-                "bulk-archive",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ids\": [\n    \"{{mapping_id}}\"\n  ]\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "change-status (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/domain-career-mappings/{{mapping_id}}/change-status/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "domain-career-mappings",
-                "{{mapping_id}}",
-                "change-status",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"is_active\": false\n}"
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Career Master",
-      "item": [
-        {
-          "name": "details (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/{{career_id}}/details/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "{{career_id}}",
-                "details",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/?search=&education_level=&is_active=",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "search",
-                  "value": ""
-                },
-                {
-                  "key": "education_level",
-                  "value": ""
-                },
-                {
-                  "key": "is_active",
-                  "value": ""
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/{{career_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "{{career_id}}",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"career_code\": \"software_engineer\",\n  \"career_name\": \"Software Engineer\",\n  \"description\": \"Build software systems\",\n  \"min_education_level\": \"{{education_level_id}}\",\n  \"max_education_level\": \"{{education_level_id}}\",\n  \"is_active\": true\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/{{career_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "{{career_id}}",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"career_code\": \"software_engineer\",\n  \"career_name\": \"Software Engineer Updated\",\n  \"description\": \"Build software systems\",\n  \"min_education_level\": \"{{education_level_id}}\",\n  \"max_education_level\": \"{{education_level_id}}\",\n  \"is_active\": true\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/{{career_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "{{career_id}}",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"career_name\": \"Software Engineer\"\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy soft-delete (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/{{career_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "{{career_id}}",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "change-status (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/{{career_id}}/change-status/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "{{career_id}}",
-                "change-status",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"is_active\": false\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "dropdown (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/dropdown/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "dropdown",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "archived list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/archived/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "archived",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "bulk-archive (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/bulk-archive/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "bulk-archive",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ids\": [\"{{career_id}}\"]\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "bulk-restore (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/bulk-restore/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "bulk-restore",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ids\": [\"{{career_id}}\"]\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "bulk-import (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/bulk-import/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "bulk-import",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"rows\": [\n    {\n      \"career_code\": \"data_analyst\",\n      \"career_name\": \"Data Analyst\",\n      \"min_education_level\": \"higher_secondary\",\n      \"max_education_level\": \"graduation\",\n      \"description\": \"Analyze data\",\n      \"is_active\": true\n    }\n  ]\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "bulk-upload (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/bulk-upload/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "bulk-upload",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "import-logs (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/import-logs/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "import-logs",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "import-errors (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/import-errors/?batch_id=",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "import-errors",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "batch_id",
-                  "value": ""
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "error-report download (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/careers/error-report/download/?batch_id=",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "careers",
-                "error-report",
-                "download",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "batch_id",
-                  "value": ""
-                }
-              ]
             }
           },
           "response": []
@@ -15225,6 +13213,71 @@
           ]
         },
         {
+          "name": "my-inquiries (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/my-inquiries/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "my-inquiries",
+                ""
+              ]
+            },
+            "description": "Returns inquiries submitted by the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "recevied-inquiries (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/recevied-inquiries/?course_id={{course_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "recevied-inquiries",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "course_id",
+                  "value": "{{course_id}}",
+                  "description": "Required. Course id whose provider is the authenticated user."
+                }
+              ]
+            },
+            "description": "Returns inquiries received for courses where the authenticated user is the provider. Requires course_id."
+          },
+          "response": []
+        },
+        {
           "name": "create (POST)",
           "request": {
             "method": "POST",
@@ -15250,7 +13303,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Python for Data Science\",\n  \"course_type\": \"course\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\", \"Data Analysis\"],\n  \"education_tags\": [\"higher_secondary\"],\n  \"duration\": \"8 weeks\",\n  \"provider\": {{user_id}},\n  \"city\": {{city_id}},\n  \"course_overview\": \"Learn Python from basics to ML.\",\n  \"why_this_course\": [\"High demand skills\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\", \"Pandas\", \"ML basics\"]\n}"
+              "raw": "{\n  \"name\": \"Python for Data Science\",\n  \"course_type\": \"certification\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\", \"Data Analysis\"],\n  \"education_tags\": [\"higher_secondary\"],\n  \"duration\": \"8 weeks\",\n  \"provider\": {{user_id}},\n  \"city\": {{city_id}},\n  \"course_overview\": \"Learn Python from basics to ML.\",\n  \"why_this_course\": [\"High demand skills\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\", \"Pandas\", \"ML basics\"]\n}"
             }
           },
           "response": []
@@ -15436,6 +13489,246 @@
       ]
     },
     {
+      "name": "course-inquiry",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/?page=1&pagesize=10&search=&ordering=-created_at",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search by name, email, phone, message"
+                },
+                {
+                  "key": "ordering",
+                  "value": "-created_at"
+                }
+              ]
+            },
+            "description": "List course inquiries. Optional: course filter via search params if configured on the viewset."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || (json.results && json.results.data) || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('course_inquiry_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"course\": {{course_id}},\n  \"name\": \"John Doe\",\n  \"phone\": \"9876543210\",\n  \"email\": \"john@example.com\",\n  \"message\": \"I would like more information about this course.\"\n}"
+            },
+            "description": "Submit a course inquiry. user and created_by are set from the authenticated user."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const row = json.data;",
+                  "    if (row && row.id != null) pm.collectionVariables.set('course_inquiry_id', String(row.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/{{course_inquiry_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "{{course_inquiry_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/{{course_inquiry_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "{{course_inquiry_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"course\": {{course_id}},\n  \"name\": \"John Doe Updated\",\n  \"phone\": \"9876543210\",\n  \"email\": \"john.updated@example.com\",\n  \"message\": \"Updated inquiry message.\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/{{course_inquiry_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "{{course_inquiry_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Follow-up: please share batch timings.\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/{{course_inquiry_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "{{course_inquiry_id}}",
+                ""
+              ]
+            },
+            "description": "Soft-deletes (archives) the inquiry record."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "resume_builder",
       "item": [
         {
@@ -15593,6 +13886,10 @@
     },
     {
       "key": "course_id",
+      "value": "1"
+    },
+    {
+      "key": "course_inquiry_id",
       "value": "1"
     },
     {

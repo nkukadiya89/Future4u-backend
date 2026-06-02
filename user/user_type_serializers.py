@@ -74,6 +74,8 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         if User.objects.filter(email=email).exists():
             errors["email"] = "An account with this email already exists."
+        if User.objects.filter(phone=phone).exists():
+            errors["phone"] = "An account with this phone number already exists."
 
         if not terms_accepted:
             errors["terms_accepted"] = (

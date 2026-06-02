@@ -6,29 +6,29 @@ from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from django.utils.timezone import now
 
 from business_category.models import BusinessCategory
-from career.serializers import CareerSerializer
-from career.services import career_service
 from city.models import City
 from country.models import Country
-from domain_career_mapping.serializers import DomainCareerMappingSerializer
-from domain_career_mapping.services import domain_career_mapping_service
-from domain_skill_mapping.serializers import DomainSkillMappingSerializer
-from domain_skill_mapping.services import domain_skill_mapping_service
 from education_level.serializers import EducationLevelSerializer
 from education_level.services import education_level_service
 from language_master.serializers import LanguageSerializer
 from language_master.services import language_service
-from skill.serializers import SkillSerializer
-from skill.services import skill_service
+
 from state.models import State
 from stream.serializers import StreamSerializer
 from stream.services import stream_service
 from subscription.models import Subscription, SubscriptionFeature
 from user.models import CustomGroup, RoleFamily, User
-from assessment.models import Concern,CareerValue, UserGoal, CareerDirection
+from assessment.models import (
+    CareerDirection,
+    CareerValue,
+    Concern,
+    StudentAssessment,
+    UserGoal,
+)
 
 try:
     from city_areas.models import CityArea  # type: ignore
@@ -49,12 +49,6 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--education_level", type=bool, help="Education level data to be uploaded"
-        )
-        parser.add_argument(
-            "--skill", type=bool, help="Skill master data to be uploaded"
-        )
-        parser.add_argument(
-            "--career", type=bool, help="Career master data to be uploaded"
         )
         parser.add_argument(
             "--assessment", type=bool, help="Assessment questions/options to be seeded"
@@ -104,14 +98,6 @@ class Command(BaseCommand):
             self.load_education_levels()
             return
 
-        if kwargs["skill"]:
-            self.load_skills()
-            return
-
-        if kwargs["career"]:
-            self.load_careers()
-            return
-
         if kwargs["assessment"]:
             self.load_assessment_questions()
             self.load_assessment_masters()
@@ -123,8 +109,6 @@ class Command(BaseCommand):
             and kwargs["zone_name"] is None
             and kwargs["domain"] is None
             and kwargs["education_level"] is None
-            and kwargs["skill"] is None
-            and kwargs["career"] is None
             and kwargs["assessment"] is None
             and kwargs["groups"] is None
             and kwargs["user"] is None
@@ -141,16 +125,9 @@ class Command(BaseCommand):
                 self.load_city_area()
             self.load_domain_master()
             self.load_education_levels()
-            self.load_skills()
-            self.load_careers()
             self.load_streams()
-            self.load_domain_skill_mappings()
-            self.load_domain_career_mappings()
             self.load_assessment_questions()
             self.load_assessment_masters()
-            self.load_domain_report_meta()
-            self.load_domain_counsellor_knowledge()
-            self.load_domain_scoring_config()
             self.load_language_master()
             self.load_subscription()  # TODO: fix field mismatch with current Subscription model
 
@@ -293,21 +270,21 @@ class Command(BaseCommand):
         # Student Permissions - View own data, assessments, recommendations
         student_permissions = [
             "assessment|Can view assessment",
-            "career|Can view career",
             "domain|Can view domain",
             "education_level|Can view education level",
-            "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
+            "course|Can view courses",
+            "course|Can add course inquiry",
+            "course|Can view course inquiry",
+            "assessment_career|Can view career recommendation suggestions"
         ]
 
         # Parent Permissions - View linked child's data
         parent_permissions = [
             "assessment|Can view assessment",
-            "career|Can view career",
             "domain|Can view domain",
             "education_level|Can view education level",
-            "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
         ]
@@ -315,23 +292,25 @@ class Command(BaseCommand):
         # Professional Permissions - View career resources, update own profile
         professional_permissions = [
             "assessment|Can view assessment",
-            "career|Can view career",
             "domain|Can view domain",
             "education_level|Can view education level",
-            "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
+            "course|Can view course inquiry",
         ]
 
         # School/College Permissions - Manage their students
         school_college_permissions = [
             "assessment|Can view assessment",
-            "career|Can view career",
             "domain|Can view domain",
             "education_level|Can view education level",
-            "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
+            "course|Can view courses",
+            "course|Can add courses",
+            "course|Can change courses",
+            "course|Can delete courses",
+            "course|Can view course inquiry",
         ]
 
         # Institute Permissions - Manage courses, grade students
@@ -339,23 +318,29 @@ class Command(BaseCommand):
             "assessment|Can add assessment",
             "assessment|Can change assessment",
             "assessment|Can view assessment",
-            "career|Can view career",
             "domain|Can view domain",
             "education_level|Can view education level",
-            "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
+            "course|Can view courses",
+            "course|Can add courses",
+            "course|Can change courses",
+            "course|Can delete courses",
+            "course|Can view course inquiry",
         ]
 
         # Corporate Permissions - Post jobs, view candidates
         corporate_permissions = [
             "assessment|Can view assessment",
-            "career|Can view career",
             "domain|Can view domain",
             "education_level|Can view education level",
-            "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
+            "course|Can view courses",
+            "course|Can add courses",
+            "course|Can change courses",
+            "course|Can delete courses",
+            "course|Can view course inquiry",
         ]
 
         # Assign superuser to Super Admin group
@@ -403,15 +388,25 @@ class Command(BaseCommand):
         file_path = path.join(
             settings.BASE_DIR, "core", "management", "source", "business_categorys.csv"
         )
+        existing_categories = {
+            value.strip().lower()
+            for value in BusinessCategory.objects.values_list(
+                "business_category", flat=True
+            )
+        }
         with open(file_path, "r", encoding="utf-8") as csv_file:
             reader = csv.DictReader(csv_file, delimiter=",")
-            BusinessCategory.objects.bulk_create(
-                [
-                    BusinessCategory(business_category=row["business_category"])
-                    for row in reader
-                ],
-                ignore_conflicts=True,
-            )
+            categories_to_create = []
+            for row in reader:
+                category = row["business_category"].strip()
+                key = category.lower()
+                if not category or key in existing_categories:
+                    continue
+                existing_categories.add(key)
+                categories_to_create.append(
+                    BusinessCategory(business_category=category)
+                )
+            BusinessCategory.objects.bulk_create(categories_to_create)
         self.stdout.write("Business Category data uploaded.")
 
     # Country Upload CSV
@@ -439,47 +434,103 @@ class Command(BaseCommand):
             )
         self.stdout.write("Country data uploaded.")
 
+    @transaction.atomic
     def load_assessment_masters(self):
         self.stdout.write("Loading Assessment Masters.")
 
-        Concern.objects.bulk_create([
-            Concern(name="Job Security"),
-            Concern(name="Financial stability / Future demand"),
-            Concern(name="Wrong career choice"),
-            Concern(name="High education cost"),
-            Concern(name="Lack of guidance"),
-            Concern(name="Competitive pressure"),
-        ], ignore_conflicts=True)
+        masters = (
+            (
+                Concern,
+                "concerns",
+                [
+                    "Job Security",
+                    "Financial stability / Future demand",
+                    "Wrong career choice",
+                    "High education cost",
+                    "Lack of guidance",
+                    "Competitive pressure",
+                ],
+            ),
+            (
+                CareerDirection,
+                "career_direction",
+                [
+                    "Study further",
+                    "Find a job",
+                    "Internship",
+                    "Skill development",
+                    "Not sure yet",
+                ],
+            ),
+            (
+                CareerValue,
+                "career_values",
+                [
+                    "High salary potential",
+                    "Job security and stability",
+                    "Creativity and innovation",
+                    "Work life balance",
+                    "Making an impact on society",
+                    "Opportunities to grow and learn",
+                ],
+            ),
+            (
+                UserGoal,
+                "user_goals",
+                [
+                    "Career clarity",
+                    "Course recommendation",
+                    "Job/internship Opportunities",
+                    "Parent confidence",
+                ],
+            ),
+        )
+        for model, relation_name, names in masters:
+            self._merge_duplicate_assessment_masters(model, relation_name)
+            existing_names = {
+                value.strip().lower()
+                for value in model.objects.values_list("name", flat=True)
+            }
+            model.objects.bulk_create(
+                [
+                    model(name=name)
+                    for name in names
+                    if name.strip().lower() not in existing_names
+                ]
+            )
 
-        CareerDirection.objects.bulk_create([
-            CareerDirection(name="Study further"),
-            CareerDirection(name="Find a job"),
-            CareerDirection(name="Internship"),
-            CareerDirection(name="Skill development"),
-            CareerDirection(name="Not sure yet"),
-        ],ignore_conflicts=True)
+    def _merge_duplicate_assessment_masters(self, model, relation_name):
+        canonical_by_name = {}
+        merged = 0
+        for item in model.objects.order_by("id"):
+            key = item.name.strip().lower()
+            canonical = canonical_by_name.get(key)
+            if canonical is None:
+                canonical_by_name[key] = item
+                continue
 
-        CareerValue.objects.bulk_create([
-            CareerValue(name="High salary potential"),
-            CareerValue(name="Job security and stability"),
-            CareerValue(name="Creativity and innovation"),
-            CareerValue(name="Work life balance"),
-            CareerValue(name="Making an impact on society"),
-            CareerValue(name="Opportunities to grow and learn"),
-        ],ignore_conflicts=True)
+            assessments = StudentAssessment.objects.filter(
+                **{relation_name: item}
+            )
+            for assessment in assessments:
+                getattr(assessment, relation_name).add(canonical)
+            item.delete()
+            merged += 1
 
-        UserGoal.objects.bulk_create([
-            UserGoal(name="Career clarity"),
-            UserGoal(name="Course recommendation"),
-            UserGoal(name="Job/internship Opportunities"),
-            UserGoal(name="Parent confidence"),
-        ])
+        if merged:
+            self.stdout.write(
+                f"Merged {merged} duplicate {model.__name__} row(s)."
+            )
 
 
     # State Upload CSV
     def load_state(self, admin_user=None):
         self.stdout.write("Loading State...")
         created_by_user = admin_user or User.objects.filter(is_superuser=True).first()
+        existing_states = {
+            (state.name.strip().lower(), state.country_id)
+            for state in State.objects.all()
+        }
         file_path = path.join(
             settings.BASE_DIR, "core", "management", "source", "state.csv"
         )
@@ -489,9 +540,14 @@ class Command(BaseCommand):
             for row in reader:
                 try:
                     country = Country.objects.get(name=row["country_name"])
+                    state_name = row["name"].strip()
+                    key = (state_name.lower(), country.id)
+                    if not state_name or key in existing_states:
+                        continue
+                    existing_states.add(key)
                     states_to_create.append(
                         State(
-                            name=row["name"],
+                            name=state_name,
                             country_id=country.id,
                             created_by=created_by_user,
                         )
@@ -524,7 +580,11 @@ class Command(BaseCommand):
         states = {}
         for state in State.objects.select_related("country").all():
             key = f"{state.name.lower()}_{state.country.name.lower()}"
-            states[key] = state
+            states.setdefault(key, state)
+        existing_cities = {
+            (city.name.strip().lower(), city.state_id, city.country_id)
+            for city in City.objects.all()
+        }
 
         cities_to_create = []
 
@@ -542,9 +602,14 @@ class Command(BaseCommand):
                     if not state:
                         continue
 
+                    city_name = row["name"].strip()
+                    key = (city_name.lower(), state.id, state.country_id)
+                    if not city_name or key in existing_cities:
+                        continue
+                    existing_cities.add(key)
                     cities_to_create.append(
                         City(
-                            name=row["name"].strip(),
+                            name=city_name,
                             state=state,
                             country=state.country,
                             created_by=created_by_user,
@@ -579,7 +644,11 @@ class Command(BaseCommand):
         cities = {}
         for city in City.objects.select_related("state", "state__country").all():
             key = f"{city.name.lower()}_{city.state.name.lower()}_{city.state.country.name.lower()}"
-            cities[key] = city
+            cities.setdefault(key, city)
+        existing_areas = {
+            (area.city_id, (area.city_area_name or "").strip().lower(), area.zipcode)
+            for area in CityArea.objects.all()
+        }
 
         city_areas_to_create = []
 
@@ -598,13 +667,19 @@ class Command(BaseCommand):
                     if not city:
                         continue
 
+                    area_name = row["city_area"].strip()
+                    zipcode = row["zipcode"].strip()
+                    key = (city.id, area_name.lower(), zipcode)
+                    if not area_name or key in existing_areas:
+                        continue
+                    existing_areas.add(key)
                     city_areas_to_create.append(
                         CityArea(
                             country_id=city.state.country.id,
                             state_id=city.state.id,
                             city_id=city.id,
-                            city_area_name=row["city_area"].strip(),
-                            zipcode=row["zipcode"].strip(),
+                            city_area_name=area_name,
+                            zipcode=zipcode,
                             created_by=User.objects.get(id=row["created_by"]),
                         )
                     )
@@ -723,162 +798,10 @@ class Command(BaseCommand):
             importer=stream_service.bulk_import_streams,
         )
 
-    def load_skills(self):
-        self.stdout.write("Loading Skills...")
-        file_path = path.join(
-            settings.BASE_DIR, "core", "management", "source", "skill_master_sample.csv"
-        )
-        self._bulk_import_from_csv(
-            file_path=file_path,
-            serializer_class=SkillSerializer,
-            importer=skill_service.bulk_import_skills,
-        )
-
-    def load_careers(self):
-        self.stdout.write("Loading Careers...")
-        file_path = path.join(
-            settings.BASE_DIR,
-            "core",
-            "management",
-            "source",
-            "career_master_sample.csv",
-        )
-        self._bulk_import_from_csv(
-            file_path=file_path,
-            serializer_class=CareerSerializer,
-            importer=career_service.bulk_import_careers,
-        )
-
-    def load_domain_skill_mappings(self):
-        self.stdout.write("Loading Domain Skill Mappings...")
-        file_path = path.join(
-            settings.BASE_DIR,
-            "core",
-            "management",
-            "source",
-            "domain_skill_mapping_sample.csv",
-        )
-        self._bulk_import_from_csv(
-            file_path=file_path,
-            serializer_class=DomainSkillMappingSerializer,
-            importer=domain_skill_mapping_service.bulk_import_mappings,
-        )
-
-    def load_domain_career_mappings(self):
-        self.stdout.write("Loading Domain Career Mappings...")
-        file_path = path.join(
-            settings.BASE_DIR,
-            "core",
-            "management",
-            "source",
-            "domain_career_mapping_sample.csv",
-        )
-        self._bulk_import_from_csv(
-            file_path=file_path,
-            serializer_class=DomainCareerMappingSerializer,
-            importer=domain_career_mapping_service.bulk_import_mappings,
-        )
-
     def load_assessment_questions(self):
         self.stdout.write("Seeding Assessment Questions...")
         call_command("seed_assessment_questions")
-
-    def load_domain_report_meta(self):
-        self.stdout.write("Loading Domain Report Meta...")
-        from core.management.commands._master_import_utils import load_csv_rows
-        from domain.models import DomainReportMeta
-
-        file_path = path.join(
-            settings.BASE_DIR, "core", "management", "source", "domain_report_meta.csv"
-        )
-        rows = load_csv_rows(file_path)
-        for row in rows:
-            code = (row.get("domain_code") or "").strip().lower()
-            if not code:
-                continue
-            DomainReportMeta.objects.update_or_create(
-                domain_code=code,
-                defaults={
-                    "degrees": (row.get("degrees") or "").strip(),
-                    "careers": (row.get("careers") or "").strip(),
-                    "note": (row.get("note") or "").strip(),
-                    "direction_why": (row.get("direction_why") or "").strip(),
-                    "how_to_choose_hint": (row.get("how_to_choose_hint") or "").strip(),
-                    "next_step_1": (row.get("next_step_1") or "").strip(),
-                    "next_step_2": (row.get("next_step_2") or "").strip(),
-                    "next_step_3": (row.get("next_step_3") or "").strip(),
-                },
-            )
-
-    def load_domain_counsellor_knowledge(self):
-        self.stdout.write("Loading Domain Counsellor Knowledge...")
-        from core.management.commands._master_import_utils import load_csv_rows
-        from domain.models import DomainCounsellorKnowledge
-
-        file_path = path.join(
-            settings.BASE_DIR,
-            "core",
-            "management",
-            "source",
-            "domain_counsellor_knowledge.csv",
-        )
-        rows = load_csv_rows(file_path)
-        for row in rows:
-            code = (row.get("domain_code") or "").strip().lower()
-            if not code:
-                continue
-
-            def _parse_keywords(raw):
-                return [k.strip().lower() for k in (raw or "").split("|") if k.strip()]
-
-            DomainCounsellorKnowledge.objects.update_or_create(
-                domain_code=code,
-                defaults={
-                    "insight": (row.get("insight") or "").strip(),
-                    "tradeoff": (row.get("tradeoff") or "").strip(),
-                    "action": (row.get("action") or "").strip(),
-                    "tension": (row.get("tension") or "").strip(),
-                    "technical_keywords": _parse_keywords(
-                        row.get("technical_keywords")
-                    ),
-                    "domain_keywords": _parse_keywords(row.get("domain_keywords")),
-                },
-            )
-
-    def load_domain_scoring_config(self):
-        self.stdout.write("Loading Domain Scoring Config...")
-        import json
-
-        from core.management.commands._master_import_utils import load_csv_rows
-        from domain.models import DomainScoringConfig
-
-        file_path = path.join(
-            settings.BASE_DIR,
-            "core",
-            "management",
-            "source",
-            "domain_scoring_config.csv",
-        )
-        if not path.exists(file_path):
-            self.stdout.write(
-                self.style.WARNING("domain_scoring_config.csv not found — skipping.")
-            )
-            return
-        rows = load_csv_rows(file_path)
-        for row in rows:
-            code = (row.get("domain_code") or "").strip().lower()
-            raw = (row.get("config") or "").strip()
-            if not code or not raw:
-                continue
-            try:
-                config = json.loads(raw)
-            except json.JSONDecodeError as e:
-                self.stdout.write(self.style.ERROR(f"Invalid JSON for {code}: {e}"))
-                continue
-            DomainScoringConfig.objects.update_or_create(
-                domain_code=code,
-                defaults={"config": config, "is_active": True},
-            )
+        call_command("seed_free_text_questions")
 
     def load_language_master(self):
         self.stdout.write("Loading Language Master...")

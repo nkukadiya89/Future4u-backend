@@ -49,10 +49,9 @@ def _provider_status() -> dict:
     return {
         "ai_recommendations_enabled": use_llm,
         "groq_configured": groq_ok,
-        "ai_tracing_enabled": str(
-            getattr(settings, "AI_TRACING_ENABLED", "false")
-        ).lower()
-        in ("1", "true", "yes"),
+        "ai_tracing_enabled": bool(
+            getattr(settings, "AI_TRACING_ENABLED", False)
+        ),
         "mode": mode,
     }
 

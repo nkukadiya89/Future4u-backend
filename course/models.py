@@ -7,6 +7,8 @@ from city.models import City
 class Courses(BaseModule):
     
     COURSE_TYPE_CHOICES = (
+        ("higher_secondary", "Higher Secondary"),
+        ("diploma", "Diploma"),
         ("degree", "Degree"),
         ("certification", "Certification"),
         ("training", "Training"),
@@ -34,3 +36,17 @@ class Courses(BaseModule):
         ordering = ["-created_at"]
     def __str__(self):
         return self.name
+    
+class CourseInquiry(BaseModule):
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name="inquiries")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="course_inquiries")
+    name = models.CharField(max_length=200, null=True, blank=True)
+    phone = models.CharField(max_length=15, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    message = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = "course_inquiry"
+
+    def __str__(self):
+        return f"{self.course.name} - {self.email}"

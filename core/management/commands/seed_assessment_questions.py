@@ -302,8 +302,10 @@ class Command(BaseCommand):
                         dimension=dim,
                         sequence_order=sequence_order,
                     )
-                    if sequence_matches.count() == 1:
-                        q = sequence_matches.first()
+                    q = (
+                        sequence_matches.filter(question_text=qt).first()
+                        or sequence_matches.first()
+                    )
                 if not q and not (has_sequence_order_column and sequence_order):
                     q = Question.objects.filter(
                         dimension=dim,
@@ -311,19 +313,13 @@ class Command(BaseCommand):
                     ).first()
                 if q:
                     q_created = False
-                elif has_sequence_order_column and sequence_order:
+                else:
                     q = Question.objects.create(
                         dimension=dim,
                         question_text=qt,
                         **defaults,
                     )
                     q_created = True
-                else:
-                    q, q_created = Question.objects.get_or_create(
-                        dimension=dim,
-                        question_text=qt,
-                        defaults=defaults,
-                    )
                 if q_created:
                     created_q += 1
                 else:

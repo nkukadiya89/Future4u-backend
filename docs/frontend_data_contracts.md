@@ -191,12 +191,12 @@ Question object fields:
 - `id`: integer
 - `question_text`: string
 - `dimension`: string
+- `question_type`: string (`mcq` or `text`)
 - `options`: array
 
 Option object fields:
 - `id`: integer
 - `option_text`: string
-- `score_value`: integer
 - `sequence_order`: integer
 
 Progress object fields:
@@ -211,11 +211,12 @@ Progress object fields:
 - **Body**
   - `assessment`: assessment id
   - `question`: question id
-  - `selected_option`: option id
+  - `selected_option`: option id, required when `question_type` is `mcq`
+  - `text_answer`: string, required when `question_type` is `text` (maximum 1000 characters)
 - **Response**
   - `success`: boolean
   - `message`: string
-  - `data`: object `{ score: number, current_screen: string }`
+  - `data`: object `{ current_screen: string }`
 
 ### POST `/api/student/assessments/{id}/complete/`
 - **Auth**: Bearer JWT
@@ -231,67 +232,27 @@ Progress object fields:
 
 ## 3) Recommendation APIs
 
-### GET `/api/recommendations/`
+### GET `/api/ai-recommendations/{assessment_id}/`
 - **Auth**: Bearer JWT
 - **Response**
   - `success`: boolean
   - `data`: object
 
 `data` fields:
-- `top_domains`: array
-- `top_careers`: array
-- `skill_gaps`: array
+- `ai_disclaimer`: string
+- `ai_insight`: string
+- `top_suggestions`: array
+- `easy_decision_making`: array
+- `last_recommended_at`: datetime string
 
-### GET `/api/recommendations/domain/{id}/`
+### GET `/api/ai-recommendations/{assessment_id}/chat/?suggestion_id={id}`
 - **Auth**: Bearer JWT
 - **Response**
   - `success`: boolean
   - `data`: object
 
-`data` fields:
-- `domain`: object
-- `related_careers`: array of `{ id, name }`
-- `required_skills`: array of `{ id, name }`
-
-### GET `/api/careers/{id}/details/`
-- **Auth**: Bearer JWT
-- **Response**
-  - `success`: boolean
-  - `data`: object
-
-`data` fields:
-- `id`, `code`, `name`, `description`
-- `required_skills`: array of `{ id, name }`
-- `eligibility`: object
-  - `min_education_level`: `{ id, name }`
-  - `max_education_level`: `{ id, name }`
-
-## 4) User Skill APIs
-
-### GET `/user-skills/`
-- **Auth**: Bearer JWT
-- **Response**
-  - `success`: boolean
-  - `data`: array
-
-Array item fields:
-- `id`: UUID
-- `user`: integer
-- `skill`: UUID
-- `proficiency_score`: integer (0–100)
-- `is_active`: boolean
-- `deleted`: boolean
-- `created_at`: datetime string
-- `updated_at`: datetime string
-
-### POST `/user-skills/`
+### POST `/api/ai-recommendations/{assessment_id}/chat/`
 - **Auth**: Bearer JWT
 - **Body**
-  - `skill`: UUID
-  - `proficiency_score`: integer (0–100)
-  - `is_active`: boolean (optional)
-
-### PATCH `/user-skills/{id}/`
-- **Auth**: Bearer JWT
-- **Body**: partial of POST
-
+  - `suggestion_id`: integer
+  - `message`: string
