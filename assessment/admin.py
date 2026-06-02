@@ -152,7 +152,6 @@ class UserResponseAdmin(admin.ModelAdmin):
         "user",
         "question",
         "selected_option",
-        "get_score",
     )
 
     search_fields = (
@@ -161,13 +160,6 @@ class UserResponseAdmin(admin.ModelAdmin):
     )
 
     list_filter = ("question__dimension",)
-
-    @admin.display(description="Score")
-    def get_score(self, obj):
-        if obj.selected_option:
-            return getattr(obj.selected_option, "score_value", None)
-
-        return None
 
 
 @admin.register(StudentAssessment)

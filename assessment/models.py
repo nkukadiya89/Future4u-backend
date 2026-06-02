@@ -15,6 +15,7 @@ class Question(models.Model):
         SCALE = "scale", "Scale (1-5 agreement)"
         MCQ = "mcq", "Multiple Choice (pick one)"
         YESNO = "yesno", "Yes / No"
+        TEXT = "text", "Free text (write your answer)"
 
     question_text = models.TextField()
     dimension = models.CharField(max_length=20, choices=Dimension.choices)
@@ -113,6 +114,14 @@ class UserResponse(models.Model):
         Option,
         on_delete=models.CASCADE,
         related_name="responses",
+        null=True,
+        blank=True,
+        default=None,
+    )
+    text_answer = models.TextField(
+        blank=True,
+        default="",
+        help_text="Free-text answer for TEXT type questions.",
     )
 
     class Meta:

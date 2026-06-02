@@ -167,23 +167,35 @@ class AssessmentContextBuilder:
             .only(
                 "id",
                 "question__dimension",
+                "question__question_type",
                 "selected_option__sequence_order",
+                "text_answer",
             )
         )
-        return [
-            {
-                "question": {"dimension": row.question.dimension},
-                "selected_option": {
-                    "sequence_order": row.selected_option.sequence_order,
+        result: list[dict[str, Any]] = []
+        for row in rows:
+            entry: dict[str, Any] = {
+                "question": {
+                    "dimension": row.question.dimension,
+                    "question_type": row.question.question_type,
                 },
             }
-            for row in rows
-        ]
+            if row.selected_option:
+                entry["selected_option"] = {
+                    "sequence_order": row.selected_option.sequence_order,
+                }
+            else:
+                entry["selected_option"] = None
+            if row.text_answer:
+                entry["text_answer"] = row.text_answer
+            result.append(entry)
+        return result
 
     @classmethod
     def _response_consistency(cls, assessment: StudentAssessment) -> str:
         values = list(
             UserResponse.objects.filter(assessment=assessment)
+            .exclude(selected_option__isnull=True)
             .select_related("selected_option")
             .values_list("selected_option__sequence_order", flat=True)
         )

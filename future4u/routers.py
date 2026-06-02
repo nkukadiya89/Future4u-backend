@@ -10,12 +10,12 @@ from education_level.routers import education_level_router
 from employee.routers import employee_router
 from faq.routers import faq_router
 from jobs.routers import job_router
-from skill.routers import skill_router
+
 from state.routers import state_router
 from stream.routers import stream_router
 from user.routers import user_router
 from user_profile.routers import user_profile_router
-from user_skill.routers import user_skill_router
+
 from assessment_career.routers import assessment_career_router
 from course.routers import courses_router
 # from subscription.routers import subscription_router
@@ -43,11 +43,9 @@ if domain_router is not None:
 future4u_router.registry.extend(education_level_router.registry)
 future4u_router.registry.extend(employee_router.registry)
 future4u_router.registry.extend(faq_router.registry)
-future4u_router.registry.extend(skill_router.registry)
 future4u_router.registry.extend(state_router.registry)
 future4u_router.registry.extend(stream_router.registry)
 future4u_router.registry.extend(user_profile_router.registry)
-future4u_router.registry.extend(user_skill_router.registry)
 future4u_router.registry.extend(user_router.registry)
 future4u_router.registry.extend(job_router.registry)
 future4u_router.registry.extend(courses_router.registry)

@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from django.utils.timezone import now
 
 from business_category.models import BusinessCategory
@@ -15,14 +16,19 @@ from education_level.serializers import EducationLevelSerializer
 from education_level.services import education_level_service
 from language_master.serializers import LanguageSerializer
 from language_master.services import language_service
-from skill.serializers import SkillSerializer
-from skill.services import skill_service
+
 from state.models import State
 from stream.serializers import StreamSerializer
 from stream.services import stream_service
 from subscription.models import Subscription, SubscriptionFeature
 from user.models import CustomGroup, RoleFamily, User
-from assessment.models import Concern,CareerValue, UserGoal, CareerDirection
+from assessment.models import (
+    CareerDirection,
+    CareerValue,
+    Concern,
+    StudentAssessment,
+    UserGoal,
+)
 
 try:
     from city_areas.models import CityArea  # type: ignore
@@ -43,9 +49,6 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--education_level", type=bool, help="Education level data to be uploaded"
-        )
-        parser.add_argument(
-            "--skill", type=bool, help="Skill master data to be uploaded"
         )
         parser.add_argument(
             "--assessment", type=bool, help="Assessment questions/options to be seeded"
@@ -95,10 +98,6 @@ class Command(BaseCommand):
             self.load_education_levels()
             return
 
-        if kwargs["skill"]:
-            self.load_skills()
-            return
-
         if kwargs["assessment"]:
             self.load_assessment_questions()
             self.load_assessment_masters()
@@ -110,7 +109,6 @@ class Command(BaseCommand):
             and kwargs["zone_name"] is None
             and kwargs["domain"] is None
             and kwargs["education_level"] is None
-            and kwargs["skill"] is None
             and kwargs["assessment"] is None
             and kwargs["groups"] is None
             and kwargs["user"] is None
@@ -127,7 +125,6 @@ class Command(BaseCommand):
                 self.load_city_area()
             self.load_domain_master()
             self.load_education_levels()
-            self.load_skills()
             self.load_streams()
             self.load_assessment_questions()
             self.load_assessment_masters()
@@ -275,7 +272,6 @@ class Command(BaseCommand):
             "assessment|Can view assessment",
             "domain|Can view domain",
             "education_level|Can view education level",
-            "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
             "course|Can view courses",
@@ -289,7 +285,6 @@ class Command(BaseCommand):
             "assessment|Can view assessment",
             "domain|Can view domain",
             "education_level|Can view education level",
-            "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
         ]
@@ -299,7 +294,6 @@ class Command(BaseCommand):
             "assessment|Can view assessment",
             "domain|Can view domain",
             "education_level|Can view education level",
-            "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
             "course|Can view course inquiry",
@@ -310,7 +304,6 @@ class Command(BaseCommand):
             "assessment|Can view assessment",
             "domain|Can view domain",
             "education_level|Can view education level",
-            "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
             "course|Can view courses",
@@ -327,7 +320,6 @@ class Command(BaseCommand):
             "assessment|Can view assessment",
             "domain|Can view domain",
             "education_level|Can view education level",
-            "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
             "course|Can view courses",
@@ -342,7 +334,6 @@ class Command(BaseCommand):
             "assessment|Can view assessment",
             "domain|Can view domain",
             "education_level|Can view education level",
-            "skill|Can view skill",
             "stream|Can view stream",
             "user|Can view user",
             "course|Can view courses",
@@ -443,12 +434,14 @@ class Command(BaseCommand):
             )
         self.stdout.write("Country data uploaded.")
 
+    @transaction.atomic
     def load_assessment_masters(self):
         self.stdout.write("Loading Assessment Masters.")
 
         masters = (
             (
                 Concern,
+                "concerns",
                 [
                     "Job Security",
                     "Financial stability / Future demand",
@@ -460,6 +453,7 @@ class Command(BaseCommand):
             ),
             (
                 CareerDirection,
+                "career_direction",
                 [
                     "Study further",
                     "Find a job",
@@ -470,6 +464,7 @@ class Command(BaseCommand):
             ),
             (
                 CareerValue,
+                "career_values",
                 [
                     "High salary potential",
                     "Job security and stability",
@@ -481,6 +476,7 @@ class Command(BaseCommand):
             ),
             (
                 UserGoal,
+                "user_goals",
                 [
                     "Career clarity",
                     "Course recommendation",
@@ -489,7 +485,8 @@ class Command(BaseCommand):
                 ],
             ),
         )
-        for model, names in masters:
+        for model, relation_name, names in masters:
+            self._merge_duplicate_assessment_masters(model, relation_name)
             existing_names = {
                 value.strip().lower()
                 for value in model.objects.values_list("name", flat=True)
@@ -500,6 +497,29 @@ class Command(BaseCommand):
                     for name in names
                     if name.strip().lower() not in existing_names
                 ]
+            )
+
+    def _merge_duplicate_assessment_masters(self, model, relation_name):
+        canonical_by_name = {}
+        merged = 0
+        for item in model.objects.order_by("id"):
+            key = item.name.strip().lower()
+            canonical = canonical_by_name.get(key)
+            if canonical is None:
+                canonical_by_name[key] = item
+                continue
+
+            assessments = StudentAssessment.objects.filter(
+                **{relation_name: item}
+            )
+            for assessment in assessments:
+                getattr(assessment, relation_name).add(canonical)
+            item.delete()
+            merged += 1
+
+        if merged:
+            self.stdout.write(
+                f"Merged {merged} duplicate {model.__name__} row(s)."
             )
 
 
@@ -778,20 +798,10 @@ class Command(BaseCommand):
             importer=stream_service.bulk_import_streams,
         )
 
-    def load_skills(self):
-        self.stdout.write("Loading Skills...")
-        file_path = path.join(
-            settings.BASE_DIR, "core", "management", "source", "skill_master_sample.csv"
-        )
-        self._bulk_import_from_csv(
-            file_path=file_path,
-            serializer_class=SkillSerializer,
-            importer=skill_service.bulk_import_skills,
-        )
-
     def load_assessment_questions(self):
         self.stdout.write("Seeding Assessment Questions...")
         call_command("seed_assessment_questions")
+        call_command("seed_free_text_questions")
 
     def load_language_master(self):
         self.stdout.write("Loading Language Master...")

@@ -7,7 +7,6 @@ from city.models import City
 from company.models import Company
 from country.models import Country
 from domain.models import Domain
-from skill.models import Skill
 from state.models import State
 
 
@@ -536,49 +535,6 @@ class InternshipProfile(models.Model):
     class Meta:
         db_table = "internship_profile"
         ordering = ["-created_at"]
-
-
-class InternshipProfileSkill(models.Model):
-    LEVEL_CHOICES = (
-        ("beginner", "Beginner"),
-        ("intermediate", "Intermediate"),
-        ("advanced", "Advanced"),
-    )
-
-    internship_profile = models.ForeignKey(
-        InternshipProfile, on_delete=models.CASCADE, related_name="skill_map"
-    )
-    skill = models.ForeignKey(Skill, on_delete=models.CASCADE)
-
-    level = models.CharField(max_length=20, choices=LEVEL_CHOICES)
-    years_of_experience = models.FloatField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="internship_skill_updated",
-    )
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-
-    deleted = models.BooleanField(default=False)
-    deleted_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="internship_skill_deleted",
-    )
-    deleted_at = models.DateTimeField(null=True, blank=True)
-
-    def __str__(self):
-        return f"InternshipSkill<{self.id} - {self.internship_profile.profile.title} - {self.skill.name}>"
-
-    class Meta:
-        db_table = "internship_profile_skill"
-        ordering = ["-created_at"]
-        unique_together = ("internship_profile", "skill")
 
 
 class InternshipApplication(models.Model):

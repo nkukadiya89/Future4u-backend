@@ -3,7 +3,6 @@ import django_filters
 from user_profile.models import (
     InternshipApplication,
     InternshipProfile,
-    InternshipProfileSkill,
     ParentProfile,
     Profile,
 )
@@ -34,16 +33,6 @@ class InternshipProfileFilter(django_filters.FilterSet):
             "location",
             "profile",
         ]
-
-
-class InternshipProfileSkillFilter(django_filters.FilterSet):
-    skill_name = django_filters.CharFilter(lookup_expr="icontains")
-    profile = django_filters.NumberFilter(field_name="profile_id")
-
-    class Meta:
-        model = InternshipProfileSkill
-        fields = ["skill_name", "profile"]
-
 
 class InternshipApplicationFilter(django_filters.FilterSet):
     profile = django_filters.NumberFilter(field_name="profile_id")

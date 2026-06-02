@@ -1,0 +1,17 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block content %}
+<div style="margin:0 0 20px;padding:14px 18px;background:var(--darkened-bg,#f8f8f8);border:1px solid var(--border-color,#ccc);border-radius:4px;color:var(--body-fg,#333);font-size:13px;line-height:1.6;">
+  <strong>&#9432; Quick Guide — Adding a Domain</strong>
+  <ul style="margin:8px 0 0 15px;padding:0;">
+    <li><strong>Parent domain</strong> = Leave <strong>"Parent"</strong> field empty. These are the 16 main categories shown on the landing page.</li>
+    <li><strong>Child domain</strong> = Select a parent from the dropdown. These appear under the parent.</li>
+    <li><strong>New assessment domain?</strong> Go to <strong>Assessment → Questions</strong> and map questions to this domain.</li>
+    <li><strong>Jobs</strong> that should belong to this domain will need updating separately.</li>
+    <li><strong>Image</strong> is optional. Only parent domains typically need one (shown on landing page).</li>
+    <li><strong>Tip:</strong> Use the <strong>Upload CSV</strong> button on the domain list page to add multiple domains at once.</li>
+  </ul>
+</div>
+{{ block.super }}
+{% endblock %}

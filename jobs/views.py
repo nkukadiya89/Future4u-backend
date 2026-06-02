@@ -6,12 +6,11 @@ from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 
 from jobs.filters import JobFilters
-from jobs.models import Job, JobApplication, JobPreference, JobSkill, SavedJob
+from jobs.models import Job, JobApplication, JobPreference, SavedJob
 from jobs.serializers import (
     JobApplicationSerializer,
     JobPreferenceSerializer,
     JobSerializer,
-    JobSkillSerializer,
     SavedJobSerializer,
 )
 
@@ -246,230 +245,18 @@ class JobViewSet(viewsets.ModelViewSet):
             )
 
 
-class JobSkillViewSet(viewsets.ModelViewSet):
-    serializer_class = JobSkillSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_class = JobFilters
-    search_fields = ["level_choices", "job__title", "skill__name"]
-    ordering_fields = ["created_at", "level_choices", "job__title", "skill__name"]
-    ordering = ["-created_at"]
-
-    def get_queryset(self):
-        return JobSkill.objects.filter(deleted=False).select_related("job", "skill")
-
-    def list(self, request, *args, **kwargs):
-        try:
-            queryset = self.filter_queryset(self.get_queryset())
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True)
-                return self.get_paginated_response(
-                    {
-                        "success": True,
-                        "message": "Job skills retrieved successfully",
-                        "data": serializer.data,
-                    }
-                )
-
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(
-                {
-                    "success": True,
-                    "message": "Job skills retrieved successfully",
-                    "data": serializer.data,
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return Response(
-                {
-                    "success": False,
-                    "message": f"Error retrieving job skills: {str(e)}",
-                    "data": {},
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-    def retrieve(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            serializer = self.get_serializer(instance)
-            return Response(
-                {
-                    "success": True,
-                    "message": "Job skill retrieved successfully",
-                    "data": serializer.data,
-                },
-                status=status.HTTP_200_OK,
-            )
-        except JobSkill.DoesNotExist:
-            return Response(
-                {"success": False, "message": "Job skill not found", "data": {}},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except Exception as e:
-            return Response(
-                {
-                    "success": False,
-                    "message": f"Error retrieving job skill: {str(e)}",
-                    "data": {},
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-    def create(self, request, *args, **kwargs):
-        try:
-            if not request.user.is_authenticated:
-                return Response(
-                    {
-                        "success": False,
-                        "message": "Authentication required",
-                        "data": {},
-                    },
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-
-            serializer = self.get_serializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(updated_by=request.user)
-                return Response(
-                    {
-                        "success": True,
-                        "message": "Job skill created successfully",
-                        "data": serializer.data,
-                    },
-                    status=status.HTTP_201_CREATED,
-                )
-
-            return Response(
-                {
-                    "success": False,
-                    "message": "Validation failed",
-                    "data": serializer.errors,
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        except Exception as e:
-            return Response(
-                {
-                    "success": False,
-                    "message": f"Error creating job skill: {str(e)}",
-                    "data": {},
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-    def update(self, request, *args, **kwargs):
-        try:
-            if not request.user.is_authenticated:
-                return Response(
-                    {
-                        "success": False,
-                        "message": "Authentication required",
-                        "data": {},
-                    },
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-
-            instance = self.get_object()
-            serializer = self.get_serializer(
-                instance, data=request.data, partial=kwargs.get("partial", False)
-            )
-
-            if serializer.is_valid():
-                serializer.save(updated_by=request.user)
-                return Response(
-                    {
-                        "success": True,
-                        "message": "Job skill updated successfully",
-                        "data": serializer.data,
-                    },
-                    status=status.HTTP_200_OK,
-                )
-
-            return Response(
-                {
-                    "success": False,
-                    "message": "Validation failed",
-                    "data": serializer.errors,
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        except JobSkill.DoesNotExist:
-            return Response(
-                {"success": False, "message": "Job skill not found", "data": {}},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except Exception as e:
-            return Response(
-                {
-                    "success": False,
-                    "message": f"Error updating job skill: {str(e)}",
-                    "data": {},
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-    def partial_update(self, request, *args, **kwargs):
-        kwargs["partial"] = True
-        return self.update(request, *args, **kwargs)
-
-    def destroy(self, request, *args, **kwargs):
-        try:
-            if not request.user.is_authenticated:
-                return Response(
-                    {
-                        "success": False,
-                        "message": "Authentication required",
-                        "data": {},
-                    },
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-
-            obj = self.get_object()
-            obj.deleted = True
-            obj.deleted_by = request.user
-            obj.deleted_at = now()
-            obj.save()
-
-            return Response(
-                {
-                    "success": True,
-                    "message": "Job skill deleted successfully",
-                    "data": {},
-                },
-                status=status.HTTP_200_OK,
-            )
-        except JobSkill.DoesNotExist:
-            return Response(
-                {"success": False, "message": "Job skill not found", "data": {}},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except Exception as e:
-            return Response(
-                {
-                    "success": False,
-                    "message": f"Error deleting job skill: {str(e)}",
-                    "data": {},
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-
 class JobPreferenceViewSet(viewsets.ModelViewSet):
     serializer_class = JobPreferenceSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = JobFilters
     search_fields = [
         "preferred_industries",
-        "soft_skills__name",
         "education_requirement",
         "job__title",
     ]
     ordering_fields = [
         "created_at",
         "preferred_industries",
-        "soft_skills__name",
         "education_requirement",
         "job__title",
     ]
@@ -479,7 +266,6 @@ class JobPreferenceViewSet(viewsets.ModelViewSet):
         return (
             JobPreference.objects.filter(deleted=False)
             .select_related("job")
-            .prefetch_related("soft_skills")
         )
 
     def list(self, request, *args, **kwargs):

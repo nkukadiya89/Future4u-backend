@@ -191,12 +191,12 @@ Question object fields:
 - `id`: integer
 - `question_text`: string
 - `dimension`: string
+- `question_type`: string (`mcq` or `text`)
 - `options`: array
 
 Option object fields:
 - `id`: integer
 - `option_text`: string
-- `score_value`: integer
 - `sequence_order`: integer
 
 Progress object fields:
@@ -211,11 +211,12 @@ Progress object fields:
 - **Body**
   - `assessment`: assessment id
   - `question`: question id
-  - `selected_option`: option id
+  - `selected_option`: option id, required when `question_type` is `mcq`
+  - `text_answer`: string, required when `question_type` is `text` (maximum 1000 characters)
 - **Response**
   - `success`: boolean
   - `message`: string
-  - `data`: object `{ score: number, current_screen: string }`
+  - `data`: object `{ current_screen: string }`
 
 ### POST `/api/student/assessments/{id}/complete/`
 - **Auth**: Bearer JWT
@@ -255,33 +256,3 @@ Progress object fields:
 - **Body**
   - `suggestion_id`: integer
   - `message`: string
-
-## 4) User Skill APIs
-
-### GET `/user-skills/`
-- **Auth**: Bearer JWT
-- **Response**
-  - `success`: boolean
-  - `data`: array
-
-Array item fields:
-- `id`: UUID
-- `user`: integer
-- `skill`: UUID
-- `proficiency_score`: integer (0–100)
-- `is_active`: boolean
-- `deleted`: boolean
-- `created_at`: datetime string
-- `updated_at`: datetime string
-
-### POST `/user-skills/`
-- **Auth**: Bearer JWT
-- **Body**
-  - `skill`: UUID
-  - `proficiency_score`: integer (0–100)
-  - `is_active`: boolean (optional)
-
-### PATCH `/user-skills/{id}/`
-- **Auth**: Bearer JWT
-- **Body**: partial of POST
-

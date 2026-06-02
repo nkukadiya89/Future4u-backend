@@ -18,6 +18,12 @@ class DomainAdminForm(forms.ModelForm):
         model = Domain
         fields = "__all__"
 
+    domain_image_upload = forms.FileField(
+        required=False,
+        label="Upload new image",
+        help_text="Select a .jpg, .jpeg, or .png file to replace the current image.",
+    )
+
     def clean(self):
         cleaned = super().clean()
         parent = cleaned.get("parent")
@@ -41,6 +47,7 @@ class DomainAdminForm(forms.ModelForm):
 @admin.register(Domain)
 class DomainAdmin(BaseAdmin):
     form = DomainAdminForm
+    change_form_template = "admin/domain/domain/change_form.html"
     change_list_template = "admin/domain/domain/change_list.html"
 
     list_display = (
@@ -76,6 +83,7 @@ class DomainAdmin(BaseAdmin):
                     "parent",
                     "description",
                     "domain_image",
+                    "domain_image_upload",
                     "is_active",
                 )
             },
@@ -207,6 +215,8 @@ class DomainAdmin(BaseAdmin):
 
     def save_model(self, request, obj, form, change):
         obj.save(user=request.user)
+        if "domain_image_upload" in request.FILES:
+            obj.upload_domain_image(request.FILES["domain_image_upload"])
 
     @admin.action(description="Activate selected")
     def activate_selected(self, request, queryset):

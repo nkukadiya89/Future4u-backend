@@ -3,6 +3,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from core.management.commands._master_import_utils import (
     RequestUserProxy,
@@ -49,19 +50,21 @@ class Command(BaseCommand):
             for row in rows
             if (row.get("stream_code") or "").strip()
         }
-        existing = list(Stream.objects.order_by("sequence_order", "stream_code"))
+        existing = list(Stream.objects.filter(deleted=False).order_by("sequence_order", "stream_code"))
         for index, stream in enumerate(existing, start=1):
-            stream.sequence_order = 10000 + index
+            stream.sequence_order = 999000 + index
             stream.updated_by = user
             if stream.stream_code.lower() not in incoming_codes:
                 stream.is_active = False
                 stream.deleted = True
+                stream.deleted_at = timezone.now()
                 stream.deleted_by = user
             stream.save(
                 update_fields=[
                     "sequence_order",
                     "is_active",
                     "deleted",
+                    "deleted_at",
                     "deleted_by",
                     "updated_at",
                     "updated_by",
