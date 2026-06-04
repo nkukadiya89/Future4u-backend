@@ -3,32 +3,34 @@ from django.db.models import Q
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from assessment.models import Option, Question, StudentAssessment, UserResponse, CareerDirection, CareerValue, Concern, UserGoal
+
+from assessment.models import (
+    CareerDirection,
+    CareerValue,
+    Concern,
+    Option,
+    Question,
+    StudentAssessment,
+    UserGoal,
+    UserResponse,
+)
 from assessment.serializers import (
     AssessmentResponseSerializer,
+    CareerDirectionSerializer,
+    CareerValueSerializer,
+    ConcernSerializer,
     NextQuestionSerializer,
     StudentAssessmentCreateSerializer,
     StudentAssessmentSerializer,
-    ConcernSerializer,
-    CareerDirectionSerializer,
-    CareerValueSerializer,
-    UserGoalSerializer
+    UserGoalSerializer,
 )
 from common.api.mixins import ArchiveMixin
 from common.master_view import BaseModelViewSet
 from domain.models import Domain
 from utils.pagination import Pagination
-
-SIGNAL_ORDER = [
-    Question.Dimension.INTEREST,
-    Question.Dimension.APTITUDE,
-    Question.Dimension.PERSONALITY,
-    Question.Dimension.WORK_STYLE,
-]
 
 STREAM_REQUIRED_LEVEL_CODES = {
     "higher_secondary",
@@ -59,8 +61,6 @@ def get_student_profile(user):
 
 
 def get_question_pool(assessment, user, dimension=None):
-    from domain.models import Domain
-
     if not assessment.domain_id:
         return Question.objects.none()
 
@@ -103,7 +103,11 @@ def get_question_pool(assessment, user, dimension=None):
         except Domain.DoesNotExist:
             pass
 
-    ordered_pool = question_pool.distinct().order_by("-signal_strength", "sequence_order", "id")
+    ordered_pool = question_pool.distinct().order_by(
+        "-signal_strength",
+        "sequence_order",
+        "id",
+    )
     if dimension:
         ids = list(
             ordered_pool.values_list("id", flat=True)[:QUESTIONS_PER_DIMENSION]
@@ -220,7 +224,6 @@ def assessment_status_payload(assessment, user):
 
 
 class StudentAssessmentViewSet(viewsets.ModelViewSet):
-
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     pagination_class = Pagination
@@ -376,7 +379,6 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
 
 
 class NextQuestionViewSet(viewsets.GenericViewSet):
-
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     serializer_class = NextQuestionSerializer
@@ -411,7 +413,7 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
         sync_current_screen(assessment, request.user)
 
         current_screen = assessment.current_screen
-        
+
         dimension_map = {
             StudentAssessment.Screen.INTEREST: Question.Dimension.INTEREST,
             StudentAssessment.Screen.APTITUDE: Question.Dimension.APTITUDE,
@@ -426,7 +428,7 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
             return Response(
                 {
                     "success": True,
-                    "message": "No active question dimension",
+                    "message": "All assessment questions completed",
                     "data": None,
                 },
                 status=status.HTTP_200_OK,
@@ -554,7 +556,10 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
             text_answer = ser.validated_data.get("text_answer", "").strip()
             if not text_answer:
                 return Response(
-                    {"success": False, "message": "text_answer is required for this question"},
+                    {
+                        "success": False,
+                        "message": "text_answer is required for this question",
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             UserResponse.objects.update_or_create(
@@ -570,7 +575,10 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
             option_id = ser.validated_data.get("selected_option")
             if not option_id:
                 return Response(
-                    {"success": False, "message": "selected_option is required for this question"},
+                    {
+                        "success": False,
+                        "message": "selected_option is required for this question",
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             try:
@@ -603,12 +611,14 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
             status=status.HTTP_200_OK,
         )
 
+
 class ConcernViewSet(BaseModelViewSet, ArchiveMixin):
     queryset = Concern.objects.all().order_by("-id")
     serializer_class = ConcernSerializer
 
     search_fields = BaseModelViewSet.searching_fields + ["name"]
     ordering_fields = BaseModelViewSet.ordering_fields + ["name"]
+
 
 class CareerValueViewSet(BaseModelViewSet, ArchiveMixin):
     queryset = CareerValue.objects.all().order_by("-id")
@@ -617,12 +627,14 @@ class CareerValueViewSet(BaseModelViewSet, ArchiveMixin):
     search_fields = BaseModelViewSet.searching_fields + ["name"]
     ordering_fields = BaseModelViewSet.ordering_fields + ["name"]
 
+
 class UserGoalViewSet(BaseModelViewSet, ArchiveMixin):
     queryset = UserGoal.objects.all().order_by("-id")
     serializer_class = UserGoalSerializer
 
     search_fields = BaseModelViewSet.searching_fields + ["name"]
     ordering_fields = BaseModelViewSet.ordering_fields + ["name"]
+
 
 class CareerDirectionViewSet(BaseModelViewSet, ArchiveMixin):
     queryset = CareerDirection.objects.all().order_by("-id")

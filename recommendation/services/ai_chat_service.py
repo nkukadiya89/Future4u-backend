@@ -21,10 +21,13 @@ from recommendation.services.ai_recommendation_service import AI_RECOMMENDATION_
 
 MAX_QUESTION_LENGTH = 500
 CHAT_MAX_TOKENS = 450
-SUMMARY_MAX_CHARS = 900
-SUMMARY_MAX_TURNS = 4
-MESSAGE_PREVIEW_MAX_CHARS = 180
+SUMMARY_MAX_CHARS = 600
+SUMMARY_MAX_TURNS = 3
+MESSAGE_PREVIEW_MAX_CHARS = 120
 MESSAGES_RETURN_LIMIT = 30
+CAREER_SCOPE_REFUSAL_PREFIX = (
+    "I can only answer questions related to this career recommendation."
+)
 
 
 class AIChatService:
@@ -62,6 +65,15 @@ class AIChatService:
             suggestion_id=parse_suggestion_id(suggestion_id),
         )
         session = get_chat_session(suggestion)
+
+        reused_answer = find_reused_answer(session=session, question=question)
+        if reused_answer:
+            return {
+                **chat_context_response(suggestion),
+                "answer": reused_answer,
+                "messages": serialize_messages(session),
+            }
+
         answer = self._ask_llm(
             suggestion=suggestion,
             question=question,
@@ -148,6 +160,33 @@ def get_existing_chat_session(suggestion) -> CareerRecommendationChatSession | N
     return CareerRecommendationChatSession.objects.filter(suggestion=suggestion).first()
 
 
+def normalize_chat_question(value: str) -> str:
+    return " ".join(str(value or "").strip().casefold().split())
+
+
+def find_reused_answer(
+    *,
+    session: CareerRecommendationChatSession,
+    question: str,
+) -> str:
+    normalized_question = normalize_chat_question(question)
+    if not normalized_question:
+        return ""
+
+    messages = list(
+        session.messages.filter(deleted=False).order_by("created_at", "id")
+    )
+    for user_message, assistant_message in reversed(list(zip(messages, messages[1:]))):
+        if (
+            user_message.role == CareerRecommendationChatMessage.ROLE_USER
+            and assistant_message.role == CareerRecommendationChatMessage.ROLE_ASSISTANT
+            and normalize_chat_question(user_message.content) == normalized_question
+        ):
+            return assistant_message.content
+
+    return ""
+
+
 def save_chat_turn(
     *,
     session: CareerRecommendationChatSession,
@@ -165,12 +204,13 @@ def save_chat_turn(
             role=CareerRecommendationChatMessage.ROLE_ASSISTANT,
             content=answer,
         )
-        session.summary = update_summary(
-            current=session.summary,
-            question=question,
-            answer=answer,
-        )
-        session.save(update_fields=["summary", "updated_at"])
+        if should_add_to_summary(answer):
+            session.summary = update_summary(
+                current=session.summary,
+                question=question,
+                answer=answer,
+            )
+            session.save(update_fields=["summary", "updated_at"])
 
 
 def serialize_messages(
@@ -313,6 +353,10 @@ def update_summary(*, current: str, question: str, answer: str) -> str:
         turns = turns[1:]
         summary = "\n".join(turns[-SUMMARY_MAX_TURNS:])
     return summary[-SUMMARY_MAX_CHARS:].lstrip()
+
+
+def should_add_to_summary(answer: str) -> bool:
+    return not str(answer or "").strip().startswith(CAREER_SCOPE_REFUSAL_PREFIX)
 
 
 def compact_text(value: str, max_chars: int) -> str:

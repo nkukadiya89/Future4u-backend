@@ -9,7 +9,7 @@ class CoursesSerializer(BaseModelSerializer):
 
     class Meta:
         model = Courses
-        fields = [
+        fields = BaseModelSerializer.Meta.fields+[
             "id",
             "name",
             "course_type",
@@ -37,7 +37,7 @@ class CourseInquirySerializer(BaseModelSerializer):
     user_name = serializers.CharField(source="user.full_name", read_only=True)
     class Meta:
         model = CourseInquiry
-        fields = [
+        fields = BaseModelSerializer.Meta.fields+[
             "id",
             "course",
             "course_name",

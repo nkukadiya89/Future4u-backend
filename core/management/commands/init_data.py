@@ -269,7 +269,7 @@ class Command(BaseCommand):
 
         # Student Permissions - View own data, assessments, recommendations
         student_permissions = [
-            "assessment|Can view assessment",
+            "assessment|Can view student assessment",
             "domain|Can view domain",
             "education_level|Can view education level",
             "stream|Can view stream",
@@ -277,12 +277,12 @@ class Command(BaseCommand):
             "course|Can view courses",
             "course|Can add course inquiry",
             "course|Can view course inquiry",
-            "assessment_career|Can view career recommendation suggestions"
+            "assessment_career|Can view career recommendation suggestion",
         ]
 
         # Parent Permissions - View linked child's data
         parent_permissions = [
-            "assessment|Can view assessment",
+            "assessment|Can view student assessment",
             "domain|Can view domain",
             "education_level|Can view education level",
             "stream|Can view stream",
@@ -291,7 +291,7 @@ class Command(BaseCommand):
 
         # Professional Permissions - View career resources, update own profile
         professional_permissions = [
-            "assessment|Can view assessment",
+            "assessment|Can view student assessment",
             "domain|Can view domain",
             "education_level|Can view education level",
             "stream|Can view stream",
@@ -301,7 +301,7 @@ class Command(BaseCommand):
 
         # School/College Permissions - Manage their students
         school_college_permissions = [
-            "assessment|Can view assessment",
+            "assessment|Can view student assessment",
             "domain|Can view domain",
             "education_level|Can view education level",
             "stream|Can view stream",
@@ -315,9 +315,9 @@ class Command(BaseCommand):
 
         # Institute Permissions - Manage courses, grade students
         institute_permissions = [
-            "assessment|Can add assessment",
-            "assessment|Can change assessment",
-            "assessment|Can view assessment",
+            "assessment|Can add student assessment",
+            "assessment|Can change student assessment",
+            "assessment|Can view student assessment",
             "domain|Can view domain",
             "education_level|Can view education level",
             "stream|Can view stream",
@@ -331,7 +331,7 @@ class Command(BaseCommand):
 
         # Corporate Permissions - Post jobs, view candidates
         corporate_permissions = [
-            "assessment|Can view assessment",
+            "assessment|Can view student assessment",
             "domain|Can view domain",
             "education_level|Can view education level",
             "stream|Can view stream",
@@ -801,7 +801,6 @@ class Command(BaseCommand):
     def load_assessment_questions(self):
         self.stdout.write("Seeding Assessment Questions...")
         call_command("seed_assessment_questions")
-        call_command("seed_free_text_questions")
 
     def load_language_master(self):
         self.stdout.write("Loading Language Master...")
