@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework import status
+from django.db import transaction
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import DjangoModelPermissions
 
@@ -94,7 +95,7 @@ class BaseModelViewSet(ModelViewSet):
             getattr(ActivityLog.log, method_name)(
                 instance, ip_address=ip_address, user=request.user
             )
-
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -104,14 +105,14 @@ class BaseModelViewSet(ModelViewSet):
             )
             self.log_action(request, instance, "CREATE")
             return Response(
-                {"success": True, "data": serializer.data},
+                {"success": True,"message":"Record Created Successfully", "data": serializer.data},
                 status=status.HTTP_201_CREATED,
             )
         return Response(
             {"success": False, "message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
-
+    @transaction.atomic
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
@@ -122,13 +123,13 @@ class BaseModelViewSet(ModelViewSet):
             )
             self.log_action(request, instance, "UPDATE")
             return Response(
-                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+                {"success": True,"message":"Updated Successfully", "data": serializer.data}, status=status.HTTP_200_OK
             )
         return Response(
             {"success": False, "message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
-
+    @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
 

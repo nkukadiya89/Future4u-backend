@@ -5,7 +5,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
+from django.db import transaction
 from .models import CourseInquiry, Courses
 from .serializers import CourseInquirySerializer, CoursesSerializer
 
@@ -34,7 +34,7 @@ class CoursesViewSet(BaseModelViewSet):
         "city",
         "duration",
     ]
-
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
