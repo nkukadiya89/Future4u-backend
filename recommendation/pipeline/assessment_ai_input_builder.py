@@ -51,33 +51,6 @@ def _answer_signal(response: dict[str, Any]) -> str:
     return option_text
 
 
-def calculate_dimension_scores(responses: list[dict[str, Any]]) -> dict[str, float]:
-    """
-    Keep numeric scores conservative; they are only a support signal.
-
-    Most questions are MCQ preference questions, where option order is not a
-    reliable low-to-high scale. Only scale/yes-no questions use option order as
-    a light numeric signal; MCQ meaning is passed separately as text.
-    """
-    buckets: dict[str, list[int]] = {key: [] for key in DIMENSION_KEYS}
-
-    for response in responses or []:
-        dim = _response_dimension(response)
-        if not dim:
-            continue
-        question = response.get("question") or {}
-        question_type = (question.get("question_type") or "").strip().lower()
-        if question_type not in ("scale", "yesno"):
-            continue
-        buckets[dim].append(_response_sequence_order(response))
-
-    scores: dict[str, float] = {}
-    for dim in DIMENSION_KEYS:
-        values = buckets[dim]
-        scores[dim] = round((sum(values) / len(values)) / 4.0, 2) if values else 0.5
-    return scores
-
-
 def selected_answer_signals(responses: list[dict[str, Any]]) -> dict[str, list[str]]:
     signals: dict[str, list[str]] = {key: [] for key in DIMENSION_KEYS}
     for response in responses or []:
@@ -121,7 +94,7 @@ def free_text_responses(responses: list[dict[str, Any]]) -> list[dict[str, str]]
 
 def build_ai_input(data: dict[str, Any]) -> dict[str, Any]:
     """
-    LLM payload: compact answer signals + conservative support scores.
+    LLM payload: compact answer signals and profile context.
     We avoid full raw Q&A, but include a short question context with the
     selected option because that carries the assessment meaning for MCQs.
     Free-text answers are included as student_voice for richer context.
@@ -154,7 +127,6 @@ def build_ai_input(data: dict[str, Any]) -> dict[str, Any]:
         "domain_category_code": (
             str(data.get("domain_category_code") or "").strip() or None
         ),
-        "dimension_scores": calculate_dimension_scores(responses),
         "selected_answer_signals": selected_answer_signals(responses),
         "free_text_responses": free_text_responses(responses),
         "career_direction": _compact_string_list(data.get("career_direction")),

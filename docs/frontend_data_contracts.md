@@ -5,14 +5,13 @@ student flow.
 
 ## Common patterns in this codebase
 
-- Many endpoints respond with:
-  - `{"success": true, "data": ...}` optionally with `message`
-- Some newly added endpoints respond with:
-  - `{"success": true, "status": true, "message": "", "data": ...}`
+All endpoints respond with:
+- `{"success": true, "data": ...}` — success response
+- `{"success": false, "message": "..."}` — error response
 
 Frontend should treat:
 - `success` as the primary boolean
-- `message` as optional
+- `message` as available on errors and some success responses
 - `data` as the payload (object or list depending on endpoint)
 
 ## 1) Student Profile API
@@ -21,8 +20,7 @@ Frontend should treat:
 - **Auth**: Bearer JWT
 - **Response**
   - `success`: boolean
-  - `status`: boolean (present)
-  - `message`: string (present, may be empty)
+  - `message`: string (optional)
   - `data`: object
 
 `data` fields:
@@ -60,7 +58,7 @@ Frontend should treat:
   - `science_track`: string or null
   - `medium`: string or null
   - `career_direction`, `education`, `skills`, `projects`, etc.
-- **Response**: same shape as GET
+- **Response**: same shape as GET (success, data)
 
 Current backend routing requires the profile id for PATCH. Use
 `GET /api/student-profile/` first if the frontend does not already have

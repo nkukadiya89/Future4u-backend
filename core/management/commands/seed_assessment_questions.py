@@ -7,12 +7,33 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from assessment.models import Option, Question
+from assessment.models import Option, Question, UserResponse
 from domain.models import Domain
 
 
 # Only keep the 4 UI dimensions (3 questions per dimension).
 DIMENSIONS = ("interest", "aptitude", "personality", "work_style")
+FREE_TEXT_QUESTIONS: list[dict] = [
+    {
+        "question_text": "What excites you most about this field? Tell us in a few words.",
+        "dimension": "interest",
+        "question_type": "text",
+        "sequence_order": 1,
+        "signal_strength": 5,
+    },
+]
+FREE_TEXT_QUESTION_KEYS = {
+    (item["dimension"], item["question_text"]) for item in FREE_TEXT_QUESTIONS
+}
+RETIRED_FREE_TEXT_QUESTION_TEXTS = {
+    "What kind of activities or topics make you lose track of time?",
+}
+RETIRED_DOMAIN_PERSONALITY_OPTION_TEXTS = {
+    "I may stop if it feels too hard",
+    "I would continue with guidance",
+    "I would break it down and keep trying",
+    "I enjoy working through difficult learning",
+}
 
 SAMPLE_HEADERS = (
     "dimension",
@@ -70,7 +91,7 @@ class Command(BaseCommand):
             help=(
                 "Before loading, deactivate existing questions in the 4 supported dimensions "
                 "for any domains mentioned in the CSV. Use this when you want EXACTLY 12 "
-                "questions (4 dimensions × 3) per domain/category."
+                "questions (4 dimensions x 3) per domain/category."
             ),
         )
 
@@ -85,6 +106,7 @@ class Command(BaseCommand):
             raise FileNotFoundError(str(load_path))
 
         created_q = created_o = updated_q = updated_o = 0
+        current_question_keys = set(FREE_TEXT_QUESTION_KEYS)
         with load_path.open("r", newline="", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
             if not reader.fieldnames:
@@ -173,6 +195,7 @@ class Command(BaseCommand):
                     raise ValueError(f"Row {idx}: invalid dimension '{dim}'")
                 if not qt:
                     raise ValueError(f"Row {idx}: question_text is required")
+                current_question_keys.add((dim, qt))
                 try:
                     signal_strength = (
                         max(1, int(signal_strength_raw))
@@ -387,7 +410,7 @@ class Command(BaseCommand):
                                 o.option_text = label
                                 o.save(update_fields=["option_text"])
                                 updated_o += 1
-                    stale_options = q.options.filter(sequence_order__gt=4)
+                    stale_options = q.options.exclude(sequence_order__in=[1, 2, 3, 4])
                     deleted_options = stale_options.count()
                     if deleted_options:
                         stale_options.delete()
@@ -422,7 +445,116 @@ class Command(BaseCommand):
 
         if dry_run:
             return None
-        return created_q, updated_q, created_o, updated_o
+        stale_q, stale_responses = self._delete_stale_questions(
+            current_question_keys
+        )
+        return created_q, updated_q, created_o, updated_o, stale_q, stale_responses
+
+    def _delete_stale_questions(self, current_question_keys: set[tuple[str, str]]):
+        stale_ids = [
+            question.id
+            for question in Question.objects.filter(dimension__in=DIMENSIONS).only(
+                "id",
+                "dimension",
+                "question_text",
+            )
+            if (question.dimension, question.question_text) not in current_question_keys
+        ]
+        if not stale_ids:
+            return 0, 0
+
+        response_count = UserResponse.objects.filter(
+            question_id__in=stale_ids
+        ).count()
+        Question.objects.filter(id__in=stale_ids).delete()
+        return len(stale_ids), response_count
+
+    def _sync_free_text_questions(self) -> tuple[int, int]:
+        child_domains = list(
+            Domain.objects.filter(is_active=True, deleted=False, parent__isnull=False)
+        )
+        if not child_domains:
+            self.stdout.write(self.style.WARNING("No child domains found. Aborting."))
+            return 0, 0
+
+        retired_count = (
+            self._deactivate_retired_domain_personality_questions()
+            + self._deactivate_retired_free_text_questions()
+        )
+        created_count = self._seed_free_text_questions(child_domains)
+        return created_count, retired_count
+
+    def _seed_free_text_questions(self, child_domains) -> int:
+        created_count = 0
+        for question_data in FREE_TEXT_QUESTIONS:
+            question, created = Question.objects.get_or_create(
+                question_text=question_data["question_text"],
+                dimension=question_data["dimension"],
+                defaults={
+                    "question_type": question_data["question_type"],
+                    "sequence_order": question_data["sequence_order"],
+                    "signal_strength": question_data["signal_strength"],
+                    "is_active": True,
+                },
+            )
+            question.mapped_domains.set(child_domains)
+            created_count += int(created)
+        return created_count
+
+    def _deactivate_retired_free_text_questions(self) -> int:
+        questions = Question.objects.filter(
+            question_text__in=RETIRED_FREE_TEXT_QUESTION_TEXTS,
+            question_type="text",
+            is_active=True,
+        )
+        retired_count = questions.count()
+        for question in questions:
+            question.mapped_domains.clear()
+        questions.update(is_active=False)
+        return retired_count
+
+    def _deactivate_retired_domain_personality_questions(self) -> int:
+        questions = Question.objects.filter(
+            dimension="personality",
+            question_type="mcq",
+            sequence_order=3,
+            signal_strength=5,
+            is_active=True,
+        ).prefetch_related("options")
+
+        retired_ids = [
+            question.id
+            for question in questions
+            if {option.option_text for option in question.options.all()}
+            == RETIRED_DOMAIN_PERSONALITY_OPTION_TEXTS
+        ]
+        retired_questions = Question.objects.filter(id__in=retired_ids)
+        for question in retired_questions:
+            question.mapped_domains.clear()
+        retired_questions.update(is_active=False)
+        return len(retired_ids)
+
+    def _repair_zero_order_options(self) -> int:
+        repaired = 0
+        questions = (
+            Question.objects.filter(options__sequence_order=0)
+            .distinct()
+            .prefetch_related("options")
+        )
+
+        for question in questions:
+            options = list(question.options.all().order_by("id"))
+            if not options:
+                continue
+            if any(option.sequence_order for option in options):
+                continue
+
+            for index, option in enumerate(options, start=1):
+                option.sequence_order = index
+                option.save(update_fields=["sequence_order"])
+                repaired += 1
+
+        return repaired
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -447,11 +579,14 @@ class Command(BaseCommand):
                 self.style.SUCCESS("Dry run complete. No changes written.")
             )
             return
-        created_q, updated_q, created_o, updated_o = result
+        created_q, updated_q, created_o, updated_o, stale_q, stale_responses = result
+        self._sync_free_text_questions()
+        updated_o += self._repair_zero_order_options()
         self.stdout.write(
             self.style.SUCCESS(
                 "Seed complete (CSV): "
                 f"questions(created={created_q}, updated={updated_q}) "
-                f"options(created={created_o}, updated={updated_o})"
+                f"options(created={created_o}, updated={updated_o}) "
+                f"stale_questions(deleted={stale_q}, responses_deleted={stale_responses})"
             )
         )

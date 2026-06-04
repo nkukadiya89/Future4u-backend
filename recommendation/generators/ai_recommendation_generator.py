@@ -8,7 +8,7 @@ from pydantic import ValidationError
 from recommendation.config import EASY_DECISION_COUNT, TOP_SUGGESTION_COUNT
 from recommendation.clients.llm_client import get_chat_model
 from recommendation.exceptions import AIGenerationError
-from recommendation.pipeline.output_normalizer import normalize_payload
+from recommendation.pipeline.validated_payload_normalizer import normalize_payload
 from recommendation.pipeline.payload_validator import parse_ai_payload
 from recommendation.prompts.ai_recommendation_prompt import (
     build_recommendation_prompt,
@@ -61,7 +61,7 @@ class AIRecommendationGenerator:
             raise AIGenerationError(_format_llm_error(exc)) from exc
 
         try:
-            raw = cls._coerce_payload(result)
+            raw = parse_ai_payload(result)
             payload = normalize_payload(raw)
         except ValidationError as exc:
             logger.warning("LLM output validation failed: %s", exc)
@@ -75,11 +75,6 @@ class AIRecommendationGenerator:
                 f"Details: {'; '.join(gaps)}"
             )
         return payload
-
-    @staticmethod
-    def _coerce_payload(result: Any) -> AIRecommendationPayload:
-        return parse_ai_payload(result)
-
 
 def _format_llm_error(exc: Exception) -> str:
     message = str(exc).strip() or exc.__class__.__name__
@@ -102,7 +97,10 @@ def _is_invalid_model_output(exc: Exception) -> bool:
     message = str(exc).lower()
     return (
         "failed to generate json" in message
+        or "failed to parse" in message
         or "json_validate_failed" in message
+        or "output_parsing_failure" in message
+        or "outputparserexception" in message
         or "failed_generation" in message
     )
 

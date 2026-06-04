@@ -368,7 +368,7 @@ class UserProfileViewSet(ModelViewSet):
             )
         data = UserProfileSerializer(profile).data
         return Response(
-            {"success": True, "status": True, "message": "", "data": data},
+            {"success": True, "data": data},
             status=status.HTTP_200_OK,
         )
 
@@ -391,7 +391,7 @@ class UserProfileViewSet(ModelViewSet):
         ser = UserProfileUpsertSerializer(profile, data=request.data, partial=True)
         if not ser.is_valid():
             return Response(
-                {"success": False, "status": False, "message": ser.errors, "data": {}},
+                {"success": False, "message": ser.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         ser.save()
@@ -403,7 +403,6 @@ class UserProfileViewSet(ModelViewSet):
         return Response(
             {
                 "success": True,
-                "status": True,
                 "message": "Profile updated",
                 "data": out,
             },
@@ -442,7 +441,7 @@ class StudentProfileViewSet(ModelViewSet):
             )
         data = StudentProfileSerializer(profile).data
         return Response(
-            {"success": True, "status": True, "message": "", "data": data},
+            {"success": True, "data": data},
             status=status.HTTP_200_OK,
         )
 
@@ -456,7 +455,7 @@ class StudentProfileViewSet(ModelViewSet):
         ser = StudentProfileUpsertSerializer(profile, data=request.data, partial=True)
         if not ser.is_valid():
             return Response(
-                {"success": False, "status": False, "message": ser.errors, "data": {}},
+                {"success": False, "message": ser.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         ser.save()
@@ -468,7 +467,6 @@ class StudentProfileViewSet(ModelViewSet):
         return Response(
             {
                 "success": True,
-                "status": True,
                 "message": "Student profile updated",
                 "data": out,
             },
@@ -502,7 +500,7 @@ class ProfessionalProfileViewSet(ModelViewSet):
             )
         data = ProfessionalProfileSerializer(profile).data
         return Response(
-            {"success": True, "status": True, "message": "", "data": data},
+            {"success": True, "data": data},
             status=status.HTTP_200_OK,
         )
 
@@ -518,7 +516,7 @@ class ProfessionalProfileViewSet(ModelViewSet):
         )
         if not ser.is_valid():
             return Response(
-                {"success": False, "status": False, "message": ser.errors, "data": {}},
+                {"success": False, "message": ser.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         ser.save()
@@ -530,7 +528,6 @@ class ProfessionalProfileViewSet(ModelViewSet):
         return Response(
             {
                 "success": True,
-                "status": True,
                 "message": "Professional profile updated",
                 "data": out,
             },
@@ -571,7 +568,7 @@ class ParentProfileViewSet(ModelViewSet):
             )
         data = ParentProfileSerializer(profile).data
         return Response(
-            {"success": True, "status": True, "message": "", "data": data},
+            {"success": True, "data": data},
             status=status.HTTP_200_OK,
         )
 
@@ -585,7 +582,7 @@ class ParentProfileViewSet(ModelViewSet):
         ser = ParentProfileUpsertSerializer(profile, data=request.data, partial=True)
         if not ser.is_valid():
             return Response(
-                {"success": False, "status": False, "message": ser.errors, "data": {}},
+                {"success": False, "message": ser.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         ser.save()
@@ -597,7 +594,6 @@ class ParentProfileViewSet(ModelViewSet):
         return Response(
             {
                 "success": True,
-                "status": True,
                 "message": "Parent profile updated",
                 "data": out,
             },

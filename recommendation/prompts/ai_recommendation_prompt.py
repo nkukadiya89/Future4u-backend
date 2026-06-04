@@ -29,7 +29,6 @@ The child domain/domain_code is the main anchor; domain_category is only broader
 Use selected_answer_signals as the main assessment meaning.
 Use free_text_responses as the student's own voice to personalize recommendations and reasons.
 Treat written answers as supporting context, not verified facts, and never let them override the selected child domain.
-Use dimension_scores only as light support because many MCQs are preferences, not grades.
 Use education_level, stream, goals, concerns, values, parent_support, and career_direction to personalize the result.
 
 RULES:
@@ -75,7 +74,7 @@ OUTPUT_SHAPE = """{
     {
       "career_name": "Data Analyst",
       "match_percentage": 88,
-      "ai_insight": "Your strong aptitude score and analytical signals align with data storytelling roles.",
+      "ai_insight": "Your analytical signals and stated interests align with data storytelling roles.",
       "why_this_career": ["High aptitude fit", "Goals mention data impact"],
       "required_skills": ["Excel", "SQL", "Python basics"],
       "required_education": {

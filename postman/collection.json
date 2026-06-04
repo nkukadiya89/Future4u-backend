@@ -13242,7 +13242,7 @@
           "response": []
         },
         {
-          "name": "recevied-inquiries (GET)",
+          "name": "received-inquiries (GET)",
           "request": {
             "method": "GET",
             "header": [
@@ -13256,13 +13256,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/course-inquiry/recevied-inquiries/?course_id={{course_id}}",
+              "raw": "{{base_url}}/course-inquiry/received-inquiries/?course_id={{course_id}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "course-inquiry",
-                "recevied-inquiries",
+                "received-inquiries",
                 ""
               ],
               "query": [

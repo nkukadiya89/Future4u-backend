@@ -123,127 +123,7 @@
         }
       ]
     },
-    {
-      "name": "Internship Skills",
-      "item": [
         {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/internship-skills/?search=",
-              "host": ["{{base_url}}"],
-              "path": ["api", "internship-skills", ""],
-              "query": [
-                { "key": "search", "value": "" },
-                { "key": "ordering", "value": "-created_at" },
-                { "key": "level", "value": "" },
-                { "key": "years_of_experience", "value": "" },
-                { "key": "skill__name", "value": "" }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/internship-skills/{{internship_skill_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "internship-skills", "{{internship_skill_id}}", ""]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/internship-skills/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "internship-skills", ""]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"internship_profile\": {{internship_profile_id}},\n  \"skill\": {{skill_id}},\n  \"level\": \"intermediate\",\n  \"years_of_experience\": 2\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/internship-skills/{{internship_skill_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "internship-skills", "{{internship_skill_id}}", ""]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"internship_profile\": {{internship_profile_id}},\n  \"skill\": {{skill_id}},\n  \"level\": \"advanced\",\n  \"years_of_experience\": 3\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/internship-skills/{{internship_skill_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "internship-skills", "{{internship_skill_id}}", ""]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"level\": \"expert\",\n  \"years_of_experience\": 5\n}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy soft-delete (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/internship-skills/{{internship_skill_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "internship-skills", "{{internship_skill_id}}", ""]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
       "name": "Internship Applications",
       "item": [
         {
@@ -388,10 +268,6 @@
       "value": "1"
     },
     {
-      "key": "internship_skill_id",
-      "value": "1"
-    },
-    {
       "key": "internship_application_id",
       "value": "1"
     },
@@ -410,10 +286,6 @@
     {
       "key": "domain_id3",
       "value": "3"
-    },
-    {
-      "key": "skill_id",
-      "value": "1"
     }
   ]
 }

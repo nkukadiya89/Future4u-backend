@@ -1,22 +1,20 @@
-from django.shortcuts import render
+from assessment_career.models import CareerRecommendationSuggestion
 from common.master_view import BaseModelViewSet
 from course.services import match_courses
-from .models import Courses
-from .serializers import CourseInquirySerializer, CoursesSerializer
-from rest_framework.decorators import action
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework import status
-from assessment_career.models import CareerRecommendationSuggestion
 from django.utils import timezone
-from .models import CourseInquiry
-# Create your views here.
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from .models import CourseInquiry, Courses
+from .serializers import CourseInquirySerializer, CoursesSerializer
+
 
 class CoursesViewSet(BaseModelViewSet):
     queryset = Courses.objects.all()
     serializer_class = CoursesSerializer
 
-    search_fields = BaseModelViewSet.searching_fields +[
+    search_fields = BaseModelViewSet.searching_fields + [
         "name",
         "course_type",
         "skills",
@@ -40,13 +38,17 @@ class CoursesViewSet(BaseModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            instance = serializer.save(
+            serializer.save(
                 created_by=request.user,
-                provider = request.user,
+                provider=request.user,
                 created_at=timezone.now(),
             )
             return Response(
-                {"success": True, "mesage":"Course Created Successfully","data": serializer.data},
+                {
+                    "success": True,
+                    "message": "Course Created Successfully",
+                    "data": serializer.data,
+                },
                 status=status.HTTP_201_CREATED,
             )
         return Response(
@@ -54,15 +56,13 @@ class CoursesViewSet(BaseModelViewSet):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-
     @action(detail=False, methods=["get"], url_path="recommended")
-    def recommended_courses(self, request): 
-
+    def recommended_courses(self, request):
         mode = request.query_params.get("mode")
         city_id = request.query_params.get("city_id")
         course_type = request.query_params.get("course_type")
         search = request.query_params.get("search")
-        courses_qs = Courses.objects.all()
+        courses_qs = self.get_queryset()
 
         if mode:
             courses_qs = courses_qs.filter(mode=mode)
@@ -82,9 +82,14 @@ class CoursesViewSet(BaseModelViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-    
+
         try:
-            career = CareerRecommendationSuggestion.objects.get(id=career_id)
+            career = CareerRecommendationSuggestion.objects.get(
+                id=career_id,
+                recommendation__user=request.user,
+                deleted=False,
+                recommendation__deleted=False,
+            )
         except CareerRecommendationSuggestion.DoesNotExist:
             return Response(
                 {
@@ -93,7 +98,7 @@ class CoursesViewSet(BaseModelViewSet):
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
-        
+
         ai_skills = career.required_skills or []
         ai_education = career.required_education or {}
         
@@ -102,16 +107,18 @@ class CoursesViewSet(BaseModelViewSet):
             ai_education=ai_education,
             user=request.user,
             courses_qs=courses_qs,
-            )
+        )
         data = []
 
         for item in courses:
             serialized_course = self.get_serializer(item["course"]).data
 
-            data.append({
-                "score":item["score"],
-                "courses":serialized_course,
-            })
+            data.append(
+                {
+                    "score": item["score"],
+                    "courses": serialized_course,
+                }
+            )
         return Response(
             {
                 "success": True,
@@ -121,31 +128,37 @@ class CoursesViewSet(BaseModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+
 class CourseInquiryViewSet(BaseModelViewSet):
     queryset = CourseInquiry.objects.all()
-    serializer_class = CourseInquirySerializer  
+    serializer_class = CourseInquirySerializer
 
-    def create(self, request,*args, **kwargs):
+    def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             course = serializer.validated_data.get("course")
             if CourseInquiry.objects.filter(
-                user = request.user,
+                user=request.user,
                 course=course
             ).exists():
                 return Response(
                     {
                         "success": False,
-                        "message":"You have already submitted an inquiry for this course.",
+                        "message": "You have already submitted an inquiry for this course.",
                     }
                 )
             serializer.save(
                 created_by=request.user,
-                user = request.user,
+                user=request.user,
                 created_at=timezone.now(),
             )
             return Response(
-                {"success": True, "message":"Inquiry Created Successfully","data": serializer.data},
+                {
+                    "success": True,
+                    "message": "Inquiry Created Successfully",
+                    "data": serializer.data,
+                },
                 status=status.HTTP_201_CREATED,
             )
         return Response(
@@ -154,28 +167,30 @@ class CourseInquiryViewSet(BaseModelViewSet):
         )
 
     @action(detail=False, methods=["get"], url_path="my-inquiries")
-    def cours_inquiries(self, request):
+    def my_inquiries(self, request):
         inquiries = CourseInquiry.objects.filter(
-            user = request.user
+            user=request.user
         ).select_related("course")
 
         serializer = self.get_serializer(inquiries, many=True)
-        return Response({
-            "success":True,
-            "count":inquiries.count(),
-            "data":serializer.data
-        })
+        return Response(
+            {
+                "success": True,
+                "count": inquiries.count(),
+                "data": serializer.data,
+            }
+        )
 
-    @action(detail=False, methods=["get"], url_path="recevied-inquiries")
-    def recevied_inquiries(self, request):
+    @action(detail=False, methods=["get"], url_path="received-inquiries")
+    def received_inquiries(self, request):
         inquiries = CourseInquiry.objects.filter(
-            course__provider = request.user
+            course__provider=request.user
         )
 
         course_id = request.query_params.get("course_id")
-        if not course_id :
+        if not course_id:
             return Response(
-                {"success":False,"message":"course_id is required"},
+                {"success": False, "message": "course_id is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if course_id:
@@ -183,8 +198,8 @@ class CourseInquiryViewSet(BaseModelViewSet):
         serializer = self.get_serializer(inquiries, many=True)
         return Response(
             {
-                "success":True,
-                "count":inquiries.count(),
-                "data":serializer.data
+                "success": True,
+                "count": inquiries.count(),
+                "data": serializer.data,
             }
         )
