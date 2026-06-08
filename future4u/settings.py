@@ -108,7 +108,8 @@ INSTALLED_APPS = [
     "jobs",
     "resume_builder",
     "assessment_career",
-    "course"
+    "course",
+    "internship_job",
 ]
 
 MIDDLEWARE = [
