@@ -8,25 +8,19 @@ from education_level.models import (
 from education_level.services import education_level_service
 from user.serializers import UserQuickSerializer
 from utils.datetime_formatter import format_datetime
-
+from common.serializers import BaseModelSerializer
 
 class AuditFieldsMixin:
     def format_audit_datetime(self, value):
         return format_datetime(value)
 
 
-class EducationLevelSerializer(AuditFieldsMixin, serializers.ModelSerializer):
-    created_at = serializers.SerializerMethodField(read_only=True)
-    updated_at = serializers.SerializerMethodField(read_only=True)
-    created_by = UserQuickSerializer(read_only=True)
-    updated_by = UserQuickSerializer(read_only=True)
-
+class EducationLevelSerializer(BaseModelSerializer):
     is_archived = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = EducationLevel
-        fields = (
-            "id",
+        fields = BaseModelSerializer.Meta.fields + [
             "level_code",
             "display_name",
             "sequence_order",
@@ -34,21 +28,8 @@ class EducationLevelSerializer(AuditFieldsMixin, serializers.ModelSerializer):
             "max_age",
             "is_active",
             "is_archived",
-            "created_at",
-            "created_by",
-            "updated_at",
-            "updated_by",
-        )
-        read_only_fields = ("is_archived",)
-
-    def _format_dt(self, value):
-        return self.format_audit_datetime(value)
-
-    def get_created_at(self, obj):
-        return self._format_dt(obj.created_at)
-
-    def get_updated_at(self, obj):
-        return self._format_dt(obj.updated_at)
+        ]
+        read_only_fields = ["is_archived"]
 
     def get_is_archived(self, obj):
         return bool(obj.deleted)

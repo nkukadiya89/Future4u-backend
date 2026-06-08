@@ -278,6 +278,7 @@ class Command(BaseCommand):
             "course|Can add course inquiry",
             "course|Can view course inquiry",
             "assessment_career|Can view career recommendation suggestion",
+            "internship_job|Can view internship"
         ]
 
         # Parent Permissions - View linked child's data
@@ -311,6 +312,10 @@ class Command(BaseCommand):
             "course|Can change courses",
             "course|Can delete courses",
             "course|Can view course inquiry",
+            "internship_job|Can view internship",
+            "internship_job|Can add internship",
+            "internship_job|Can change internship",
+            "internship_job|Can delete internship",
         ]
 
         # Institute Permissions - Manage courses, grade students
@@ -327,6 +332,10 @@ class Command(BaseCommand):
             "course|Can change courses",
             "course|Can delete courses",
             "course|Can view course inquiry",
+            "internship_job|Can view internship",
+            "internship_job|Can add internship",
+            "internship_job|Can change internship",
+            "internship_job|Can delete internship",
         ]
 
         # Corporate Permissions - Post jobs, view candidates
@@ -341,6 +350,10 @@ class Command(BaseCommand):
             "course|Can change courses",
             "course|Can delete courses",
             "course|Can view course inquiry",
+            "internship_job|Can view internship",
+            "internship_job|Can add internship",
+            "internship_job|Can change internship",
+            "internship_job|Can delete internship",
         ]
 
         # Assign superuser to Super Admin group
