@@ -19,7 +19,8 @@ WHY_CAREER_MIN_WORDS = 5
 WHY_CAREER_MAX_WORDS = 12
 WHY_CAREER_MAX_BULLETS = 5
 ROADMAP_MIN_WORDS = 8
-ROADMAP_MAX_WORDS = 14
+ROADMAP_TITLE_MAX_WORDS = 14
+ROADMAP_MAX_WORDS = 24
 AI_INSIGHT_MIN_WORDS = 8
 AI_INSIGHT_MAX_WORDS = 18
 EDUCATION_SUGGESTION_MIN = 2
@@ -205,6 +206,30 @@ def _clip_max_words(value: object, *, max_words: int) -> str:
     return " ".join(words[:max_words])
 
 
+def _clip_sentence_words(value: object, *, max_words: int) -> str:
+    text = _clip_max_words(value, max_words=max_words)
+    if not text:
+        return ""
+    words = text.split()
+    while words and words[-1].strip(".,;:").casefold() in {
+        "and",
+        "or",
+        "but",
+        "with",
+        "for",
+        "to",
+        "in",
+        "of",
+        "by",
+        "before",
+    }:
+        words.pop()
+    text = " ".join(words).rstrip(" ,;:")
+    if text and text[-1] not in ".!?":
+        text += "."
+    return text
+
+
 def _coerce_string_list(value: object) -> list[str]:
     if value is None:
         return []
@@ -222,14 +247,19 @@ def clip_why_career_reason(value: object) -> str:
     return _clip_max_words(value, max_words=WHY_CAREER_MAX_WORDS)
 
 
-def clip_roadmap_text(value: object) -> str:
-    """Keep roadmap task_title and task_description to at most 14 words."""
+def clip_roadmap_title(value: object) -> str:
+    """Keep roadmap task_title compact."""
+    return _clip_max_words(value, max_words=ROADMAP_TITLE_MAX_WORDS)
+
+
+def clip_roadmap_description(value: object) -> str:
+    """Keep roadmap task_description readable but short."""
     return _clip_max_words(value, max_words=ROADMAP_MAX_WORDS)
 
 
 def clip_ai_insight(value: object) -> str:
     """Keep ai_insight to at most 18 words."""
-    return _clip_max_words(value, max_words=AI_INSIGHT_MAX_WORDS)
+    return _clip_sentence_words(value, max_words=AI_INSIGHT_MAX_WORDS)
 
 
 def normalize_education_suggestions(raw: list[str]) -> list[str]:
@@ -257,13 +287,18 @@ class RoadmapTask(BaseModel):
     task_description: str = Field(
         min_length=1,
         max_length=200,
-        description="8-14 words only; short actionable phrase.",
+        description="8-24 words only; complete student-friendly sentence.",
     )
 
-    @field_validator("task_title", "task_description", mode="before")
+    @field_validator("task_title", mode="before")
     @classmethod
-    def clip_roadmap_fields(cls, value: object) -> object:
-        return clip_roadmap_text(value)
+    def clip_roadmap_title_field(cls, value: object) -> object:
+        return clip_roadmap_title(value)
+
+    @field_validator("task_description", mode="before")
+    @classmethod
+    def clip_roadmap_description_field(cls, value: object) -> object:
+        return clip_roadmap_description(value)
 
 
 class CareerRoadmap(BaseModel):
@@ -498,7 +533,8 @@ class TopSuggestionItem(BaseModel):
 
 class EasyDecisionItem(BaseModel):
     title: str = Field(min_length=1, max_length=200)
-    career_name: str = Field(min_length=1, max_length=255)
+    career_index: int = Field(ge=0, lt=TOP_SUGGESTION_COUNT, exclude=True)
+    career_name: str = Field(default="", max_length=255)
 
 
 EASY_DECISION_TITLES = (
@@ -562,13 +598,10 @@ class AIRecommendationPayload(BaseModel):
 
     @model_validator(mode="after")
     def require_easy_decision_careers_from_top_suggestions(self) -> AIRecommendationPayload:
-        top_careers = {
-            item.career_name.strip().casefold() for item in self.top_suggestions
-        }
         for card in self.easy_decision_making:
-            if card.career_name.strip().casefold() not in top_careers:
+            if card.career_index >= len(self.top_suggestions):
                 raise ValueError(
-                    "easy_decision_making career_name must match top_suggestions: "
-                    + card.career_name
+                    "easy_decision_making career_index must reference top_suggestions"
                 )
+            card.career_name = self.top_suggestions[card.career_index].career_name
         return self

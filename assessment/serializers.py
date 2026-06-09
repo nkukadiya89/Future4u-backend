@@ -69,7 +69,6 @@ class AssessmentQuestionResponseSerializer(serializers.ModelSerializer):
             "id",
             "question",
             "selected_option",
-            "text_answer",
         ]
 
 
@@ -81,27 +80,21 @@ class UserResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserResponse
-        fields = ["id", "assessment", "user", "question", "selected_option", "text_answer"]
+        fields = ["id", "assessment", "user", "question", "selected_option"]
         read_only_fields = ["id", "user"]
 
     def validate(self, attrs):
         question = attrs.get("question")
         selected_option = attrs.get("selected_option")
-        text_answer = attrs.get("text_answer", "")
 
         if selected_option and question and selected_option.question_id != question.id:
             raise serializers.ValidationError(
                 {"selected_option": "Selected option does not belong to this question."}
             )
 
-        if question and question.question_type == Question.QuestionType.TEXT:
-            if not text_answer and not selected_option:
-                raise serializers.ValidationError(
-                    {"text_answer": "This field is required for text questions."}
-                )
-        elif not selected_option:
+        if not selected_option:
             raise serializers.ValidationError(
-                {"selected_option": "This field is required for non-text questions."}
+                {"selected_option": "This field is required."}
             )
 
         assessment = attrs.get("assessment")
@@ -234,12 +227,14 @@ class AssessmentResponseSerializer(serializers.Serializer):
     assessment = serializers.IntegerField()
     question = serializers.IntegerField()
     selected_option = serializers.IntegerField(required=False, allow_null=True)
-    text_answer = serializers.CharField(
-        required=False,
-        allow_blank=True,
-        default="",
-        max_length=1000,
-    )
+
+    def to_internal_value(self, data):
+        unknown_fields = set(data) - set(self.fields)
+        if unknown_fields:
+            raise serializers.ValidationError(
+                {field: "Unknown field." for field in sorted(unknown_fields)}
+            )
+        return super().to_internal_value(data)
 
 
 

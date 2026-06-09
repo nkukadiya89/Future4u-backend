@@ -10434,37 +10434,6 @@
           "response": []
         },
         {
-          "name": "4b. Save Text Answer (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/responses/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "responses"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"assessment\": {{assessment_id}},\n  \"question\": {{question_id}},\n  \"text_answer\": \"I enjoy solving practical problems with technology.\"\n}"
-            }
-          },
-          "response": []
-        },
-        {
           "name": "5. Complete Assessment (POST)",
           "request": {
             "method": "POST",

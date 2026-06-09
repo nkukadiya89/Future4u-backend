@@ -270,6 +270,10 @@ class Command(BaseCommand):
         # Student Permissions - View own data, assessments, recommendations
         student_permissions = [
             "assessment|Can view student assessment",
+            "assessment|Can view concern",
+            "assessment|Can view career direction",
+            "assessment|Can view career value",
+            "assessment|Can view user goal",
             "domain|Can view domain",
             "education_level|Can view education level",
             "stream|Can view stream",
@@ -469,10 +473,11 @@ class Command(BaseCommand):
                 "career_direction",
                 [
                     "Study further",
-                    "Find a job",
+                    "Find a Job",
                     "Internship",
-                    "Skill development",
-                    "Not sure yet",
+                    "Skill Development",
+                    "Study Abroad",
+                    "Not Sure Yet",
                 ],
             ),
             (
@@ -500,6 +505,10 @@ class Command(BaseCommand):
         )
         for model, relation_name, names in masters:
             self._merge_duplicate_assessment_masters(model, relation_name)
+            for name in names:
+                model.objects.filter(name__iexact=name).exclude(name=name).update(
+                    name=name
+                )
             existing_names = {
                 value.strip().lower()
                 for value in model.objects.values_list("name", flat=True)

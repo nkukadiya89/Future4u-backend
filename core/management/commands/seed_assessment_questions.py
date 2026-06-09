@@ -13,21 +13,6 @@ from domain.models import Domain
 
 # Only keep the 4 UI dimensions (3 questions per dimension).
 DIMENSIONS = ("interest", "aptitude", "personality", "work_style")
-FREE_TEXT_QUESTIONS: list[dict] = [
-    {
-        "question_text": "What excites you most about this field? Tell us in a few words.",
-        "dimension": "interest",
-        "question_type": "text",
-        "sequence_order": 1,
-        "signal_strength": 5,
-    },
-]
-FREE_TEXT_QUESTION_KEYS = {
-    (item["dimension"], item["question_text"]) for item in FREE_TEXT_QUESTIONS
-}
-RETIRED_FREE_TEXT_QUESTION_TEXTS = {
-    "What kind of activities or topics make you lose track of time?",
-}
 RETIRED_DOMAIN_PERSONALITY_OPTION_TEXTS = {
     "I may stop if it feels too hard",
     "I would continue with guidance",
@@ -90,8 +75,8 @@ class Command(BaseCommand):
             action="store_true",
             help=(
                 "Before loading, deactivate existing questions in the 4 supported dimensions "
-                "for any domains mentioned in the CSV. Use this when you want EXACTLY 12 "
-                "questions (4 dimensions x 3) per domain/category."
+                "for any domains mentioned in the CSV. Use this when refreshing CSV-backed "
+                "MCQ questions for a domain/category."
             ),
         )
 
@@ -106,7 +91,9 @@ class Command(BaseCommand):
             raise FileNotFoundError(str(load_path))
 
         created_q = created_o = updated_q = updated_o = 0
-        current_question_keys = set(FREE_TEXT_QUESTION_KEYS)
+        dry_run_count = 0
+        dry_run_dimensions = {dimension: 0 for dimension in DIMENSIONS}
+        current_question_keys = set()
         with load_path.open("r", newline="", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
             if not reader.fieldnames:
@@ -242,6 +229,15 @@ class Command(BaseCommand):
                     if has_question_type_column
                     else "scale"
                 )
+                allowed_question_types = {
+                    Question.QuestionType.SCALE,
+                    Question.QuestionType.MCQ,
+                    Question.QuestionType.YESNO,
+                }
+                if question_type not in allowed_question_types:
+                    raise ValueError(
+                        f"Row {idx}: unsupported question_type '{question_type}'"
+                    )
                 mapped_streams_raw = (
                     (r.get("mapped_streams") or "").strip()
                     if has_mapped_streams_column
@@ -303,10 +299,8 @@ class Command(BaseCommand):
                             stream_ids.append(s_obj.id)
 
                 if dry_run:
-                    self.stdout.write(
-                        f"[DRY RUN] CSV Question: ({dim}) {qt} "
-                        f"[signal_strength={signal_strength}, mapped_domains={domain_codes}]"
-                    )
+                    dry_run_count += 1
+                    dry_run_dimensions[dim] = dry_run_dimensions.get(dim, 0) + 1
                     continue
 
                 defaults = {
@@ -444,7 +438,7 @@ class Command(BaseCommand):
                                 updated_o += 1
 
         if dry_run:
-            return None
+            return dry_run_count, dry_run_dimensions
         stale_q, stale_responses = self._delete_stale_questions(
             current_question_keys
         )
@@ -468,50 +462,6 @@ class Command(BaseCommand):
         ).count()
         Question.objects.filter(id__in=stale_ids).delete()
         return len(stale_ids), response_count
-
-    def _sync_free_text_questions(self) -> tuple[int, int]:
-        child_domains = list(
-            Domain.objects.filter(is_active=True, deleted=False, parent__isnull=False)
-        )
-        if not child_domains:
-            self.stdout.write(self.style.WARNING("No child domains found. Aborting."))
-            return 0, 0
-
-        retired_count = (
-            self._deactivate_retired_domain_personality_questions()
-            + self._deactivate_retired_free_text_questions()
-        )
-        created_count = self._seed_free_text_questions(child_domains)
-        return created_count, retired_count
-
-    def _seed_free_text_questions(self, child_domains) -> int:
-        created_count = 0
-        for question_data in FREE_TEXT_QUESTIONS:
-            question, created = Question.objects.get_or_create(
-                question_text=question_data["question_text"],
-                dimension=question_data["dimension"],
-                defaults={
-                    "question_type": question_data["question_type"],
-                    "sequence_order": question_data["sequence_order"],
-                    "signal_strength": question_data["signal_strength"],
-                    "is_active": True,
-                },
-            )
-            question.mapped_domains.set(child_domains)
-            created_count += int(created)
-        return created_count
-
-    def _deactivate_retired_free_text_questions(self) -> int:
-        questions = Question.objects.filter(
-            question_text__in=RETIRED_FREE_TEXT_QUESTION_TEXTS,
-            question_type="text",
-            is_active=True,
-        )
-        retired_count = questions.count()
-        for question in questions:
-            question.mapped_domains.clear()
-        questions.update(is_active=False)
-        return retired_count
 
     def _deactivate_retired_domain_personality_questions(self) -> int:
         questions = Question.objects.filter(
@@ -575,12 +525,22 @@ class Command(BaseCommand):
             load_path=load_path, dry_run=dry_run, prune_existing=prune_existing
         )
         if dry_run:
+            dry_run_count, dry_run_dimensions = result
+            dimension_summary = ", ".join(
+                f"{dimension}={count}"
+                for dimension, count in dry_run_dimensions.items()
+                if count
+            )
             self.stdout.write(
-                self.style.SUCCESS("Dry run complete. No changes written.")
+                self.style.SUCCESS(
+                    "Dry run complete. No changes written. "
+                    f"CSV questions checked={dry_run_count}"
+                    + (f" ({dimension_summary})" if dimension_summary else "")
+                )
             )
             return
         created_q, updated_q, created_o, updated_o, stale_q, stale_responses = result
-        self._sync_free_text_questions()
+        retired_personality = self._deactivate_retired_domain_personality_questions()
         updated_o += self._repair_zero_order_options()
         self.stdout.write(
             self.style.SUCCESS(
@@ -588,5 +548,6 @@ class Command(BaseCommand):
                 f"questions(created={created_q}, updated={updated_q}) "
                 f"options(created={created_o}, updated={updated_o}) "
                 f"stale_questions(deleted={stale_q}, responses_deleted={stale_responses})"
+                f" retired(personality={retired_personality})"
             )
         )

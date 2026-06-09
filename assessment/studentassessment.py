@@ -425,10 +425,18 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
         current_dimension = dimension_map.get(current_screen)
         if not current_dimension:
             sync_current_screen(assessment, request.user)
+            is_assessment_complete = (
+                assessment.current_screen == StudentAssessment.Screen.COMPLETE
+            )
             return Response(
                 {
                     "success": True,
-                    "message": "All assessment questions completed",
+                    "message": (
+                        "Assessment completed"
+                        if is_assessment_complete
+                        else "Assessment is not currently on a question screen"
+                    ),
+                    "current_screen": assessment.current_screen,
                     "data": None,
                 },
                 status=status.HTTP_200_OK,
@@ -451,12 +459,13 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
             message = (
                 "No questions found for selected domain"
                 if total_questions == 0
-                else "All questions completed for selected domains"
+                else "All questions completed for current section"
             )
             return Response(
                 {
                     "success": True,
                     "message": message,
+                    "current_screen": assessment.current_screen,
                     "data": None,
                     "progress": {
                         "question_number": total_questions,
@@ -487,8 +496,6 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
 
 
 class AssessmentResponseViewSet(viewsets.GenericViewSet):
-    # Body: MCQ answers use selected_option; text questions use text_answer.
-
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     serializer_class = AssessmentResponseSerializer
@@ -552,51 +559,30 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if question.question_type == Question.QuestionType.TEXT:
-            text_answer = ser.validated_data.get("text_answer", "").strip()
-            if not text_answer:
-                return Response(
-                    {
-                        "success": False,
-                        "message": "text_answer is required for this question",
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            UserResponse.objects.update_or_create(
-                assessment=assessment,
-                user=request.user,
-                question=question,
-                defaults={
-                    "selected_option": None,
-                    "text_answer": text_answer,
+        option_id = ser.validated_data.get("selected_option")
+        if not option_id:
+            return Response(
+                {
+                    "success": False,
+                    "message": "selected_option is required for this question",
                 },
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        else:
-            option_id = ser.validated_data.get("selected_option")
-            if not option_id:
-                return Response(
-                    {
-                        "success": False,
-                        "message": "selected_option is required for this question",
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            try:
-                option = Option.objects.get(id=option_id, question=question)
-            except Option.DoesNotExist:
-                return Response(
-                    {"success": False, "message": "Invalid option for this question"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            UserResponse.objects.update_or_create(
-                assessment=assessment,
-                user=request.user,
-                question=question,
-                defaults={
-                    "selected_option": option,
-                    "text_answer": "",
-                },
+        try:
+            option = Option.objects.get(id=option_id, question=question)
+        except Option.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Invalid option for this question"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
+        UserResponse.objects.update_or_create(
+            assessment=assessment,
+            user=request.user,
+            question=question,
+            defaults={
+                "selected_option": option,
+            },
+        )
 
         sync_current_screen(assessment, request.user)
 
