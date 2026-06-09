@@ -434,12 +434,13 @@ def normalize_easy_decision_item(item: Any) -> dict[str, Any] | None:
         return None
     data = {k: v for k, v in item.items() if k != "reason"}
     title = str(data.get("title") or "").strip()
-    career_name = str(
-        data.get("career_name") or data.get("career") or data.get("name") or ""
-    ).strip()
-    if not title or not career_name:
+    try:
+        career_index = int(data.get("career_index"))
+    except (TypeError, ValueError):
         return None
-    return {"title": title, "career_name": career_name}
+    if not title:
+        return None
+    return {"title": title, "career_index": career_index}
 
 
 def normalize_easy_decisions(

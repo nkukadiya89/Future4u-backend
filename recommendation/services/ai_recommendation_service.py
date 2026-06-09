@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import logging
+import re
 from datetime import timedelta
 
 from django.db.models import Prefetch
@@ -16,14 +16,138 @@ from recommendation.exceptions import (
 )
 from recommendation.pipeline.recommendation_pipeline import RecommendationPipeline
 
-logger = logging.getLogger(__name__)
-
 RECOMMENDATION_CYCLE_DAYS = 365
 AI_RECOMMENDATION_DISCLAIMER = (
     "These AI recommendations are only guidance and do not guarantee any career, "
     "education, admission, job, or salary outcome. Please use them as a starting "
     "point and confirm important decisions with a qualified professional."
 )
+STUDY_ABROAD_SALARY_ABROAD_CLAUSE = (
+    "abroad varies by country, visa status, degree level, and local demand"
+)
+STUDY_ABROAD_EXAM_CHECKS = (
+    "IELTS/PTE/TOEFL",
+    "GRE/GMAT if postgraduate/advanced",
+    "German/French or other language requirements",
+)
+STUDY_ABROAD_ROADMAP_PHASES = (
+    "next_3_months",
+    "next_3_to_6_months",
+    "next_6_to_9_months",
+    "next_9_to_12_months",
+)
+STUDY_ABROAD_TEXT_REPLACEMENTS = (
+    (
+        re.compile(
+            r"\b(?:IELTS|PTE|TOEFL)(?:\s*(?:/|,|\band\b|\bor\b)\s*(?:IELTS|PTE|TOEFL))*\b",
+            re.IGNORECASE,
+        ),
+        "IELTS/PTE/TOEFL",
+    ),
+    (
+        re.compile(
+            r"\b(?:GRE|GMAT)(?:\s*(?:/|,|\band\b|\bor\b)\s*(?:GRE|GMAT))*\b",
+            re.IGNORECASE,
+        ),
+        "GRE/GMAT",
+    ),
+    (
+        re.compile(
+            r"\b(?:SAT|ACT)(?:\s*(?:/|,|\band\b|\bor\b)\s*(?:SAT|ACT))*\b",
+            re.IGNORECASE,
+        ),
+        "course-specific entrance tests",
+    ),
+)
+
+
+def _is_study_abroad_assessment(structured_input: dict) -> bool:
+    career_direction = structured_input.get("career_direction") or []
+    if isinstance(career_direction, str):
+        values = [career_direction]
+    elif isinstance(career_direction, list):
+        values = career_direction
+    else:
+        values = []
+    return any(str(value).strip().casefold() == "study abroad" for value in values)
+
+
+def _normalize_study_abroad_text(value: object) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    for pattern, replacement in STUDY_ABROAD_TEXT_REPLACEMENTS:
+        text = pattern.sub(replacement, text)
+    return text
+
+
+def _normalize_study_abroad_salary_average(value: object) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return f"India: INR range varies by role; {STUDY_ABROAD_SALARY_ABROAD_CLAUSE}"
+
+    india_part = text.split(";", 1)[0].strip()
+    if not india_part.casefold().startswith("india:"):
+        india_part = f"India: {india_part}"
+    return f"{india_part}; {STUDY_ABROAD_SALARY_ABROAD_CLAUSE}"
+
+
+def _normalize_study_abroad_exam_text(value: object) -> str:
+    text = _normalize_study_abroad_text(value).rstrip(" .")
+    lowered = text.casefold()
+    checks: list[str] = []
+
+    if "ielts/pte/toefl" not in lowered:
+        checks.append(STUDY_ABROAD_EXAM_CHECKS[0])
+    if "gre/gmat" not in lowered:
+        checks.append(STUDY_ABROAD_EXAM_CHECKS[1])
+    has_language_requirement = (
+        "german/french" in lowered
+        or "other language requirement" in lowered
+        or "country/course language" in lowered
+    )
+    if not has_language_requirement:
+        checks.append(STUDY_ABROAD_EXAM_CHECKS[2])
+
+    if not checks:
+        return text
+
+    if len(checks) > 2:
+        checks_text = f"{', '.join(checks[:-1])}, and {checks[-1]}"
+    elif len(checks) == 2:
+        checks_text = f"{checks[0]} and {checks[1]}"
+    else:
+        checks_text = checks[0]
+
+    return f"{text}. Check {checks_text}." if text else f"Check {checks_text}."
+
+
+def _normalize_study_abroad_task_description(phase_name: str, value: object) -> str:
+    if phase_name == "next_3_to_6_months":
+        return _normalize_study_abroad_exam_text(value)
+    return _normalize_study_abroad_text(value)
+
+
+def _normalize_study_abroad_payload(payload):
+    for suggestion in payload.top_suggestions:
+        suggestion.ai_insight = _normalize_study_abroad_text(suggestion.ai_insight)
+        suggestion.why_this_career = [
+            _normalize_study_abroad_text(reason)
+            for reason in suggestion.why_this_career
+        ]
+        suggestion.career_factors.salary.average = (
+            _normalize_study_abroad_salary_average(
+                suggestion.career_factors.salary.average
+            )
+        )
+        roadmap = suggestion.career_roadmap
+        for phase_name in STUDY_ABROAD_ROADMAP_PHASES:
+            for task in getattr(roadmap, phase_name):
+                task.task_description = _normalize_study_abroad_task_description(
+                    phase_name,
+                    task.task_description,
+                )
+    return payload
 
 
 class AIRecommendationService:
@@ -53,6 +177,8 @@ class AIRecommendationService:
         structured_input = AssessmentContextBuilder.build_llm_input(assessment)
 
         payload = RecommendationPipeline.run(structured_assessment=structured_input)
+        if _is_study_abroad_assessment(structured_input):
+            payload = _normalize_study_abroad_payload(payload)
 
         recommendation = self._save_recommendation(
             assessment,
@@ -176,39 +302,45 @@ class AIRecommendationService:
     @staticmethod
     def _serialize_recommendation(recommendation):
         first_suggestion = (
-            recommendation.suggestions.filter(deleted=False).order_by("display_order").first()
+            recommendation.suggestions.filter(deleted=False)
+            .order_by("display_order")
+            .first()
         )
         top_ai_insight = str(getattr(first_suggestion, "ai_insight", "") or "").strip()
 
-        suggestions = [
-            {
-                "id": s.id,
-                "recommendation": s.recommendation_id,
-                "career_name": s.career_name,
-                "match_percentage": s.match_percentage,
-                "why_this_career": s.why_this_career,
-                "required_skills": s.required_skills,
-                "required_education": (
-                    {
-                        "levels": (
-                            (s.required_education or {}).get("levels", [])
-                            if isinstance(s.required_education, dict)
-                            else []
-                        )
-                    }
-                    if s.required_education
-                    else {"levels": []}
-                ),
-                "career_factors": AIRecommendationService._public_career_factors(
-                    s.career_factors
-                ),
-                "career_roadmap": s.career_roadmap,
-                "display_order": s.display_order,
-            }
-            for s in recommendation.suggestions.filter(deleted=False).order_by(
-                "display_order"
+        suggestions = []
+        for s in recommendation.suggestions.filter(deleted=False).order_by(
+            "display_order"
+        ):
+            career_factors = AIRecommendationService._public_career_factors(
+                s.career_factors
             )
-        ]
+            suggestions.append(
+                {
+                    "id": s.id,
+                    "recommendation": s.recommendation_id,
+                    "career_name": s.career_name,
+                    "match_percentage": s.match_percentage,
+                    "ai_insight": s.ai_insight,
+                    "why_this_career": s.why_this_career,
+                    "required_skills": s.required_skills,
+                    "required_education": (
+                        {
+                            "levels": (
+                                (s.required_education or {}).get("levels", [])
+                                if isinstance(s.required_education, dict)
+                                else []
+                            )
+                        }
+                        if s.required_education
+                        else {"levels": []}
+                    ),
+                    "career_factors": career_factors,
+                    "career_roadmap": s.career_roadmap,
+                    "display_order": s.display_order,
+                }
+            )
+
         return {
             "ai_disclaimer": AI_RECOMMENDATION_DISCLAIMER,
             "ai_insight": top_ai_insight,

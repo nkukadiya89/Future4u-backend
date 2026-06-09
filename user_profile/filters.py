@@ -1,8 +1,6 @@
 import django_filters
 
 from user_profile.models import (
-    InternshipApplication,
-    InternshipProfile,
     ParentProfile,
     Profile,
 )
@@ -17,31 +15,6 @@ class ProfileFilter(django_filters.FilterSet):
     class Meta:
         model = Profile
         fields = ["title", "city", "country", "user"]
-
-
-class InternshipProfileFilter(django_filters.FilterSet):
-    company_name = django_filters.CharFilter(lookup_expr="icontains")
-    role = django_filters.CharFilter(lookup_expr="icontains")
-    location = django_filters.CharFilter(lookup_expr="icontains")
-    profile = django_filters.NumberFilter(field_name="profile_id")
-
-    class Meta:
-        model = InternshipProfile
-        fields = [
-            "company_name",
-            "role",
-            "location",
-            "profile",
-        ]
-
-class InternshipApplicationFilter(django_filters.FilterSet):
-    profile = django_filters.NumberFilter(field_name="profile_id")
-    applicant = django_filters.NumberFilter(field_name="applicant_id")
-
-    class Meta:
-        model = InternshipApplication
-        fields = ["profile", "applicant"]
-
 
 class ParentProfileFilter(django_filters.FilterSet):
     relation = django_filters.CharFilter(lookup_expr="icontains")

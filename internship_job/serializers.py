@@ -1,4 +1,4 @@
-from .models import Internship
+from .models import Internship,InternshipApplication
 from rest_framework import serializers
 from common.serializers import BaseModelSerializer
 
@@ -32,3 +32,27 @@ class InternshipSerializer(BaseModelSerializer):
         if obj.provider:
             return obj.provider.full_name
         return None
+
+class InternshipApplicationSerializer(BaseModelSerializer):
+    applicant_name = serializers.CharField(source='applicant.full_name', read_only=True)
+    applicant_type = serializers.CharField(source = 'applicant.user_type', read_only=True)
+    internship_name = serializers.CharField(source='internship.name', read_only=True)
+
+
+    class Meta:
+        model = InternshipApplication
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "applicant",
+            "applicant_name",
+            "applicant_type",
+            "internship",
+            "internship_name",
+            "resume",
+            "status",
+            "applied_at",
+        ]
+        read_only_fields = [
+            "applicant",
+            "applied_at",
+        ]

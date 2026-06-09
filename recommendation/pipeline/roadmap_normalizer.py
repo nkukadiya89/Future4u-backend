@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from recommendation.schemas.recommendation_output import clip_roadmap_text
+from recommendation.schemas.recommendation_output import (
+    clip_roadmap_description,
+    clip_roadmap_title,
+)
 
 CAREER_ROADMAP_PHASE_KEYS: tuple[str, ...] = (
     "next_3_months",
@@ -20,8 +23,8 @@ _LEGACY_ROADMAP_KEYS: tuple[str, ...] = (
 
 def _task(title: str, description: str) -> dict[str, str]:
     return {
-        "task_title": clip_roadmap_text(title),
-        "task_description": clip_roadmap_text(description),
+        "task_title": clip_roadmap_title(title),
+        "task_description": clip_roadmap_description(description),
     }
 
 
@@ -30,8 +33,8 @@ def _clip_phase_tasks(tasks: list[Any]) -> list[dict[str, str]]:
     for item in tasks[:2]:
         if not isinstance(item, dict):
             continue
-        title = clip_roadmap_text(item.get("task_title") or "")
-        description = clip_roadmap_text(item.get("task_description") or "")
+        title = clip_roadmap_title(item.get("task_title") or "")
+        description = clip_roadmap_description(item.get("task_description") or "")
         if not title and not description:
             continue
         clipped.append(
@@ -44,7 +47,7 @@ def _title_from_step(description: str) -> str:
     text = description.strip()
     if not text:
         return "Next focus"
-    for sep in (" — ", " - ", ". ", "; "):
+    for sep in (" - ", ". ", "; "):
         if sep in text:
             text = text.split(sep, 1)[0].strip()
     words = text.split()

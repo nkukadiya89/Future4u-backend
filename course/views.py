@@ -201,5 +201,7 @@ class CourseInquiryViewSet(BaseModelViewSet):
                 "success": True,
                 "count": inquiries.count(),
                 "data": serializer.data,
-            }
+            },
+            status=status.HTTP_200_OK,
         )
+        
