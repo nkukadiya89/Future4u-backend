@@ -282,7 +282,9 @@ class Command(BaseCommand):
             "course|Can add course inquiry",
             "course|Can view course inquiry",
             "assessment_career|Can view career recommendation suggestion",
-            "internship_job|Can view internship"
+            "internship_job|Can view internship",
+            "internship_job|Can view internship application",
+            "internship_job|Can add internship application",
         ]
 
         # Parent Permissions - View linked child's data
@@ -292,6 +294,8 @@ class Command(BaseCommand):
             "education_level|Can view education level",
             "stream|Can view stream",
             "user|Can view user",
+            "internship_job|Can view internship application",
+            "internship_job|Can add internship application",
         ]
 
         # Professional Permissions - View career resources, update own profile
@@ -302,6 +306,8 @@ class Command(BaseCommand):
             "stream|Can view stream",
             "user|Can view user",
             "course|Can view course inquiry",
+            "internship_job|Can view internship application",
+            "internship_job|Can add internship application",
         ]
 
         # School/College Permissions - Manage their students
@@ -320,6 +326,8 @@ class Command(BaseCommand):
             "internship_job|Can add internship",
             "internship_job|Can change internship",
             "internship_job|Can delete internship",
+            "internship_job|Can view internship application",
+            "internship_job|Can change internship application",
         ]
 
         # Institute Permissions - Manage courses, grade students
@@ -340,6 +348,8 @@ class Command(BaseCommand):
             "internship_job|Can add internship",
             "internship_job|Can change internship",
             "internship_job|Can delete internship",
+            "internship_job|Can view internship application",
+            "internship_job|Can change internship application",
         ]
 
         # Corporate Permissions - Post jobs, view candidates
@@ -358,6 +368,8 @@ class Command(BaseCommand):
             "internship_job|Can add internship",
             "internship_job|Can change internship",
             "internship_job|Can delete internship",
+            "internship_job|Can view internship application",
+            "internship_job|Can change internship application",
         ]
 
         # Assign superuser to Super Admin group

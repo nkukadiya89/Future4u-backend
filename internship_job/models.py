@@ -3,6 +3,12 @@ from common.models import BaseModule
 from city.models import City
 from django.conf import settings
 from education_level.models import EducationLevel
+from user.models import User
+import os
+from rest_framework.response import Response
+from rest_framework import status
+
+from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
 
 # Create your models here.
 class Internship(BaseModule):
@@ -40,3 +46,52 @@ class Internship(BaseModule):
 
     def __str__(self):
         return self.name
+    
+class InternshipApplication(BaseModule):
+    
+    APPLICATION_STATUS_CHOICE = (
+        ("applied", "Applied"),
+        ("under_review", "Under_Review"),
+        ("selected", "Selected"),
+        ("rejected", "Rejected"),
+    )
+
+    applicant = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="student_internship_applications")
+    internship = models.ForeignKey(Internship, on_delete=models.SET_NULL, null=True, blank=True, related_name="internship_applications")
+    resume = models.CharField(max_length=450, null=True, blank=True)
+    status = models.CharField(max_length=100, choices=APPLICATION_STATUS_CHOICE, default="applied")
+    applied_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = "internship_application"
+        ordering = ["-created_at"]
+
+    
+    def upload_resume(self, resume_file):
+        allowed_type = [".pdf", ".docs", ".docx"]
+
+        file_extension = os.path.splitext(resume_file.name)[1].lower()
+
+        if file_extension not in allowed_type:
+            raise ValueError(f"Invalid file type: {file_extension}")
+
+        current_value = getattr(self, "resume_file", None)
+        try:
+            if current_value:
+                delete_uploaded_file(current_value)
+            
+            aws_file_url, presigned_url = upload_file_to_bucket(
+                resume_file,
+                allowed_type,
+                "InternshipResume/",
+                str(self.id),
+                None,
+            )
+
+            self.resume = aws_file_url
+            self.save(update_fields=["resume"])
+            return aws_file_url
+        except ValueError:
+            raise
+        except Exception as e:
+            raise Exception(f"Failed to upload resume: {str(e)}")

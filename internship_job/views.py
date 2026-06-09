@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .models import Internship
-from .serializers import InternshipSerializer
+from .models import Internship,InternshipApplication
+from .serializers import InternshipSerializer,InternshipApplicationSerializer
 from common.master_view import BaseModelViewSet
 from rest_framework import status
 from rest_framework.response import Response
@@ -135,4 +135,163 @@ class InternshipViewSet(BaseModelViewSet):
             },
             status=status.HTTP_200_OK
         )
+
+class InternshipApplicationViewSet(BaseModelViewSet):
+    queryset = InternshipApplication.objects.select_related(
+        "internship","applicant"
+    )
+    serializer_class = InternshipApplicationSerializer
+
+    searching_fields = BaseModelViewSet.searching_fields+[
+        "internship__name",
+        "applicant__full_name",
+        "applicant__user_type"
+    ]
+    ordering_fields = BaseModelViewSet.ordering_fields + [
+        "internship",
+        "applicant",
+        "status",
+        "applied_at",
+    ]
+    @transaction.atomic()
+    def create(self, request, *args, **kwargs):
+            internship_id = request.data.get("internship")
+            resume_file = request.FILES.get("resume")
+
+            if not internship_id:
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Internship id is required."
+                    },
+                    status = status.HTTP_400_BAD_REQUEST,
+                )
+            try:
+                internship = Internship.objects.get(
+                    id = internship_id,
+                    deleted = False,
+                )
+            except Internship.DoesNotExist:
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Internship Not Found."
+                    },
+                    status = status.HTTP_404_NOT_FOUND,
+                )
+
+            if InternshipApplication.objects.filter(
+                applicant = request.user,
+                internship = internship,
+                deleted = False,
+            ).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "You have an already applied for this internship"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            application  = InternshipApplication.objects.create(
+                applicant = request.user,
+                internship = internship,
+                created_by = request.user,
+                created_at = timezone.now(),
+                status = "applied",
+            )
+
+            if resume_file:
+                application.upload_resume(resume_file)
             
+            serialzer = self.get_serializer(application)
+
+            return Response(
+                {
+                    "success": True,
+                    "message": "Internship Applied successfully",
+                    "data": serialzer.data,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+    
+    @action(detail=False,methods=["get"], url_path="my-inquiries")
+    def my_inquiry(self, request):
+        inquiries = InternshipApplication.objects.filter(
+            applicant = request.user,
+            deleted = False,
+        ).select_related("internship","applicant")
+
+        serializer = self.get_serializer(inquiries, many=True)
+        return Response(
+            {
+                "success": True,
+                "count": inquiries.count(),
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+    
+    @action(detail=False, methods=["get"], url_path="received-inquiries")
+    def receive_inquiries(self, request):
+        inquiries = InternshipApplication.objects.filter(
+            internship__provider = request.user,
+            deleted = False,
+        ).select_related("internship", "applicant")
+
+        internship_id = request.query_params.get("internship_id")
+        if not internship_id:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Internship id is required",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if internship_id:
+            inquiries = inquiries.filter(internship_id=internship_id)
+        serializer = self.get_serializer(inquiries, many=True)
+        return Response(
+            {
+                "success": True,
+                "count": inquiries.count(),
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+        
+
+    @action(detail=True, methods=["patch"], url_path="update-status")
+    def update_status(self, request, pk=None):
+        application = self.get_object()
+
+        if application.internship.provider != request.user:
+            return Response(
+                {
+                    "success": False,
+                    "message": "You are not allowed to update this internship application status",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        application_status = request.data.get("status")
+        if not application_status:
+            return Response(
+                {
+                    "success": False,
+                    "message": "status is required",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        application.status = application_status
+        application.save(update_fields=["status"])
+
+        return Response(
+            {
+                "success": True,
+                "message": "Application status updated successfully",
+                "data": self.get_serializer(application).data,
+            },
+            status=status.HTTP_200_OK,
+        )

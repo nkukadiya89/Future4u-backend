@@ -13790,9 +13790,9 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Frontend Developer Internship\",\n  \"city\": {{city_id}},\n  \"organization_name\": \"Future4u Labs\",\n  \"description\": \"Hands-on internship for students.\",\n  \"responsibilities\": [\"Build UI components\", \"Write unit tests\"],\n  \"skills\": [\"JavaScript\", \"React\"],\n  \"education_tags\": [\"bachelor\"],\n  \"why_this_match\": \"Matches your career path in web development.\",\n  \"internship_type\": \"stipend\",\n  \"mode\": \"online\",\n  \"duration\": \"3 months\",\n  \"fees_amount\": null,\n  \"stipend_amount\": 15000,\n  \"certificate_provided\": true\n}"
+              "raw": "{\n  \"name\": \"Frontend Developer Internship\",\n  \"city\": {{city_id}},\n  \"organization_name\": \"Future4u Labs\",\n  \"description\": \"Hands-on internship for students.\",\n  \"responsibilities\": [\"Build UI components\", \"Write unit tests\"],\n  \"skills\": [\"JavaScript\", \"React\"],\n  \"education_tags\": [1],\n  \"why_this_match\": \"Matches your career path in web development.\",\n  \"internship_type\": \"stipend\",\n  \"mode\": \"online\",\n  \"duration\": \"3 months\",\n  \"fees_amount\": null,\n  \"stipend_amount\": 15000,\n  \"certificate_provided\": true\n}"
             },
-            "description": "Create an internship. provider and created_by are set from the authenticated user."
+            "description": "Create an internship. provider and created_by are set from the authenticated user.\n\ninternship_type: free | paid | stipend\nmode: online | offline\neducation_tags: array of EducationLevel ids"
           },
           "response": [],
           "event": [
@@ -13868,7 +13868,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Frontend Developer Internship (Updated)\",\n  \"city\": {{city_id}},\n  \"organization_name\": \"Future4u Labs\",\n  \"description\": \"Updated internship description.\",\n  \"responsibilities\": [\"Build UI components\"],\n  \"skills\": [\"JavaScript\", \"React\", \"TypeScript\"],\n  \"education_tags\": [\"bachelor\"],\n  \"why_this_match\": \"Updated match reason.\",\n  \"internship_type\": \"paid\",\n  \"mode\": \"offline\",\n  \"duration\": \"6 months\",\n  \"fees_amount\": 5000,\n  \"stipend_amount\": null,\n  \"certificate_provided\": true\n}"
+              "raw": "{\n  \"name\": \"Frontend Developer Internship (Updated)\",\n  \"city\": {{city_id}},\n  \"organization_name\": \"Future4u Labs\",\n  \"description\": \"Updated internship description.\",\n  \"responsibilities\": [\"Build UI components\"],\n  \"skills\": [\"JavaScript\", \"React\", \"TypeScript\"],\n  \"education_tags\": [1],\n  \"why_this_match\": \"Updated match reason.\",\n  \"internship_type\": \"paid\",\n  \"mode\": \"offline\",\n  \"duration\": \"6 months\",\n  \"fees_amount\": 5000,\n  \"stipend_amount\": null,\n  \"certificate_provided\": true\n}"
             }
           },
           "response": []
@@ -13982,7 +13982,356 @@
                 }
               ]
             },
-            "description": "Recommended internships for an AI career suggestion.\n\nRequires career_id (CareerRecommendationSuggestion id). Optional filters: mode, city_id, search.\n\nResponse: { success, message, data: [{ score, skill_matches, internship }] }"
+            "description": "Recommended internships for an AI career suggestion.\n\nRequires career_id (CareerRecommendationSuggestion id for the authenticated user). Optional filters: mode, city_id, search.\n\nResponse: { success, count, message, data: [{ score, skill_matches, internship }] }"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "internship_application",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship_application/?page=1&pagesize=10&search=&ordering=-applied_at",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship_application",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search by internship name or applicant name"
+                },
+                {
+                  "key": "ordering",
+                  "value": "-applied_at"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || (json.results && json.results.data) || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('internship_application_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship_application/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship_application",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "internship",
+                  "value": "{{internship_id}}",
+                  "type": "text",
+                  "description": "Required. Internship id to apply for."
+                },
+                {
+                  "key": "resume",
+                  "type": "file",
+                  "src": "",
+                  "description": "Optional resume file (.pdf, .doc, .docx). Uploaded to S3 and stored on the application."
+                }
+              ]
+            },
+            "description": "Apply for an internship.\n\nMultipart form fields:\n- internship (required): internship id\n- resume (optional): PDF/DOC/DOCX file\n\napplicant and status=applied are set server-side from the authenticated user.\nReturns 400 if already applied for the same internship."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const row = json.data;",
+                  "    if (row && row.id != null) pm.collectionVariables.set('internship_application_id', String(row.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "my-inquiries (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship_application/my-inquiries/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship_application",
+                "my-inquiries",
+                ""
+              ]
+            },
+            "description": "Returns internship applications submitted by the authenticated user.\n\nResponse: { success, count, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "received-inquiries (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship_application/received-inquiries/?internship_id={{internship_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship_application",
+                "received-inquiries",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "internship_id",
+                  "value": "{{internship_id}}",
+                  "description": "Required. Internship id where the authenticated user is the provider."
+                }
+              ]
+            },
+            "description": "Returns applications received for internships owned by the authenticated provider.\n\nRequires internship_id.\n\nResponse: { success, count, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship_application/{{internship_application_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship_application",
+                "{{internship_application_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update-status (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship_application/{{internship_application_id}}/update-status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship_application",
+                "{{internship_application_id}}",
+                "update-status",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"under_review\"\n}"
+            },
+            "description": "Update application status. Only the internship provider can update.\n\nstatus: applied | under_review | selected | rejected\n\nResponse: { success, message, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship_application/{{internship_application_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship_application",
+                "{{internship_application_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"internship\": {{internship_id}},\n  \"status\": \"under_review\"\n}"
+            },
+            "description": "Standard update. applicant is read-only (set on create). Prefer update-status for provider status changes."
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship_application/{{internship_application_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship_application",
+                "{{internship_application_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"selected\"\n}"
+            },
+            "description": "Standard partial update. Prefer update-status for provider status changes."
+          },
+          "response": []
+        },
+        {
+          "name": "destroy (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship_application/{{internship_application_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship_application",
+                "{{internship_application_id}}",
+                ""
+              ]
+            },
+            "description": "Soft-deletes (archives) the internship application record."
           },
           "response": []
         }
@@ -14154,6 +14503,10 @@
     },
     {
       "key": "internship_id",
+      "value": "1"
+    },
+    {
+      "key": "internship_application_id",
       "value": "1"
     },
     {
