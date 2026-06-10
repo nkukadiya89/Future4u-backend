@@ -10,31 +10,36 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name="internshipprofile",
-            name="deleted_by",
-        ),
-        migrations.RemoveField(
-            model_name="internshipprofile",
-            name="domains",
-        ),
-        migrations.RemoveField(
-            model_name="internshipprofile",
-            name="profile",
-        ),
-        migrations.RemoveField(
-            model_name="internshipprofile",
-            name="updated_by",
-        ),
         migrations.SeparateDatabaseAndState(
-            database_operations=[],
+            database_operations=[
+                migrations.RunSQL(
+                    sql="DROP TABLE IF EXISTS internship_profile CASCADE;",
+                    reverse_sql=migrations.RunSQL.noop,
+                ),
+            ],
             state_operations=[
+                migrations.RemoveField(
+                    model_name="internshipprofile",
+                    name="deleted_by",
+                ),
+                migrations.RemoveField(
+                    model_name="internshipprofile",
+                    name="domains",
+                ),
+                migrations.RemoveField(
+                    model_name="internshipprofile",
+                    name="profile",
+                ),
+                migrations.RemoveField(
+                    model_name="internshipprofile",
+                    name="updated_by",
+                ),
                 migrations.DeleteModel(
                     name="InternshipApplication",
                 ),
+                migrations.DeleteModel(
+                    name="InternshipProfile",
+                ),
             ],
-        ),
-        migrations.DeleteModel(
-            name="InternshipProfile",
         ),
     ]

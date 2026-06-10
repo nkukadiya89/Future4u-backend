@@ -19,237 +19,242 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name="InternshipProfile",
-            fields=[
-                (
-                    "id",
-                    models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[],
+            state_operations=[
+                migrations.CreateModel(
+                    name="InternshipProfile",
+                    fields=[
+                        (
+                            "id",
+                            models.BigAutoField(
+                                auto_created=True,
+                                primary_key=True,
+                                serialize=False,
+                                verbose_name="ID",
+                            ),
+                        ),
+                        (
+                            "current_degree",
+                            models.CharField(blank=True, max_length=150, null=True),
+                        ),
+                        (
+                            "college_name",
+                            models.CharField(blank=True, max_length=200, null=True),
+                        ),
+                        ("graduation_year", models.IntegerField(blank=True, null=True)),
+                        (
+                            "experience_level",
+                            models.CharField(
+                                choices=[
+                                    ("fresher", "Fresher"),
+                                    ("beginner", "Beginner"),
+                                    ("intermediate", "Intermediate"),
+                                ],
+                                default="fresher",
+                                max_length=50,
+                            ),
+                        ),
+                        ("available_from", models.DateField(blank=True, null=True)),
+                        ("duration_weeks", models.IntegerField(blank=True, null=True)),
+                        (
+                            "preferred_work_mode",
+                            models.CharField(blank=True, max_length=50, null=True),
+                        ),
+                        (
+                            "expected_stipend",
+                            models.CharField(blank=True, max_length=50, null=True),
+                        ),
+                        (
+                            "resume",
+                            models.FileField(blank=True, null=True, upload_to="resumes/"),
+                        ),
+                        ("portfolio_link", models.URLField(blank=True, null=True)),
+                        ("github_link", models.URLField(blank=True, null=True)),
+                        ("why_internship", models.TextField(blank=True, null=True)),
+                        ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
+                        ("updated_at", models.DateTimeField(default=django.utils.timezone.now)),
+                        ("deleted", models.BooleanField(default=False)),
+                        ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                        (
+                            "deleted_by",
+                            models.ForeignKey(
+                                blank=True,
+                                null=True,
+                                on_delete=django.db.models.deletion.SET_NULL,
+                                related_name="internship_profile_deleted",
+                                to=settings.AUTH_USER_MODEL,
+                            ),
+                        ),
+                        ("domains", models.ManyToManyField(blank=True, to="domain.domain")),
+                        (
+                            "profile",
+                            models.OneToOneField(
+                                on_delete=django.db.models.deletion.CASCADE,
+                                related_name="internship",
+                                to="user_profile.profile",
+                            ),
+                        ),
+                        (
+                            "updated_by",
+                            models.ForeignKey(
+                                null=True,
+                                on_delete=django.db.models.deletion.SET_NULL,
+                                related_name="internship_profile_updated",
+                                to=settings.AUTH_USER_MODEL,
+                            ),
+                        ),
+                    ],
+                    options={
+                        "db_table": "internship_profile",
+                        "ordering": ["-created_at"],
+                    },
                 ),
-                (
-                    "current_degree",
-                    models.CharField(blank=True, max_length=150, null=True),
+                migrations.CreateModel(
+                    name="InternshipApplication",
+                    fields=[
+                        (
+                            "id",
+                            models.BigAutoField(
+                                auto_created=True,
+                                primary_key=True,
+                                serialize=False,
+                                verbose_name="ID",
+                            ),
+                        ),
+                        ("company_name", models.CharField(max_length=200)),
+                        ("role", models.CharField(max_length=150)),
+                        ("cover_letter", models.TextField(blank=True, null=True)),
+                        (
+                            "status",
+                            models.CharField(
+                                choices=[
+                                    ("applied", "Applied"),
+                                    ("shortlisted", "Shortlisted"),
+                                    ("rejected", "Rejected"),
+                                    ("accepted", "Accepted"),
+                                ],
+                                default="applied",
+                                max_length=20,
+                            ),
+                        ),
+                        ("applied_at", models.DateTimeField(auto_now_add=True)),
+                        ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
+                        ("updated_at", models.DateTimeField(default=django.utils.timezone.now)),
+                        ("deleted", models.BooleanField(default=False)),
+                        ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                        (
+                            "deleted_by",
+                            models.ForeignKey(
+                                blank=True,
+                                null=True,
+                                on_delete=django.db.models.deletion.SET_NULL,
+                                related_name="internship_application_deleted",
+                                to=settings.AUTH_USER_MODEL,
+                            ),
+                        ),
+                        (
+                            "updated_by",
+                            models.ForeignKey(
+                                null=True,
+                                on_delete=django.db.models.deletion.SET_NULL,
+                                related_name="internship_application_updated",
+                                to=settings.AUTH_USER_MODEL,
+                            ),
+                        ),
+                        (
+                            "user",
+                            models.ForeignKey(
+                                on_delete=django.db.models.deletion.CASCADE,
+                                to=settings.AUTH_USER_MODEL,
+                            ),
+                        ),
+                        (
+                            "internship_profile",
+                            models.ForeignKey(
+                                on_delete=django.db.models.deletion.CASCADE,
+                                to="user_profile.internshipprofile",
+                            ),
+                        ),
+                    ],
+                    options={
+                        "db_table": "internship_application",
+                        "ordering": ["-created_at"],
+                    },
                 ),
-                (
-                    "college_name",
-                    models.CharField(blank=True, max_length=200, null=True),
-                ),
-                ("graduation_year", models.IntegerField(blank=True, null=True)),
-                (
-                    "experience_level",
-                    models.CharField(
-                        choices=[
-                            ("fresher", "Fresher"),
-                            ("beginner", "Beginner"),
-                            ("intermediate", "Intermediate"),
-                        ],
-                        default="fresher",
-                        max_length=50,
-                    ),
-                ),
-                ("available_from", models.DateField(blank=True, null=True)),
-                ("duration_weeks", models.IntegerField(blank=True, null=True)),
-                (
-                    "preferred_work_mode",
-                    models.CharField(blank=True, max_length=50, null=True),
-                ),
-                (
-                    "expected_stipend",
-                    models.CharField(blank=True, max_length=50, null=True),
-                ),
-                (
-                    "resume",
-                    models.FileField(blank=True, null=True, upload_to="resumes/"),
-                ),
-                ("portfolio_link", models.URLField(blank=True, null=True)),
-                ("github_link", models.URLField(blank=True, null=True)),
-                ("why_internship", models.TextField(blank=True, null=True)),
-                ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
-                ("updated_at", models.DateTimeField(default=django.utils.timezone.now)),
-                ("deleted", models.BooleanField(default=False)),
-                ("deleted_at", models.DateTimeField(blank=True, null=True)),
-                (
-                    "deleted_by",
-                    models.ForeignKey(
-                        blank=True,
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="internship_profile_deleted",
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
-                ("domains", models.ManyToManyField(blank=True, to="domain.domain")),
-                (
-                    "profile",
-                    models.OneToOneField(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="internship",
-                        to="user_profile.profile",
-                    ),
-                ),
-                (
-                    "updated_by",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="internship_profile_updated",
-                        to=settings.AUTH_USER_MODEL,
-                    ),
+                migrations.CreateModel(
+                    name="InternshipProfileSkill",
+                    fields=[
+                        (
+                            "id",
+                            models.BigAutoField(
+                                auto_created=True,
+                                primary_key=True,
+                                serialize=False,
+                                verbose_name="ID",
+                            ),
+                        ),
+                        (
+                            "level",
+                            models.CharField(
+                                choices=[
+                                    ("beginner", "Beginner"),
+                                    ("intermediate", "Intermediate"),
+                                    ("advanced", "Advanced"),
+                                ],
+                                max_length=20,
+                            ),
+                        ),
+                        ("years_of_experience", models.FloatField(blank=True, null=True)),
+                        ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
+                        ("updated_at", models.DateTimeField(default=django.utils.timezone.now)),
+                        ("deleted", models.BooleanField(default=False)),
+                        ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                        (
+                            "deleted_by",
+                            models.ForeignKey(
+                                blank=True,
+                                null=True,
+                                on_delete=django.db.models.deletion.SET_NULL,
+                                related_name="internship_skill_deleted",
+                                to=settings.AUTH_USER_MODEL,
+                            ),
+                        ),
+                        (
+                            "internship_profile",
+                            models.ForeignKey(
+                                on_delete=django.db.models.deletion.CASCADE,
+                                related_name="skill_map",
+                                to="user_profile.internshipprofile",
+                            ),
+                        ),
+                        (
+                            "skill",
+                            models.ForeignKey(
+                                on_delete=django.db.models.deletion.CASCADE, to="skill.skill"
+                            ),
+                        ),
+                        (
+                            "updated_by",
+                            models.ForeignKey(
+                                null=True,
+                                on_delete=django.db.models.deletion.SET_NULL,
+                                related_name="internship_skill_updated",
+                                to=settings.AUTH_USER_MODEL,
+                            ),
+                        ),
+                    ],
+                    options={
+                        "db_table": "internship_profile_skill",
+                        "ordering": ["-created_at"],
+                        "unique_together": {("internship_profile", "skill")},
+                    },
                 ),
             ],
-            options={
-                "db_table": "internship_profile",
-                "ordering": ["-created_at"],
-            },
-        ),
-        migrations.CreateModel(
-            name="InternshipApplication",
-            fields=[
-                (
-                    "id",
-                    models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("company_name", models.CharField(max_length=200)),
-                ("role", models.CharField(max_length=150)),
-                ("cover_letter", models.TextField(blank=True, null=True)),
-                (
-                    "status",
-                    models.CharField(
-                        choices=[
-                            ("applied", "Applied"),
-                            ("shortlisted", "Shortlisted"),
-                            ("rejected", "Rejected"),
-                            ("accepted", "Accepted"),
-                        ],
-                        default="applied",
-                        max_length=20,
-                    ),
-                ),
-                ("applied_at", models.DateTimeField(auto_now_add=True)),
-                ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
-                ("updated_at", models.DateTimeField(default=django.utils.timezone.now)),
-                ("deleted", models.BooleanField(default=False)),
-                ("deleted_at", models.DateTimeField(blank=True, null=True)),
-                (
-                    "deleted_by",
-                    models.ForeignKey(
-                        blank=True,
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="internship_application_deleted",
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
-                (
-                    "updated_by",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="internship_application_updated",
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
-                (
-                    "user",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
-                (
-                    "internship_profile",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="user_profile.internshipprofile",
-                    ),
-                ),
-            ],
-            options={
-                "db_table": "internship_application",
-                "ordering": ["-created_at"],
-            },
         ),
         migrations.AddField(
             model_name="parentprofile",
             name="child_interests",
             field=models.ManyToManyField(blank=True, to="domain.domain"),
-        ),
-        migrations.CreateModel(
-            name="InternshipProfileSkill",
-            fields=[
-                (
-                    "id",
-                    models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                (
-                    "level",
-                    models.CharField(
-                        choices=[
-                            ("beginner", "Beginner"),
-                            ("intermediate", "Intermediate"),
-                            ("advanced", "Advanced"),
-                        ],
-                        max_length=20,
-                    ),
-                ),
-                ("years_of_experience", models.FloatField(blank=True, null=True)),
-                ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
-                ("updated_at", models.DateTimeField(default=django.utils.timezone.now)),
-                ("deleted", models.BooleanField(default=False)),
-                ("deleted_at", models.DateTimeField(blank=True, null=True)),
-                (
-                    "deleted_by",
-                    models.ForeignKey(
-                        blank=True,
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="internship_skill_deleted",
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
-                (
-                    "internship_profile",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="skill_map",
-                        to="user_profile.internshipprofile",
-                    ),
-                ),
-                (
-                    "skill",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="skill.skill"
-                    ),
-                ),
-                (
-                    "updated_by",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="internship_skill_updated",
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
-            ],
-            options={
-                "db_table": "internship_profile_skill",
-                "ordering": ["-created_at"],
-                "unique_together": {("internship_profile", "skill")},
-            },
         ),
     ]

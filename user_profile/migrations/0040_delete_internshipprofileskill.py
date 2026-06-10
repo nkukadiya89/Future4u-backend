@@ -6,11 +6,21 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user_profile', '0039_merge_20260505_1316'),
+        ("user_profile", "0039_merge_20260505_1316"),
     ]
 
     operations = [
-        migrations.DeleteModel(
-            name='InternshipProfileSkill',
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunSQL(
+                    sql="DROP TABLE IF EXISTS internship_profile_skill CASCADE;",
+                    reverse_sql=migrations.RunSQL.noop,
+                ),
+            ],
+            state_operations=[
+                migrations.DeleteModel(
+                    name="InternshipProfileSkill",
+                ),
+            ],
         ),
     ]
