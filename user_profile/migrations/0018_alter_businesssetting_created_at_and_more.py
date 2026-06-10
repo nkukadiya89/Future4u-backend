@@ -30,35 +30,40 @@ class Migration(migrations.Migration):
             name="updated_at",
             field=models.DateTimeField(auto_now=True, null=True),
         ),
-        migrations.AlterField(
-            model_name="internshipapplication",
-            name="created_at",
-            field=models.DateTimeField(auto_now_add=True),
-        ),
-        migrations.AlterField(
-            model_name="internshipapplication",
-            name="updated_at",
-            field=models.DateTimeField(auto_now=True, null=True),
-        ),
-        migrations.AlterField(
-            model_name="internshipprofile",
-            name="created_at",
-            field=models.DateTimeField(auto_now_add=True),
-        ),
-        migrations.AlterField(
-            model_name="internshipprofile",
-            name="updated_at",
-            field=models.DateTimeField(auto_now=True, null=True),
-        ),
-        migrations.AlterField(
-            model_name="internshipprofileskill",
-            name="created_at",
-            field=models.DateTimeField(auto_now_add=True),
-        ),
-        migrations.AlterField(
-            model_name="internshipprofileskill",
-            name="updated_at",
-            field=models.DateTimeField(auto_now=True, null=True),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[],
+            state_operations=[
+                migrations.AlterField(
+                    model_name="internshipapplication",
+                    name="created_at",
+                    field=models.DateTimeField(auto_now_add=True),
+                ),
+                migrations.AlterField(
+                    model_name="internshipapplication",
+                    name="updated_at",
+                    field=models.DateTimeField(auto_now=True, null=True),
+                ),
+                migrations.AlterField(
+                    model_name="internshipprofile",
+                    name="created_at",
+                    field=models.DateTimeField(auto_now_add=True),
+                ),
+                migrations.AlterField(
+                    model_name="internshipprofile",
+                    name="updated_at",
+                    field=models.DateTimeField(auto_now=True, null=True),
+                ),
+                migrations.AlterField(
+                    model_name="internshipprofileskill",
+                    name="created_at",
+                    field=models.DateTimeField(auto_now_add=True),
+                ),
+                migrations.AlterField(
+                    model_name="internshipprofileskill",
+                    name="updated_at",
+                    field=models.DateTimeField(auto_now=True, null=True),
+                ),
+            ],
         ),
         migrations.AlterField(
             model_name="parentprofile",
