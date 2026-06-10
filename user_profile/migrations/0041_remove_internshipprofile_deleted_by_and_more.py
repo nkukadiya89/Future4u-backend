@@ -13,7 +13,34 @@ class Migration(migrations.Migration):
         migrations.SeparateDatabaseAndState(
             database_operations=[
                 migrations.RunSQL(
-                    sql="DROP TABLE IF EXISTS internship_profile CASCADE;",
+                    sql="""
+                    DO $$
+                    DECLARE
+                        r RECORD;
+                    BEGIN
+                        IF EXISTS (
+                            SELECT 1 FROM information_schema.tables
+                            WHERE table_name = 'internship_application'
+                        ) THEN
+                            FOR r IN (
+                                SELECT tc.constraint_name
+                                FROM information_schema.table_constraints tc
+                                JOIN information_schema.key_column_usage kcu
+                                    ON tc.constraint_name = kcu.constraint_name
+                                    AND tc.table_schema = kcu.table_schema
+                                WHERE tc.table_name = 'internship_application'
+                                  AND tc.constraint_type = 'FOREIGN KEY'
+                                  AND kcu.column_name = 'internship_profile_id'
+                            ) LOOP
+                                EXECUTE format(
+                                    'ALTER TABLE internship_application DROP CONSTRAINT %I',
+                                    r.constraint_name
+                                );
+                            END LOOP;
+                        END IF;
+                    END $$;
+                    DROP TABLE IF EXISTS internship_profile CASCADE;
+                    """,
                     reverse_sql=migrations.RunSQL.noop,
                 ),
             ],
