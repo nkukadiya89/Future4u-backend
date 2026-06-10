@@ -214,7 +214,51 @@ class InternshipApplicationViewSet(BaseModelViewSet):
                 },
                 status=status.HTTP_201_CREATED,
             )
-    
+    @transaction.atomic()
+    def update(self, request, *args, **kwargs):
+        application = self.get_object()
+
+        if application.applicant != request.user:
+            return Response(
+                {
+                    "success": False,
+                    "message": "You are not allowed to update this application",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if application.status != "applied":
+            return Response(
+                {
+                    "success": False,
+                    "message": "Application can update only when status is applied."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        resume_file = request.FILES.get("resume")
+        if resume_file:
+            application.upload_resume(resume_file)
+        
+        data = request.data.dict()
+        data.pop("resume", None)
+        data.pop("applicant", None)
+        data.pop("internship", None)
+        data.pop("status", None)
+
+        serializer = self.get_serializer(
+            application, data=data, partial=True
+        )
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {
+                "success": True,
+                "message": "Application updated successfully",
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )  
+
     @action(detail=False,methods=["get"], url_path="my-inquiries")
     def my_inquiry(self, request):
         inquiries = InternshipApplication.objects.filter(
@@ -271,7 +315,7 @@ class InternshipApplicationViewSet(BaseModelViewSet):
                     "success": False,
                     "message": "You are not allowed to update this internship application status",
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         application_status = request.data.get("status")

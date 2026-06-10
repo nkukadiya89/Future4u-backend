@@ -38,13 +38,19 @@ class Courses(BaseModule):
         return self.name
     
 class CourseInquiry(BaseModule):
+
+    INQUIRIES_STATUS_CHOICE = (
+        ("pending","Pending"),
+        ("responded","Responded"),
+        ("closed","Closed"),
+    )
     course = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name="inquiries")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="course_inquiries")
     name = models.CharField(max_length=200, null=True, blank=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
     message = models.TextField(null=True, blank=True)
-
+    status = models.CharField(max_length=50, choices=INQUIRIES_STATUS_CHOICE, default="pending", null=True, blank=True)
     class Meta:
         db_table = "course_inquiry"
 

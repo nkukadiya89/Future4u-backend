@@ -285,6 +285,7 @@ class Command(BaseCommand):
             "internship_job|Can view internship",
             "internship_job|Can view internship application",
             "internship_job|Can add internship application",
+            "internship_job|Can change internship application",
         ]
 
         # Parent Permissions - View linked child's data
@@ -296,6 +297,7 @@ class Command(BaseCommand):
             "user|Can view user",
             "internship_job|Can view internship application",
             "internship_job|Can add internship application",
+            "internship_job|Can change internship application",
         ]
 
         # Professional Permissions - View career resources, update own profile
@@ -308,6 +310,7 @@ class Command(BaseCommand):
             "course|Can view course inquiry",
             "internship_job|Can view internship application",
             "internship_job|Can add internship application",
+            "internship_job|Can change internship application",
         ]
 
         # School/College Permissions - Manage their students
@@ -322,6 +325,7 @@ class Command(BaseCommand):
             "course|Can change courses",
             "course|Can delete courses",
             "course|Can view course inquiry",
+            "course|Can change course inquiry",
             "internship_job|Can view internship",
             "internship_job|Can add internship",
             "internship_job|Can change internship",
@@ -344,6 +348,7 @@ class Command(BaseCommand):
             "course|Can change courses",
             "course|Can delete courses",
             "course|Can view course inquiry",
+            "course|Can change course inquiry",
             "internship_job|Can view internship",
             "internship_job|Can add internship",
             "internship_job|Can change internship",
@@ -364,6 +369,7 @@ class Command(BaseCommand):
             "course|Can change courses",
             "course|Can delete courses",
             "course|Can view course inquiry",
+            "course|Can change course inquiry",
             "internship_job|Can view internship",
             "internship_job|Can add internship",
             "internship_job|Can change internship",

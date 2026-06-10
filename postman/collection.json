@@ -13182,71 +13182,6 @@
           ]
         },
         {
-          "name": "my-inquiries (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/course-inquiry/my-inquiries/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "course-inquiry",
-                "my-inquiries",
-                ""
-              ]
-            },
-            "description": "Returns inquiries submitted by the authenticated user."
-          },
-          "response": []
-        },
-        {
-          "name": "received-inquiries (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/course-inquiry/received-inquiries/?course_id={{course_id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "course-inquiry",
-                "received-inquiries",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "course_id",
-                  "value": "{{course_id}}",
-                  "description": "Required. Course id whose provider is the authenticated user."
-                }
-              ]
-            },
-            "description": "Returns inquiries received for courses where the authenticated user is the provider. Requires course_id."
-          },
-          "response": []
-        },
-        {
           "name": "create (POST)",
           "request": {
             "method": "POST",
@@ -13272,8 +13207,9 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Python for Data Science\",\n  \"course_type\": \"certification\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\", \"Data Analysis\"],\n  \"education_tags\": [\"higher_secondary\"],\n  \"duration\": \"8 weeks\",\n  \"provider\": {{user_id}},\n  \"city\": {{city_id}},\n  \"course_overview\": \"Learn Python from basics to ML.\",\n  \"why_this_course\": [\"High demand skills\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\", \"Pandas\", \"ML basics\"]\n}"
-            }
+              "raw": "{\n  \"name\": \"Python for Data Science\",\n  \"course_type\": \"certification\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\", \"Data Analysis\"],\n  \"education_tags\": [\"higher_secondary\"],\n  \"duration\": \"8 weeks\",\n  \"city\": {{city_id}},\n  \"course_overview\": \"Learn Python from basics to ML.\",\n  \"why_this_course\": [\"High demand skills\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\", \"Pandas\", \"ML basics\"]\n}"
+            },
+            "description": "Create a course. provider and created_by are set from the authenticated user.\n\ncourse_type: higher_secondary | diploma | degree | certification | training\nmode: online | offline"
           },
           "response": []
         },
@@ -13332,7 +13268,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Python for Data Science Updated\",\n  \"course_type\": \"course\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\"],\n  \"education_tags\": [\"higher_secondary\"],\n  \"duration\": \"10 weeks\",\n  \"provider\": {{user_id}},\n  \"city\": {{city_id}},\n  \"course_overview\": \"Updated overview\",\n  \"why_this_course\": [\"Updated\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\"]\n}"
+              "raw": "{\n  \"name\": \"Python for Data Science Updated\",\n  \"course_type\": \"degree\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\"],\n  \"education_tags\": [\"higher_secondary\"],\n  \"duration\": \"10 weeks\",\n  \"city\": {{city_id}},\n  \"course_overview\": \"Updated overview\",\n  \"why_this_course\": [\"Updated\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\"]\n}"
             }
           },
           "response": []
@@ -13441,7 +13377,7 @@
                 {
                   "key": "course_type",
                   "value": "",
-                  "description": "degree | course | training",
+                  "description": "higher_secondary | diploma | degree | certification | training",
                   "disabled": true
                 },
                 {
@@ -13451,7 +13387,7 @@
                 }
               ]
             },
-            "description": "Recommended courses for an AI career suggestion.\n\nRequires career_id (CareerRecommendationSuggestion id). Optional filters: mode, city_id, course_type, search."
+            "description": "Recommended courses for an AI career suggestion.\n\nRequires career_id (CareerRecommendationSuggestion id for the authenticated user). Optional filters: mode, city_id, course_type, search.\n\nResponse: { success, count, message, data: [{ score, courses }] }"
           },
           "response": []
         }
@@ -13553,7 +13489,7 @@
               "mode": "raw",
               "raw": "{\n  \"course\": {{course_id}},\n  \"name\": \"John Doe\",\n  \"phone\": \"9876543210\",\n  \"email\": \"john@example.com\",\n  \"message\": \"I would like more information about this course.\"\n}"
             },
-            "description": "Submit a course inquiry. user and created_by are set from the authenticated user."
+            "description": "Submit a course inquiry. user and created_by are set from the authenticated user. status defaults to pending.\n\nReturns error if already submitted for the same course."
           },
           "response": [],
           "event": [
@@ -13573,6 +13509,71 @@
               }
             }
           ]
+        },
+        {
+          "name": "my-inquiries (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/my-inquiries/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "my-inquiries",
+                ""
+              ]
+            },
+            "description": "Returns course inquiries submitted by the authenticated user.\n\nResponse: { success, count, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "received-inquiries (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/received-inquiries/?course_id={{course_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "received-inquiries",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "course_id",
+                  "value": "{{course_id}}",
+                  "description": "Required. Course id where the authenticated user is the provider."
+                }
+              ]
+            },
+            "description": "Returns inquiries received for courses owned by the authenticated provider.\n\nRequires course_id.\n\nResponse: { success, count, data }"
+          },
+          "response": []
         },
         {
           "name": "retrieve (GET)",
@@ -13599,6 +13600,40 @@
                 ""
               ]
             }
+          },
+          "response": []
+        },
+        {
+          "name": "update-status (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/{{course_inquiry_id}}/update-status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "{{course_inquiry_id}}",
+                "update-status",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"responded\"\n}"
+            },
+            "description": "Update inquiry status. Only the course provider can update.\n\nstatus (required): pending | responded | closed\n\nReturns 403 if not the course provider. Returns 400 if status is missing.\n\nResponse: { success, message, data }"
           },
           "response": []
         },
@@ -13630,7 +13665,8 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"course\": {{course_id}},\n  \"name\": \"John Doe Updated\",\n  \"phone\": \"9876543210\",\n  \"email\": \"john.updated@example.com\",\n  \"message\": \"Updated inquiry message.\"\n}"
-            }
+            },
+            "description": "Standard update. Prefer update-status for provider status changes."
           },
           "response": []
         },
@@ -13662,7 +13698,8 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"message\": \"Follow-up: please share batch timings.\"\n}"
-            }
+            },
+            "description": "Standard partial update. Prefer update-status for provider status changes."
           },
           "response": []
         },
@@ -14246,10 +14283,6 @@
             "method": "PUT",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
                 "key": "Authorization",
                 "value": "Bearer {{access_token}}"
               }
@@ -14266,10 +14299,23 @@
               ]
             },
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"internship\": {{internship_id}},\n  \"status\": \"under_review\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "internship",
+                  "value": "{{internship_id}}",
+                  "type": "text",
+                  "description": "Optional. Internship id to update."
+                },
+                {
+                  "key": "resume",
+                  "type": "file",
+                  "src": "",
+                  "description": "Optional. New resume file (.pdf, .doc, .docx). Uploaded to S3."
+                }
+              ]
             },
-            "description": "Standard update. applicant is read-only (set on create). Prefer update-status for provider status changes."
+            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- internship (optional)\n- resume (optional file) — uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / selected / rejected are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
           },
           "response": []
         },
@@ -14279,10 +14325,6 @@
             "method": "PATCH",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
                 "key": "Authorization",
                 "value": "Bearer {{access_token}}"
               }
@@ -14299,10 +14341,17 @@
               ]
             },
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"status\": \"selected\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "resume",
+                  "type": "file",
+                  "src": "",
+                  "description": "Optional. Replace resume (.pdf, .doc, .docx). Uploaded to S3."
+                }
+              ]
             },
-            "description": "Standard partial update. Prefer update-status for provider status changes."
+            "description": "Partial update (applicant only). Uses the same custom update() as PUT.\n\nSend only fields to change. Use resume file to replace resume on S3.\n\nOnly allowed when status is applied. Provider status: use update-status."
           },
           "response": []
         },
