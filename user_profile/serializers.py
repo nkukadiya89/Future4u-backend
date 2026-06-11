@@ -514,23 +514,7 @@ class ChildProfileCreateSerializer(serializers.ModelSerializer):
             "github_url",
             "portfolio",
         ]
-
-    def create(self, validated_data):
-        language = validated_data.pop("language", None)
-        instance = super().create(validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
-
-    def update(self, instance, validated_data):
-        language = validated_data.pop("language", None)
-        instance.updated_at = now()
-        instance = super().update(instance, validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
-
-
+]
 class BusinessSettingInfoSerializer(serializers.ModelSerializer):
     company_name = serializers.CharField(source="company.name", required=False)
     country_name = serializers.CharField(

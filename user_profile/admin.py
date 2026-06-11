@@ -174,7 +174,7 @@ class ParentProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
     readonly_fields = ("user", "created_at", "updated_at")
     raw_id_fields = ("user",)
     filter_horizontal = ("language",)
-    list_select_related = ("user",)
+    list_select_related = ("user", "child_education_level", "stream")
 
     autocomplete_fields = ("child_education_level", "stream")
 
