@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
 
-from common.mixins.serializer_mixins import DeletedFieldsMixin, OtpEmailValidationMixin, UserNameMixin
+from common.mixins.serializer_mixins import OtpEmailValidationMixin
 
 from user.models import ContentTypeModel, CustomGroup, RoleFamily, User
 from user.user_auth import get_user_groups, get_user_permissions

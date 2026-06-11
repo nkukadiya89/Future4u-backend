@@ -1,6 +1,4 @@
 from rest_framework import serializers
-from django.utils.timezone import now
-from language_master.models import Language
 from common.mixins.serializer_mixins import (
     ProfileLanguageMixin,
     ProfileLanguageSaveMixin,
@@ -99,13 +97,6 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
     city_name = serializers.CharField(
         source="user.city.name", read_only=True, default=None
     )
-    first_name =serializers.CharField(source="user.first_name", read_only=True)
-    last_name = serializers.CharField(source="user.last_name", read_only=True)
-    phone = serializers.CharField(source="user.phone", read_only=True)
-    email = serializers.CharField(source="user.email", read_only=True)
-    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
-    deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
-    deleted_by = serializers.CharField(source="user.deleted_by", read_only=True)
     class Meta:
         model = StudentProfile
         fields = [
@@ -187,13 +178,6 @@ class StudentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serialize
             "portfolio",
         ]
 
-    def update(self, instance, validated_data):
-        user_data = validated_data.pop("user", {})
-        user = instance.user
-        for attr, value in user_data.items():
-            setattr(user, attr, value)
-        user.save()
-        return super().update(instance, validated_data)
 
 class BusinessSettingSerializer(serializers.ModelSerializer):
 
@@ -281,12 +265,6 @@ class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestamp
         source="user.city.name", read_only=True, default=None
     )
 
-    first_name =serializers.CharField(source="user.first_name", read_only=True)
-    last_name = serializers.CharField(source="user.last_name", read_only=True)
-    phone = serializers.CharField(source="user.phone", read_only=True)
-    email = serializers.CharField(source="user.email", read_only=True)
-    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
-
     class Meta:
         model = ProfessionalProfile
         fields = [
@@ -366,14 +344,6 @@ class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, seri
             "portfolio",
         ]
 
-    def update(self, instance, validated_data):
-        user_data = validated_data.pop("user", {})
-        user = instance.user
-        for attr, value in user_data.items():
-            setattr(user, attr, value)
-        user.save()
-        return super().update(instance, validated_data)
-
 
 class ParentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
     """Parent-specific profile serializer"""
@@ -397,12 +367,6 @@ class ParentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin,
     city_name = serializers.CharField(
         source="user.city.name", read_only=True, default=None
     )
-
-    first_name =serializers.CharField(source="user.first_name", read_only=True)
-    last_name = serializers.CharField(source="user.last_name", read_only=True)
-    phone = serializers.CharField(source="user.phone", read_only=True)
-    email = serializers.CharField(source="user.email", read_only=True)
-    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
 
     class Meta:
         model = ParentProfile
@@ -451,58 +415,6 @@ class ParentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializer
             "phone",
             "profile_image",
         ]
-
-    def validate(self, attrs):
-        relationship = attrs.get(
-            "relationship",
-            getattr(self.instance, "relationship", None),
-        )
-        other_text = attrs.get(
-            "other_relationship_text",
-            getattr(self.instance, "other_relationship_text", ""),
-        )
-
-        if not relationship:
-            raise serializers.ValidationError(
-                {"relationship": "This field is required."}
-            )
-
-        if relationship == ParentProfile.Relationship.OTHER and not (
-            other_text or ""
-        ).strip():
-            raise serializers.ValidationError(
-                {
-                    "other_relationship_text": (
-                        "This field is required when relationship is other."
-                    )
-                }
-            )
-
-        if relationship != ParentProfile.Relationship.OTHER:
-            attrs["other_relationship_text"] = ""
-
-        return attrs
-
-    def update(self, instance, validated_data):
-        language = validated_data.pop("language", None)
-        user_data = validated_data.pop("user", None)
-        user = instance.user
-        if user_data:
-            for attr, value in user_data.items():
-                setattr(user, attr, value)
-            user.save()
-        instance.updated_at = now()
-        instance = super().update(instance, validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
-
-    def create(self, validated_data):
-        language = validated_data.pop("language", None)
-        instance = super().create(validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
 
 
 class ChildProfileSerializer(serializers.ModelSerializer):
