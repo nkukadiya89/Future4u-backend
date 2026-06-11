@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
@@ -20,10 +19,12 @@ from language_master.serializers import (
     LanguageSerializer,
 )
 from language_master.services import language_service
+from common.mixins.view_mixins import SuccessEnvelopeMixin
 from utils.pagination import Pagination
 
 
-class LanguageViewSet(ModelViewSet):
+class LanguageViewSet(SuccessEnvelopeMixin, ModelViewSet):
+    list_unpaginated_fallback = True
     serializer_class = LanguageSerializer
     pagination_class = Pagination
     filter_backends = [OrderingFilter]
@@ -63,25 +64,6 @@ class LanguageViewSet(ModelViewSet):
         except Language.DoesNotExist:
             raise NotFound()
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        no_pagination = request.query_params.get("no_pagination")
-        if no_pagination:
-            serializer = self.get_serializer(queryset, many=True)
-            return Response({"success": True, "data": serializer.data})
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({"success": True, "data": serializer.data})
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        return Response({"success": True, "data": self.get_serializer(instance).data})
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -94,28 +76,6 @@ class LanguageViewSet(ModelViewSet):
                 },
                 status=status.HTTP_201_CREATED,
             )
-        return Response(
-            {"success": False, "message": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=False)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "data": serializer.data})
-        return Response(
-            {"success": False, "message": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "data": serializer.data})
         return Response(
             {"success": False, "message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
@@ -230,9 +190,4 @@ class LanguageViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="sample-csv")
     def sample_csv(self, request, *args, **kwargs):
-        data = language_service.sample_csv_bytes()
-        resp = HttpResponse(data, content_type="text/csv; charset=utf-8")
-        resp["Content-Disposition"] = (
-            'attachment; filename="language_master_sample.csv"'
-        )
-        return resp
+        return language_service.sample_csv_http_response()

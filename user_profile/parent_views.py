@@ -5,12 +5,15 @@ from rest_framework import status, viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 
+from common.mixins.view_mixins import PartialUpdateFromUpdateMixin, SaveUpdatedByMixin
 from user_profile.filters import ProfileFilter
 from user_profile.models import ParentProfile
 from user_profile.parent_serializers import ParentProfileSerializer
 
 
-class ParentProfileViewSet(viewsets.ModelViewSet):
+class ParentProfileViewSet(
+    PartialUpdateFromUpdateMixin, SaveUpdatedByMixin, viewsets.ModelViewSet
+):
     serializer_class = ParentProfileSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ProfileFilter
@@ -206,16 +209,6 @@ class ParentProfileViewSet(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-    def partial_update(self, request, *args, **kwargs):
-        kwargs["partial"] = True
-        return self.update(request, *args, **kwargs)
-
-    def perform_create(self, serializer):
-        serializer.save(updated_by=self.request.user)
-
-    def perform_update(self, serializer):
-        serializer.save(updated_by=self.request.user)
 
     def destroy(self, request, *args, **kwargs):
         try:

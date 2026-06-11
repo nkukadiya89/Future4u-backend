@@ -7,13 +7,14 @@ from rest_framework import status, viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 
+from common.mixins.view_mixins import SaveUpdatedByMixin
 from user_profile.filters import ProfileFilter
 from user_profile.models import Profile
 from user_profile.serializers import ProfileSerializer
 
 
 @method_decorator(cache_page(60 * 2), name="list")
-class ProfileViewSet(viewsets.ModelViewSet):
+class ProfileViewSet(SaveUpdatedByMixin, viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = ProfileFilter
@@ -324,9 +325,6 @@ class ProfileViewSet(viewsets.ModelViewSet):
             created_by=self.request.user,
             updated_by=self.request.user,
         )
-
-    def perform_update(self, serializer):
-        serializer.save(updated_by=self.request.user)
 
     def destroy(self, request, *args, **kwargs):
         """

@@ -10,6 +10,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
 
 from activity_log.models import ActivityLog
+from common.mixins.view_mixins import ListEnvelopeMixin
 from user_profile.models import (
     BusinessSetting,
     ParentProfile,
@@ -34,7 +35,7 @@ from utils.pagination import Pagination
 from utils.cache_keys import recommendation_key
 
 
-class BusinessSettingViewSet(ModelViewSet):
+class BusinessSettingViewSet(ListEnvelopeMixin, ModelViewSet):
     queryset = BusinessSetting.objects.all().order_by("-id")
     serializer_class = BusinessSettingInfoSerializer
     filter_backends = [SearchFilter, OrderingFilter]
@@ -53,21 +54,6 @@ class BusinessSettingViewSet(ModelViewSet):
             Q(user_id=user) | Q(company=user.company)
         ).order_by("-id")
         return queryset
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        no_pagination = request.query_params.get("no_pagination")
-        if no_pagination:
-            serializer = self.serializer_class(queryset, many=True)
-            return Response({"success": True, "data": serializer.data})
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
-        serializer = self.serializer_class(queryset, many=True)
-        return self.get_paginated_response({"success": True, "data": serializer.data})
 
     def create(self, request, *args, **kwargs):
         data = request.data

@@ -1,6 +1,11 @@
 from rest_framework import serializers
 import json
 from base.serializers import AuditFieldsMixin
+from common.mixins.serializer_mixins import (
+    ArchiveStatusMixin,
+    TrackDateMixin,
+    ImportDateMixin,
+)
 from domain.models import Domain, DomainImportBatch, DomainImportError
 from domain.services import domain_service
 from user.serializers import UserQuickSerializer
@@ -12,7 +17,12 @@ class ParentDomainSerializer(serializers.ModelSerializer):
         fields = ("id", "domain_code", "domain_name")
 
 
-class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
+class DomainSerializer(
+    AuditFieldsMixin,
+    TrackDateMixin,
+    ArchiveStatusMixin,
+    serializers.ModelSerializer,
+):
     parent = ParentDomainSerializer(read_only=True)
     parent_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
     data = serializers.CharField(write_only=True, required=False)
@@ -72,18 +82,6 @@ class DomainSerializer(AuditFieldsMixin, serializers.ModelSerializer):
 
         attrs["domain_image_file"] = self.context["request"].FILES.get("domain_image")
         return attrs
-
-    def _format_dt(self, value):
-        return self.format_audit_datetime(value)
-
-    def get_created_at(self, obj):
-        return self._format_dt(obj.created_at)
-
-    def get_updated_at(self, obj):
-        return self._format_dt(obj.updated_at)
-
-    def get_is_archived(self, obj):
-        return bool(getattr(obj, "deleted", False))
 
     def validate_domain_code(self, value):
         value = (value or "").strip()
@@ -170,7 +168,9 @@ class DomainBulkIdsSerializer(serializers.Serializer):
     ids = serializers.ListField(child=serializers.UUIDField(), allow_empty=False)
 
 
-class DomainImportBatchSerializer(AuditFieldsMixin, serializers.ModelSerializer):
+class DomainImportBatchSerializer(
+    AuditFieldsMixin, ImportDateMixin, serializers.ModelSerializer
+):
     created_by = UserQuickSerializer(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)
     completed_at = serializers.SerializerMethodField(read_only=True)
@@ -186,15 +186,6 @@ class DomainImportBatchSerializer(AuditFieldsMixin, serializers.ModelSerializer)
             "failed_count",
             "completed_at",
         )
-
-    def _format_dt(self, value):
-        return self.format_audit_datetime(value)
-
-    def get_created_at(self, obj):
-        return self._format_dt(obj.created_at)
-
-    def get_completed_at(self, obj):
-        return self._format_dt(obj.completed_at)
 
 
 class DomainImportErrorSerializer(serializers.ModelSerializer):

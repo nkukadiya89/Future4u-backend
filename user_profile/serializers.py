@@ -1,5 +1,11 @@
 from rest_framework import serializers
-from django.utils.timezone import now
+
+from common.mixins.serializer_mixins import (
+    ProfileLanguageMixin,
+    ProfileLanguageSaveMixin,
+    ProfileLanguageSaveWithTimeMixin,
+    ProfileUpdateTimestampMixin,
+)
 from user_profile.models import (
     BusinessSetting,
     ParentProfile,
@@ -28,17 +34,11 @@ def validate_json_choices(value, valid_set, field_name):
     return value
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(ProfileLanguageMixin, serializers.ModelSerializer):
     """Base profile serializer for Super Admin with language preference"""
 
     role = serializers.CharField(source="user.user_type", read_only=True)
     language = serializers.SerializerMethodField()
-
-    def get_language(self, obj):
-        return [
-            {"id": str(l.id), "name": l.name, "code": l.code}
-            for l in obj.language.all()
-        ]
 
     class Meta:
         model = UserProfile
@@ -50,7 +50,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserProfileUpsertSerializer(serializers.ModelSerializer):
+class UserProfileUpsertSerializer(ProfileLanguageSaveMixin, serializers.ModelSerializer):
     """Base profile upsert serializer for Super Admin"""
 
     language = serializers.PrimaryKeyRelatedField(
@@ -67,22 +67,8 @@ class UserProfileUpsertSerializer(serializers.ModelSerializer):
             "language",
         ]
 
-    def update(self, instance, validated_data):
-        language = validated_data.pop("language", None)
-        instance = super().update(instance, validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
 
-    def create(self, validated_data):
-        language = validated_data.pop("language", None)
-        instance = super().create(validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
-
-
-class StudentProfileSerializer(serializers.ModelSerializer):
+class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
     """Student-specific profile serializer with language and educational fields"""
 
     role = serializers.CharField(source="user.user_type", read_only=True)
@@ -116,12 +102,6 @@ class StudentProfileSerializer(serializers.ModelSerializer):
     city_name = serializers.CharField(
         source="user.city.name", read_only=True, default=None
     )
-
-    def get_language(self, obj):
-        return [
-            {"id": str(l.id), "name": l.name, "code": l.code}
-            for l in obj.language.all()
-        ]
 
     class Meta:
         model = StudentProfile
@@ -160,12 +140,8 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-    def update(self, instance, validated_data):
-        instance.updated_at = now()
-        return super().update(instance, validated_data)
 
-
-class StudentProfileUpsertSerializer(serializers.ModelSerializer):
+class StudentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer):
     language = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=__import__(
@@ -195,21 +171,6 @@ class StudentProfileUpsertSerializer(serializers.ModelSerializer):
             "github_url",
             "portfolio",
         ]
-
-    def update(self, instance, validated_data):
-        language = validated_data.pop("language", None)
-        instance.updated_at = now()
-        instance = super().update(instance, validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
-
-    def create(self, validated_data):
-        language = validated_data.pop("language", None)
-        instance = super().create(validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
 
 
 class BusinessSettingSerializer(serializers.ModelSerializer):
@@ -269,7 +230,7 @@ class BusinessSettingSerializer(serializers.ModelSerializer):
         return instance
 
 
-class ProfessionalProfileSerializer(serializers.ModelSerializer):
+class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
     """Working Professional-specific profile serializer matching StudentProfile pattern"""
 
     role = serializers.CharField(source="user.user_type", read_only=True)
@@ -297,12 +258,6 @@ class ProfessionalProfileSerializer(serializers.ModelSerializer):
     city_name = serializers.CharField(
         source="user.city.name", read_only=True, default=None
     )
-
-    def get_language(self, obj):
-        return [
-            {"id": str(l.id), "name": l.name, "code": l.code}
-            for l in obj.language.all()
-        ]
 
     class Meta:
         model = ProfessionalProfile
@@ -339,12 +294,8 @@ class ProfessionalProfileSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-    def update(self, instance, validated_data):
-        instance.updated_at = now()
-        return super().update(instance, validated_data)
 
-
-class ProfessionalProfileUpsertSerializer(serializers.ModelSerializer):
+class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer):
     language = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=__import__(
@@ -375,23 +326,8 @@ class ProfessionalProfileUpsertSerializer(serializers.ModelSerializer):
             "portfolio",
         ]
 
-    def update(self, instance, validated_data):
-        language = validated_data.pop("language", None)
-        instance.updated_at = now()
-        instance = super().update(instance, validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
 
-    def create(self, validated_data):
-        language = validated_data.pop("language", None)
-        instance = super().create(validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
-
-
-class ParentProfileSerializer(serializers.ModelSerializer):
+class ParentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
     """Parent-specific profile serializer"""
 
     role = serializers.CharField(source="user.user_type", read_only=True)
@@ -420,12 +356,6 @@ class ParentProfileSerializer(serializers.ModelSerializer):
         source="user.city.name", read_only=True, default=None
     )
 
-    def get_language(self, obj):
-        return [
-            {"id": str(l.id), "name": l.name, "code": l.code}
-            for l in obj.language.all()
-        ]
-
     class Meta:
         model = ParentProfile
         fields = [
@@ -450,12 +380,8 @@ class ParentProfileSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-    def update(self, instance, validated_data):
-        instance.updated_at = now()
-        return super().update(instance, validated_data)
 
-
-class ParentProfileUpsertSerializer(serializers.ModelSerializer):
+class ParentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer):
     language = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=__import__(
@@ -486,21 +412,6 @@ class ParentProfileUpsertSerializer(serializers.ModelSerializer):
             "stream",
             "academic_performance",
         ]
-
-    def update(self, instance, validated_data):
-        language = validated_data.pop("language", None)
-        instance.updated_at = now()
-        instance = super().update(instance, validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
-
-    def create(self, validated_data):
-        language = validated_data.pop("language", None)
-        instance = super().create(validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
 
 
 class BusinessSettingInfoSerializer(serializers.ModelSerializer):

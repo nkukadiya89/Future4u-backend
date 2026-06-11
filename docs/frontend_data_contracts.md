@@ -238,8 +238,7 @@ Progress object fields:
 
 `data` fields:
 - `ai_disclaimer`: string
-- `ai_insight`: string
-- `top_suggestions`: array
+- `top_suggestions`: array (each item includes `ai_insight`)
 - `easy_decision_making`: array
 - `last_recommended_at`: datetime string
 

@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
 
+from common.mixins.admin_mixins import ProfileReadonlyFieldsAdminMixin
 from user_profile.models import (
     BusinessSetting,
     ParentProfile,
@@ -85,7 +86,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 
 @admin.register(StudentProfile)
-class StudentProfileAdmin(admin.ModelAdmin):
+class StudentProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
     """Student-specific profile admin with language and educational fields"""
 
     list_display = (
@@ -99,11 +100,6 @@ class StudentProfileAdmin(admin.ModelAdmin):
     list_filter = ("science_track", "medium")
     readonly_fields = ("user", "created_at", "updated_at")
     raw_id_fields = ("user", "education_level", "stream")
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj:
-            return ("user", "created_at", "updated_at")
-        return ()
 
     autocomplete_fields = ("education_level", "stream")
     filter_horizontal = ("language",)
@@ -165,7 +161,7 @@ class StudentProfileAdmin(admin.ModelAdmin):
 
 
 @admin.register(ParentProfile)
-class ParentProfileAdmin(admin.ModelAdmin):
+class ParentProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
     """Parent-specific profile admin"""
 
     list_display = (
@@ -181,11 +177,6 @@ class ParentProfileAdmin(admin.ModelAdmin):
     raw_id_fields = ("user",)
     filter_horizontal = ("language",)
     list_select_related = ("user", "child_education_level", "stream")
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj:
-            return ("user", "created_at", "updated_at")
-        return ()
 
     autocomplete_fields = ("child_education_level", "stream")
 
@@ -209,7 +200,7 @@ class ParentProfileAdmin(admin.ModelAdmin):
 
 
 @admin.register(ProfessionalProfile)
-class ProfessionalProfileAdmin(admin.ModelAdmin):
+class ProfessionalProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
     """Professional-specific profile admin"""
 
     list_display = (
@@ -228,11 +219,6 @@ class ProfessionalProfileAdmin(admin.ModelAdmin):
     list_filter = ("employment_type", "years_of_experience")
     readonly_fields = ("user", "created_at", "updated_at")
     raw_id_fields = ("user", "education_level")
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj:
-            return ("user", "created_at", "updated_at")
-        return ()
 
     autocomplete_fields = ("education_level",)
     filter_horizontal = ("language",)

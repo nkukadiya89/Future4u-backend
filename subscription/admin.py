@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from common.mixins.admin_mixins import RelatedDataAdminMixin
 from subscription.models import (
     Discount,
     PaymentSubscription,
@@ -31,7 +32,8 @@ class SubscriptionAdmin(admin.ModelAdmin):
 admin.site.register(Subscription, SubscriptionAdmin)
 
 
-class SubscriptionFeatureAdmin(admin.ModelAdmin):
+class SubscriptionFeatureAdmin(RelatedDataAdminMixin, admin.ModelAdmin):
+    select_related_fields = ("subscription",)
     list_display = (
         "id",
         "subscription__package_name",
@@ -49,15 +51,12 @@ class SubscriptionFeatureAdmin(admin.ModelAdmin):
         "feature_name",
     )
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.select_related("subscription")
-
 
 admin.site.register(SubscriptionFeature, SubscriptionFeatureAdmin)
 
 
-class SubscriptionInvoiceAdmin(admin.ModelAdmin):
+class SubscriptionInvoiceAdmin(RelatedDataAdminMixin, admin.ModelAdmin):
+    select_related_fields = ("user",)
     list_display = (
         "id",
         "invoice_number",
@@ -75,15 +74,12 @@ class SubscriptionInvoiceAdmin(admin.ModelAdmin):
     list_filter = ("invoice_type", "invoice_number")
     search_fields = ("subscription__user__username", "subscription__user__email")
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.select_related("user")
-
 
 admin.site.register(SubscriptionInvoice, SubscriptionInvoiceAdmin)
 
 
-class PaymentSubscriptionAdmin(admin.ModelAdmin):
+class PaymentSubscriptionAdmin(RelatedDataAdminMixin, admin.ModelAdmin):
+    select_related_fields = ("user",)
     list_display = (
         "id",
         "user__first_name",
@@ -98,15 +94,12 @@ class PaymentSubscriptionAdmin(admin.ModelAdmin):
         "payment_method",
     )
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.select_related("user")
-
 
 admin.site.register(PaymentSubscription, PaymentSubscriptionAdmin)
 
 
-class DiscountAdmin(admin.ModelAdmin):
+class DiscountAdmin(RelatedDataAdminMixin, admin.ModelAdmin):
+    select_related_fields = ("subscription",)
     list_display = (
         "id",
         "name",
@@ -119,15 +112,12 @@ class DiscountAdmin(admin.ModelAdmin):
     list_filter = ("discount_type", "is_active")
     search_fields = ("subscription__package_name",)
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.select_related("subscription")
-
 
 admin.site.register(Discount, DiscountAdmin)
 
 
-class PromoCodeAdmin(admin.ModelAdmin):
+class PromoCodeAdmin(RelatedDataAdminMixin, admin.ModelAdmin):
+    select_related_fields = ("subscription",)
     list_display = (
         "id",
         "code",
@@ -141,10 +131,6 @@ class PromoCodeAdmin(admin.ModelAdmin):
     )
     list_filter = ("discount_type", "is_active")
     search_fields = ("code",)
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.select_related("subscription")
 
 
 admin.site.register(PromoCode, PromoCodeAdmin)

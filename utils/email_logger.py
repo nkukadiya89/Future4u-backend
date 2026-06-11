@@ -116,54 +116,6 @@ def extract_recipients_from_email_field(email_field):
     return emails
 
 
-def find_related_objects_from_email(email_address):
-
-    result = {
-        "user": None,
-        "user_id": None,
-        "company": None,
-        "company_id": None,
-        "partner_company": None,
-        "partner_company_id": None,
-        "end_client": None,
-        "end_client_id": None,
-    }
-
-    # Find user by email
-    user = User.objects.filter(email=email_address).first()
-    result["user"] = user
-    result["user_id"] = str(user.id) if user else None
-
-    # Find company by email
-    company = Company.objects.filter(email=email_address).first()
-    result["company"] = company
-    result["company_id"] = str(company.id) if company else None
-
-    # partner_company / end_client removed from the project.
-    # Keep the keys for backwards compatibility with callers.
-    result["partner_company"] = None
-    result["partner_company_id"] = None
-    result["end_client"] = None
-    result["end_client_id"] = None
-
-    return result
-
-
-def extract_recipients_from_email_field(email_field):
-
-    if not email_field:
-        return []
-
-    # Split by comma and clean up
-    emails = []
-    for email in email_field.split(","):
-        email = email.strip()
-        if email:
-            emails.append(email)
-
-    return emails
-
-
 # def log_email_notification(
 #     recipient_email,
 #     subject,

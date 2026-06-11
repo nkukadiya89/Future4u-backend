@@ -39,8 +39,8 @@ class StateModelTestCase(TestCase):
         self.assertEqual(state.created_by, self.user)
         self.assertEqual(state.deleted, 0)
         self.assertIsNotNone(state.created_at)
-        # Model does not auto-populate updated_at on create
-        self.assertIsNone(state.updated_at)
+        # Model has auto_now=True on updated_at, so it's set on create
+        self.assertIsNotNone(state.updated_at)
 
     def test_state_str_representation(self):
         """Test state string representation"""

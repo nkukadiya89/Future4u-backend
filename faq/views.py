@@ -7,6 +7,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from activity_log.models import ActivityLog
+from common.mixins.view_mixins import ListEnvelopeMixin, MethodNotAllowedListMixin
 from faq.models import FAQ
 from faq.serializers import (
     FAQArchiveListSerializer,
@@ -18,7 +19,7 @@ from utils.generate_ip_address import get_client_ip
 from utils.pagination import Pagination
 
 
-class FAQViewSet(ModelViewSet):
+class FAQViewSet(ListEnvelopeMixin, ModelViewSet):
     queryset = FAQ.objects.filter(deleted=False).order_by("-id")
     serializer_class = FAQSerializers
     filter_backends = [SearchFilter, OrderingFilter]
@@ -38,21 +39,6 @@ class FAQViewSet(ModelViewSet):
         "created_at",
         "updated_at",
     ]
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        no_pagination = request.query_params.get("no_pagination")
-        if no_pagination:
-            serializer = self.serializer_class(queryset, many=True)
-            return Response({"success": True, "data": serializer.data})
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
-        serializer = self.serializer_class(queryset, many=True)
-        return self.get_paginated_response({"success": True, "data": serializer.data})
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -185,7 +171,7 @@ class FAQArchiveViewSet(ModelViewSet):
 
 
 # FAQ Restore ViewSet
-class FAQRestoreViewSet(ModelViewSet):
+class FAQRestoreViewSet(MethodNotAllowedListMixin, ModelViewSet):
     queryset = FAQ.objects.filter(deleted=True).order_by("-id")
     serializer_class = FAQRestoreSerializer
     pagination_class = Pagination
@@ -205,13 +191,6 @@ class FAQRestoreViewSet(ModelViewSet):
         "created_at",
         "updated_at",
     ]
-
-    def list(self, request, *args, **kwargs):
-        """Disable GET method for restore endpoint"""
-        return Response(
-            {"success": False, "message": "Method not allowed"},
-            status=status.HTTP_405_METHOD_NOT_ALLOWED,
-        )
 
     def create(self, request, *args, **kwargs):
         serializer = FAQRestoreSerializer(data=request.data)
