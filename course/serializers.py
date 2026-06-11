@@ -47,4 +47,5 @@ class CourseInquirySerializer(BaseModelSerializer):
             "phone",
             "email",
             "message",
+            "status",
         ]

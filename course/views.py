@@ -204,4 +204,36 @@ class CourseInquiryViewSet(BaseModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
-        
+     
+    @action(detail=True, methods=["patch"], url_path="update-status")
+    def update_status(self, request, pk=None):
+        inquiries = self.get_object()
+
+        if inquiries.course.provider != request.user:
+            return Response(
+                {
+                    "success": False,
+                    "message": "You are not allowed to update this course inquirie status",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )    
+        inquiries_status = request.data.get("status")
+        if not inquiries_status:
+            return Response(
+                {
+                    "success": False,
+                    "message": "status is required",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        inquiries.status = inquiries_status
+        inquiries.save(update_fields=["status"])
+        return Response(
+            {
+                "success": True,
+                "message": "Inquiry status updated successfully",
+                "data": self.get_serializer(inquiries).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+

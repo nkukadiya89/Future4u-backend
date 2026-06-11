@@ -9,7 +9,6 @@ from country.routers import country_router
 from education_level.routers import education_level_router
 from employee.routers import employee_router
 from faq.routers import faq_router
-from jobs.routers import job_router
 from internship_job.routers import internship_job_router
 from state.routers import state_router
 from stream.routers import stream_router
@@ -47,7 +46,6 @@ future4u_router.registry.extend(state_router.registry)
 future4u_router.registry.extend(stream_router.registry)
 future4u_router.registry.extend(user_profile_router.registry)
 future4u_router.registry.extend(user_router.registry)
-future4u_router.registry.extend(job_router.registry)
 future4u_router.registry.extend(courses_router.registry)
 future4u_router.registry.extend(internship_job_router.registry)
 # future4u_router.registry.extend(subscription_router.registry)
