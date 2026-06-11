@@ -17,6 +17,10 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from activity_log.models import ActivityLog
 
 # from bulk_upload.bulk_upload import Employee_BulkUpload
+from common.mixins.view_mixins import (
+    CreatePasswordEmailMixin,
+    RetrieveSuccessEnvelopeMixin,
+)
 from email_utils.send_email import generate_forget_pass_token, send_mail
 from email_utils.send_inactive_email import send_inactive_email
 from employee.models import Employee
@@ -62,7 +66,9 @@ class EmployeeSearchOrdering:
     ]
 
 
-class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
+class AddEmployeeViewSet(
+    RetrieveSuccessEnvelopeMixin, EmployeeSearchOrdering, ModelViewSet
+):
     queryset = Employee.objects.filter(deleted=False).order_by("-id")
     serializer_class = AddEmployeeSerializer
     pagination_class = Pagination
@@ -154,13 +160,6 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
                 {"success": False, "message": error_messages},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.serializer_class(instance)
-        return Response(
-            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-        )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -543,19 +542,13 @@ class AddEmployeeViewSet(EmployeeSearchOrdering, ModelViewSet):
 
 
 # Employee Status
-class EmployeeStatusViewSet(EmployeeSearchOrdering, ModelViewSet):
+class EmployeeStatusViewSet(
+    CreatePasswordEmailMixin, EmployeeSearchOrdering, ModelViewSet
+):
     queryset = Employee.objects.filter(deleted=False).order_by("-id")
     serializer_class = EmployeeStatusSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-
-    def send_email(self, user, context):
-        if user:
-            send_mail(
-                "Future4U Security Alert For Create New Password",
-                "reset-pass.html",
-                context,
-            )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()

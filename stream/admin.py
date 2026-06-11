@@ -7,6 +7,7 @@ from django.urls import path, reverse
 from django.utils.html import format_html
 from rest_framework.exceptions import ValidationError as DRFValidationError
 
+from common.mixins.admin_mixins import AuditSaveModelMixin, MasterImportAdminURLMixin
 from stream.models import Stream
 from stream.serializers import StreamSerializer
 from stream.services import stream_service
@@ -19,7 +20,7 @@ class StreamAdminForm(forms.ModelForm):
 
 
 @admin.register(Stream)
-class StreamAdmin(admin.ModelAdmin):
+class StreamAdmin(AuditSaveModelMixin, MasterImportAdminURLMixin, admin.ModelAdmin):
     form = StreamAdminForm
     change_list_template = "admin/stream/stream/change_list.html"
 
@@ -99,21 +100,6 @@ class StreamAdmin(admin.ModelAdmin):
             str(obj.pk),
         )
 
-    def get_urls(self):
-        info = self.model._meta.app_label, self.model._meta.model_name
-        return [
-            path(
-                "upload/",
-                self.admin_site.admin_view(self.upload_view),
-                name="%s_%s_upload" % info,
-            ),
-            path(
-                "sample-csv/",
-                self.admin_site.admin_view(self.sample_csv_view),
-                name="%s_%s_sample_csv" % info,
-            ),
-        ] + super().get_urls()
-
     def sample_csv_view(self, request):
         data = stream_service.sample_csv_bytes()
         resp = HttpResponse(data, content_type="text/csv; charset=utf-8")
@@ -188,9 +174,6 @@ class StreamAdmin(admin.ModelAdmin):
         extra_context["upload_url"] = reverse("admin:stream_stream_upload")
         extra_context["sample_csv_url"] = reverse("admin:stream_stream_sample_csv")
         return super().changelist_view(request, extra_context=extra_context)
-
-    def save_model(self, request, obj, form, change):
-        obj.save(user=request.user)
 
     @admin.action(description="Activate selected")
     def activate_selected(self, request, queryset):

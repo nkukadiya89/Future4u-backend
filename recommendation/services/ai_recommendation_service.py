@@ -301,13 +301,6 @@ class AIRecommendationService:
 
     @staticmethod
     def _serialize_recommendation(recommendation):
-        first_suggestion = (
-            recommendation.suggestions.filter(deleted=False)
-            .order_by("display_order")
-            .first()
-        )
-        top_ai_insight = str(getattr(first_suggestion, "ai_insight", "") or "").strip()
-
         suggestions = []
         for s in recommendation.suggestions.filter(deleted=False).order_by(
             "display_order"
@@ -343,7 +336,6 @@ class AIRecommendationService:
 
         return {
             "ai_disclaimer": AI_RECOMMENDATION_DISCLAIMER,
-            "ai_insight": top_ai_insight,
             "top_suggestions": suggestions,
             "easy_decision_making": recommendation.easy_decision_making,
             "last_recommended_at": (

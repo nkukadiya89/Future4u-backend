@@ -1,17 +1,22 @@
 from rest_framework import serializers
 
+from common.mixins.serializer_mixins import (
+    ArchiveStatusDeletedMixin,
+    TrackDateMixin,
+    ImportDateMixin,
+    FormatDateMixin,
+)
 from stream.models import Stream, StreamImportBatch, StreamImportError
 from stream.services import stream_service
 from user.serializers import UserQuickSerializer
-from utils.datetime_formatter import format_datetime
 
 
-class AuditFieldsMixin:
-    def format_audit_datetime(self, value):
-        return format_datetime(value)
-
-
-class StreamSerializer(AuditFieldsMixin, serializers.ModelSerializer):
+class StreamSerializer(
+    FormatDateMixin,
+    TrackDateMixin,
+    ArchiveStatusDeletedMixin,
+    serializers.ModelSerializer,
+):
     created_at = serializers.SerializerMethodField(read_only=True)
     updated_at = serializers.SerializerMethodField(read_only=True)
     created_by = UserQuickSerializer(read_only=True)
@@ -47,18 +52,6 @@ class StreamSerializer(AuditFieldsMixin, serializers.ModelSerializer):
             "updated_by",
         )
         read_only_fields = ("is_archived",)
-
-    def _format_dt(self, value):
-        return self.format_audit_datetime(value)
-
-    def get_created_at(self, obj):
-        return self._format_dt(obj.created_at)
-
-    def get_updated_at(self, obj):
-        return self._format_dt(obj.updated_at)
-
-    def get_is_archived(self, obj):
-        return bool(obj.deleted)
 
     def validate_stream_code(self, value):
         value = (value or "").strip().lower()
@@ -124,7 +117,9 @@ class StreamBulkIdsSerializer(serializers.Serializer):
     ids = serializers.ListField(child=serializers.UUIDField(), allow_empty=False)
 
 
-class StreamImportBatchSerializer(AuditFieldsMixin, serializers.ModelSerializer):
+class StreamImportBatchSerializer(
+    FormatDateMixin, ImportDateMixin, serializers.ModelSerializer
+):
     created_by = UserQuickSerializer(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)
     completed_at = serializers.SerializerMethodField(read_only=True)
@@ -140,15 +135,6 @@ class StreamImportBatchSerializer(AuditFieldsMixin, serializers.ModelSerializer)
             "failed_count",
             "completed_at",
         )
-
-    def _format_dt(self, value):
-        return self.format_audit_datetime(value)
-
-    def get_created_at(self, obj):
-        return self._format_dt(obj.created_at)
-
-    def get_completed_at(self, obj):
-        return self._format_dt(obj.completed_at)
 
 
 class StreamImportErrorSerializer(serializers.ModelSerializer):

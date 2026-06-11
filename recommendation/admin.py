@@ -14,6 +14,8 @@ import json
 from django import forms
 from django.conf import settings
 from django.contrib import admin
+
+from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from django.shortcuts import render
 
 from assessment.models import StudentAssessment
@@ -106,16 +108,7 @@ class AIRecommendationRunForm(forms.Form):
 
 
 @admin.register(AIRecommendationPanel)
-class AIRecommendationPanelAdmin(admin.ModelAdmin):
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
+class AIRecommendationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         form = AIRecommendationRunForm(request.POST or None)
         result = None

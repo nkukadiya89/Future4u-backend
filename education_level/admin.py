@@ -7,6 +7,7 @@ from django.urls import path, reverse
 from django.utils.html import format_html
 from rest_framework.exceptions import ValidationError as DRFValidationError
 
+from common.mixins.admin_mixins import AuditSaveModelMixin, MasterImportAdminURLMixin
 from education_level.models import EducationLevel
 from education_level.serializers import EducationLevelSerializer
 from education_level.services import education_level_service
@@ -29,7 +30,9 @@ class EducationLevelAdminForm(forms.ModelForm):
 
 
 @admin.register(EducationLevel)
-class EducationLevelAdmin(admin.ModelAdmin):
+class EducationLevelAdmin(
+    AuditSaveModelMixin, MasterImportAdminURLMixin, admin.ModelAdmin
+):
     form = EducationLevelAdminForm
     change_list_template = "admin/education_level/education_level/change_list.html"
 
@@ -110,21 +113,6 @@ class EducationLevelAdmin(admin.ModelAdmin):
             token,
             str(obj.pk),
         )
-
-    def get_urls(self):
-        info = self.model._meta.app_label, self.model._meta.model_name
-        return [
-            path(
-                "upload/",
-                self.admin_site.admin_view(self.upload_view),
-                name="%s_%s_upload" % info,
-            ),
-            path(
-                "sample-csv/",
-                self.admin_site.admin_view(self.sample_csv_view),
-                name="%s_%s_sample_csv" % info,
-            ),
-        ] + super().get_urls()
 
     def sample_csv_view(self, request):
         data = education_level_service.sample_csv_bytes()
@@ -216,9 +204,6 @@ class EducationLevelAdmin(admin.ModelAdmin):
             "admin:education_level_educationlevel_sample_csv"
         )
         return super().changelist_view(request, extra_context=extra_context)
-
-    def save_model(self, request, obj, form, change):
-        obj.save(user=request.user)
 
     @admin.action(description="Activate selected")
     def activate_selected(self, request, queryset):

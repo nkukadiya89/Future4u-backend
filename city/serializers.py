@@ -2,10 +2,16 @@ from django.utils.timezone import now
 from rest_framework import serializers
 
 from city.models import City
-from utils.datetime_formatter import format_datetime
+from common.mixins.serializer_mixins import (
+    DateFieldsMixin,
+    DeletedFieldsMixin,
+    UserNameMixin,
+)
 
 
-class CitySerializer(serializers.ModelSerializer):
+class CitySerializer(
+    DateFieldsMixin, UserNameMixin, serializers.ModelSerializer
+):
     country_name = serializers.CharField(source="country.name", read_only=True)
     state_name = serializers.CharField(source="state.name", read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)
@@ -35,26 +41,6 @@ class CitySerializer(serializers.ModelSerializer):
             "created_by": {"write_only": True},
             "updated_by": {"write_only": True},
         }
-
-    def get_created_at(self, obj):
-        return format_datetime(getattr(obj, "created_at", None))
-
-    def get_created_by_name(self, obj):
-        return (
-            f"{obj.created_by.first_name} {obj.created_by.last_name}"
-            if obj.created_by
-            else None
-        )
-
-    def get_updated_at(self, obj):
-        return format_datetime(getattr(obj, "updated_at", None))
-
-    def get_updated_by_name(self, obj):
-        return (
-            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
-            if obj.updated_by
-            else None
-        )
 
     def validate(self, attrs):
         name = attrs.get("name")
@@ -137,7 +123,12 @@ class CityRestoreSerializer(serializers.ModelSerializer):
         return city
 
 
-class CityArchiveListSerializer(serializers.ModelSerializer):
+class CityArchiveListSerializer(
+    DateFieldsMixin,
+    UserNameMixin,
+    DeletedFieldsMixin,
+    serializers.ModelSerializer,
+):
     country_name = serializers.CharField(source="country.name", read_only=True)
     state_name = serializers.CharField(source="state.name", read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)
@@ -164,33 +155,3 @@ class CityArchiveListSerializer(serializers.ModelSerializer):
             "deleted_at",
             "deleted",
         ]
-
-    def get_created_at(self, obj):
-        return format_datetime(getattr(obj, "created_at", None))
-
-    def get_created_by_name(self, obj):
-        return (
-            f"{obj.created_by.first_name} {obj.created_by.last_name}"
-            if obj.created_by
-            else None
-        )
-
-    def get_updated_at(self, obj):
-        return format_datetime(getattr(obj, "updated_at", None))
-
-    def get_updated_by_name(self, obj):
-        return (
-            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
-            if obj.updated_by
-            else None
-        )
-
-    def get_deleted_at(self, obj):
-        return format_datetime(getattr(obj, "deleted_at", None))
-
-    def get_deleted_by_name(self, obj):
-        return (
-            f"{obj.deleted_by.first_name} {obj.deleted_by.last_name}"
-            if obj.deleted_by
-            else None
-        )

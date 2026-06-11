@@ -1,11 +1,21 @@
 from rest_framework import serializers
 
 from base.serializers import AuditFieldsMixin
+from common.mixins.serializer_mixins import (
+    ArchiveStatusMixin,
+    TrackDateMixin,
+    ImportDateMixin,
+)
 from language_master.models import Language, LanguageImportBatch
 from language_master.services import language_service
 
 
-class LanguageSerializer(AuditFieldsMixin, serializers.ModelSerializer):
+class LanguageSerializer(
+    AuditFieldsMixin,
+    TrackDateMixin,
+    ArchiveStatusMixin,
+    serializers.ModelSerializer,
+):
     created_at = serializers.SerializerMethodField(read_only=True)
     updated_at = serializers.SerializerMethodField(read_only=True)
     is_archived = serializers.SerializerMethodField(read_only=True)
@@ -23,15 +33,6 @@ class LanguageSerializer(AuditFieldsMixin, serializers.ModelSerializer):
             "updated_at",
         )
         read_only_fields = ("is_archived",)
-
-    def get_created_at(self, obj):
-        return self.format_audit_datetime(obj.created_at)
-
-    def get_updated_at(self, obj):
-        return self.format_audit_datetime(obj.updated_at)
-
-    def get_is_archived(self, obj):
-        return bool(getattr(obj, "deleted", False))
 
     def validate_code(self, value):
         value = (value or "").strip().upper()
@@ -79,7 +80,9 @@ class LanguageBulkIdsSerializer(serializers.Serializer):
     ids = serializers.ListField(child=serializers.UUIDField(), allow_empty=False)
 
 
-class LanguageImportBatchSerializer(AuditFieldsMixin, serializers.ModelSerializer):
+class LanguageImportBatchSerializer(
+    AuditFieldsMixin, ImportDateMixin, serializers.ModelSerializer
+):
     created_at = serializers.SerializerMethodField(read_only=True)
     completed_at = serializers.SerializerMethodField(read_only=True)
 
@@ -93,9 +96,3 @@ class LanguageImportBatchSerializer(AuditFieldsMixin, serializers.ModelSerialize
             "failed_count",
             "completed_at",
         )
-
-    def get_created_at(self, obj):
-        return self.format_audit_datetime(obj.created_at)
-
-    def get_completed_at(self, obj):
-        return self.format_audit_datetime(obj.completed_at)

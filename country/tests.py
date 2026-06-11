@@ -389,8 +389,8 @@ class CountryAPITestCase(APITestCase):
         )
         self.assertEqual(country.deleted, 0)
         self.assertIsNotNone(country.created_at)
-        # Since the model does not auto-populate updated_at on create, it should be None by default
-        self.assertIsNone(country.updated_at)
+        # Model has auto_now=True on updated_at, so it's set on create
+        self.assertIsNotNone(country.updated_at)
 
     def test_model_foreign_key_on_delete(self):
         """Test that deleting user sets foreign key to null"""
@@ -566,8 +566,8 @@ class CountryModelTestCase(TestCase):
         self.assertEqual(country.created_by, self.user)
         self.assertEqual(country.deleted, 0)
         self.assertIsNotNone(country.created_at)
-        # Model does not auto-populate updated_at on create
-        self.assertIsNone(country.updated_at)
+        # Model has auto_now=True on updated_at, so it's set on create
+        self.assertIsNotNone(country.updated_at)
 
     def test_country_str_representation(self):
         """Test country string representation"""

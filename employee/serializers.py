@@ -3,14 +3,20 @@ from django.utils.timezone import now
 from rest_framework import serializers
 
 from activity_log.models import ActivityLog
+from common.mixins.serializer_mixins import (
+    DateFieldsMixin,
+    DeletedFieldsMixin,
+    UserNameMixin,
+)
 from employee.models import Employee
 from user.models import CustomGroup, User
-from utils.datetime_formatter import format_datetime
 from utils.generate_ip_address import get_client_ip
 from utils.generate_random_password import generate_random_password
 
 
-class AddEmployeeSerializer(serializers.ModelSerializer):
+class AddEmployeeSerializer(
+    DateFieldsMixin, UserNameMixin, serializers.ModelSerializer
+):
     password = serializers.CharField(write_only=True, required=False)
     permission = serializers.ListField(write_only=True)
     role = serializers.ListField(write_only=True)
@@ -96,26 +102,6 @@ class AddEmployeeSerializer(serializers.ModelSerializer):
                 {"phone": ["Employee with this phone already exists."]}
             )
         return data
-
-    def get_created_at(self, obj):
-        return format_datetime(getattr(obj, "created_at", None))
-
-    def get_created_by_name(self, obj):
-        return (
-            f"{obj.created_by.first_name} {obj.created_by.last_name}"
-            if obj.created_by
-            else None
-        )
-
-    def get_updated_at(self, obj):
-        return format_datetime(getattr(obj, "updated_at", None))
-
-    def get_updated_by_name(self, obj):
-        return (
-            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
-            if obj.updated_by
-            else None
-        )
 
     def create(self, validated_data):
         request = self.context.get("request")
@@ -563,7 +549,12 @@ class EmployeeRestoreSerializer(serializers.ModelSerializer):
         return employees[-1] if employees else None
 
 
-class EmployeeArchiveListSerializer(serializers.ModelSerializer):
+class EmployeeArchiveListSerializer(
+    DateFieldsMixin,
+    UserNameMixin,
+    DeletedFieldsMixin,
+    serializers.ModelSerializer,
+):
     password = serializers.CharField(write_only=True, required=False)
     permission = serializers.ListField(write_only=True)
     role = serializers.ListField(write_only=True)
@@ -620,33 +611,3 @@ class EmployeeArchiveListSerializer(serializers.ModelSerializer):
             "deleted_by_name",
             "deleted_at",
         ]
-
-    def get_created_at(self, obj):
-        return format_datetime(getattr(obj, "created_at", None))
-
-    def get_created_by_name(self, obj):
-        return (
-            f"{obj.created_by.first_name} {obj.created_by.last_name}"
-            if obj.created_by
-            else None
-        )
-
-    def get_updated_at(self, obj):
-        return format_datetime(getattr(obj, "updated_at", None))
-
-    def get_updated_by_name(self, obj):
-        return (
-            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
-            if obj.updated_by
-            else None
-        )
-
-    def get_deleted_at(self, obj):
-        return format_datetime(getattr(obj, "deleted_at", None))
-
-    def get_deleted_by_name(self, obj):
-        return (
-            f"{obj.deleted_by.first_name} {obj.deleted_by.last_name}"
-            if obj.deleted_by
-            else None
-        )

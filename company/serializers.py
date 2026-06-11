@@ -4,11 +4,15 @@ from rest_framework import serializers
 import company.serializer as company_serializer
 from activity_log.models import ActivityLog
 from city.models import City
+from common.mixins.serializer_mixins import (
+    DateFieldsMixin,
+    DeletedFieldsMixin,
+    UserNameMixin,
+)
 from company.models import Company, CompanyPhoto, CompanyService, Enquiry
 from country.models import Country
 from state.models import State
 from user.models import CustomGroup, User
-from utils.datetime_formatter import format_datetime
 from utils.generate_ip_address import get_client_ip
 from utils.generate_random_password import generate_random_password
 from utils.role_permission import create_company_role_family
@@ -154,6 +158,12 @@ class CompanyPhotoListSerializer(serializers.ModelSerializer):
         ]
 
 
+class CompanyPhotosMixin:
+    def get_company_photos(self, obj):
+        photos = obj.company_photo.filter(deleted=False)
+        return CompanyPhotoListSerializer(photos, many=True).data
+
+
 class CompanyPhotoArchiveSerializer(serializers.ModelSerializer):
     deleted = serializers.ListField(write_only=True)
 
@@ -236,7 +246,12 @@ class CompanyServiceSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "name"]
 
 
-class CompanySerializer(serializers.ModelSerializer):
+class CompanySerializer(
+    CompanyPhotosMixin,
+    DateFieldsMixin,
+    UserNameMixin,
+    serializers.ModelSerializer,
+):
     phone = serializers.IntegerField()
     company_name = serializers.CharField(source="name", read_only=True)
     business_category_name = serializers.CharField(
@@ -409,30 +424,6 @@ class CompanySerializer(serializers.ModelSerializer):
             errors["gst_no"] = f"Company with this GST Number {gst_no} already exists."
 
         return data
-
-    def get_company_photos(self, obj):
-        photos = obj.company_photo.filter(deleted=False)
-        return CompanyPhotoListSerializer(photos, many=True).data
-
-    def get_created_at(self, obj):
-        return format_datetime(getattr(obj, "created_at", None))
-
-    def get_created_by_name(self, obj):
-        return (
-            f"{obj.created_by.first_name} {obj.created_by.last_name}"
-            if obj.created_by
-            else None
-        )
-
-    def get_updated_at(self, obj):
-        return format_datetime(getattr(obj, "updated_at", None))
-
-    def get_updated_by_name(self, obj):
-        return (
-            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
-            if obj.updated_by
-            else None
-        )
 
     def create(self, validated_data):
         req = self.context.get("request")
@@ -678,7 +669,12 @@ class CompanySerializer(serializers.ModelSerializer):
         return instance
 
 
-class CompanyInfoSerializer(serializers.ModelSerializer):
+class CompanyInfoSerializer(
+    CompanyPhotosMixin,
+    DateFieldsMixin,
+    UserNameMixin,
+    serializers.ModelSerializer,
+):
     business_category_name = serializers.CharField(
         source="business_category.business_category", required=False
     )
@@ -770,37 +766,18 @@ class CompanyInfoSerializer(serializers.ModelSerializer):
             "updated_by": {"write_only": True},
         }
 
-    def get_created_at(self, obj):
-        return format_datetime(getattr(obj, "created_at", None))
-
-    def get_company_photos(self, obj):
-        photos = obj.company_photo.filter(deleted=False)
-        return CompanyPhotoListSerializer(photos, many=True).data
-
-    def get_created_by_name(self, obj):
-        return (
-            f"{obj.created_by.first_name} {obj.created_by.last_name}"
-            if obj.created_by
-            else None
-        )
-
-    def get_updated_at(self, obj):
-        return format_datetime(getattr(obj, "updated_at", None))
-
-    def get_updated_by_name(self, obj):
-        return (
-            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
-            if obj.updated_by
-            else None
-        )
-
     def to_representation(self, instance):
         ret = super().to_representation(instance)
 
         return ret
 
 
-class CompanyArchiveListSerializer(serializers.ModelSerializer):
+class CompanyArchiveListSerializer(
+    DateFieldsMixin,
+    UserNameMixin,
+    DeletedFieldsMixin,
+    serializers.ModelSerializer,
+):
     business_category_name = serializers.CharField(
         source="business_category.business_category", required=False
     )
@@ -847,36 +824,6 @@ class CompanyArchiveListSerializer(serializers.ModelSerializer):
             "deleted_at",
             "deleted",
         ]
-
-    def get_created_at(self, obj):
-        return format_datetime(getattr(obj, "created_at", None))
-
-    def get_created_by_name(self, obj):
-        return (
-            f"{obj.created_by.first_name} {obj.created_by.last_name}"
-            if obj.created_by
-            else None
-        )
-
-    def get_updated_at(self, obj):
-        return format_datetime(getattr(obj, "updated_at", None))
-
-    def get_updated_by_name(self, obj):
-        return (
-            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
-            if obj.updated_by
-            else None
-        )
-
-    def get_deleted_at(self, obj):
-        return format_datetime(getattr(obj, "deleted_at", None))
-
-    def get_deleted_by_name(self, obj):
-        return (
-            f"{obj.deleted_by.first_name} {obj.deleted_by.last_name}"
-            if obj.deleted_by
-            else None
-        )
 
 
 # Company Multiple Deleted

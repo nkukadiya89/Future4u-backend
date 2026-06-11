@@ -31,21 +31,6 @@ class BusinessCategoryViewSet(BaseModelViewSet, ArchiveMixin):
     search_fields = BaseModelViewSet.searching_fields + ["=id", "business_category"]
     ordering_fields = BaseModelViewSet.ordering_fields + ["id", "business_category"]
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        no_pagination = request.query_params.get("no_pagination")
-        if no_pagination:
-            serializer = self.serializer_class(queryset, many=True)
-            return Response({"success": True, "data": serializer.data})
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
-        serializer = self.serializer_class(queryset, many=True)
-        return self.get_paginated_response({"success": True, "data": serializer.data})
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
 

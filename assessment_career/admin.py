@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from .models import (
     CareerRecommendation,
     CareerRecommendationChatMessage,
@@ -25,16 +26,13 @@ class CareerRecommendationSuggestionInline(admin.TabularInline):
         return super().get_queryset(request).filter(deleted=False)
 
 
-class CareerRecommendationChatMessageInline(admin.TabularInline):
+class CareerRecommendationChatMessageInline(ReadOnlyAdminMixin, admin.TabularInline):
     model = CareerRecommendationChatMessage
     extra = 0
     fields = ("id", "role", "content", "created_at")
     readonly_fields = ("id", "role", "content", "created_at")
     can_delete = False
     ordering = ("created_at", "id")
-
-    def has_add_permission(self, request, obj=None):
-        return False
 
 
 @admin.register(CareerRecommendation)

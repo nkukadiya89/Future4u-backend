@@ -17,6 +17,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from company.models import Company
+from common.mixins.view_mixins import RetrieveSuccessEnvelopeMixin
 from email_utils.send_email import decode_token, generate_forget_pass_token, send_mail
 from email_utils.send_success_mail import send_confirm_mail, send_success_mail
 from employee.models import Employee
@@ -38,7 +39,7 @@ from utils.generate_otp import generate_otp, send_otp_email
 from utils.pagination import Pagination
 
 
-class UserDetailsViewSet(ModelViewSet):
+class UserDetailsViewSet(RetrieveSuccessEnvelopeMixin, ModelViewSet):
     queryset = User.objects.all().order_by("-id")
     serializer_class = UserDetailsSerializer
     permission_classes = [IsAuthenticated]
@@ -47,13 +48,6 @@ class UserDetailsViewSet(ModelViewSet):
 
     def get_queryset(self):
         return User.objects.filter(id=self.request.user.id)
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.serializer_class(instance)
-        return Response(
-            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-        )
 
     def list(self, request, *args, **kwargs):
         serializer = self.serializer_class(request.user)
@@ -546,7 +540,7 @@ class LogoutViewSet(ModelViewSet):
             )
 
 
-class RoleFamilyViewSet(ModelViewSet):
+class RoleFamilyViewSet(RetrieveSuccessEnvelopeMixin, ModelViewSet):
     queryset = RoleFamily.objects.filter(deleted=False).order_by("-id")
     serializer_class = RoleFamilySerializer
     pagination_class = Pagination
@@ -597,13 +591,6 @@ class RoleFamilyViewSet(ModelViewSet):
                 {"success": False, "message": error_message},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.serializer_class(instance)
-        return Response(
-            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-        )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()

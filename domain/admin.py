@@ -8,6 +8,7 @@ from django.utils.html import format_html
 from rest_framework.exceptions import ValidationError as DRFValidationError
 
 from base.admin import BaseAdmin
+from common.mixins.admin_mixins import AuditSaveModelMixin, MasterImportAdminURLMixin
 from domain.models import Domain
 from domain.serializers import DomainSerializer
 from domain.services import domain_service
@@ -45,7 +46,7 @@ class DomainAdminForm(forms.ModelForm):
 
 
 @admin.register(Domain)
-class DomainAdmin(BaseAdmin):
+class DomainAdmin(AuditSaveModelMixin, MasterImportAdminURLMixin, BaseAdmin):
     form = DomainAdminForm
     change_form_template = "admin/domain/domain/change_form.html"
     change_list_template = "admin/domain/domain/change_list.html"
@@ -121,20 +122,10 @@ class DomainAdmin(BaseAdmin):
             str(obj.pk),
         )
 
-    def get_urls(self):
-        info = self.model._meta.app_label, self.model._meta.model_name
-        return [
-            path(
-                "upload/",
-                self.admin_site.admin_view(self.upload_view),
-                name="%s_%s_upload" % info,
-            ),
-            path(
-                "sample-csv/",
-                self.admin_site.admin_view(self.sample_csv_view),
-                name="%s_%s_sample_csv" % info,
-            ),
-        ] + super().get_urls()
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if "domain_image_upload" in request.FILES:
+            obj.upload_domain_image(request.FILES["domain_image_upload"])
 
     def sample_csv_view(self, request):
         data = domain_service.sample_csv_bytes()
@@ -212,11 +203,6 @@ class DomainAdmin(BaseAdmin):
         extra_context["upload_url"] = reverse("admin:domain_domain_upload")
         extra_context["sample_csv_url"] = reverse("admin:domain_domain_sample_csv")
         return super().changelist_view(request, extra_context=extra_context)
-
-    def save_model(self, request, obj, form, change):
-        obj.save(user=request.user)
-        if "domain_image_upload" in request.FILES:
-            obj.upload_domain_image(request.FILES["domain_image_upload"])
 
     @admin.action(description="Activate selected")
     def activate_selected(self, request, queryset):
