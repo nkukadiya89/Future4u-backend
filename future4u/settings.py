@@ -105,7 +105,6 @@ INSTALLED_APPS = [
     "user_profile",
     "recommendation",
     "language_master",
-    "jobs",
     "resume_builder",
     "assessment_career",
     "course",

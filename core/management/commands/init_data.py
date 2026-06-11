@@ -357,7 +357,7 @@ class Command(BaseCommand):
             "internship_job|Can change internship application",
         ]
 
-        # Corporate Permissions - Post jobs, view candidates
+        # Corporate Permissions - view candidates
         corporate_permissions = [
             "assessment|Can view student assessment",
             "domain|Can view domain",
