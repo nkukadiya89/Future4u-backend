@@ -44,6 +44,7 @@ class InternshipViewSet(BaseModelViewSet):
         "stipend_amount",
         "certificate_provided"
     ]
+    
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -61,6 +62,33 @@ class InternshipViewSet(BaseModelViewSet):
             {"success": False, "message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
+    
+    @transaction.atomic()
+    def update(self, request, *args, **kwargs):
+        internship = self.get_queryset()
+        if internship.provider != request.user:
+            return Response(
+                {
+                    "success": False,
+                    "message": "You can only update internships created by you.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return super().update(request, *args, **kwargs)
+    
+
+    @transaction.atomic()
+    def destroy(self, request, *args, **kwargs):
+        internship = self.get_queryset()
+        if internship.provider != request.user:
+            return Response(
+                {
+                    "success": False,
+                    "message": "You can only delete internships created by you."
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return super().destroy(request, *args, **kwargs)
     
     @action(detail=False, methods=["get"], url_path="internship-recommended")
     def internship_recommended(self, request):

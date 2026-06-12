@@ -95,3 +95,48 @@ class InternshipApplication(BaseModule):
             raise
         except Exception as e:
             raise Exception(f"Failed to upload resume: {str(e)}")
+
+
+class Job(BaseModule):
+    
+    JOB_TYPE_CHOICE = (
+        ("part_time","Part Time"),
+        ("full_time","Full Time"),
+        ("freelance","Freelance"),
+    )
+
+    EXPERIENCE_CHOICES = (
+        ("fresher","Fresher"),
+        ("0_1","0-1 Years"),
+        ("1_3","1-3 Years"),
+        ("3_5","3-5 Years"),
+        ("5_10","5-10 Years"),
+        ("10_plus","10+ Years"),
+    )
+    MODE_CHOICES = (
+        ("remote", "Remote"),
+        ("onsite", "Onsite"),
+        ("hybrid", "Hybrid"),
+    )
+
+    name = models.CharField(max_length=250, null=True, blank=True)
+    organization_name = models.CharField(max_length=200, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    responsibilities = models.JSONField(default=list, blank=True)
+    skills = models.JSONField(default=list, blank=True)
+    education_tags = models.ManyToManyField(EducationLevel, blank=True)
+    experience_level = models.CharField(max_length=100, choices=EXPERIENCE_CHOICES, default="fresher")
+    job_type = models.CharField(max_length=100, choices=JOB_TYPE_CHOICE, default="full_time")
+    mode = models.CharField(max_length=100, choices=MODE_CHOICES, default="onsite")
+    city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True)
+    salary_min = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    salary_max = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    provider = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="jobs")
+    why_this_match = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = "jobs"
+        ordering = ["-created_at"]
+        
+    def __str__(self):
+        return self.name

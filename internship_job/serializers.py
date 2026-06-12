@@ -1,4 +1,4 @@
-from .models import Internship,InternshipApplication
+from .models import Internship,InternshipApplication,Job
 from rest_framework import serializers
 from common.serializers import BaseModelSerializer
 
@@ -56,3 +56,34 @@ class InternshipApplicationSerializer(BaseModelSerializer):
             "applicant",
             "applied_at",
         ]
+
+class JobSerializer(BaseModelSerializer):
+    city_name = serializers.CharField(source='city.name', read_only=True)
+    provider_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Job
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "name",
+            "organization_name",
+            "description",
+            "responsibilities",
+            "skills",
+            "education_tags",
+            "experience_level",
+            "job_type",
+            "mode",
+            "city",
+            "city_name",
+            "salary_min",
+            "salary_max",
+            "provider",
+            "provider_name",
+            "why_this_match",
+        ]
+    def get_provider_name(self, obj):
+        if obj.provider:
+            return obj.provider.full_name
+        return None
+
