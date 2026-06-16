@@ -17,26 +17,12 @@ class ProfileFilter(django_filters.FilterSet):
         fields = ["title", "city", "country", "user"]
 
 class ParentProfileFilter(django_filters.FilterSet):
-    relation = django_filters.CharFilter(lookup_expr="icontains")
-    child_name = django_filters.CharFilter(lookup_expr="icontains")
-    child_education_level = django_filters.CharFilter(lookup_expr="icontains")
-    stream = django_filters.CharFilter(lookup_expr="icontains")
-    academic_performance = django_filters.CharFilter(lookup_expr="icontains")
-    support_level = django_filters.CharFilter(lookup_expr="icontains")
-    child_goal = django_filters.CharFilter(lookup_expr="icontains")
-    career_awareness = django_filters.CharFilter(lookup_expr="icontains")
-    decision_style = django_filters.CharFilter(lookup_expr="icontains")
+    relationship = django_filters.CharFilter(lookup_expr="icontains")
+    other_relationship_text = django_filters.CharFilter(lookup_expr="icontains")
 
     class Meta:
         model = ParentProfile
         fields = [
-            "relation",
-            "child_name",
-            "child_education_level",
-            "stream",
-            "academic_performance",
-            "support_level",
-            "child_goal",
-            "career_awareness",
-            "decision_style",
+            "relationship",
+            "other_relationship_text",
         ]

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.utils.timezone import now
 
 from common.mixins.serializer_mixins import (
     ProfileLanguageMixin,
@@ -8,6 +9,7 @@ from common.mixins.serializer_mixins import (
 )
 from user_profile.models import (
     BusinessSetting,
+    ChildProfile,
     ParentProfile,
     ProfessionalProfile,
     StudentProfile,
@@ -332,12 +334,6 @@ class ParentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin,
 
     role = serializers.CharField(source="user.user_type", read_only=True)
     language = serializers.SerializerMethodField()
-    child_education_level_name = serializers.CharField(
-        source="child_education_level.display_name", read_only=True, default=None
-    )
-    stream_name = serializers.CharField(
-        source="stream.stream_name", read_only=True, default=None
-    )
     # Location fields from User model
     country = serializers.IntegerField(
         source="user.country.id", read_only=True, default=None
@@ -370,12 +366,7 @@ class ParentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin,
             "city",
             "city_name",
             "relationship",
-            "child_name",
-            "child_education_level",
-            "child_education_level_name",
-            "stream",
-            "stream_name",
-            "academic_performance",
+            "other_relationship_text",
             "created_at",
             "updated_at",
         ]
@@ -389,29 +380,128 @@ class ParentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializer
         ).Language.objects.filter(is_active=True, deleted=False),
         required=False,
     )
-    child_education_level = serializers.PrimaryKeyRelatedField(
-        queryset=__import__(
-            "education_level.models", fromlist=["EducationLevel"]
-        ).EducationLevel.objects.filter(is_active=True, deleted=False),
-        required=False,
-    )
-    stream = serializers.PrimaryKeyRelatedField(
-        queryset=__import__("stream.models", fromlist=["Stream"]).Stream.objects.filter(
-            is_active=True, deleted=False
-        ),
-        required=False,
-    )
 
     class Meta:
         model = ParentProfile
         fields = [
             "language",
             "relationship",
-            "child_name",
-            "child_education_level",
+            "other_relationship_text",
+        ]
+
+    def validate(self, attrs):
+        relationship = attrs.get(
+            "relationship",
+            getattr(self.instance, "relationship", None),
+        )
+        other_text = attrs.get(
+            "other_relationship_text",
+            getattr(self.instance, "other_relationship_text", ""),
+        )
+
+        if not relationship:
+            raise serializers.ValidationError(
+                {"relationship": "This field is required."}
+            )
+
+        if relationship == ParentProfile.Relationship.OTHER and not (
+            other_text or ""
+        ).strip():
+            raise serializers.ValidationError(
+                {
+                    "other_relationship_text": (
+                        "This field is required when relationship is other."
+                    )
+                }
+            )
+
+        if relationship != ParentProfile.Relationship.OTHER:
+            attrs["other_relationship_text"] = ""
+
+        return attrs
+
+    def update(self, instance, validated_data):
+        language = validated_data.pop("language", None)
+        instance.updated_at = now()
+        instance = super().update(instance, validated_data)
+        if language is not None:
+            instance.language.set(language)
+        return instance
+
+    def create(self, validated_data):
+        language = validated_data.pop("language", None)
+        instance = super().create(validated_data)
+        if language is not None:
+            instance.language.set(language)
+        return instance
+
+
+class ChildProfileSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    education_level_code = serializers.CharField(
+        source="education_level.level_code", read_only=True, default=None
+    )
+    education_level_name = serializers.CharField(
+        source="education_level.display_name", read_only=True, default=None
+    )
+    stream_code = serializers.CharField(
+        source="stream.stream_code", read_only=True, default=None
+    )
+    stream_name = serializers.CharField(
+        source="stream.stream_name", read_only=True, default=None
+    )
+
+    class Meta:
+        model = ChildProfile
+        fields = [
+            "id",
+            "parent_profile",
+            "full_name",
+            "first_name",
+            "last_name",
+            "profile_image",
+            "date_of_birth",
+            "education_level",
+            "education_level_code",
+            "education_level_name",
+            "stream",
+            "stream_code",
+            "stream_name",
+            "academic_performance",
+            "current_screen",
+            "is_completed",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ("id", "parent_profile", "current_screen", "created_at", "updated_at")
+
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()
+
+
+class ChildProfileCreateSerializer(serializers.ModelSerializer):
+    profile_image = serializers.ImageField(required=False, write_only=True)
+
+    class Meta:
+        model = ChildProfile
+        fields = [
+            "first_name",
+            "last_name",
+            "profile_image",
+            "date_of_birth",
+            "education_level",
             "stream",
             "academic_performance",
         ]
+
+    def create(self, validated_data):
+        validated_data.pop("profile_image", None)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data.pop("profile_image", None)
+        instance.updated_at = now()
+        return super().update(instance, validated_data)
 
 
 class BusinessSettingInfoSerializer(serializers.ModelSerializer):

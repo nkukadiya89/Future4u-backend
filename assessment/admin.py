@@ -5,6 +5,7 @@ from assessment.models import (
     CareerValue,
     Concern,
     Option,
+    ParentAssessment,
     Question,
     StudentAssessment,
     UserGoal,
@@ -160,6 +161,26 @@ class UserResponseAdmin(admin.ModelAdmin):
     )
 
     list_filter = ("question__dimension",)
+
+
+@admin.register(ParentAssessment)
+class ParentAssessmentAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "current_screen",
+        "is_completed",
+        "created_at",
+    )
+
+    search_fields = (
+        "user__email",
+    )
+
+    list_filter = (
+        "is_completed",
+        "current_screen",
+    )
 
 
 @admin.register(StudentAssessment)

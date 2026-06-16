@@ -71,6 +71,16 @@
       "key": "education_level_id",
       "value": "",
       "enabled": true
+    },
+    {
+      "key": "child_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "parent_assessment_id",
+      "value": "",
+      "enabled": true
     }
   ],
   "_postman_variable_scope": "environment",

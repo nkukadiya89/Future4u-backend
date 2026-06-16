@@ -4,6 +4,7 @@ from django.contrib import admin
 from common.mixins.admin_mixins import ProfileReadonlyFieldsAdminMixin
 from user_profile.models import (
     BusinessSetting,
+    ChildProfile,
     ParentProfile,
     ProfessionalProfile,
     StudentProfile,
@@ -167,34 +168,63 @@ class ParentProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         "user",
         "relationship",
-        "child_name",
-        "child_education_level",
-        "stream",
+        "other_relationship_text",
     )
-    search_fields = ("user__email", "user__first_name", "user__last_name", "child_name")
-    list_filter = ("relationship", "child_education_level", "stream")
+    search_fields = ("user__email", "user__first_name", "user__last_name")
+    list_filter = ("relationship",)
     readonly_fields = ("user", "created_at", "updated_at")
     raw_id_fields = ("user",)
     filter_horizontal = ("language",)
-    list_select_related = ("user", "child_education_level", "stream")
+    list_select_related = ("user",)
 
-    autocomplete_fields = ("child_education_level", "stream")
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ("user", "created_at", "updated_at")
+        return ()
 
     fieldsets = (
         ("Identity", {"fields": ("user",)}),
         ("Language", {"fields": ("language",)}),
-        ("About", {"fields": ("relationship",)}),
-        (
-            "Child Information",
-            {
-                "fields": (
-                    "child_name",
-                    "child_education_level",
-                    "stream",
-                    "academic_performance",
-                )
-            },
-        ),
+        ("About", {"fields": ("relationship", "other_relationship_text")}),
+        ("Timestamps", {"fields": ("created_at", "updated_at")}),
+    )
+
+
+@admin.register(ChildProfile)
+class ChildProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "parent_profile",
+        "first_name",
+        "last_name",
+        "date_of_birth",
+        "education_level",
+        "stream",
+        "academic_performance",
+        "current_screen",
+        "is_completed",
+    )
+    search_fields = (
+        "first_name",
+        "last_name",
+        "parent_profile__user__email",
+    )
+    list_filter = (
+        "is_completed",
+        "current_screen",
+        "education_level",
+        "stream",
+        "academic_performance",
+        "deleted",
+    )
+    raw_id_fields = ("parent_profile", "education_level", "stream")
+    readonly_fields = ("created_at", "updated_at")
+
+    fieldsets = (
+        ("Parent", {"fields": ("parent_profile",)}),
+        ("Child", {"fields": ("first_name", "last_name", "profile_image", "date_of_birth")}),
+        ("Education", {"fields": ("education_level", "stream", "academic_performance")}),
+        ("Flow", {"fields": ("current_screen", "is_completed")}),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
 

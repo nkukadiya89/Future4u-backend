@@ -36,6 +36,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         country_id = json_data.get("country")
         state_id = json_data.get("state")
         city_id = json_data.get("city")
+        referral_code = (json_data.get("referral_code") or "").strip()
         print("JSON Data:", json_data)  # Debug print statement
         errors = {}
         if not email:
@@ -110,6 +111,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             "country": country,
             "states": state,
             "city": city,
+            "referral_code": referral_code,
             "password": password,
             "terms_accepted": terms_accepted,
         }

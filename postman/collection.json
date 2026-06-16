@@ -9895,7 +9895,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"child_name\": \"John Doe\", \"child_education_level\": 1, \"stream\": 1, \"academic_performance\": \"good\", \"relationship\": \"father\", \"language\": [1]}"
+              "raw": "{\"relationship\": \"father\"}"
             }
           },
           "response": []
@@ -10696,6 +10696,186 @@
               }
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "parent_assessment",
+      "item": [
+        {
+          "name": "1. Add Child / Start Parent Assessment (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/assessments/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "assessments",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Aarav\",\n  \"last_name\": \"Patel\",\n  \"date_of_birth\": \"2010-05-12\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"stream\": \"{{stream_id}}\",\n  \"academic_performance\": \"good\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const id = json.data && json.data.id;",
+                  "    if (id !== undefined && id !== null) {",
+                  "      pm.collectionVariables.set('parent_assessment_id', String(id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Parent Assessment Status (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/assessments/status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "assessments",
+                "status",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Parent Assessments (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/assessments/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "assessments",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Parent Assessment Details (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/assessments/{{parent_assessment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "assessments",
+                "{{parent_assessment_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Child Basic Info (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/assessments/{{parent_assessment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "assessments",
+                "{{parent_assessment_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Aarav\",\n  \"last_name\": \"Patel\",\n  \"date_of_birth\": \"2010-05-12\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"stream\": \"{{stream_id}}\",\n  \"academic_performance\": \"excellent\"\n}"
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -12272,7 +12452,7 @@
               "formdata": [
                 {
                   "key": "data",
-                  "value": "{\"email\":\"{{user_email}}\",\"password\":\"{{user_password}}\",\"confirm_password\":\"{{user_password}}\",\"terms_accepted\":true,\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"user_type\":\"student\",\"country\":{{country_id}},\"state\":{{state_id}},\"city\":{{city_id}}}",
+                  "value": "{\"email\":\"{{user_email}}\",\"password\":\"{{user_password}}\",\"confirm_password\":\"{{user_password}}\",\"terms_accepted\":true,\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"user_type\":\"{{user_type}}\",\"country\":{{country_id}},\"state\":{{state_id}},\"city\":{{city_id}},\"referral_code\":\"{{referral_code}}\"}",
                   "type": "text"
                 },
                 {
