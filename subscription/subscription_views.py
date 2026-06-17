@@ -30,6 +30,7 @@ from .models import (
     SubscriptionInvoice,
     UserSubscription,
 )
+from subscription.models import SubscriptionFeature, FeatureUsage
 
 
 class SubscriptionViewSet(ModelViewSet):
@@ -47,6 +48,51 @@ class UserSubscriptionViewSet(ModelViewSet):
         if user_id:
             qs = qs.filter(user_id=user_id)
         return qs
+
+    @action(detail=False, methods=["get"], url_path="me")
+    def me(self, request):
+        user = request.user
+        user_sub = (
+            UserSubscription.objects.filter(user=user, is_active=True)
+            .select_related("subscription")
+            .first()
+        )
+
+        if not user_sub:
+            return Response({"subscription": None})
+
+        # default feature to report (assessment)
+        feature_code = "assessment"
+        feature = SubscriptionFeature.objects.filter(
+            subscription=user_sub.subscription,
+            feature_code=feature_code,
+            is_enabled=True,
+            deleted=False,
+        ).first()
+
+        usage = FeatureUsage.objects.filter(
+            user=user, feature_code=feature_code, subscription=user_sub.subscription
+        ).first()
+
+        used = usage.used if usage else 0
+
+        if feature:
+            allowed = "unlimited" if feature.is_unlimited else int(feature.value or 0)
+            remaining = None if feature.is_unlimited else max(allowed - used, 0)
+        else:
+            allowed = 0
+            remaining = 0
+
+        return Response(
+            {
+                "subscription": user_sub.subscription.package_name,
+                "start_date": user_sub.start_date,
+                "end_date": user_sub.end_date,
+                "features": {
+                    feature_code: {"allowed": allowed, "used": used, "remaining": remaining}
+                },
+            }
+        )
 
 
 class PaymentSubscriptionViewSet(ModelViewSet):
