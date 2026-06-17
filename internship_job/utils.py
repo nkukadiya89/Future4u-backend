@@ -1,7 +1,7 @@
 from difflib import get_close_matches
 from course.utils import normalize_text, clean, split_skills
 
-def is_match(ai_value, internship_values):
+def is_match(ai_value, skill_values):
     ai_parts = split_skills(ai_value)
 
     for ai_part in ai_parts:
@@ -11,7 +11,7 @@ def is_match(ai_value, internship_values):
             continue
         ai_clean = clean(ai_norm)
 
-        for cv in internship_values:
+        for cv in skill_values:
             cv_parts = split_skills(cv)
 
             for cv_part in cv_parts:

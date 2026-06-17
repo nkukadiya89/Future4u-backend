@@ -1,5 +1,6 @@
 from user_profile.views import (
     BusinessSettingViewSet,
+    ChildProfileViewSet,
     ParentProfileViewSet,
     ProfessionalProfileViewSet,
     StudentProfileViewSet,
@@ -23,10 +24,9 @@ user_profile_router.register(
 user_profile_router.register(
     "api/parent-profile", ParentProfileViewSet, basename="parent_profile"
 )
-
-from user_profile.views import BusinessSettingViewSet
-
-# from user_profile.parent_views import ParentProfileViewSet
-# from user_profile.profile_views import ProfileViewSet
-# user_profile_router.register("profiles", ProfileViewSet, basename="profiles")
+user_profile_router.register(
+    "api/parent-profile/children",
+    ChildProfileViewSet,
+    basename="parent_children",
+)
 

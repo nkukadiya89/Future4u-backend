@@ -233,3 +233,32 @@ class StudentAssessment(BaseModule):
 
     def __str__(self):
         return f"Assessment {self.id} - User {self.user_id}"
+
+
+class ParentAssessment(BaseModule):
+    class Screen(models.TextChoices):
+        PENDING = "pending", "Pending"
+        COMPLETE = "complete", "Complete"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="parent_assessments",
+    )
+    current_screen = models.CharField(
+        max_length=32,
+        choices=Screen.choices,
+        default=Screen.PENDING,
+    )
+    is_completed = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "parent_assessment"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["current_screen"]),
+        ]
+
+    def __str__(self):
+        return f"ParentAssessment {self.id} - User {self.user_id}"

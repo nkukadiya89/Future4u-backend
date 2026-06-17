@@ -84,6 +84,7 @@ class User(AbstractUser):
     terms_accepted = models.BooleanField(
         default=False, help_text="User accepted Terms & Conditions"
     )
+    referral_code = models.CharField(max_length=50, null=True, blank=True)
     full_name = models.CharField(max_length=201, null=True, blank=True, db_index=True)
     country = models.ForeignKey(
         "country.Country", on_delete=models.SET_NULL, null=True, blank=True

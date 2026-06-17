@@ -27,7 +27,7 @@ STUDY_ABROAD_SALARY_ABROAD_CLAUSE = (
 )
 STUDY_ABROAD_EXAM_CHECKS = (
     "IELTS/PTE/TOEFL",
-    "GRE/GMAT if postgraduate/advanced",
+    "GRE/GMAT if required for postgraduate/advanced programs",
     "German/French or other language requirements",
 )
 STUDY_ABROAD_ROADMAP_PHASES = (
@@ -59,6 +59,7 @@ STUDY_ABROAD_TEXT_REPLACEMENTS = (
         "course-specific entrance tests",
     ),
 )
+STUDY_ABROAD_PARENTHETICAL_ALIAS_RE = re.compile(r"\s*\(([^)]{2,20})\)")
 
 
 def _is_study_abroad_assessment(structured_input: dict) -> bool:
@@ -90,6 +91,16 @@ def _normalize_study_abroad_salary_average(value: object) -> str:
     if not india_part.casefold().startswith("india:"):
         india_part = f"India: {india_part}"
     return f"{india_part}; {STUDY_ABROAD_SALARY_ABROAD_CLAUSE}"
+
+
+def _normalize_study_abroad_education_name(value: object) -> str:
+    text = str(value or "").strip()
+
+    def remove_alias(match: re.Match) -> str:
+        alias = match.group(1).strip()
+        return "" if "." in alias or alias.isupper() else match.group(0)
+
+    return STUDY_ABROAD_PARENTHETICAL_ALIAS_RE.sub(remove_alias, text).strip()
 
 
 def _normalize_study_abroad_exam_text(value: object) -> str:
@@ -135,6 +146,8 @@ def _normalize_study_abroad_payload(payload):
             _normalize_study_abroad_text(reason)
             for reason in suggestion.why_this_career
         ]
+        for level in suggestion.required_education.levels:
+            level.name = _normalize_study_abroad_education_name(level.name)
         suggestion.career_factors.salary.average = (
             _normalize_study_abroad_salary_average(
                 suggestion.career_factors.salary.average

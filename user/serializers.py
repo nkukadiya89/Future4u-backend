@@ -223,6 +223,7 @@ class UserListSerializer(serializers.ModelSerializer):
             "email_verified",
             "keep_me_logged_in",
             "terms_accepted",
+            "referral_code",
             "date_joined",
             "last_login",
             "password_last_changed",

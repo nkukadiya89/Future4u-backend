@@ -361,31 +361,11 @@ class ParentProfile(models.Model):
         null=True,
         blank=True,
     )
-
-    child_name = models.CharField(max_length=150, null=True, blank=True)
-    child_education_level = models.ForeignKey(
-        "education_level.EducationLevel",
-        on_delete=models.SET_NULL,
+    other_relationship_text = models.CharField(
+        max_length=100,
         null=True,
         blank=True,
-        related_name="parent_profiles",
-    )
-    stream = models.ForeignKey(
-        "stream.Stream",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="parent_profiles",
-    )
-    academic_performance = models.CharField(
-        max_length=50,
-        choices=[
-            ("average", "Average"),
-            ("good", "Good"),
-            ("excellent", "Excellent"),
-        ],
-        null=True,
-        blank=True,
+        help_text="Custom relationship text when 'other' is selected",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -399,8 +379,97 @@ class ParentProfile(models.Model):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["user"]),
-            models.Index(fields=["child_education_level"]),
+        ]
+
+
+class ChildProfile(models.Model):
+    """A child managed by a parent, linked to the parent's profile."""
+
+    class AcademicPerformance(models.TextChoices):
+        AVERAGE = "average", "Average"
+        GOOD = "good", "Good"
+        EXCELLENT = "excellent", "Excellent"
+
+    parent_profile = models.ForeignKey(
+        ParentProfile,
+        on_delete=models.CASCADE,
+        related_name="children",
+    )
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    profile_image = models.CharField(max_length=250, null=True, blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+
+    education_level = models.ForeignKey(
+        "education_level.EducationLevel",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="child_profiles",
+    )
+    stream = models.ForeignKey(
+        "stream.Stream",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="child_profiles",
+    )
+    academic_performance = models.CharField(
+        max_length=20,
+        choices=AcademicPerformance.choices,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def upload_profile_image(self, profile_image_file):
+        import os
+
+        from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
+
+        allowed_types = [".jpg", ".jpeg", ".png"]
+        file_extension = os.path.splitext(profile_image_file.name)[1].lower()
+        if file_extension not in allowed_types:
+            raise ValueError(
+                f"Invalid file type: {file_extension}. Allowed types are {', '.join(allowed_types)}."
+            )
+        current_value = getattr(self, "profile_image", None)
+        try:
+            if current_value:
+                delete_uploaded_file(current_value)
+            aws_file_url, _ = upload_file_to_bucket(
+                profile_image_file,
+                allowed_types,
+                "ProfileImage/",
+                self.id,
+                None,
+            )
+            self.profile_image = aws_file_url
+            self.save(update_fields=["profile_image"])
+        except ValueError:
+            raise
+        except Exception as e:
+            raise Exception(f"Failed to upload profile image: {str(e)}")
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}".strip()
+
+    class Meta:
+        db_table = "parent_child_profile"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["parent_profile"]),
+            models.Index(fields=["education_level"]),
             models.Index(fields=["stream"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["parent_profile", "first_name", "last_name", "date_of_birth"],
+                condition=models.Q(deleted=False),
+                name="unique_active_child_per_parent",
+            ),
         ]
 
 
@@ -475,4 +544,3 @@ class CorporateProfile(models.Model):
     class Meta:
         db_table = "corporate_profile"
         ordering = ["-created_at"]
-
