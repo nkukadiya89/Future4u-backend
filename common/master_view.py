@@ -1,6 +1,4 @@
 from rest_framework.viewsets import ModelViewSet
-
-from common.mixins.view_mixins import ListEnvelopeMixin
 from rest_framework.filters import OrderingFilter
 from utils.custom_filters import CustomSearchFilter
 from utils.generate_ip_address import get_client_ip
@@ -12,6 +10,7 @@ from rest_framework import status
 from django.db import transaction
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import DjangoModelPermissions
+from rest_framework.decorators import action
 
 
 class CustomModelPermissions(DjangoModelPermissions):
@@ -25,7 +24,7 @@ class CustomModelPermissions(DjangoModelPermissions):
         "DELETE": ["%(app_label)s.delete_%(model_name)s"],
     }
 
-class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
+class BaseModelViewSet(ModelViewSet):
     filter_backends = [CustomSearchFilter, OrderingFilter]
     pagination_class = Pagination
     permission_classes = [CustomModelPermissions]
@@ -38,21 +37,44 @@ class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
         "created_by__last_name",
         "updated_by__first_name",
         "updated_by__last_name",
+        "deleted_by__first_name",
+        "deleted_by__last_name",
         "created_by__full_name",
         "updated_by__full_name",
+        "deleted_by__full_name",
     ]
 
     ordering_fields = [
         "created_by",
         "updated_by",
+        "deleted_by",
         "created_at",
         "updated_at",
+        "deleted_at",
     ]
 
     def get_serializer_class(self):
         if self.action == "list" and self.list_serializer_class:
             return self.list_serializer_class
         return super().get_serializer_class()
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+
+        no_pagination = request.query_params.get("no_pagination")
+        if no_pagination:
+            serializer = self.get_serializer(queryset, many=True)
+            return Response({"success": True, "data": serializer.data})
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+
+        serializer = self.get_serializer(queryset, many=True)
+        return self.get_paginated_response({"success": True, "data": serializer.data})
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -151,3 +173,17 @@ class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
             {"success": True, "data": serializer.data},
             status=status.HTTP_200_OK,
         )
+    
+    @action(methods=["get"], detail=False, url_path="archive-list")
+    def archive_list(self, request):
+        queryset = self.filter_queryset(
+            self.get_queryset().filter(deleted=True).order_by("-deleted_at")
+        )
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"success": True, "data": serializer.data})

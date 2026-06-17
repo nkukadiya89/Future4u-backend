@@ -14,7 +14,22 @@ from.service import match_internships
 # Create your views here.
 
 class InternshipViewSet(BaseModelViewSet):
-    queryset = Internship.objects.select_related("city","provider")
+    def get_queryset(self):
+        queryset = Internship.objects.select_related("city","provider").prefetch_related("education_tags")
+        user = self.request.user
+        if user.is_superuser:
+            return queryset
+        if user.user_type in [
+            "institute",
+            "school_college",
+            "corporate",
+        ]:
+            return queryset.filter(
+                provider=user,
+            )
+        return queryset
+        
+
     serializer_class = InternshipSerializer
 
     search_fields = BaseModelViewSet.searching_fields +[
@@ -63,33 +78,28 @@ class InternshipViewSet(BaseModelViewSet):
             status=status.HTTP_400_BAD_REQUEST,
         )
     
-    @transaction.atomic()
-    def update(self, request, *args, **kwargs):
-        internship = self.get_queryset()
-        if internship.provider != request.user:
+    @action(methods=["patch"], detail=True, url_path="restore")
+    def restore(self, request, pk=None):
+        instance = self.get_object()
+        if not instance.deleted:
             return Response(
-                {
-                    "success": False,
-                    "message": "You can only update internships created by you.",
-                },
-                status=status.HTTP_403_FORBIDDEN,
+                {"success": False, "message": "Record is not archived"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        return super().update(request, *args, **kwargs)
-    
-
-    @transaction.atomic()
-    def destroy(self, request, *args, **kwargs):
-        internship = self.get_queryset()
-        if internship.provider != request.user:
-            return Response(
-                {
-                    "success": False,
-                    "message": "You can only delete internships created by you."
-                },
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        return super().destroy(request, *args, **kwargs)
-    
+        instance.deleted = False
+        instance.deleted_at = None
+        if hasattr(instance, "deleted_by"):
+            instance.deleted_by = None
+        if hasattr(instance, "updated_by"):
+            instance.updated_by = request.user
+        if hasattr(instance, "updated_at"):
+            instance.updated_at = timezone.now()
+        instance.save()
+        return Response(
+            {"success": True, "message": "Internship restored successfully"},
+            status=status.HTTP_200_OK,
+        )
+        
     @action(detail=False, methods=["get"], url_path="internship-recommended")
     def internship_recommended(self, request):
         mode = request.query_params.get("mode")
@@ -241,7 +251,7 @@ class InternshipApplicationViewSet(BaseModelViewSet):
                     "data": serialzer.data,
                 },
                 status=status.HTTP_201_CREATED,
-            )
+            ),
     @transaction.atomic()
     def update(self, request, *args, **kwargs):
         application = self.get_object()
@@ -277,7 +287,10 @@ class InternshipApplicationViewSet(BaseModelViewSet):
         )
 
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(
+            updated_by=request.user,
+            updated_at=timezone.now(),
+        )
         return Response(
             {
                 "success": True,
@@ -357,6 +370,8 @@ class InternshipApplicationViewSet(BaseModelViewSet):
             )
 
         application.status = application_status
+        application.updated_by = request.user
+        application.updated_at = timezone.now()
         application.save(update_fields=["status"])
 
         return Response(

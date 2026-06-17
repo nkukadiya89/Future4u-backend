@@ -50,9 +50,11 @@ class ArchiveMixin(ModelViewSet):
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response({"success": True, "data": serializer.data})
 
     @action(methods=["post"], detail=True)
     def archive(self, request, pk=None):
@@ -70,15 +72,22 @@ class ArchiveMixin(ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @action(methods=["post"], detail=True)
+    @action(methods=["patch"], detail=True, url_path="restore")
     def restore(self, request, pk=None):
         instance = self.get_object()
         if not instance.deleted:
-            return Response({"message": "Alredy Restored"}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": False, "message": "Record is not archived"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         instance.deleted = False
         instance.deleted_at = None
         if hasattr(instance, "deleted_by"):
             instance.deleted_by = None
+        if hasattr(instance, "updated_by"):
+            instance.updated_by = request.user
+        if hasattr(instance, "updated_at"):
+            instance.updated_at = timezone.now()
         instance.save()
 
         self.log_archive_action(request, instance=instance, action="RESTORE")
@@ -118,13 +127,18 @@ class ArchiveMixin(ModelViewSet):
             )
         queryset = self.get_queryset().filter(id__in=ids, deleted=True)
         with transaction.atomic():
-            queryset.update(deleted=False, deleted_at=None)
             for instance in queryset:
+                instance.deleted = False
+                instance.deleted_at = None
                 if hasattr(instance, "deleted_by"):
                     instance.deleted_by = None
-                    instance.save()
-            self.log_archive_action(request, queryset=queryset, action="RESTORE")
-            return Response(
-                {"success": True, "message": "Bulk Restore Successfully"},
-                status=status.HTTP_200_OK,
-            )
+                if hasattr(instance, "updated_by"):
+                    instance.updated_by = request.user
+                if hasattr(instance, "updated_at"):
+                    instance.updated_at = timezone.now()
+                instance.save()
+        self.log_archive_action(request, queryset=queryset, action="RESTORE")
+        return Response(
+            {"success": True, "message": "Bulk Restore Successfully"},
+            status=status.HTTP_200_OK,
+        )

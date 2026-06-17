@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils.timezone import now
-
+from language_master.models import Language
 from common.mixins.serializer_mixins import (
     ProfileLanguageMixin,
     ProfileLanguageSaveMixin,
@@ -97,6 +97,11 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
     city_name = serializers.CharField(
         source="user.city.name", read_only=True, default=None
     )
+    first_name =serializers.CharField(source="user.first_name", read_only=True)
+    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
 
     class Meta:
         model = StudentProfile
@@ -131,23 +136,34 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
             "linkedin_url",
             "github_url",
             "portfolio",
+            "first_name",
+            "last_name",
+            "phone",
+            "email",
+            "profile_image",
             "created_at",
             "updated_at",
         ]
 
-
 class StudentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer):
     language = serializers.PrimaryKeyRelatedField(
         many=True,
-        queryset=__import__(
-            "language_master.models", fromlist=["Language"]
-        ).Language.objects.filter(is_active=True, deleted=False),
+        queryset=Language.objects.filter(is_active=True, deleted=False),
         required=False,
     )
+
+    first_name = serializers.CharField(source="user.first_name", required=False)
+    last_name = serializers.CharField(source="user.last_name", required=False)
+    phone = serializers.CharField(source="user.phone", required=False)
+    profile_image = serializers.CharField(source="user.profile_image", required=False)
 
     class Meta:
         model = StudentProfile
         fields = [
+            "first_name",
+            "last_name",
+            "phone",
+            "profile_image",
             "language",
             "science_track",
             "medium",
@@ -167,6 +183,13 @@ class StudentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serialize
             "portfolio",
         ]
 
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop("user", {})
+        user = instance.user
+        for attr, value in user_data.items():
+            setattr(user, attr, value)
+        user.save()
+        return super().update(instance, validated_data)
 
 class BusinessSettingSerializer(serializers.ModelSerializer):
 
@@ -254,6 +277,12 @@ class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestamp
         source="user.city.name", read_only=True, default=None
     )
 
+    first_name =serializers.CharField(source="user.first_name", read_only=True)
+    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
+
     class Meta:
         model = ProfessionalProfile
         fields = [
@@ -285,6 +314,11 @@ class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestamp
             "linkedin_url",
             "github_url",
             "portfolio",
+            "first_name",
+            "last_name",
+            "phone",
+            "email",
+            "profile_image",
             "created_at",
             "updated_at",
         ]
@@ -299,9 +333,18 @@ class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, seri
         required=False,
     )
 
+    first_name = serializers.CharField(source="user.first_name", required=False)
+    last_name = serializers.CharField(source="user.last_name", required=False)
+    phone = serializers.CharField(source="user.phone", required=False)
+    profile_image = serializers.CharField(source="user.profile_image", required=False)
+
     class Meta:
         model = ProfessionalProfile
         fields = [
+            "first_name",
+            "last_name",
+            "phone",
+            "profile_image",
             "language",
             "employment_type",
             "years_of_experience",
@@ -320,6 +363,14 @@ class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, seri
             "github_url",
             "portfolio",
         ]
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop("user", {})
+        user = instance.user
+        for attr, value in user_data.items():
+            setattr(user, attr, value)
+        user.save()
+        return super().update(instance, validated_data)
 
 
 class ParentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
@@ -345,6 +396,12 @@ class ParentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin,
         source="user.city.name", read_only=True, default=None
     )
 
+    first_name =serializers.CharField(source="user.first_name", read_only=True)
+    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
+
     class Meta:
         model = ParentProfile
         fields = [
@@ -360,6 +417,11 @@ class ParentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin,
             "city_name",
             "relationship",
             "other_relationship_text",
+            "first_name",
+            "last_name",
+            "phone",
+            "email",
+            "profile_image",
             "created_at",
             "updated_at",
         ]
@@ -373,6 +435,10 @@ class ParentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializer
         ).Language.objects.filter(is_active=True, deleted=False),
         required=False,
     )
+    first_name = serializers.CharField(source="user.first_name", required=False)
+    last_name = serializers.CharField(source="user.last_name", required=False)
+    phone = serializers.CharField(source="user.phone", required=False)
+    profile_image = serializers.CharField(source="user.profile_image", required=False)
 
     class Meta:
         model = ParentProfile
@@ -380,6 +446,10 @@ class ParentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializer
             "language",
             "relationship",
             "other_relationship_text",
+            "first_name",
+            "last_name",
+            "phone",
+            "profile_image",
         ]
 
     def validate(self, attrs):
@@ -415,6 +485,11 @@ class ParentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializer
 
     def update(self, instance, validated_data):
         language = validated_data.pop("language", None)
+        user_data = validated_data.pop("user", None)
+        user = instance.user
+        for attr, value in user_data.items():
+            setattr(user, attr, value)
+        user.save()
         instance.updated_at = now()
         instance = super().update(instance, validated_data)
         if language is not None:

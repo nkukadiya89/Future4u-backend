@@ -1,3 +1,5 @@
+import json
+
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -10,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
+from utils.throttles import (PerUserBurstRateThrottle)  
 
 from activity_log.models import ActivityLog
 from common.mixins.view_mixins import ListEnvelopeMixin
@@ -575,13 +578,23 @@ class StudentProfileViewSet(ModelViewSet):
                 {"success": False, "message": "Profile not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        ser = StudentProfileUpsertSerializer(profile, data=request.data, partial=True)
-        if not ser.is_valid():
+        data = request.data.get("data")
+        if data:
+            data = json.loads(data)
+        else:
+            data = {}
+
+        profile_image = request.FILES.get("profile_image")
+        if profile_image:
+            request.user.upload_profile_image(profile_image)
+
+        serializer = StudentProfileUpsertSerializer(profile, data=data, partial=True)
+        if not serializer.is_valid():
             return Response(
-                {"success": False, "message": ser.errors},
+                {"success": False, "message": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        ser.save()
+        serializer.save()
         try:
             cache.delete(recommendation_key(request.user.id))
         except Exception:
@@ -631,15 +644,24 @@ class ProfessionalProfileViewSet(ModelViewSet):
                 {"success": False, "message": "Profile not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        ser = ProfessionalProfileUpsertSerializer(
-            profile, data=request.data, partial=True
+        data = request.data.get("data")
+        if data:
+            data = json.loads(data)
+        else:
+            data = {}
+        profile_image = request.FILES.get("profile_image")
+        if profile_image:
+            request.user.upload_profile_image(profile_image)
+
+        serializer = ProfessionalProfileUpsertSerializer(
+            profile, data=data, partial=True
         )
-        if not ser.is_valid():
+        if not serializer.is_valid():
             return Response(
-                {"success": False, "message": ser.errors},
+                {"success": False, "message": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        ser.save()
+        serializer.save()
         try:
             cache.delete(recommendation_key(request.user.id))
         except Exception:
@@ -697,13 +719,22 @@ class ParentProfileViewSet(ModelViewSet):
                 {"success": False, "message": "Profile not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        ser = ParentProfileUpsertSerializer(profile, data=request.data, partial=True)
-        if not ser.is_valid():
+        data = request.data.get("data")
+        if data:
+            data = json.loads(data)
+        else:
+            data = {}
+        profile_image = request.FILES.get("profile_image")
+        if profile_image:
+            request.user.upload_profile_image(profile_image)
+
+        serializer = ParentProfileUpsertSerializer(profile, data=data, partial=True)
+        if not serializer.is_valid():
             return Response(
-                {"success": False, "message": ser.errors},
+                {"success": False, "message": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        ser.save()
+        serializer.save()
         try:
             cache.delete(recommendation_key(request.user.id))
         except Exception:
