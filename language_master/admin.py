@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.urls import path, reverse
 
 from base.admin import BaseAdmin
+from common.mixins.admin_mixins import AuditSaveModelMixin, MasterImportAdminURLMixin
 from language_master.models import Language
 from language_master.serializers import LanguageSerializer
 from language_master.services import language_service
@@ -28,7 +29,7 @@ class LanguageAdminForm(forms.ModelForm):
 
 
 @admin.register(Language)
-class LanguageAdmin(BaseAdmin):
+class LanguageAdmin(AuditSaveModelMixin, MasterImportAdminURLMixin, BaseAdmin):
     form = LanguageAdminForm
     change_list_template = "admin/language_master/language/change_list.html"
 
@@ -45,28 +46,8 @@ class LanguageAdmin(BaseAdmin):
         ("Audit", {"fields": ("created_by", "created_at", "updated_by", "updated_at")}),
     )
 
-    def get_urls(self):
-        info = self.model._meta.app_label, self.model._meta.model_name
-        return [
-            path(
-                "upload/",
-                self.admin_site.admin_view(self.upload_view),
-                name="%s_%s_upload" % info,
-            ),
-            path(
-                "sample-csv/",
-                self.admin_site.admin_view(self.sample_csv_view),
-                name="%s_%s_sample_csv" % info,
-            ),
-        ] + super().get_urls()
-
     def sample_csv_view(self, request):
-        data = language_service.sample_csv_bytes()
-        resp = HttpResponse(data, content_type="text/csv; charset=utf-8")
-        resp["Content-Disposition"] = (
-            'attachment; filename="language_master_sample.csv"'
-        )
-        return resp
+        return language_service.sample_csv_http_response()
 
     def upload_view(self, request):
         if request.method == "POST":
@@ -100,6 +81,3 @@ class LanguageAdmin(BaseAdmin):
         return render(
             request, "admin/language_master/language/upload_languages.html", {}
         )
-
-    def save_model(self, request, obj, form, change):
-        obj.save(user=request.user)

@@ -304,7 +304,8 @@ class BusinessCategoryAPITestCase(APITestCase):
         category = BusinessCategory.objects.create(business_category="Test Category")
         self.assertEqual(category.deleted, 0)
         self.assertIsNotNone(category.created_at)
-        self.assertIsNotNone(category.updated_at)
+        # BaseModule.save() explicitly sets updated_at=None on create
+        self.assertIsNone(category.updated_at)
 
     def test_model_foreign_key_on_delete(self):
         """Test that deleting user sets foreign key to null"""

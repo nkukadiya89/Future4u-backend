@@ -1,10 +1,16 @@
-from email.utils import format_datetime, localtime
-
 from rest_framework import serializers
+
+from base.serializers import AuditFieldsMixin
+from common.mixins.serializer_mixins import TrackDateMixin, DeletedAtMixin
 from user.serializers import UserQuickSerializer
 
 
-class BaseModelSerializer(serializers.ModelSerializer):
+class BaseModelSerializer(
+    AuditFieldsMixin,
+    TrackDateMixin,
+    DeletedAtMixin,
+    serializers.ModelSerializer,
+):
     created_at = serializers.SerializerMethodField(read_only=True)
     updated_at = serializers.SerializerMethodField(read_only=True)
     created_by = UserQuickSerializer(read_only=True)
@@ -29,15 +35,3 @@ class BaseModelSerializer(serializers.ModelSerializer):
             "updated_by": {"read_only": True},
             "deleted_by": {"read_only": True},
         }
-
-    def _format_dt(self, value):
-        return localtime(value).strftime("%Y-%m-%d %H:%M:%S") if value else None
-
-    def get_created_at(self, obj):
-        return self._format_dt(obj.created_at)
-
-    def get_updated_at(self, obj):
-        return self._format_dt(obj.updated_at)
-
-    def get_deleted_at(self, obj):
-        return self._format_dt(obj.deleted_at)

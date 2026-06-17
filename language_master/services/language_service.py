@@ -271,3 +271,14 @@ def sample_csv_bytes() -> bytes:
     w.writerow(["English", "EN", "English language", "1"])
     w.writerow(["Hindi", "HI", "Hindi language", "1"])
     return buf.getvalue().encode("utf-8")
+
+
+def sample_csv_http_response():
+    from django.http import HttpResponse
+
+    data = sample_csv_bytes()
+    resp = HttpResponse(data, content_type="text/csv; charset=utf-8")
+    resp["Content-Disposition"] = (
+        'attachment; filename="language_master_sample.csv"'
+    )
+    return resp

@@ -1,8 +1,10 @@
 from django import forms
 from django.contrib import admin
 
+from common.mixins.admin_mixins import ProfileReadonlyFieldsAdminMixin
 from user_profile.models import (
     BusinessSetting,
+    ChildProfile,
     ParentProfile,
     ProfessionalProfile,
     StudentProfile,
@@ -85,7 +87,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 
 @admin.register(StudentProfile)
-class StudentProfileAdmin(admin.ModelAdmin):
+class StudentProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
     """Student-specific profile admin with language and educational fields"""
 
     list_display = (
@@ -99,11 +101,6 @@ class StudentProfileAdmin(admin.ModelAdmin):
     list_filter = ("science_track", "medium")
     readonly_fields = ("user", "created_at", "updated_at")
     raw_id_fields = ("user", "education_level", "stream")
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj:
-            return ("user", "created_at", "updated_at")
-        return ()
 
     autocomplete_fields = ("education_level", "stream")
     filter_horizontal = ("language",)
@@ -165,51 +162,70 @@ class StudentProfileAdmin(admin.ModelAdmin):
 
 
 @admin.register(ParentProfile)
-class ParentProfileAdmin(admin.ModelAdmin):
+class ParentProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
     """Parent-specific profile admin"""
 
     list_display = (
         "user",
         "relationship",
-        "child_name",
-        "child_education_level",
-        "stream",
+        "other_relationship_text",
     )
-    search_fields = ("user__email", "user__first_name", "user__last_name", "child_name")
-    list_filter = ("relationship", "child_education_level", "stream")
+    search_fields = ("user__email", "user__first_name", "user__last_name")
+    list_filter = ("relationship",)
     readonly_fields = ("user", "created_at", "updated_at")
     raw_id_fields = ("user",)
     filter_horizontal = ("language",)
-    list_select_related = ("user", "child_education_level", "stream")
+    list_select_related = ("user",)
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
             return ("user", "created_at", "updated_at")
         return ()
 
-    autocomplete_fields = ("child_education_level", "stream")
-
     fieldsets = (
         ("Identity", {"fields": ("user",)}),
         ("Language", {"fields": ("language",)}),
-        ("About", {"fields": ("relationship",)}),
-        (
-            "Child Information",
-            {
-                "fields": (
-                    "child_name",
-                    "child_education_level",
-                    "stream",
-                    "academic_performance",
-                )
-            },
-        ),
+        ("About", {"fields": ("relationship", "other_relationship_text")}),
+        ("Timestamps", {"fields": ("created_at", "updated_at")}),
+    )
+
+
+@admin.register(ChildProfile)
+class ChildProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "parent_profile",
+        "first_name",
+        "last_name",
+        "date_of_birth",
+        "education_level",
+        "stream",
+        "academic_performance",
+    )
+    search_fields = (
+        "first_name",
+        "last_name",
+        "parent_profile__user__email",
+    )
+    list_filter = (
+        "education_level",
+        "stream",
+        "academic_performance",
+        "deleted",
+    )
+    raw_id_fields = ("parent_profile", "education_level", "stream")
+    readonly_fields = ("created_at", "updated_at")
+
+    fieldsets = (
+        ("Parent", {"fields": ("parent_profile",)}),
+        ("Child", {"fields": ("first_name", "last_name", "profile_image", "date_of_birth")}),
+        ("Education", {"fields": ("education_level", "stream", "academic_performance")}),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
 
 
 @admin.register(ProfessionalProfile)
-class ProfessionalProfileAdmin(admin.ModelAdmin):
+class ProfessionalProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
     """Professional-specific profile admin"""
 
     list_display = (
@@ -228,11 +244,6 @@ class ProfessionalProfileAdmin(admin.ModelAdmin):
     list_filter = ("employment_type", "years_of_experience")
     readonly_fields = ("user", "created_at", "updated_at")
     raw_id_fields = ("user", "education_level")
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj:
-            return ("user", "created_at", "updated_at")
-        return ()
 
     autocomplete_fields = ("education_level",)
     filter_horizontal = ("language",)

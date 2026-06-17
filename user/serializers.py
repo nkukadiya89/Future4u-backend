@@ -1,6 +1,8 @@
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
 
+from common.mixins.serializer_mixins import OtpEmailValidationMixin
+
 from user.models import ContentTypeModel, CustomGroup, RoleFamily, User
 from user.user_auth import get_user_groups, get_user_permissions
 from utils.datetime_formatter import format_datetime
@@ -45,7 +47,7 @@ class PermissionSerializers(serializers.ModelSerializer):
         return model_name
 
 
-class VerifyAccountSerializer(serializers.ModelSerializer):
+class VerifyAccountSerializer(OtpEmailValidationMixin, serializers.ModelSerializer):
     otp = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
 
@@ -53,17 +55,8 @@ class VerifyAccountSerializer(serializers.ModelSerializer):
         model = User
         fields = ["email", "otp"]
 
-    def validate(self, data):
-        email = data["email"]
-        query = User.objects.filter(email=email).first()
-        if query is None:
-            raise serializers.ValidationError("User not found")
-        if data.get("otp") != str(query.otp):  # type: ignore
-            raise serializers.ValidationError("OTP is incorrect")
-        return data
 
-
-class VerifyOTPSerializer(serializers.Serializer):
+class VerifyOTPSerializer(OtpEmailValidationMixin, serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField()
 
@@ -73,15 +66,6 @@ class VerifyOTPSerializer(serializers.Serializer):
             "email",
             "otp",
         ]
-
-    def validate(self, data):
-        email = data["email"]
-        query = User.objects.filter(email=email).first()
-        if query is None:
-            raise serializers.ValidationError("User not found")
-        if data.get("otp") != str(query.otp):
-            raise serializers.ValidationError("OTP is incorrect")
-        return data
 
 
 class LoginWithEmailOtpSerializer(serializers.Serializer):
@@ -239,6 +223,7 @@ class UserListSerializer(serializers.ModelSerializer):
             "email_verified",
             "keep_me_logged_in",
             "terms_accepted",
+            "referral_code",
             "date_joined",
             "last_login",
             "password_last_changed",

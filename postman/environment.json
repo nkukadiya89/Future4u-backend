@@ -4,7 +4,7 @@
   "values": [
     {
       "key": "base_url",
-      "value": "http://127.0.0.1:8000/api",
+      "value": "http://127.0.0.1:8000",
       "enabled": true
     },
     {
@@ -69,6 +69,16 @@
     },
     {
       "key": "education_level_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "child_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "parent_assessment_id",
       "value": "",
       "enabled": true
     }

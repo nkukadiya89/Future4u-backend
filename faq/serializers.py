@@ -1,11 +1,17 @@
 from django.utils.timezone import now
 from rest_framework import serializers
 
+from common.mixins.serializer_mixins import (
+    DateFieldsMixin,
+    DeletedFieldsMixin,
+    UserNameMixin,
+)
 from faq.models import FAQ
-from utils.datetime_formatter import format_datetime
 
 
-class FAQSerializers(serializers.ModelSerializer):
+class FAQSerializers(
+    DateFieldsMixin, UserNameMixin, serializers.ModelSerializer
+):
     created_by_name = serializers.SerializerMethodField()
     updated_by_name = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()
@@ -24,26 +30,6 @@ class FAQSerializers(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["created_at", "updated_at"]
-
-    def get_created_at(self, obj):
-        return format_datetime(getattr(obj, "created_at", None))
-
-    def get_created_by_name(self, obj):
-        return (
-            f"{obj.created_by.first_name} {obj.created_by.last_name}"
-            if obj.created_by
-            else None
-        )
-
-    def get_updated_at(self, obj):
-        return format_datetime(getattr(obj, "updated_at", None))
-
-    def get_updated_by_name(self, obj):
-        return (
-            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
-            if obj.updated_by
-            else None
-        )
 
     def create(self, validated_data):
         request = self.context.get("request") if hasattr(self, "context") else None
@@ -115,7 +101,12 @@ class FAQRestoreSerializer(serializers.ModelSerializer):
         return faq
 
 
-class FAQArchiveListSerializer(serializers.ModelSerializer):
+class FAQArchiveListSerializer(
+    DateFieldsMixin,
+    UserNameMixin,
+    DeletedFieldsMixin,
+    serializers.ModelSerializer,
+):
     created_by_name = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)
     updated_by_name = serializers.SerializerMethodField(read_only=True)
@@ -138,33 +129,3 @@ class FAQArchiveListSerializer(serializers.ModelSerializer):
             "deleted_at",
             "deleted",
         ]
-
-    def get_created_at(self, obj):
-        return format_datetime(getattr(obj, "created_at", None))
-
-    def get_created_by_name(self, obj):
-        return (
-            f"{obj.created_by.first_name} {obj.created_by.last_name}"
-            if obj.created_by
-            else None
-        )
-
-    def get_updated_at(self, obj):
-        return format_datetime(getattr(obj, "updated_at", None))
-
-    def get_updated_by_name(self, obj):
-        return (
-            f"{obj.updated_by.first_name} {obj.updated_by.last_name}"
-            if obj.updated_by
-            else None
-        )
-
-    def get_deleted_at(self, obj):
-        return format_datetime(getattr(obj, "deleted_at", None))
-
-    def get_deleted_by_name(self, obj):
-        return (
-            f"{obj.deleted_by.first_name} {obj.deleted_by.last_name}"
-            if obj.deleted_by
-            else None
-        )

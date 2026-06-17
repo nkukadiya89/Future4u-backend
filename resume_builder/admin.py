@@ -14,6 +14,8 @@ from django.urls import path, reverse
 from django.shortcuts import render
 from django.contrib import messages
 
+from common.mixins.admin_mixins import ReadOnlyAdminMixin
+
 
 # ── Unmanaged proxy model (no DB table needed) ───────────────────────────────
 
@@ -32,17 +34,7 @@ class ResumeBuilder(models.Model):
 
 
 @admin.register(ResumeBuilder)
-class ResumeBuilderAdmin(admin.ModelAdmin):
-
-    # ── Disable all default CRUD actions ─────────────────────────────────────
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
+class ResumeBuilderAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
     # ── Custom URLs ───────────────────────────────────────────────────────────
     def get_urls(self):

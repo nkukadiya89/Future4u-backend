@@ -86,6 +86,7 @@ class UserAdmin(BaseUserAdmin):
                     "otp",
                     "keep_me_logged_in",
                     "terms_accepted",
+                    "referral_code",
                 )
             },
         ),
@@ -133,6 +134,7 @@ class UserAdmin(BaseUserAdmin):
                     "otp",
                     "keep_me_logged_in",
                     "terms_accepted",
+                    "referral_code",
                     "is_active",
                     "is_staff",
                     "is_superuser",

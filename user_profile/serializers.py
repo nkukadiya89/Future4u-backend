@@ -1,18 +1,19 @@
 from rest_framework import serializers
 from django.utils.timezone import now
+from language_master.models import Language
+from common.mixins.serializer_mixins import (
+    ProfileLanguageMixin,
+    ProfileLanguageSaveMixin,
+    ProfileLanguageSaveWithTimeMixin,
+    ProfileUpdateTimestampMixin,
+)
 from user_profile.models import (
     BusinessSetting,
+    ChildProfile,
     ParentProfile,
+    Profile,
     ProfessionalProfile,
     StudentProfile,
-    UserProfile,
-)
-
-from user_profile.models import (
-    BusinessSetting,
-    # InternshipApplication,
-    # InternshipProfile,
-    Profile,
     UserProfile,
 )
 
@@ -28,17 +29,11 @@ def validate_json_choices(value, valid_set, field_name):
     return value
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(ProfileLanguageMixin, serializers.ModelSerializer):
     """Base profile serializer for Super Admin with language preference"""
 
     role = serializers.CharField(source="user.user_type", read_only=True)
     language = serializers.SerializerMethodField()
-
-    def get_language(self, obj):
-        return [
-            {"id": str(l.id), "name": l.name, "code": l.code}
-            for l in obj.language.all()
-        ]
 
     class Meta:
         model = UserProfile
@@ -50,7 +45,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserProfileUpsertSerializer(serializers.ModelSerializer):
+class UserProfileUpsertSerializer(ProfileLanguageSaveMixin, serializers.ModelSerializer):
     """Base profile upsert serializer for Super Admin"""
 
     language = serializers.PrimaryKeyRelatedField(
@@ -67,22 +62,8 @@ class UserProfileUpsertSerializer(serializers.ModelSerializer):
             "language",
         ]
 
-    def update(self, instance, validated_data):
-        language = validated_data.pop("language", None)
-        instance = super().update(instance, validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
 
-    def create(self, validated_data):
-        language = validated_data.pop("language", None)
-        instance = super().create(validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
-
-
-class StudentProfileSerializer(serializers.ModelSerializer):
+class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
     """Student-specific profile serializer with language and educational fields"""
 
     role = serializers.CharField(source="user.user_type", read_only=True)
@@ -116,12 +97,11 @@ class StudentProfileSerializer(serializers.ModelSerializer):
     city_name = serializers.CharField(
         source="user.city.name", read_only=True, default=None
     )
-
-    def get_language(self, obj):
-        return [
-            {"id": str(l.id), "name": l.name, "code": l.code}
-            for l in obj.language.all()
-        ]
+    first_name =serializers.CharField(source="user.first_name", read_only=True)
+    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
 
     class Meta:
         model = StudentProfile
@@ -156,27 +136,34 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             "linkedin_url",
             "github_url",
             "portfolio",
+            "first_name",
+            "last_name",
+            "phone",
+            "email",
+            "profile_image",
             "created_at",
             "updated_at",
         ]
 
-    def update(self, instance, validated_data):
-        instance.updated_at = now()
-        return super().update(instance, validated_data)
-
-
-class StudentProfileUpsertSerializer(serializers.ModelSerializer):
+class StudentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer):
     language = serializers.PrimaryKeyRelatedField(
         many=True,
-        queryset=__import__(
-            "language_master.models", fromlist=["Language"]
-        ).Language.objects.filter(is_active=True, deleted=False),
+        queryset=Language.objects.filter(is_active=True, deleted=False),
         required=False,
     )
+
+    first_name = serializers.CharField(source="user.first_name", required=False)
+    last_name = serializers.CharField(source="user.last_name", required=False)
+    phone = serializers.CharField(source="user.phone", required=False)
+    profile_image = serializers.CharField(source="user.profile_image", required=False)
 
     class Meta:
         model = StudentProfile
         fields = [
+            "first_name",
+            "last_name",
+            "phone",
+            "profile_image",
             "language",
             "science_track",
             "medium",
@@ -197,20 +184,12 @@ class StudentProfileUpsertSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-        language = validated_data.pop("language", None)
-        instance.updated_at = now()
-        instance = super().update(instance, validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
-
-    def create(self, validated_data):
-        language = validated_data.pop("language", None)
-        instance = super().create(validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
-
+        user_data = validated_data.pop("user", {})
+        user = instance.user
+        for attr, value in user_data.items():
+            setattr(user, attr, value)
+        user.save()
+        return super().update(instance, validated_data)
 
 class BusinessSettingSerializer(serializers.ModelSerializer):
 
@@ -269,7 +248,7 @@ class BusinessSettingSerializer(serializers.ModelSerializer):
         return instance
 
 
-class ProfessionalProfileSerializer(serializers.ModelSerializer):
+class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
     """Working Professional-specific profile serializer matching StudentProfile pattern"""
 
     role = serializers.CharField(source="user.user_type", read_only=True)
@@ -298,11 +277,11 @@ class ProfessionalProfileSerializer(serializers.ModelSerializer):
         source="user.city.name", read_only=True, default=None
     )
 
-    def get_language(self, obj):
-        return [
-            {"id": str(l.id), "name": l.name, "code": l.code}
-            for l in obj.language.all()
-        ]
+    first_name =serializers.CharField(source="user.first_name", read_only=True)
+    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
 
     class Meta:
         model = ProfessionalProfile
@@ -335,16 +314,17 @@ class ProfessionalProfileSerializer(serializers.ModelSerializer):
             "linkedin_url",
             "github_url",
             "portfolio",
+            "first_name",
+            "last_name",
+            "phone",
+            "email",
+            "profile_image",
             "created_at",
             "updated_at",
         ]
 
-    def update(self, instance, validated_data):
-        instance.updated_at = now()
-        return super().update(instance, validated_data)
 
-
-class ProfessionalProfileUpsertSerializer(serializers.ModelSerializer):
+class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer):
     language = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=__import__(
@@ -353,9 +333,18 @@ class ProfessionalProfileUpsertSerializer(serializers.ModelSerializer):
         required=False,
     )
 
+    first_name = serializers.CharField(source="user.first_name", required=False)
+    last_name = serializers.CharField(source="user.last_name", required=False)
+    phone = serializers.CharField(source="user.phone", required=False)
+    profile_image = serializers.CharField(source="user.profile_image", required=False)
+
     class Meta:
         model = ProfessionalProfile
         fields = [
+            "first_name",
+            "last_name",
+            "phone",
+            "profile_image",
             "language",
             "employment_type",
             "years_of_experience",
@@ -376,32 +365,19 @@ class ProfessionalProfileUpsertSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-        language = validated_data.pop("language", None)
-        instance.updated_at = now()
-        instance = super().update(instance, validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
-
-    def create(self, validated_data):
-        language = validated_data.pop("language", None)
-        instance = super().create(validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
+        user_data = validated_data.pop("user", {})
+        user = instance.user
+        for attr, value in user_data.items():
+            setattr(user, attr, value)
+        user.save()
+        return super().update(instance, validated_data)
 
 
-class ParentProfileSerializer(serializers.ModelSerializer):
+class ParentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
     """Parent-specific profile serializer"""
 
     role = serializers.CharField(source="user.user_type", read_only=True)
     language = serializers.SerializerMethodField()
-    child_education_level_name = serializers.CharField(
-        source="child_education_level.display_name", read_only=True, default=None
-    )
-    stream_name = serializers.CharField(
-        source="stream.stream_name", read_only=True, default=None
-    )
     # Location fields from User model
     country = serializers.IntegerField(
         source="user.country.id", read_only=True, default=None
@@ -420,11 +396,11 @@ class ParentProfileSerializer(serializers.ModelSerializer):
         source="user.city.name", read_only=True, default=None
     )
 
-    def get_language(self, obj):
-        return [
-            {"id": str(l.id), "name": l.name, "code": l.code}
-            for l in obj.language.all()
-        ]
+    first_name =serializers.CharField(source="user.first_name", read_only=True)
+    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
 
     class Meta:
         model = ParentProfile
@@ -440,22 +416,18 @@ class ParentProfileSerializer(serializers.ModelSerializer):
             "city",
             "city_name",
             "relationship",
-            "child_name",
-            "child_education_level",
-            "child_education_level_name",
-            "stream",
-            "stream_name",
-            "academic_performance",
+            "other_relationship_text",
+            "first_name",
+            "last_name",
+            "phone",
+            "email",
+            "profile_image",
             "created_at",
             "updated_at",
         ]
 
-    def update(self, instance, validated_data):
-        instance.updated_at = now()
-        return super().update(instance, validated_data)
 
-
-class ParentProfileUpsertSerializer(serializers.ModelSerializer):
+class ParentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer):
     language = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=__import__(
@@ -463,32 +435,61 @@ class ParentProfileUpsertSerializer(serializers.ModelSerializer):
         ).Language.objects.filter(is_active=True, deleted=False),
         required=False,
     )
-    child_education_level = serializers.PrimaryKeyRelatedField(
-        queryset=__import__(
-            "education_level.models", fromlist=["EducationLevel"]
-        ).EducationLevel.objects.filter(is_active=True, deleted=False),
-        required=False,
-    )
-    stream = serializers.PrimaryKeyRelatedField(
-        queryset=__import__("stream.models", fromlist=["Stream"]).Stream.objects.filter(
-            is_active=True, deleted=False
-        ),
-        required=False,
-    )
+    first_name = serializers.CharField(source="user.first_name", required=False)
+    last_name = serializers.CharField(source="user.last_name", required=False)
+    phone = serializers.CharField(source="user.phone", required=False)
+    profile_image = serializers.CharField(source="user.profile_image", required=False)
 
     class Meta:
         model = ParentProfile
         fields = [
             "language",
             "relationship",
-            "child_name",
-            "child_education_level",
-            "stream",
-            "academic_performance",
+            "other_relationship_text",
+            "first_name",
+            "last_name",
+            "phone",
+            "profile_image",
         ]
+
+    def validate(self, attrs):
+        relationship = attrs.get(
+            "relationship",
+            getattr(self.instance, "relationship", None),
+        )
+        other_text = attrs.get(
+            "other_relationship_text",
+            getattr(self.instance, "other_relationship_text", ""),
+        )
+
+        if not relationship:
+            raise serializers.ValidationError(
+                {"relationship": "This field is required."}
+            )
+
+        if relationship == ParentProfile.Relationship.OTHER and not (
+            other_text or ""
+        ).strip():
+            raise serializers.ValidationError(
+                {
+                    "other_relationship_text": (
+                        "This field is required when relationship is other."
+                    )
+                }
+            )
+
+        if relationship != ParentProfile.Relationship.OTHER:
+            attrs["other_relationship_text"] = ""
+
+        return attrs
 
     def update(self, instance, validated_data):
         language = validated_data.pop("language", None)
+        user_data = validated_data.pop("user", None)
+        user = instance.user
+        for attr, value in user_data.items():
+            setattr(user, attr, value)
+        user.save()
         instance.updated_at = now()
         instance = super().update(instance, validated_data)
         if language is not None:
@@ -501,6 +502,72 @@ class ParentProfileUpsertSerializer(serializers.ModelSerializer):
         if language is not None:
             instance.language.set(language)
         return instance
+
+
+class ChildProfileSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    education_level_code = serializers.CharField(
+        source="education_level.level_code", read_only=True, default=None
+    )
+    education_level_name = serializers.CharField(
+        source="education_level.display_name", read_only=True, default=None
+    )
+    stream_code = serializers.CharField(
+        source="stream.stream_code", read_only=True, default=None
+    )
+    stream_name = serializers.CharField(
+        source="stream.stream_name", read_only=True, default=None
+    )
+
+    class Meta:
+        model = ChildProfile
+        fields = [
+            "id",
+            "parent_profile",
+            "full_name",
+            "first_name",
+            "last_name",
+            "profile_image",
+            "date_of_birth",
+            "education_level",
+            "education_level_code",
+            "education_level_name",
+            "stream",
+            "stream_code",
+            "stream_name",
+            "academic_performance",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ("id", "parent_profile", "created_at", "updated_at")
+
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()
+
+
+class ChildProfileCreateSerializer(serializers.ModelSerializer):
+    profile_image = serializers.ImageField(required=False, write_only=True)
+
+    class Meta:
+        model = ChildProfile
+        fields = [
+            "first_name",
+            "last_name",
+            "profile_image",
+            "date_of_birth",
+            "education_level",
+            "stream",
+            "academic_performance",
+        ]
+
+    def create(self, validated_data):
+        validated_data.pop("profile_image", None)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data.pop("profile_image", None)
+        instance.updated_at = now()
+        return super().update(instance, validated_data)
 
 
 class BusinessSettingInfoSerializer(serializers.ModelSerializer):

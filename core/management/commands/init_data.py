@@ -281,11 +281,16 @@ class Command(BaseCommand):
             "course|Can view courses",
             "course|Can add course inquiry",
             "course|Can view course inquiry",
+            "assessment_career|Can view career recommendation",
             "assessment_career|Can view career recommendation suggestion",
             "internship_job|Can view internship",
             "internship_job|Can view internship application",
             "internship_job|Can add internship application",
             "internship_job|Can change internship application",
+            "internship_job|Can view job",
+            "internship_job|Can view job application",
+            "internship_job|Can add job application",
+            "internship_job|Can change job application",
         ]
 
         # Parent Permissions - View linked child's data
@@ -295,9 +300,17 @@ class Command(BaseCommand):
             "education_level|Can view education level",
             "stream|Can view stream",
             "user|Can view user",
+            "internship_job|Can view internship",
             "internship_job|Can view internship application",
             "internship_job|Can add internship application",
             "internship_job|Can change internship application",
+            "assessment_career|Can view career recommendation",
+            "assessment_career|Can view career recommendation suggestion",
+            "internship_job|Can view job",
+            "internship_job|Can view job application",
+            "internship_job|Can add job application",
+            "internship_job|Can change job application",
+
         ]
 
         # Professional Permissions - View career resources, update own profile
@@ -308,9 +321,16 @@ class Command(BaseCommand):
             "stream|Can view stream",
             "user|Can view user",
             "course|Can view course inquiry",
+            "internship_job|Can view internship",
             "internship_job|Can view internship application",
             "internship_job|Can add internship application",
             "internship_job|Can change internship application",
+            "assessment_career|Can view career recommendation",
+            "assessment_career|Can view career recommendation suggestion",
+            "internship_job|Can view job",
+            "internship_job|Can view job application",
+            "internship_job|Can add job application",
+            "internship_job|Can change job application",
         ]
 
         # School/College Permissions - Manage their students
@@ -329,6 +349,7 @@ class Command(BaseCommand):
             "internship_job|Can view internship",
             "internship_job|Can add internship",
             "internship_job|Can change internship",
+            "internship_job|Can view job",
             "internship_job|Can delete internship",
             "internship_job|Can view internship application",
             "internship_job|Can change internship application",
@@ -349,6 +370,7 @@ class Command(BaseCommand):
             "course|Can delete courses",
             "course|Can view course inquiry",
             "course|Can change course inquiry",
+            "internship_job|Can view job",
             "internship_job|Can view internship",
             "internship_job|Can add internship",
             "internship_job|Can change internship",
@@ -370,12 +392,18 @@ class Command(BaseCommand):
             "course|Can delete courses",
             "course|Can view course inquiry",
             "course|Can change course inquiry",
+            "internship_job|Can view job",
+            "internship_job|Can add job",
+            "internship_job|Can change job",
+            "internship_job|Can delete job",
             "internship_job|Can view internship",
             "internship_job|Can add internship",
             "internship_job|Can change internship",
             "internship_job|Can delete internship",
             "internship_job|Can view internship application",
             "internship_job|Can change internship application",
+            "internship_job|Can view job application",
+            "internship_job|Can change job application",
         ]
 
         # Assign superuser to Super Admin group

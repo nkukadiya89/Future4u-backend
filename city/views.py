@@ -14,12 +14,13 @@ from city.serializers import (
     CityRestoreSerializer,
     CitySerializer,
 )
+from common.mixins.view_mixins import ListEnvelopeMixin
 from utils.generate_ip_address import get_client_ip
 from utils.pagination import Pagination
 
 
 # Create your views here.
-class CityViewSet(ModelViewSet):
+class CityViewSet(ListEnvelopeMixin, ModelViewSet):
     queryset = City.objects.filter(deleted=False).order_by("-id")
     serializer_class = CitySerializer
     pagination_class = Pagination
@@ -59,21 +60,6 @@ class CityViewSet(ModelViewSet):
             queryset = queryset.filter(country__name__icontains=country_name)
 
         return queryset.order_by("-id")
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        no_pagination = request.query_params.get("no_pagination")
-        if no_pagination:
-            serializer = self.serializer_class(queryset, many=True)
-            return Response({"success": True, "data": serializer.data})
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
-        serializer = self.serializer_class(queryset, many=True)
-        return self.get_paginated_response({"success": True, "data": serializer.data})
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -172,19 +158,9 @@ class CityViewSet(ModelViewSet):
         authentication_classes=[],
     )
     def city_list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset()).order_by("name")
-        page = self.paginate_queryset(queryset)
-        no_pagination = request.query_params.get("no_pagination")
-        if no_pagination:
-            serializer = self.serializer_class(queryset, many=True)
-            return Response({"success": True, "data": serializer.data})
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
-        serializer = self.serializer_class(queryset, many=True)
-        return self.get_paginated_response({"success": True, "data": serializer.data})
+        return self.envelope_list_response(
+            request, self.get_queryset().order_by("name")
+        )
 
 
 class CityArchiveViewSet(ModelViewSet):

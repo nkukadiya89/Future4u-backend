@@ -24,12 +24,13 @@ from education_level.serializers import (
     EducationLevelSerializer,
 )
 from education_level.services import education_level_service
+from common.mixins.view_mixins import SuccessEnvelopeMixin
 from utils.custom_filters import CustomSearchFilter
 from utils.pagination import Pagination
 from utils.cache_keys import dropdown_key
 
 
-class EducationLevelViewSet(ModelViewSet):
+class EducationLevelViewSet(SuccessEnvelopeMixin, ModelViewSet):
     serializer_class = EducationLevelSerializer
     pagination_class = Pagination
     filter_backends = [CustomSearchFilter, OrderingFilter]
@@ -84,26 +85,6 @@ class EducationLevelViewSet(ModelViewSet):
         except EducationLevel.DoesNotExist:
             raise NotFound()
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        no_pagination = request.query_params.get("no_pagination")
-        if no_pagination:
-            serializer = self.get_serializer(queryset, many=True)
-            return Response({"success": True, "data": serializer.data})
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
-        serializer = self.get_serializer(queryset, many=True)
-        return self.get_paginated_response({"success": True, "data": serializer.data})
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response({"success": True, "data": serializer.data})
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -116,28 +97,6 @@ class EducationLevelViewSet(ModelViewSet):
                 },
                 status=status.HTTP_201_CREATED,
             )
-        return Response(
-            {"success": False, "message": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=False)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "data": serializer.data})
-        return Response(
-            {"success": False, "message": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "data": serializer.data})
         return Response(
             {"success": False, "message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,

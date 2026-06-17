@@ -14,6 +14,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from activity_log.models import ActivityLog
+from common.mixins.view_mixins import CreatePasswordEmailMixin, MethodNotAllowedListMixin
 from company.models import Company, CompanyPhoto, Enquiry
 from company.serializers import (
     CompanyArchiveListSerializer,
@@ -121,19 +122,31 @@ class SearchOrderingFilter:
     ]
 
 
-class CreateCompanyAccountViewSet(viewsets.ViewSet):
+class CompanyPhotoArchivedQuerysetMixin:
+    def get_queryset(self):
+        company_id = self.request.query_params.get("company_id")
+
+        if company_id:
+            try:
+                company = Company.objects.get(id=company_id)
+                return CompanyPhoto.objects.filter(
+                    deleted=True, company=company
+                ).order_by("-id")
+            except Company.DoesNotExist:
+                return CompanyPhoto.objects.none()
+        elif self.request.user.company:
+            return CompanyPhoto.objects.filter(
+                deleted=True, company=self.request.user.company
+            ).order_by("-id")
+        else:
+            return CompanyPhoto.objects.none()
+
+
+class CreateCompanyAccountViewSet(CreatePasswordEmailMixin, viewsets.ViewSet):
     queryset = Company.objects.all()
     serializer_class = CreateCompanySerializer
     permission_classes = []
     authentication_classes = []
-
-    def send_email(self, user, context):
-        if user:
-            send_mail(
-                "Future4U Security Alert For Create New Password",
-                "reset-pass.html",
-                context,
-            )
 
     def create(self, request):
         try:
@@ -215,20 +228,12 @@ class CreateCompanyAccountViewSet(viewsets.ViewSet):
             )
 
 
-class CompanyViewSet(SearchOrderingFilter, ModelViewSet):
+class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSet):
     queryset = Company.objects.filter(deleted=False).order_by("-id")
     serializer_class = CompanyInfoSerializer
     pagination_class = Pagination
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-
-    def send_email(self, user, context):
-        if user:
-            send_mail(
-                "Future4U Security Alert For Create New Password",
-                "reset-pass.html",
-                context,
-            )
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -1318,7 +1323,7 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
             )
 
 
-class CompanyPhotoArchiveViewSet(ModelViewSet):
+class CompanyPhotoArchiveViewSet(CompanyPhotoArchivedQuerysetMixin, ModelViewSet):
     serializer_class = CompanyPhotoArchiveSerializer
     pagination_class = Pagination
     filter_backends = [SearchFilter, OrderingFilter]
@@ -1327,24 +1332,6 @@ class CompanyPhotoArchiveViewSet(ModelViewSet):
 
     search_fields = ["title", "photo_file"]
     ordering_fields = ["title", "photo_file"]
-
-    def get_queryset(self):
-        company_id = self.request.query_params.get("company_id")
-
-        if company_id:
-            try:
-                company = Company.objects.get(id=company_id)
-                return CompanyPhoto.objects.filter(
-                    deleted=True, company=company
-                ).order_by("-id")
-            except Company.DoesNotExist:
-                return CompanyPhoto.objects.none()
-        elif self.request.user.company:
-            return CompanyPhoto.objects.filter(
-                deleted=True, company=self.request.user.company
-            ).order_by("-id")
-        else:
-            return CompanyPhoto.objects.none()
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -1401,7 +1388,11 @@ class CompanyPhotoArchiveViewSet(ModelViewSet):
             )
 
 
-class CompanyPhotoRestoreViewSet(ModelViewSet):
+class CompanyPhotoRestoreViewSet(
+    CompanyPhotoArchivedQuerysetMixin,
+    MethodNotAllowedListMixin,
+    ModelViewSet,
+):
     serializer_class = CompanyPhotoRestoreSerializer
     pagination_class = Pagination
     filter_backends = [SearchFilter, OrderingFilter]
@@ -1410,30 +1401,6 @@ class CompanyPhotoRestoreViewSet(ModelViewSet):
 
     search_fields = ["title", "photo_file"]
     ordering_fields = ["title", "photo_file"]
-
-    def get_queryset(self):
-        company_id = self.request.query_params.get("company_id")
-
-        if company_id:
-            try:
-                company = Company.objects.get(id=company_id)
-                return CompanyPhoto.objects.filter(
-                    deleted=True, company=company
-                ).order_by("-id")
-            except Company.DoesNotExist:
-                return CompanyPhoto.objects.none()
-        elif self.request.user.company:
-            return CompanyPhoto.objects.filter(
-                deleted=True, company=self.request.user.company
-            ).order_by("-id")
-        else:
-            return CompanyPhoto.objects.none()
-
-    def list(self, request, *args, **kwargs):
-        return Response(
-            {"success": False, "message": "Method not allowed"},
-            status=status.HTTP_405_METHOD_NOT_ALLOWED,
-        )
 
     def create(self, request, *args, **kwargs):
         serializer = CompanyPhotoRestoreSerializer(

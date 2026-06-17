@@ -38,6 +38,10 @@ HEADER_ALIASES = {
     "status": "is_active",
 }
 
+from common.services.import_file_parser import build_import_parser
+
+parse_import_file = build_import_parser(HEADER_ALIASES, REQUIRED_IMPORT_HEADERS)
+
 
 def stream_base_queryset():
     return Stream.objects.select_related("created_by", "updated_by", "education_level")
@@ -203,75 +207,6 @@ def normalize_import_row(row: dict[str, Any]) -> dict[str, Any]:
         out["education_level"] = None
 
     return out
-
-
-def parse_import_file(uploaded) -> tuple[list[dict[str, Any]], list[str]]:
-    errors: list[str] = []
-    if not uploaded:
-        return [], ["No file uploaded."]
-    name = (getattr(uploaded, "name", "") or "").lower()
-    raw = uploaded.read()
-    try:
-        if name.endswith(".xlsx") or name.endswith(".xls"):
-            try:
-                from openpyxl import load_workbook
-            except ImportError:
-                return [], [
-                    "Excel support requires openpyxl. Install openpyxl or upload CSV."
-                ]
-            wb = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
-            ws = wb.active
-            rows_iter = ws.iter_rows(values_only=True)
-            header_row = next(rows_iter, None)
-            if not header_row:
-                return [], ["Empty spreadsheet."]
-            headers = []
-            for h in header_row:
-                raw_h = str(h).strip() if h is not None else ""
-                if raw_h:
-                    headers.append(HEADER_ALIASES.get(raw_h.lower(), raw_h.lower()))
-                else:
-                    headers.append("")
-            missing = sorted(REQUIRED_IMPORT_HEADERS - set([h for h in headers if h]))
-            if missing:
-                return [], [f"Missing required headers: {', '.join(missing)}"]
-            out_rows = []
-            for tup in rows_iter:
-                if all(x is None or str(x).strip() == "" for x in tup):
-                    continue
-                row = {}
-                for i, h in enumerate(headers):
-                    if not h:
-                        continue
-                    row[h] = tup[i] if i < len(tup) else None
-                out_rows.append(row)
-            wb.close()
-            return out_rows, errors
-        text = raw.decode("utf-8-sig")
-        reader = csv.DictReader(io.StringIO(text))
-        if not reader.fieldnames:
-            return [], ["CSV has no header row."]
-        normalized_headers = [
-            HEADER_ALIASES.get(
-                (str(h).strip().lower() if h else ""),
-                (str(h).strip().lower() if h else ""),
-            )
-            for h in reader.fieldnames
-        ]
-        missing = sorted(
-            REQUIRED_IMPORT_HEADERS - set([h for h in normalized_headers if h])
-        )
-        if missing:
-            return [], [f"Missing required headers: {', '.join(missing)}"]
-        out_rows = []
-        for r in reader:
-            if not any((v or "").strip() for v in r.values()):
-                continue
-            out_rows.append(dict(r))
-        return out_rows, errors
-    except Exception as e:
-        logger.exception("parse_import_file failed")
-        return [], [str(e)]
 
 
 def _resolve_education_level_value(value):
