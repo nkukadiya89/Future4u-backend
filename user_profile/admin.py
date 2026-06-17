@@ -201,8 +201,6 @@ class ChildProfileAdmin(admin.ModelAdmin):
         "education_level",
         "stream",
         "academic_performance",
-        "current_screen",
-        "is_completed",
     )
     search_fields = (
         "first_name",
@@ -210,8 +208,6 @@ class ChildProfileAdmin(admin.ModelAdmin):
         "parent_profile__user__email",
     )
     list_filter = (
-        "is_completed",
-        "current_screen",
         "education_level",
         "stream",
         "academic_performance",
@@ -224,7 +220,6 @@ class ChildProfileAdmin(admin.ModelAdmin):
         ("Parent", {"fields": ("parent_profile",)}),
         ("Child", {"fields": ("first_name", "last_name", "profile_image", "date_of_birth")}),
         ("Education", {"fields": ("education_level", "stream", "academic_performance")}),
-        ("Flow", {"fields": ("current_screen", "is_completed")}),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
 

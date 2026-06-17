@@ -11,16 +11,9 @@ from user_profile.models import (
     BusinessSetting,
     ChildProfile,
     ParentProfile,
+    Profile,
     ProfessionalProfile,
     StudentProfile,
-    UserProfile,
-)
-
-from user_profile.models import (
-    BusinessSetting,
-    # InternshipApplication,
-    # InternshipProfile,
-    Profile,
     UserProfile,
 )
 
@@ -468,12 +461,10 @@ class ChildProfileSerializer(serializers.ModelSerializer):
             "stream_code",
             "stream_name",
             "academic_performance",
-            "current_screen",
-            "is_completed",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ("id", "parent_profile", "current_screen", "created_at", "updated_at")
+        read_only_fields = ("id", "parent_profile", "created_at", "updated_at")
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()

@@ -390,10 +390,6 @@ class ChildProfile(models.Model):
         GOOD = "good", "Good"
         EXCELLENT = "excellent", "Excellent"
 
-    class Screen(models.TextChoices):
-        ADD_CHILD = "add_child", "Add Child"
-        COMPLETE = "complete", "Complete"
-
     parent_profile = models.ForeignKey(
         ParentProfile,
         on_delete=models.CASCADE,
@@ -422,13 +418,6 @@ class ChildProfile(models.Model):
         max_length=20,
         choices=AcademicPerformance.choices,
     )
-
-    current_screen = models.CharField(
-        max_length=32,
-        choices=Screen.choices,
-        default=Screen.ADD_CHILD,
-    )
-    is_completed = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True, blank=True)

@@ -38,6 +38,7 @@ from user_profile.serializers import (
 from utils.generate_ip_address import get_client_ip
 from utils.pagination import Pagination
 from utils.cache_keys import recommendation_key
+from utils.throttles import PerUserBurstRateThrottle
 
 
 class ChildProfileViewSet(ModelViewSet):
@@ -467,10 +468,6 @@ class UserProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     http_method_names = ["get", "patch", "head", "options"]
-    # Rate limiting (view-level, safe)
-    from utils.throttles import (
-        PerUserBurstRateThrottle,
-    )  # local import avoids broad dependency at module import time
 
     throttle_classes = [PerUserBurstRateThrottle]
 
@@ -550,9 +547,6 @@ class StudentProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     http_method_names = ["get", "patch", "head", "options"]
-    from utils.throttles import (
-        PerUserBurstRateThrottle,
-    )
 
     throttle_classes = [PerUserBurstRateThrottle]
 
@@ -607,9 +601,6 @@ class ProfessionalProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     http_method_names = ["get", "patch", "head", "options"]
-    from utils.throttles import (
-        PerUserBurstRateThrottle,
-    )
 
     throttle_classes = [PerUserBurstRateThrottle]
 
@@ -676,9 +667,6 @@ class ParentProfileViewSet(ModelViewSet):
     authentication_classes = [JWTAuthentication]
     http_method_names = ["get", "patch", "head", "options"]
     lookup_value_regex = r'[0-9]+'
-    from utils.throttles import (
-        PerUserBurstRateThrottle,
-    )
 
     throttle_classes = [PerUserBurstRateThrottle]
 
