@@ -127,7 +127,48 @@ class UserSubscription(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.company.name} - {self.subscription.package_name}"
+        # UserSubscription is linked to a user and a subscription
+        return f"{getattr(self.user, 'first_name', '') or getattr(self.user, 'email', '')} - {self.subscription.package_name}"
+
+    def can_consume(self, feature_code, quantity=1):
+        """Return True if the user can consume `quantity` of `feature_code` under this subscription."""
+        from subscription.models import SubscriptionFeature, FeatureUsage
+
+        if not self.is_active:
+            return False
+
+        feature = SubscriptionFeature.objects.filter(
+            subscription=self.subscription,
+            feature_code=feature_code,
+            is_enabled=True,
+            deleted=False,
+        ).first()
+
+        if not feature:
+            return False
+
+        if feature.is_unlimited:
+            return True
+
+        limit = int(feature.value or 0)
+        usage = FeatureUsage.objects.filter(
+            user=self.user, feature_code=feature_code, subscription=self.subscription
+        ).first()
+        used = usage.used if usage else 0
+
+        return (used + quantity) <= limit
+
+    def consume(self, feature_code, quantity=1):
+        """Consume `quantity` of `feature_code` for the user using atomic service.
+
+        Raises Exception if limit exceeded or no active subscription.
+        """
+        from subscription.services.usage import consume_feature
+
+        if not self.is_active:
+            raise Exception("Subscription not active")
+
+        return consume_feature(self.user, feature_code, quantity)
 
     class Meta:
         ordering = ["-start_date"]
@@ -171,15 +212,6 @@ class FeatureUsage(models.Model):
 
     class Meta:
         ordering = ["-last_used_at"]
-
-
-# Getting active Subscription for a company:
-
-# UserSubscription.objects.filter(
-#     company=company,
-#     is_active=True,
-#     end_date__gte=today
-# ).exists()
 
 
 class PaymentSubscription(models.Model):
