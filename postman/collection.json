@@ -9928,6 +9928,163 @@
           "response": []
         },
         {
+          "name": "children (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent-profile/children/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent-profile",
+                "children",
+                ""
+              ],
+              "query": []
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "children-create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent-profile/children/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent-profile",
+                "children",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Aarav\",\n  \"last_name\": \"Sharma\",\n  \"date_of_birth\": \"2012-05-15\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"stream\": \"{{stream_id}}\",\n  \"academic_performance\": \"good\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "children-retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent-profile/children/{{child_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent-profile",
+                "children",
+                "{{child_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "children-update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent-profile/children/{{child_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent-profile",
+                "children",
+                "{{child_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Aarav\",\n  \"last_name\": \"Sharma\",\n  \"academic_performance\": \"excellent\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "children-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent-profile/children/{{child_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent-profile",
+                "children",
+                "{{child_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "institute-profile (GET)",
           "request": {
             "method": "GET",
@@ -10168,8 +10325,14 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/school-college-profile/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "school-college-profile", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "school-college-profile",
+                ""
+              ]
             },
             "description": "Get school/college profile for the authenticated user."
           },
@@ -10206,8 +10369,15 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/school-college-profile/{{school_college_profile_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "school-college-profile", "{{school_college_profile_id}}", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "school-college-profile",
+                "{{school_college_profile_id}}",
+                ""
+              ]
             },
             "body": {
               "mode": "formdata",
@@ -10243,8 +10413,15 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/school-college-profile/gallery/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "school-college-profile", "gallery", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "school-college-profile",
+                "gallery",
+                ""
+              ]
             }
           },
           "response": [],
@@ -10278,8 +10455,15 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/school-college-profile/gallery/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "school-college-profile", "gallery", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "school-college-profile",
+                "gallery",
+                ""
+              ]
             },
             "body": {
               "mode": "formdata",
@@ -10310,8 +10494,16 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/school-college-profile/gallery/{{school_college_gallery_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "school-college-profile", "gallery", "{{school_college_gallery_id}}", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "school-college-profile",
+                "gallery",
+                "{{school_college_gallery_id}}",
+                ""
+              ]
             }
           },
           "response": []
@@ -10332,8 +10524,14 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/corporate-profile/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "corporate-profile", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "corporate-profile",
+                ""
+              ]
             },
             "description": "Get corporate profile for the authenticated user."
           },
@@ -10370,8 +10568,15 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/corporate-profile/{{corporate_profile_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "corporate-profile", "{{corporate_profile_id}}", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "corporate-profile",
+                "{{corporate_profile_id}}",
+                ""
+              ]
             },
             "body": {
               "mode": "formdata",
@@ -10407,8 +10612,15 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/corporate-profile/gallery/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "corporate-profile", "gallery", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "corporate-profile",
+                "gallery",
+                ""
+              ]
             }
           },
           "response": [],
@@ -10442,8 +10654,15 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/corporate-profile/gallery/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "corporate-profile", "gallery", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "corporate-profile",
+                "gallery",
+                ""
+              ]
             },
             "body": {
               "mode": "formdata",
@@ -10474,8 +10693,16 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/corporate-profile/gallery/{{corporate_gallery_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "corporate-profile", "gallery", "{{corporate_gallery_id}}", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "corporate-profile",
+                "gallery",
+                "{{corporate_gallery_id}}",
+                ""
+              ]
             }
           },
           "response": []
@@ -11128,7 +11355,7 @@
                 {
                   "key": "assessment_id",
                   "value": "{{assessment_id}}",
-                  "description": "Optional — filter to one student assessment"
+                  "description": "Optional \u00e2\u20ac\u201d filter to one student assessment"
                 },
                 {
                   "key": "ordering",
@@ -11283,7 +11510,7 @@
       "name": "parent_assessment",
       "item": [
         {
-          "name": "1. Add Child / Start Parent Assessment (POST)",
+          "name": "assessment-start (POST)",
           "request": {
             "method": "POST",
             "header": [
@@ -11335,7 +11562,7 @@
           ]
         },
         {
-          "name": "Parent Assessment Status (GET)",
+          "name": "assessment-status (GET)",
           "request": {
             "method": "GET",
             "header": [
@@ -11365,66 +11592,7 @@
           "response": []
         },
         {
-          "name": "List Parent Assessments (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/parent/assessments/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "parent",
-                "assessments",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Parent Assessment Details (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/parent/assessments/{{parent_assessment_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "parent",
-                "assessments",
-                "{{parent_assessment_id}}",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Child Basic Info (PATCH)",
+          "name": "assessment-update (PATCH)",
           "request": {
             "method": "PATCH",
             "header": [
@@ -11453,6 +11621,99 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"first_name\": \"Aarav\",\n  \"last_name\": \"Patel\",\n  \"date_of_birth\": \"2010-05-12\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"stream\": \"{{stream_id}}\",\n  \"academic_performance\": \"excellent\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "assessment-complete (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/assessments/{{parent_assessment_id}}/complete/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "assessments",
+                "{{parent_assessment_id}}",
+                "complete"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "assessment-list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/assessments/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "assessments",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "assessment-retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/assessments/{{parent_assessment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "assessments",
+                "{{parent_assessment_id}}",
+                ""
+              ]
             }
           },
           "response": []
@@ -13149,7 +13410,7 @@
           "response": []
         },
         {
-          "name": "list users — no pagination (GET)",
+          "name": "list users \u00e2\u20ac\u201d no pagination (GET)",
           "request": {
             "method": "GET",
             "header": [
@@ -15687,7 +15948,7 @@
                 }
               ]
             },
-            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- job (optional, stripped server-side)\n- resume (optional file) — uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / job / status are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
+            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- job (optional, stripped server-side)\n- resume (optional file) \u00e2\u20ac\u201d uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / job / status are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
           },
           "response": []
         },
@@ -16096,7 +16357,7 @@
                 }
               ]
             },
-            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- internship (optional)\n- resume (optional file) — uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / selected / rejected are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
+            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- internship (optional)\n- resume (optional file) \u00e2\u20ac\u201d uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / selected / rejected are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
           },
           "response": []
         },
