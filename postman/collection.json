@@ -9928,6 +9928,559 @@
           "response": []
         },
         {
+          "name": "institute-profile (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/institute-profile/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "institute-profile",
+                ""
+              ]
+            },
+            "description": "Get institute profile for the authenticated user.\n\nResponse: { success, data } including gallery_images."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const row = json.data;",
+                  "    if (row && row.id != null) pm.collectionVariables.set('institute_profile_id', String(row.id));",
+                  "    const gallery = row && row.gallery_images ? row.gallery_images[0] : null;",
+                  "    if (gallery && gallery.id != null) pm.collectionVariables.set('institute_gallery_id', String(gallery.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "institute-profile (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/institute-profile/{{institute_profile_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "institute-profile",
+                "{{institute_profile_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"student_trained\":500,\"placements\":400,\"success_rate\":85.5,\"about_us\":\"Leading institute focused on career-ready education.\",\"courses_offered\":[\"B.Tech\",\"MBA\",\"Data Science Bootcamp\"],\"key_highlights\":[\"Top placements\",\"Industry partnerships\",\"Modern labs\"]}",
+                  "type": "text",
+                  "description": "JSON string. Server parses json.loads(data)."
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "description": "Optional institute user profile image (.jpg, .jpeg, .png)"
+                }
+              ]
+            },
+            "description": "Update institute profile (authenticated institute user).\n\nMultipart fields:\n- data (JSON string): student_trained, placements, success_rate, about_us, courses_offered, key_highlights\n- profile_image (optional file)\n\nResponse: { success, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "institute-gallery list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/institute-profile/gallery/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "institute-profile",
+                "gallery",
+                ""
+              ]
+            },
+            "description": "List gallery images for the authenticated institute user.\n\nResponse: { success, data: [{ id, institute, image, ... }] }"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('institute_gallery_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "institute-gallery upload (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/institute-profile/gallery/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "institute-profile",
+                "gallery",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "",
+                  "description": "Gallery image (.jpg, .jpeg, .png). Add multiple rows with key images for batch upload (max 10 total)."
+                }
+              ]
+            },
+            "description": "Upload one or more gallery images.\n\nMultipart field: images (file, repeatable)\n\nRules:\n- Requires institute profile for authenticated user\n- Max 10 images total per institute\n- Max 5MB per image\n\nResponse: { success, message, data }"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('institute_gallery_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "institute-gallery delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/institute-profile/gallery/{{institute_gallery_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "institute-profile",
+                "gallery",
+                "{{institute_gallery_id}}",
+                ""
+              ]
+            },
+            "description": "Delete a gallery image (hard delete + removes file from storage).\n\nResponse: { success, message }"
+          },
+          "response": []
+        },
+        {
+          "name": "school-college-profile (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/school-college-profile/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "school-college-profile", ""]
+            },
+            "description": "Get school/college profile for the authenticated user."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const row = json.data;",
+                  "    if (row && row.id != null) pm.collectionVariables.set('school_college_profile_id', String(row.id));",
+                  "    const gallery = row && row.gallery_images ? row.gallery_images[0] : null;",
+                  "    if (gallery && gallery.id != null) pm.collectionVariables.set('school_college_gallery_id', String(gallery.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "school-college-profile (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/school-college-profile/{{school_college_profile_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "school-college-profile", "{{school_college_profile_id}}", ""]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"student_trained\":300,\"placements\":250,\"success_rate\":90.0,\"about_us\":\"Leading school/college focused on student success.\",\"courses_offered\":[\"Science\",\"Commerce\",\"Arts\"],\"key_highlights\":[\"Experienced faculty\",\"Modern campus\",\"Strong alumni network\"]}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "school-college-gallery list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/school-college-profile/gallery/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "school-college-profile", "gallery", ""]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const rows = pm.response.json().data || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('school_college_gallery_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "school-college-gallery upload (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/school-college-profile/gallery/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "school-college-profile", "gallery", ""]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "school-college-gallery delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/school-college-profile/gallery/{{school_college_gallery_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "school-college-profile", "gallery", "{{school_college_gallery_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "corporate-profile (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate-profile/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate-profile", ""]
+            },
+            "description": "Get corporate profile for the authenticated user."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const row = json.data;",
+                  "    if (row && row.id != null) pm.collectionVariables.set('corporate_profile_id', String(row.id));",
+                  "    const gallery = row && row.gallery_images ? row.gallery_images[0] : null;",
+                  "    if (gallery && gallery.id != null) pm.collectionVariables.set('corporate_gallery_id', String(gallery.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "corporate-profile (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate-profile/{{corporate_profile_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate-profile", "{{corporate_profile_id}}", ""]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"open_job\":25,\"employees\":900,\"years_in_business\":12,\"about_us\":\"Corporate employer focused on talent development.\",\"perks_benefits\":[\"Health insurance\",\"Remote work\",\"Learning budget\"]}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "corporate-gallery list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate-profile/gallery/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate-profile", "gallery", ""]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const rows = pm.response.json().data || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('corporate_gallery_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "corporate-gallery upload (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate-profile/gallery/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate-profile", "gallery", ""]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "corporate-gallery delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate-profile/gallery/{{corporate_gallery_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "corporate-profile", "gallery", "{{corporate_gallery_id}}", ""]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "list (GET)",
           "request": {
             "method": "GET",
@@ -15724,6 +16277,30 @@
     },
     {
       "key": "parent_profile_id",
+      "value": "1"
+    },
+    {
+      "key": "institute_profile_id",
+      "value": "1"
+    },
+    {
+      "key": "institute_gallery_id",
+      "value": "1"
+    },
+    {
+      "key": "school_college_profile_id",
+      "value": "1"
+    },
+    {
+      "key": "school_college_gallery_id",
+      "value": "1"
+    },
+    {
+      "key": "corporate_profile_id",
+      "value": "1"
+    },
+    {
+      "key": "corporate_gallery_id",
       "value": "1"
     },
     {

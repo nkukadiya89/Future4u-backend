@@ -10,13 +10,17 @@ from common.mixins.serializer_mixins import (
 from user_profile.models import (
     BusinessSetting,
     ChildProfile,
+    InstituteGallery,
+    SchoolCollegeGallery,
+    CorporateGallery,
     ParentProfile,
     Profile,
     ProfessionalProfile,
     StudentProfile,
     UserProfile,
 )
-
+from common.serializers import BaseModelSerializer
+from .models import InstituteProfile, SchoolCollegeProfile, CorporateProfile
 
 def validate_json_choices(value, valid_set, field_name):
     if not isinstance(value, list):
@@ -615,3 +619,208 @@ class ProfileSerializer(serializers.ModelSerializer):
             "deleted_at",
             "deleted",
         ]
+
+
+class InstituteGallerySerializer(BaseModelSerializer):
+    class Meta:
+        model = InstituteGallery
+        fields = BaseModelSerializer.Meta.fields +[
+            "id",
+            "institute",
+            "image",
+        ]
+
+class InstituteProfileSerializer(BaseModelSerializer):
+    first_name = serializers.CharField(source="user.first_name", read_only=True)
+    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    full_name = serializers.CharField(source="user.get_full_name", read_only=True)
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
+    city = serializers.CharField(source="user.city.name", read_only=True)
+    state = serializers.CharField(source="user.states.name", read_only=True)
+    gallery_images = InstituteGallerySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = InstituteProfile
+        fields = BaseModelSerializer.Meta.fields +[
+            "id",
+            "user",
+            "student_trained",
+            "placements",
+            "success_rate",
+            "about_us",
+            "courses_offered",
+            "key_highlights",
+            "first_name",
+            "last_name",
+            "full_name",
+            "phone",
+            "email",
+            "profile_image",
+            "city",
+            "state",
+            "gallery_images",
+        ]
+
+class InstituteProfileUpSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = InstituteProfile
+        fields = BaseModelSerializer.Meta.fields +[
+            "id",
+            "user",
+            "student_trained",
+            "placements",
+            "success_rate",
+            "about_us",
+            "courses_offered",
+            "key_highlights",
+        ]
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        request = self.context.get("request")
+        if request:
+            instance.save(user=request.user)
+        else:
+            instance.save()
+        return instance
+
+
+class SchoolCollegeGallerySerializer(BaseModelSerializer):
+    class Meta:
+        model = SchoolCollegeGallery
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "school_college",
+            "image",
+        ]
+
+
+class SchoolCollegeProfileSerializer(BaseModelSerializer):
+    first_name = serializers.CharField(source="user.first_name", read_only=True)
+    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    full_name = serializers.CharField(source="user.get_full_name", read_only=True)
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
+    city = serializers.CharField(source="user.city.name", read_only=True)
+    state = serializers.CharField(source="user.states.name", read_only=True)
+    gallery_images = SchoolCollegeGallerySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = SchoolCollegeProfile
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "user",
+            "student_trained",
+            "placements",
+            "success_rate",
+            "about_us",
+            "courses_offered",
+            "key_highlights",
+            "first_name",
+            "last_name",
+            "full_name",
+            "phone",
+            "email",
+            "profile_image",
+            "city",
+            "state",
+            "gallery_images",
+        ]
+
+
+class SchoolCollegeProfileUpSerializer(BaseModelSerializer):
+    class Meta:
+        model = SchoolCollegeProfile
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "user",
+            "student_trained",
+            "placements",
+            "success_rate",
+            "about_us",
+            "courses_offered",
+            "key_highlights",
+        ]
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        request = self.context.get("request")
+        if request:
+            instance.save(user=request.user)
+        else:
+            instance.save()
+        return instance
+
+
+class CorporateGallerySerializer(BaseModelSerializer):
+    class Meta:
+        model = CorporateGallery
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "corporate",
+            "image",
+        ]
+
+
+class CorporateProfileSerializer(BaseModelSerializer):
+    first_name = serializers.CharField(source="user.first_name", read_only=True)
+    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    full_name = serializers.CharField(source="user.get_full_name", read_only=True)
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
+    city = serializers.CharField(source="user.city.name", read_only=True)
+    state = serializers.CharField(source="user.states.name", read_only=True)
+    gallery_images = CorporateGallerySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CorporateProfile
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "user",
+            "open_job",
+            "employees",
+            "years_in_business",
+            "about_us",
+            "perks_benefits",
+            "first_name",
+            "last_name",
+            "full_name",
+            "phone",
+            "email",
+            "profile_image",
+            "city",
+            "state",
+            "gallery_images",
+        ]
+
+
+class CorporateProfileUpSerializer(BaseModelSerializer):
+    class Meta:
+        model = CorporateProfile
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "user",
+            "open_job",
+            "employees",
+            "years_in_business",
+            "about_us",
+            "perks_benefits",
+        ]
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        request = self.context.get("request")
+        if request:
+            instance.save(user=request.user)
+        else:
+            instance.save()
+        return instance
+
