@@ -623,7 +623,10 @@ class RoleFamilyViewSet(RetrieveSuccessEnvelopeMixin, ModelViewSet):
         )
 
 class UserListViewSet(ModelViewSet):
-    queryset = User.objects.select_related("country", "states", "city").order_by("-id")
+    queryset = (
+        User.objects.select_related("country", "states", "city", "created_by")
+        .order_by("-id")
+    )
     serializer_class = UserListSerializer
     filter_backends = [SearchFilter, OrderingFilter]
     pagination_class = Pagination
@@ -664,6 +667,7 @@ class UserListViewSet(ModelViewSet):
         "is_superuser",
         "email_verified",
         "date_joined",
+        "created_at",
         "last_login",
         "password_last_changed",
     ]
@@ -690,6 +694,9 @@ class UserListViewSet(ModelViewSet):
         city_id = self.request.query_params.get("city")
         if city_id:
             queryset = queryset.filter(city_id=city_id)
+        created_by = self.request.query_params.get("created_by")
+        if created_by:
+            queryset = queryset.filter(created_by_id=created_by)
         return queryset
 
     def list(self, request, *args, **kwargs):

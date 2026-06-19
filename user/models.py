@@ -95,6 +95,15 @@ class User(AbstractUser):
     city = models.ForeignKey(
         "city.City", on_delete=models.SET_NULL, null=True, blank=True
     )
+    must_change_password = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="users_created",
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     objects = UserManager()
 

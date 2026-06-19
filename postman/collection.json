@@ -5901,9 +5901,16 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.environment.set('access_token', pm.response.json().access);",
-                  "try { pm.environment.set('access_token', pm.response.json().data.access); } catch(e) {}",
-                  "try { pm.environment.set('refresh_token', pm.response.json().data.refresh); } catch(e) {}"
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const data = json.data || json;",
+                  "    if (data.access) pm.environment.set('access_token', data.access);",
+                  "    if (data.refresh) pm.environment.set('refresh_token', data.refresh);",
+                  "    const mustChange = data.must_change_password ?? (data.userData && data.userData.must_change_password);",
+                  "    if (mustChange != null) pm.environment.set('must_change_password', String(mustChange));",
+                  "  } catch (e) {}",
+                  "}"
                 ]
               }
             }
@@ -6389,164 +6396,6 @@
               "path": [
                 "forgot-password",
                 "(?P<token>[w.-]+)",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/verify-otp/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "verify-otp"
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1"
-                },
-                {
-                  "key": "pagesize",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/verify-otp/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "verify-otp"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"email\": \"user@example.com\", \"otp\": \"string\"}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/verify-otp/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "verify-otp",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/verify-otp/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "verify-otp",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"email\": \"user@example.com\", \"otp\": \"string\"}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/verify-otp/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "verify-otp",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"email\": \"user@example.com\", \"otp\": \"string\"}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/verify-otp/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "verify-otp",
                 "1"
               ]
             }
@@ -13273,7 +13122,65 @@
       "name": "Auth",
       "item": [
         {
-          "name": "register (POST)",
+          "name": "register — Web (POST)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"email\":\"{{user_email}}\",\"terms_accepted\":true,\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"user_type\":\"{{user_type}}\",\"country\":{{country_id}},\"state\":{{state_id}},\"city\":{{city_id}},\"referral_code\":\"{{referral_code}}\",\"source\":\"web\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Public web self-registration only (source=web). For Super Admin creating users from dashboard, use create-user (POST)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    if (json.user_id != null) {",
+                  "      pm.collectionVariables.set('user_id', String(json.user_id));",
+                  "      pm.environment.set('user_id', String(json.user_id));",
+                  "    }",
+                  "    if (json.requires_password_change) {",
+                  "      pm.environment.set('must_change_password', 'true');",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "register — Mobile (POST)",
           "request": {
             "method": "POST",
             "header": [],
@@ -13303,7 +13210,8 @@
                   "disabled": true
                 }
               ]
-            }
+            },
+            "description": "Mobile registration — no source field.\n\nRequires password + confirm_password. Sends OTP email. Account inactive until OTP verified.\n\nNext: verify-success, then get-token."
           },
           "response": [],
           "event": [
@@ -13317,6 +13225,211 @@
                   "    const json = pm.response.json();",
                   "    if (json.user_id != null) {",
                   "      pm.collectionVariables.set('user_id', String(json.user_id));",
+                  "      pm.environment.set('user_id', String(json.user_id));",
+                  "    }",
+                  "    pm.environment.set('must_change_password', 'false');",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "verify-success (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/verify-success/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "verify-success",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"otp\": \"{{otp}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Mobile flow — verify OTP after register — Mobile.\n\nNo auth required. Set {{otp}} from the registration email.\n\nOn success: activates account (is_active=true), clears OTP.\n\nOTP expires after 1 day — use resend-otp if needed.\n\nNext step: get-token with the password chosen at registration."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('OTP verified', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "resend-otp (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/resend-otp/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "resend-otp",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{user_email}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Mobile flow only — resend OTP while account is inactive (is_active=false)."
+          },
+          "response": []
+        },
+        {
+          "name": "create-user (POST) — Super Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/create-user/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "create-user",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"email\":\"{{user_email}}\",\"terms_accepted\":true,\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"user_type\":\"{{user_type}}\",\"country\":{{country_id}},\"state\":{{state_id}},\"city\":{{city_id}},\"referral_code\":\"{{referral_code}}\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Super Admin / staff only. Requires Bearer {{access_token}}.\n\nSame multipart format as register — Web: form-data with `data` (JSON) + optional `profile_image` file.\n\n`data` fields: email, first_name, last_name, phone, user_type, country, state, city, terms_accepted, referral_code.\n\nNo password. Temp password emailed. Sets created_by to logged-in admin.\n\nuser_type: student | parent | working_professional | school_college | institute | corporate | super_admin"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    if (json.user_id != null) {",
+                  "      pm.collectionVariables.set('user_id', String(json.user_id));",
+                  "      pm.environment.set('user_id', String(json.user_id));",
+                  "    }",
+                  "    if (json.created_by != null) {",
+                  "      pm.environment.set('created_by', String(json.created_by));",
+                  "    }",
+                  "    pm.environment.set('must_change_password', 'true');",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "bulk-upload-users (POST) — Super Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/bulk-upload-users/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "bulk-upload-users",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "CSV or XLSX file"
+                }
+              ]
+            },
+            "description": "Super Admin / staff only. Requires Bearer {{access_token}}.\n\nUpload CSV or XLSX to create multiple users. Each row gets a temp password email (same as create-user). Sets created_by to logged-in admin.\n\nRequired columns:\nfirst_name, last_name, about_me, email, user_type, phone, referral_code, country, state, city\n\n- country / state / city: names (not ids), must exist in DB\n- user_type: student | parent | working_professional | school_college | institute | corporate | super_admin\n- phone: 10–15 digits\n\nResponse: total_records, inserted, failed, skipped, errors[]"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Bulk upload succeeded', () => pm.expect(json.success).to.eql(true));",
+                  "    if (json.inserted != null) {",
+                  "      pm.environment.set('bulk_upload_inserted', String(json.inserted));",
                   "    }",
                   "  } catch (e) {}",
                   "}"
@@ -13405,41 +13518,7 @@
                 }
               ]
             },
-            "description": "List users (paginated). Same pattern as GET /country/.\n\nRequires Bearer {{access_token}}.\n\nEnable optional query params: user_type, status, is_active, country, state, city.\n\nResponse fields: id, username, email, first_name, last_name, full_name, about_me, phone, profile_image, designation, user_type, status, is_active, is_staff, is_superuser, email_verified, keep_me_logged_in, terms_accepted, date_joined, last_login, password_last_changed, country, country_name, states, state_name, city, city_name.\n\nExcludes: password, otp, otp_created_at."
-          },
-          "response": []
-        },
-        {
-          "name": "list users \u00e2\u20ac\u201d no pagination (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/users/?no_pagination=1",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "users",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1"
-                }
-              ]
-            },
-            "description": "Returns all users in one response: { success, data: [...] }."
+            "description": "List users (paginated). Same pattern as GET /country/.\n\nRequires Bearer {{access_token}}.\n\nOptional query params: user_type, status, is_active, country, state, city, created_by.\n\nResponse includes created_by (admin id), created_by_name, and created_at for users created via create-user.\n\nFilter by admin: ?created_by={{created_by}}"
           },
           "response": []
         },
@@ -13519,39 +13598,6 @@
           "response": []
         },
         {
-          "name": "verify-success (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/verify-success/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "verify-success",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"otp\": \"{{otp}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": []
-        },
-        {
           "name": "get-token (POST)",
           "request": {
             "method": "POST",
@@ -13573,15 +13619,36 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}",
+              "raw": "{\n  \"username\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\",\n  \"keep_me_logged_in\": false\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            }
+            },
+            "description": "Login. Web/bulk users: use temporary password from email as {{user_password}}.\n\nIf must_change_password=true in response, call change-password before using the app."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const data = json.data || json;",
+                  "    if (data.access) pm.environment.set('access_token', data.access);",
+                  "    if (data.refresh) pm.environment.set('refresh_token', data.refresh);",
+                  "    const mustChange = data.must_change_password ?? (data.userData && data.userData.must_change_password);",
+                  "    if (mustChange != null) pm.environment.set('must_change_password', String(mustChange));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "change-password (POST)",
@@ -13610,15 +13677,30 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"current_password\": \"{{user_password}}\",\n  \"new_password\": \"{{new_password}}\"\n}",
+              "raw": "{\n  \"current_password\": \"{{user_password}}\",\n  \"new_password\": \"{{new_password}}\",\n  \"confirm_password\": \"{{new_password}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            }
+            },
+            "description": "Required after first login when must_change_password=true (web/bulk users).\n\ncurrent_password = temporary password from email.\nnew_password must meet strength rules (8+ chars, uppercase, number, special char)."
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  pm.environment.set('must_change_password', 'false');",
+                  "  pm.environment.set('user_password', pm.environment.get('new_password'));",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "forgot-password (POST)",
@@ -13677,39 +13759,6 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"token\": \"{{reset_token}}\",\n  \"new_password\": \"{{new_password}}\",\n  \"re_enter_password\": \"{{new_password}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "resend-otp (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/resend-otp/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "resend-otp",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"email\": \"{{user_email}}\"}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -16635,6 +16684,22 @@
     {
       "key": "user_id",
       "value": "1"
+    },
+    {
+      "key": "user_type",
+      "value": "student"
+    },
+    {
+      "key": "referral_code",
+      "value": ""
+    },
+    {
+      "key": "must_change_password",
+      "value": "false"
+    },
+    {
+      "key": "reset_token",
+      "value": ""
     }
   ]
 }

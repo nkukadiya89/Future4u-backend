@@ -121,33 +121,17 @@ class AddEmployeeViewSet(
 
         if serializer.is_valid():
             with transaction.atomic():
-                user = serializer.save()
-                email = data.get("email")
-                name = data["first_name"]
-                user_phone = data["phone"]
+                employee = serializer.save()
 
                 if profile_photo:
-                    user.upload_profile_photo_presentation(profile_photo)
+                    employee.upload_profile_photo_presentation(profile_photo)
+                    employee.save()
 
-                user.save()
-
-                token = generate_forget_pass_token(email, user_phone, 30)
-
-                phonenumber = str(user_phone)
-                if phonenumber.startswith("91"):
-                    phonenumber = phonenumber[2:]
-                context = {"name": name, "token": token, "email": email}
-                email_thread = threading.Thread(
-                    target=self.send_email,
-                    args=(user, context),
-                )
-                email_thread.start()
-
-                serializer = self.serializer_class(user)
+                serializer = self.serializer_class(employee)
                 return Response(
                     {
                         "success": True,
-                        "message": "Reset Password Mail has been sent to registed email",
+                        "message": "Employee created. Temporary password sent to their email.",
                         "data": serializer.data,
                     },
                     status=status.HTTP_201_CREATED,

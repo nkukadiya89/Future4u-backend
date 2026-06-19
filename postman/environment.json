@@ -53,6 +53,36 @@
       "enabled": true
     },
     {
+      "key": "user_type",
+      "value": "student",
+      "enabled": true
+    },
+    {
+      "key": "referral_code",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "must_change_password",
+      "value": "false",
+      "enabled": true
+    },
+    {
+      "key": "reset_token",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "created_by",
+      "value": "",
+      "enabled": true
+    },
+    {
       "key": "country_id",
       "value": "",
       "enabled": true
