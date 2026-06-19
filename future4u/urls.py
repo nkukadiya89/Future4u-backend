@@ -21,8 +21,6 @@ from user.user_auth import CustomTokenObtainPairView
 from future4u.routers import future4u_router
 from recommendation.ai_views import AIRecommendationAPIView
 from recommendation.chat_views import AIRecommendationChatAPIView
-from assessment.parentassessment import ParentAssessmentViewSet
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("get-token/", CustomTokenObtainPairView.as_view(), name="get_token"),
@@ -40,9 +38,4 @@ urlpatterns = [
     path("", include("subscription.urls")),
     path("api/v1/", include("subscription.urls")),
     path("", include("resume_builder.urls")),
-    path(
-        "api/parent/assessments/status/",
-        ParentAssessmentViewSet.as_view({"get": "assessment_status"}),
-        name="parent_assessment_status",
-    ),
 ]

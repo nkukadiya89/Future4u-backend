@@ -1,5 +1,5 @@
 from datetime import timedelta
-
+from utils.auth import validate_password_strength
 from django.contrib.auth import logout
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -8,18 +8,26 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
+from .services.bulk_user_upload import BulkUserUploadService
 from user.models import User
 from email_utils.send_email import generate_token, send_mail, decode_token
 from user.services.registration_service import (
     send_registration_email,
     send_verify_email,
 )
-from user.user_type_serializers import RegisterSerializer
+from django.core.exceptions import ValidationError
+from user.user_type_serializers import AdminCreateUserSerializer, RegisterSerializer,BulkUserUploadSerializer
 
 
 class AuthViewSet(viewsets.ViewSet):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def _is_admin_user(self, user):
+        return (
+            user.is_superuser
+            or user.is_staff
+            or user.user_type == User.Role.SUPER_ADMIN
+        )
 
     @action(
         detail=False,
@@ -33,13 +41,60 @@ class AuthViewSet(viewsets.ViewSet):
 
         if serializer.is_valid():
             user = serializer.save()
-            send_registration_email(user)
 
+            if not user.is_active:
+                send_registration_email(user)
+
+            response_data = {
+                "success": True,
+                "user_id": user.id,
+                "user_type": user.user_type,
+            }
+            if user.must_change_password:
+                response_data.update(
+                    {
+                        "message": "Registration successful Temporary password sent to your email. reset your password.",
+                        "requires_password_change": True,
+                    }
+                )
+            else:
+                response_data["message"] = (
+                    "Registration successful. Please verify your email with the OTP sent."
+                )
+
+            return Response(response_data, status=status.HTTP_201_CREATED)
+
+        return Response(
+            {"success": False, "errors": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="create-user",
+        permission_classes=[IsAuthenticated],
+        authentication_classes=[JWTAuthentication],
+    )
+    def create_user(self, request):
+        if not self._is_admin_user(request.user):
+            return Response(
+                {"success": False, "error": "Admin access required"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = AdminCreateUserSerializer(
+            data=request.data, context={"request": request}
+        )
+        if serializer.is_valid():
+            user = serializer.save()
             return Response(
                 {
                     "success": True,
+                    "message": "User created. Temporary password sent to their email. reset your password",
                     "user_id": user.id,
                     "user_type": user.user_type,
+                    "requires_password_change": True,
                 },
                 status=status.HTTP_201_CREATED,
             )
@@ -142,10 +197,7 @@ class AuthViewSet(viewsets.ViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @action(
-        detail=False,
-        methods=["post"],
-        url_path="logout",
+    @action(detail=False,methods=["post"],url_path="logout",
         permission_classes=[IsAuthenticated],
         authentication_classes=[JWTAuthentication],
     )
@@ -162,11 +214,40 @@ class AuthViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    @action(detail=False, methods=["post"], url_path="change-password")
+    @action(detail=False,methods=["post"],url_path="change-password",
+        permission_classes=[IsAuthenticated],
+        authentication_classes=[JWTAuthentication],
+    )
     def change_password(self, request):
         user = request.user
         current_password = request.data.get("current_password")
         new_password = request.data.get("new_password")
+        confirm_password = request.data.get("confirm_password")
+
+        if not current_password:
+            return Response(
+                {"success": False, "error": "Current password is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not new_password:
+            return Response(
+                {"success": False, "error": "New password is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if confirm_password is not None and new_password != confirm_password:
+            return Response(
+                {"success": False, "error": "Passwords do not match"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        password_errors = validate_password_strength(new_password)
+        if password_errors:
+            return Response(
+                {"success": False, "errors": password_errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if not user.check_password(current_password):
             return Response(
@@ -175,7 +256,16 @@ class AuthViewSet(viewsets.ViewSet):
             )
 
         user.set_password(new_password)
-        user.save()
+        user.must_change_password = False
+        user.password_last_changed = timezone.now()
+        user.save(
+            update_fields=[
+                "password",
+                "must_change_password",
+                "password_last_changed",
+            ]
+        )
+
         return Response(
             {"success": True, "message": "Password changed successfully"},
             status=status.HTTP_200_OK,
@@ -193,14 +283,13 @@ class AuthViewSet(viewsets.ViewSet):
         email = request.data.get("email")
 
         try:
-            user = User.objects.get(email=email)  # type: ignore
+            user = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response(
                 {"success": False, "error": "User not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Check if user is active
         if not user.is_active:
             return Response(
                 {"success": False, "error": "User not active"},
@@ -267,7 +356,7 @@ class AuthViewSet(viewsets.ViewSet):
             )
 
         try:
-            user = User.objects.get(email=email)  # type: ignore
+            user = User.objects.get(email=email) 
         except User.DoesNotExist:
             return Response(
                 {"success": False, "error": "User not found"},
@@ -275,8 +364,52 @@ class AuthViewSet(viewsets.ViewSet):
             )
 
         user.set_password(new_password)
-        user.save()
+        user.must_change_password = False
+        user.password_last_changed = timezone.now()
+        user.save(
+            update_fields=[
+                "password",
+                "must_change_password",
+                "password_last_changed",
+            ]
+        )
         return Response(
             {"success": True, "message": "Password reset successfully"},
             status=status.HTTP_200_OK,
         )
+
+
+    @action(detail=False, methods=["post"], url_path="bulk-upload-users",
+        permission_classes=[IsAuthenticated],
+        authentication_classes=[JWTAuthentication]
+        )
+    def bulk_upload_users(self, request):
+        if not self._is_admin_user(request.user):
+            return Response(
+                {
+                    "success": False,
+                    "message": "Admin access required",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        serializer = BulkUserUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            result = BulkUserUploadService.process(serializer.validated_data["file"],request.user)
+
+            return Response(
+                {
+                    "success": True,
+                    **result
+                },
+                status=status.HTTP_200_OK,
+            )
+        
+        except ValidationError as e:
+            return Response(
+                {
+                    "success": False,
+                    "message": e.messages[0] if hasattr(e, "messages") else str(e),
+                },
+                status=400,
+            )

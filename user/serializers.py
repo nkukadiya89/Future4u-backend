@@ -201,6 +201,8 @@ class UserListSerializer(serializers.ModelSerializer):
     date_joined = serializers.SerializerMethodField(read_only=True)
     last_login = serializers.SerializerMethodField(read_only=True)
     password_last_changed = serializers.SerializerMethodField(read_only=True)
+    created_by_name = serializers.CharField(source="created_by.full_name")
+    created_at = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
@@ -233,6 +235,10 @@ class UserListSerializer(serializers.ModelSerializer):
             "state_name",
             "city",
             "city_name",
+            "must_change_password",
+            "created_by",
+            "created_by_name",
+            "created_at",
         ]
 
     def get_country_name(self, obj):
@@ -252,3 +258,6 @@ class UserListSerializer(serializers.ModelSerializer):
 
     def get_password_last_changed(self, obj):
         return format_datetime(getattr(obj, "password_last_changed", None))
+    
+    def get_created_at(self, obj):
+        return format_datetime(getattr(obj, "created_at", None))

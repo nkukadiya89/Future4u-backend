@@ -19,10 +19,20 @@ from common.mixins.view_mixins import ListEnvelopeMixin
 from user_profile.models import (
     BusinessSetting,
     ChildProfile,
+    CorporateGallery,
+    CorporateProfile,
     ParentProfile,
     ProfessionalProfile,
+    SchoolCollegeGallery,
+    SchoolCollegeProfile,
     StudentProfile,
     UserProfile,
+    InstituteProfile,
+    InstituteGallery,
+)
+from user_profile.organization_viewsets import (
+    OrganizationGalleryViewSet,
+    OrganizationProfileViewSet,
 )
 from user_profile.serializers import (
     BusinessSettingInfoSerializer,
@@ -37,6 +47,15 @@ from user_profile.serializers import (
     StudentProfileUpsertSerializer,
     UserProfileSerializer,
     UserProfileUpsertSerializer,
+    InstituteProfileUpSerializer,
+    InstituteProfileSerializer,
+    InstituteGallerySerializer,
+    SchoolCollegeProfileSerializer,
+    SchoolCollegeProfileUpSerializer,
+    SchoolCollegeGallerySerializer,
+    CorporateProfileSerializer,
+    CorporateProfileUpSerializer,
+    CorporateGallerySerializer,
 )
 from utils.generate_ip_address import get_client_ip
 from utils.pagination import Pagination
@@ -748,3 +767,44 @@ class ParentProfileViewSet(ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+class InstituteProfileViewSet(OrganizationProfileViewSet):
+    profile_model = InstituteProfile
+    read_serializer_class = InstituteProfileSerializer
+    update_serializer_class = InstituteProfileUpSerializer
+
+
+class InstituteGalleryViewSet(OrganizationGalleryViewSet):
+    profile_model = InstituteProfile
+    gallery_model = InstituteGallery
+    profile_fk_field = "institute"
+    gallery_serializer_class = InstituteGallerySerializer
+    profile_not_found_message = "Institute profile not found"
+
+
+class SchoolCollegeProfileViewSet(OrganizationProfileViewSet):
+    profile_model = SchoolCollegeProfile
+    read_serializer_class = SchoolCollegeProfileSerializer
+    update_serializer_class = SchoolCollegeProfileUpSerializer
+
+
+class SchoolCollegeGalleryViewSet(OrganizationGalleryViewSet):
+    profile_model = SchoolCollegeProfile
+    gallery_model = SchoolCollegeGallery
+    profile_fk_field = "school_college"
+    gallery_serializer_class = SchoolCollegeGallerySerializer
+    profile_not_found_message = "School / college profile not found"
+
+
+class CorporateProfileViewSet(OrganizationProfileViewSet):
+    profile_model = CorporateProfile
+    read_serializer_class = CorporateProfileSerializer
+    update_serializer_class = CorporateProfileUpSerializer
+
+
+class CorporateGalleryViewSet(OrganizationGalleryViewSet):
+    profile_model = CorporateProfile
+    gallery_model = CorporateGallery
+    profile_fk_field = "corporate"
+    gallery_serializer_class = CorporateGallerySerializer
+    profile_not_found_message = "Corporate profile not found"

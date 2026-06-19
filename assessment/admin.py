@@ -6,6 +6,8 @@ from assessment.models import (
     Concern,
     Option,
     ParentAssessment,
+    ParentCareerExpectation,
+    ParentConstraint,
     Question,
     StudentAssessment,
     UserGoal,
@@ -16,6 +18,8 @@ admin.site.register(CareerDirection)
 admin.site.register(CareerValue)
 admin.site.register(Concern)
 admin.site.register(UserGoal)
+admin.site.register(ParentCareerExpectation)
+admin.site.register(ParentConstraint)
 
 class OptionInline(admin.TabularInline):
     model = Option
@@ -168,6 +172,10 @@ class ParentAssessmentAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "user",
+        "domain_category",
+        "parent_support",
+        "career_familiarity",
+        "decision_style",
         "current_screen",
         "is_completed",
         "created_at",
@@ -175,11 +183,42 @@ class ParentAssessmentAdmin(admin.ModelAdmin):
 
     search_fields = (
         "user__email",
+        "domain_category__domain_name",
+        "domain_category__domain_code",
     )
 
     list_filter = (
         "is_completed",
         "current_screen",
+        "domain_category",
+        "parent_support",
+        "career_familiarity",
+        "decision_style",
+    )
+
+    fields = (
+        "user",
+        "domain_category",
+        "career_direction",
+        "parent_support",
+        "concerns",
+        "parent_career_expectations",
+        "limitations",
+        "career_familiarity",
+        "decision_style",
+        "career_values",
+        "user_goals",
+        "current_screen",
+        "is_completed",
+    )
+
+    filter_horizontal = (
+        "career_direction",
+        "concerns",
+        "parent_career_expectations",
+        "limitations",
+        "career_values",
+        "user_goals",
     )
 
 

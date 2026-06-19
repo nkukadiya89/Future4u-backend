@@ -76,6 +76,10 @@ def send_mail(subject, template, data):
         if isinstance(token_value, (bytes, bytearray)):
             token_value = token_value.decode("utf-8")
         context["token"] = str(token_value)
+    elif template == "temporary-password.html":
+        context["temporary_password"] = data["temporary_password"]
+        context["login_url"] = app_url + "login"
+        context["email"] = data["email"]
 
     html_body = render_to_string(template, context)
 
