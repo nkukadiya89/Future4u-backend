@@ -159,6 +159,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                     "group_permission": group_permission_data,
                     "keep_me_logged_in": keep_me_logged,
                     "last_login": user.last_login,
+                    "must_change_password": user.must_change_password,
                 }
             }
         )
@@ -177,7 +178,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         user.keep_me_logged_in = keep_me_logged
         user.last_login = now()
         user.save()
-
         data = {
             "success": True,
             "message": "Login Successful",

@@ -1,13 +1,16 @@
+import os
+
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils.timezone import now
-
+from common.models import BaseModule
 from city.models import City
 from company.models import Company
 from country.models import Country
 from domain.models import Domain
 from state.models import State
+from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
 
 
 class UserProfile(models.Model):
@@ -473,74 +476,123 @@ class ChildProfile(models.Model):
         ]
 
 
-class CorporateProfile(models.Model):
-    profile = models.OneToOneField(
-        Profile, on_delete=models.CASCADE, related_name="corporate"
-    )
+class InstituteProfile(BaseModule):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="institute_profile")
+    student_trained = models.PositiveIntegerField(null=True, blank=True)
+    placements = models.PositiveIntegerField(null=True, blank=True)
+    success_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    about_us = models.TextField(null=True, blank=True)
+    courses_offered = models.JSONField(default=list, blank=True)
+    key_highlights = models.JSONField(default=list, blank=True)
+    
+    class Meta:
+        db_table = "institute_profile"
+        ordering = ["-created_at"]
 
-    # Organization Type
-    organization_type = models.CharField(max_length=100)  # HR / CEO / etc.
 
-    # Company Info
-    company_name = models.CharField(max_length=200)
-    industry = models.CharField(max_length=100)
-    company_size = models.CharField(max_length=50)
+def _upload_organization_gallery_image(instance, image, upload_folder):
+    allowed_types = [".jpg", ".jpeg", ".png"]
 
-    # Hiring Intent
-    hiring_purpose = models.JSONField(default=list, blank=True)
+    file_extension = os.path.splitext(image.name)[1].lower()
+    if file_extension not in allowed_types:
+        raise ValueError(
+            f"Invalid file type: {file_extension}. Allowed types are {', '.join(allowed_types)}."
+        )
 
-    # Hiring Requirements
-    roles_hiring_for = models.JSONField(default=list, blank=True)
-    experience_level = models.CharField(max_length=50)
+    if image.size > 5 * 1024 * 1024:
+        raise ValueError("Image size exceeds 5MB limit.")
 
-    # Skills needed
-    required_skills = models.JSONField(default=list, blank=True)
+    current_value = getattr(instance, "image", None)
 
-    # Training needs
-    training_needs = models.JSONField(default=list, blank=True)
+    try:
+        if current_value:
+            delete_uploaded_file(current_value)
 
-    # Target candidates
-    target_candidates = models.JSONField(default=list, blank=True)
+        aws_file_url, _ = upload_file_to_bucket(
+            image,
+            allowed_types,
+            upload_folder,
+            instance.id,
+            None,
+        )
+        instance.image = aws_file_url
+        instance.save(update_fields=["image"])
+    except ValueError:
+        raise
+    except Exception as e:
+        raise Exception(f"Failed to upload profile image: {str(e)}")
 
-    # Engagement model
-    engagement_model = models.JSONField(default=list, blank=True)
 
-    # Timeline & Budget
-    hiring_timeline = models.CharField(max_length=50)
-    budget_range = models.CharField(max_length=50)
+class InstituteGallery(BaseModule):
+    institute = models.ForeignKey(InstituteProfile, on_delete=models.CASCADE, related_name="gallery_images")
+    image = models.CharField(max_length=350, null=True, blank=True)
 
-    # Company values
-    company_values = models.JSONField(default=list, blank=True)
+    class Meta:
+        db_table = "institute_gallery"
+        ordering = ["-created_at"]
 
-    # Challenges
-    challenges = models.JSONField(default=list, blank=True)
+    def upload_gallery_image(self, image):
+        _upload_organization_gallery_image(self, image, "InstituteGallery/")
 
-    # Goals
-    goals = models.JSONField(default=list, blank=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    updated_by = models.ForeignKey(
+class SchoolCollegeProfile(BaseModule):
+    user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="corporate_profile_updated",
+        on_delete=models.CASCADE,
+        related_name="school_college_profile",
     )
-    updated_at = models.DateTimeField(auto_now=True, null=True)
+    student_trained = models.PositiveIntegerField(null=True, blank=True)
+    placements = models.PositiveIntegerField(null=True, blank=True)
+    success_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    about_us = models.TextField(null=True, blank=True)
+    courses_offered = models.JSONField(default=list, blank=True)
+    key_highlights = models.JSONField(default=list, blank=True)
 
-    deleted = models.BooleanField(default=False)
-    deleted_by = models.ForeignKey(
+    class Meta:
+        db_table = "school_college_profile"
+        ordering = ["-created_at"]
+
+
+class SchoolCollegeGallery(BaseModule):
+    school_college = models.ForeignKey(
+        SchoolCollegeProfile, on_delete=models.CASCADE, related_name="gallery_images"
+    )
+    image = models.CharField(max_length=350, null=True, blank=True)
+
+    class Meta:
+        db_table = "school_college_gallery"
+        ordering = ["-created_at"]
+
+    def upload_gallery_image(self, image):
+        _upload_organization_gallery_image(self, image, "SchoolCollegeGallery/")
+
+
+class CorporateProfile(BaseModule):
+    user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="corporate_profile_deleted",
+        on_delete=models.CASCADE,
+        related_name="corporate_profile",
     )
-    deleted_at = models.DateTimeField(null=True, blank=True)
-
-    def __str__(self):
-        return f"CorporateProfile<{self.id} - {self.profile.title}>"
+    open_job = models.PositiveIntegerField(null=True, blank=True)
+    employees = models.PositiveIntegerField(null=True, blank=True)
+    years_in_business = models.PositiveIntegerField(null=True, blank=True)
+    about_us = models.TextField(null=True, blank=True)
+    perks_benefits = models.JSONField(default=list, blank=True)
 
     class Meta:
         db_table = "corporate_profile"
         ordering = ["-created_at"]
+
+
+class CorporateGallery(BaseModule):
+    corporate = models.ForeignKey(
+        CorporateProfile, on_delete=models.CASCADE, related_name="gallery_images"
+    )
+    image = models.CharField(max_length=350, null=True, blank=True)
+
+    class Meta:
+        db_table = "corporate_gallery"
+        ordering = ["-created_at"]
+
+    def upload_gallery_image(self, image):
+        _upload_organization_gallery_image(self, image, "CorporateGallery/")

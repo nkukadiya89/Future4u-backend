@@ -6,7 +6,6 @@ from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
-from django.db import transaction
 from django.utils.timezone import now
 
 from business_category.models import BusinessCategory
@@ -26,7 +25,8 @@ from assessment.models import (
     CareerDirection,
     CareerValue,
     Concern,
-    StudentAssessment,
+    ParentCareerExpectation,
+    ParentConstraint,
     UserGoal,
 )
 
@@ -497,14 +497,12 @@ class Command(BaseCommand):
             )
         self.stdout.write("Country data uploaded.")
 
-    @transaction.atomic
     def load_assessment_masters(self):
         self.stdout.write("Loading Assessment Masters.")
 
         masters = (
             (
                 Concern,
-                "concerns",
                 [
                     "Job Security",
                     "Financial stability / Future demand",
@@ -516,7 +514,6 @@ class Command(BaseCommand):
             ),
             (
                 CareerDirection,
-                "career_direction",
                 [
                     "Study further",
                     "Find a Job",
@@ -528,7 +525,6 @@ class Command(BaseCommand):
             ),
             (
                 CareerValue,
-                "career_values",
                 [
                     "High salary potential",
                     "Job security and stability",
@@ -540,7 +536,6 @@ class Command(BaseCommand):
             ),
             (
                 UserGoal,
-                "user_goals",
                 [
                     "Career clarity",
                     "Course recommendation",
@@ -548,47 +543,32 @@ class Command(BaseCommand):
                     "Parent confidence",
                 ],
             ),
-        )
-        for model, relation_name, names in masters:
-            self._merge_duplicate_assessment_masters(model, relation_name)
-            for name in names:
-                model.objects.filter(name__iexact=name).exclude(name=name).update(
-                    name=name
-                )
-            existing_names = {
-                value.strip().lower()
-                for value in model.objects.values_list("name", flat=True)
-            }
-            model.objects.bulk_create(
+            (
+                ParentCareerExpectation,
                 [
-                    model(name=name)
-                    for name in names
-                    if name.strip().lower() not in existing_names
-                ]
-            )
-
-    def _merge_duplicate_assessment_masters(self, model, relation_name):
-        canonical_by_name = {}
-        merged = 0
-        for item in model.objects.order_by("id"):
-            key = item.name.strip().lower()
-            canonical = canonical_by_name.get(key)
-            if canonical is None:
-                canonical_by_name[key] = item
-                continue
-
-            assessments = StudentAssessment.objects.filter(
-                **{relation_name: item}
-            )
-            for assessment in assessments:
-                getattr(assessment, relation_name).add(canonical)
-            item.delete()
-            merged += 1
-
-        if merged:
-            self.stdout.write(
-                f"Merged {merged} duplicate {model.__name__} row(s)."
-            )
+                    "High salary potential",
+                    "Job security and stability",
+                    "Career growth and advancement",
+                    "Work-life balance",
+                    "Making a positive impact",
+                    "Opportunities to learn new skills",
+                ],
+            ),
+            (
+                ParentConstraint,
+                [
+                    "Budget constraints",
+                    "Prefer local education",
+                    "Safety concerns",
+                    "Family business preference",
+                    "No relocation",
+                    "No restriction",
+                ],
+            ),
+        )
+        for model, names in masters:
+            for name in names:
+                model.objects.get_or_create(name__iexact=name, defaults={"name": name})
 
 
     # State Upload CSV

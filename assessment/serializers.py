@@ -5,6 +5,9 @@ from assessment.models import (
     CareerValue,
     Concern,
     Option,
+    ParentAssessment,
+    ParentCareerExpectation,
+    ParentConstraint,
     Question,
     StudentAssessment,
     UserGoal,
@@ -207,6 +210,95 @@ class StudentAssessmentCreateSerializer(BaseModelSerializer):
             "current_screen",
             "is_completed",
         ]
+
+
+class ParentCareerExpectationSerializer(BaseModelSerializer):
+    class Meta:
+        model = ParentCareerExpectation
+        fields = BaseModelSerializer.Meta.fields + ["name"]
+
+
+class ParentConstraintSerializer(BaseModelSerializer):
+    class Meta:
+        model = ParentConstraint
+        fields = BaseModelSerializer.Meta.fields + ["name"]
+
+
+class ParentAssessmentSerializer(BaseModelSerializer):
+    domain_category = serializers.PrimaryKeyRelatedField(
+        queryset=Domain.objects.filter(is_active=True, deleted=False),
+        required=False,
+        allow_null=True,
+    )
+    domain_category_name = serializers.CharField(
+        source="domain_category.domain_name", read_only=True, default=None
+    )
+    career_direction_name = serializers.SerializerMethodField()
+    concerns_name = serializers.SerializerMethodField()
+    parent_career_expectations_name = serializers.SerializerMethodField()
+    limitations_name = serializers.SerializerMethodField()
+    career_values_name = serializers.SerializerMethodField()
+    user_goals_name = serializers.SerializerMethodField()
+    user = UserQuickSerializer(read_only=True)
+
+    class Meta:
+        model = ParentAssessment
+        fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "domain_category",
+            "domain_category_name",
+            "career_direction",
+            "career_direction_name",
+            "parent_support",
+            "concerns",
+            "concerns_name",
+            "parent_career_expectations",
+            "parent_career_expectations_name",
+            "limitations",
+            "limitations_name",
+            "career_familiarity",
+            "decision_style",
+            "career_values",
+            "career_values_name",
+            "user_goals",
+            "user_goals_name",
+            "current_screen",
+            "user",
+            "is_completed",
+        ]
+        read_only_fields = ("id", "user", "current_screen", "created_at", "updated_at")
+
+    def validate(self, attrs):
+        category = attrs.get("domain_category")
+        if self.instance:
+            if category is None and self.instance.domain_category_id:
+                category = self.instance.domain_category
+
+        if category and category.parent_id is not None:
+            raise serializers.ValidationError(
+                {"domain_category": "Selected category must be a parent domain."}
+            )
+        return attrs
+
+    def get_career_direction_name(self, obj):
+        return list(obj.career_direction.values_list("name", flat=True))
+
+    def get_concerns_name(self, obj):
+        return list(obj.concerns.values_list("name", flat=True))
+
+    def get_parent_career_expectations_name(self, obj):
+        return list(obj.parent_career_expectations.values_list("name", flat=True))
+
+    def get_limitations_name(self, obj):
+        return list(obj.limitations.values_list("name", flat=True))
+
+    def get_career_values_name(self, obj):
+        return list(obj.career_values.values_list("name", flat=True))
+
+    def get_user_goals_name(self, obj):
+        return list(obj.user_goals.values_list("name", flat=True))
 
 
 class NextQuestionSerializer(serializers.ModelSerializer):

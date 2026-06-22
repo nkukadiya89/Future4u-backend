@@ -168,6 +168,27 @@ class CareerDirection(BaseModule):
     class Meta:
         db_table = "assessment_career_direction"
 
+
+class ParentCareerExpectation(BaseModule):
+    name = models.CharField(max_length=150)
+
+    def __str__(self):
+        return f"{self.name}"
+
+    class Meta:
+        db_table = "assessment_parent_career_expectation"
+
+
+class ParentConstraint(BaseModule):
+    name = models.CharField(max_length=150)
+
+    def __str__(self):
+        return f"{self.name}"
+
+    class Meta:
+        db_table = "assessment_parent_constraint"
+
+
 class StudentAssessment(BaseModule):
     class Screen(models.TextChoices):
         EDUCATION_LEVEL = "education_level", "Education Level"
@@ -237,18 +258,81 @@ class StudentAssessment(BaseModule):
 
 class ParentAssessment(BaseModule):
     class Screen(models.TextChoices):
-        PENDING = "pending", "Pending"
+        DOMAIN_CATEGORY = "domain_category", "Domain Category"
+        CAREER_DIRECTION = "career_direction", "Career Direction"
+        PARENT_SUPPORT = "parent_support", "Parent Support"
+        CONCERNS = "concerns", "Concerns"
+        PARENT_CAREER_EXPECTATIONS = "parent_career_expectations", "Parent Career Expectations"
+        LIMITATIONS = "limitations", "Limitations"
+        CAREER_FAMILIARITY = "career_familiarity", "Career Familiarity"
+        DECISION_STYLE = "decision_style", "Decision Style"
+        CAREER_VALUES = "career_values", "Career Values"
+        USER_GOALS = "user_goals", "User Goals"
         COMPLETE = "complete", "Complete"
+
+    PARENT_SUPPORT_CHOICES = (
+        ("very_supportive", "Very Supportive"),
+        ("somewhat_supportive", "SomeWhat Supportive"),
+        ("neutral", "Neutral"),
+        ("not_supportive", "Not Supportive"),
+        ("notsure", "Not Sure"),
+    )
+
+    FAMILIARITY_CHOICES = (
+        ("very_aware", "Very Aware"),
+        ("somewhat_aware", "Somewhat Aware"),
+        ("limited_knowledge", "Limited Knowledge"),
+        ("not_aware", "Not Aware"),
+    )
+
+    DECISION_STYLE_CHOICES = (
+        ("stability_based", "Stability Based"),
+        ("interest_based", "Interest Based"),
+        ("income_based", "Income Based"),
+        ("family_advice_based", "Family Advice Based"),
+    )
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="parent_assessments",
     )
+    domain_category = models.ForeignKey(
+        "domain.Domain",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="parent_category_assessments",
+        help_text="Parent category domain selected by the parent.",
+    )
+    career_direction = models.ManyToManyField(CareerDirection, blank=True)
+    parent_support = models.CharField(
+        max_length=50,
+        choices=PARENT_SUPPORT_CHOICES,
+        null=True,
+        blank=True,
+    )
+    concerns = models.ManyToManyField(Concern, blank=True)
+    parent_career_expectations = models.ManyToManyField(ParentCareerExpectation, blank=True)
+    limitations = models.ManyToManyField(ParentConstraint, blank=True)
+    career_familiarity = models.CharField(
+        max_length=50,
+        choices=FAMILIARITY_CHOICES,
+        null=True,
+        blank=True,
+    )
+    decision_style = models.CharField(
+        max_length=50,
+        choices=DECISION_STYLE_CHOICES,
+        null=True,
+        blank=True,
+    )
+    career_values = models.ManyToManyField(CareerValue, blank=True)
+    user_goals = models.ManyToManyField(UserGoal, blank=True)
     current_screen = models.CharField(
-        max_length=32,
+        max_length=50,
         choices=Screen.choices,
-        default=Screen.PENDING,
+        default=Screen.DOMAIN_CATEGORY,
     )
     is_completed = models.BooleanField(default=False)
 

@@ -10,8 +10,8 @@ from common.mixins.serializer_mixins import (
 )
 from employee.models import Employee
 from user.models import CustomGroup, User
+from user.services.registration_service import activate_web_user_with_temporary_password
 from utils.generate_ip_address import get_client_ip
-from utils.generate_random_password import generate_random_password
 
 
 class AddEmployeeSerializer(
@@ -105,13 +105,11 @@ class AddEmployeeSerializer(
 
     def create(self, validated_data):
         request = self.context.get("request")
-        password = validated_data.pop("password", None)
+        validated_data.pop("password", None)
         permission_ids = validated_data.pop("permission", [])
         assign_role = validated_data.pop("role", [])
 
         ip_address = get_client_ip(request)
-        if not password:
-            password = generate_random_password(self)
 
         phone = str(validated_data.get("phone", "")).strip()
         if phone.startswith("+91"):
@@ -139,7 +137,6 @@ class AddEmployeeSerializer(
         }
 
         user = User.objects.create(**user_data)
-        user.set_password(password)
 
         employee_instance = Employee.objects.create(**validated_data)
 
@@ -183,6 +180,8 @@ class AddEmployeeSerializer(
             user.designation = None
 
         user.save()
+
+        activate_web_user_with_temporary_password(user)
 
         ActivityLog.log.employee_create(
             employee_instance,

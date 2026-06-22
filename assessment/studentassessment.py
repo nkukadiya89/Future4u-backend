@@ -203,13 +203,12 @@ def assessment_status_payload(assessment, user):
             "data": None,
         }
 
-    sync_current_screen(assessment, user)
     return {
         "success": True,
         "has_assessment": True,
         "assessment_id": assessment.id,
         "is_completed": assessment.is_completed,
-        "current_screen": assessment.current_screen,
+        "current_screen": calculate_current_screen(assessment, user),
         "data": {
             "education_level": education_level.level_code if education_level else None,
             "stream": stream.stream_code if stream else None,
@@ -410,9 +409,7 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        sync_current_screen(assessment, request.user)
-
-        current_screen = assessment.current_screen
+        current_screen = calculate_current_screen(assessment, request.user)
 
         dimension_map = {
             StudentAssessment.Screen.INTEREST: Question.Dimension.INTEREST,
@@ -424,9 +421,8 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
         # Get questions for current dimension
         current_dimension = dimension_map.get(current_screen)
         if not current_dimension:
-            sync_current_screen(assessment, request.user)
             is_assessment_complete = (
-                assessment.current_screen == StudentAssessment.Screen.COMPLETE
+                current_screen == StudentAssessment.Screen.COMPLETE
             )
             return Response(
                 {
@@ -436,7 +432,7 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
                         if is_assessment_complete
                         else "Assessment is not currently on a question screen"
                     ),
-                    "current_screen": assessment.current_screen,
+                    "current_screen": current_screen,
                     "data": None,
                 },
                 status=status.HTTP_200_OK,
@@ -455,7 +451,6 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
         next_q = qs.order_by("-signal_strength", "sequence_order").first()
 
         if not next_q:
-            sync_current_screen(assessment, request.user)
             message = (
                 "No questions found for selected domain"
                 if total_questions == 0
@@ -465,7 +460,7 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
                 {
                     "success": True,
                     "message": message,
-                    "current_screen": assessment.current_screen,
+                    "current_screen": current_screen,
                     "data": None,
                     "progress": {
                         "question_number": total_questions,
