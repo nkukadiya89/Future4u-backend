@@ -40,6 +40,23 @@ class BulkUserUploadService:
         seen_phones = set()
 
         valid_roles = [role.value for role in User.Role]
+        countries = {
+            c.name.strip().lower() : c for c in Country.objects.all()
+        }
+        states = {
+            (s.country_id, s.name.strip().lower()) : s for s in State.objects.all()
+        }
+
+        cities = {
+            (c.state_id, c.name.strip().lower()): c for c in City.objects.all()
+        }
+        all_state_names = {
+            s.name.strip().lower() for s in State.objects.all()
+        }
+
+        all_city_names = {
+            c.name.strip().lower() for c in City.objects.all()
+        }
 
         for index, row in df.iterrows():
             row_number = index + 2
@@ -76,12 +93,12 @@ class BulkUserUploadService:
                         missing_fields.append(field)
                 
                 if missing_fields:
-                    fields += 1
+                    failed += 1
                     errors.append(
                         {
                             "row": row_number,
                             "email":email,
-                            "message": f"Missing required fields: {", ".join(missing_fields)}",
+                            "message": f"Missing required fields: {', '.join(missing_fields)}",
                         }
                     )
                     continue
@@ -151,11 +168,9 @@ class BulkUserUploadService:
 
                     continue
 
-                country_name = str(row["country"]).strip()
+                country_name = str(row["country"]).strip().lower()
 
-                country = Country.objects.filter(
-                    name__iexact=country_name.strip()
-                ).first()
+                country = countries.get(country_name)
 
                 if not country:
 
@@ -165,53 +180,69 @@ class BulkUserUploadService:
                         {
                             "row": row_number,
                             "email": email,
-                            "message": f"Country not found: {country_name}",
+                            "message": f"Country '{row['country']}' does not exist.",
                         }
                     )
 
                     continue
 
-                state_name = str(row["state"]).strip()
+                state_name = str(row["state"]).strip().lower()
 
-                state = State.objects.filter(
-                    name__iexact=state_name.strip(),
-                    country=country,
-                ).first()
+                state = states.get((country.id, state_name))
 
                 if not state:
 
                     failed += 1
+                    state_exists = state_name in all_state_names
+                    if state_exists:
+                        message = (
+                            f"State '{row['state']}' does not belong to "
+                            f"country '{row['country']}'"
+                        )
+                    else:
+                        message = (
+                            f"State '{row['state']}' does not exists."
+                        )
 
                     errors.append(
                         {
                             "row": row_number,
                             "email": email,
-                            "message": f"State not found: {state_name}",
+                            "message": message
                         }
                     )
 
                     continue
 
-                city_name = str(row["city"]).strip()
+                city_name = str(row["city"]).strip().lower()
 
-                city = City.objects.filter(
-                    name__iexact=city_name.strip(),
-                    state=state,
-                ).first()
+                city = cities.get(
+                    (state.id, city_name)
+                )
 
                 if not city:
 
                     failed += 1
 
+                    city_exists = city_name in all_city_names
+
+                    if city_exists:
+                        message = (
+                            f"City '{row['city']}' does not belong to "
+                            f"state '{row['state']}'"
+                        )
+                    else:
+                        message = (
+                            f"City '{row['city']}' does not exist."
+                        )
+
                     errors.append(
                         {
                             "row": row_number,
                             "email": email,
-                            "message": f"City not found: {city_name}",
+                            "message": message,
                         }
                     )
-
-                    continue
                 with transaction.atomic():
 
                     user = User.objects.create(
