@@ -7,7 +7,6 @@ from user.models import ContentTypeModel, CustomGroup, RoleFamily, User
 from user.user_auth import get_user_groups, get_user_permissions
 from utils.datetime_formatter import format_datetime
 
-
 class CustomGroupSerializers(serializers.ModelSerializer):
     sequence = serializers.IntegerField(source="sequence", read_only=True)
     name = serializers.CharField(source="group_name", read_only=True)
@@ -201,7 +200,7 @@ class UserListSerializer(serializers.ModelSerializer):
     date_joined = serializers.SerializerMethodField(read_only=True)
     last_login = serializers.SerializerMethodField(read_only=True)
     password_last_changed = serializers.SerializerMethodField(read_only=True)
-    created_by_name = serializers.CharField(source="created_by.full_name")
+    created_by = UserQuickSerializer(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -237,7 +236,6 @@ class UserListSerializer(serializers.ModelSerializer):
             "city_name",
             "must_change_password",
             "created_by",
-            "created_by_name",
             "created_at",
         ]
 
