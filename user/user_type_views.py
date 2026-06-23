@@ -1,8 +1,11 @@
 from datetime import timedelta
+from user.tasks import bulk_upload_user_task
 from utils.auth import validate_password_strength
 from django.contrib.auth import logout
 from django.utils import timezone
 from rest_framework import status, viewsets
+import tempfile
+import os
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -395,21 +398,38 @@ class AuthViewSet(viewsets.ViewSet):
         serializer = BulkUserUploadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            result = BulkUserUploadService.process(serializer.validated_data["file"],request.user)
+            uploaded_file = serializer.validated_data["file"]
+
+            df = BulkUserUploadService._read_file(uploaded_file)
+            BulkUserUploadService._validate_headers(df)
+
+            uploaded_file.seek(0)
+
+            suffix = os.path.splitext(uploaded_file.name)[1]
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+                for chunk in uploaded_file.chunks():
+                    tmp.write(chunk)
+
+            file_path = tmp.name
+
+            bulk_upload_user_task.delay(
+                file_path,
+                request.user.id,
+            )
 
             return Response(
                 {
                     "success": True,
-                    **result
+                    "message": f"Bulk Upload Started. Your file '{uploaded_file.name}' has started processing.",
                 },
                 status=status.HTTP_200_OK,
             )
-        
         except ValidationError as e:
             return Response(
                 {
                     "success": False,
                     "message": e.messages[0] if hasattr(e, "messages") else str(e),
                 },
-                status=400,
+                status=status.HTTP_400_BAD_REQUEST,
             )
