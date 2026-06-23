@@ -1,4 +1,5 @@
 import os
+import uuid
 import smtplib
 from datetime import datetime, timedelta
 from email.mime.image import MIMEImage
@@ -50,27 +51,22 @@ def pr_decode_token(token):
         return {"error": "Invalid token"}
 
 
-def send_mail(subject, template, data):
-    context = {}
-    context["name"] = data["name"]
-    custom_message_content = None  # Initialize custom message content
-
+def _build_email_context(template, data):
+    context = {"name": data["name"]}
     app_url = config("APP_URL")
     if template == "register-success.html" or template == "verify_account.html":
-        token = generate_token(data["email"], 30)
+        generate_token(data["email"], 30)
         context["login_url"] = app_url + "login"
         context["verify_link"] = app_url + "verify-success/"
         context["verification_code"] = data["otp"]
         context["email"] = data["email"]
     elif template == "reset-pass.html":
-        # Reset password flow link
         context["path"] = app_url + "reset-password/"
         token_value = data["token"]
         if isinstance(token_value, (bytes, bytearray)):
             token_value = token_value.decode("utf-8")
         context["token"] = str(token_value)
     elif template == "forgot-pass.html":
-        # Forgot password flow link
         context["path"] = app_url + "forgot-password/"
         token_value = data["token"]
         if isinstance(token_value, (bytes, bytearray)):
@@ -80,37 +76,82 @@ def send_mail(subject, template, data):
         context["temporary_password"] = data["temporary_password"]
         context["login_url"] = app_url + "login"
         context["email"] = data["email"]
+    
+    elif template == "bulk-upload-summary.html":
+        context["total_records"] = data["total_records"]
+        context["inserted"] = data["inserted"]
+        context["failed"] = data["failed"]
+        context["skipped"] = data["skipped"]
+        context["errors"] = data.get("errors", [])
 
-    html_body = render_to_string(template, context)
+    return context
 
+
+def _build_email_message(subject, template, data, *, logo_bytes, checked_bytes=None):
+    """
+    Build a MIME message with inline CID images.
+
+    Some clients (notably Gmail) require multipart/related with an HTML body
+    inside multipart/alternative for CID images to render reliably.
+    """
+    html_body = render_to_string(template, _build_email_context(template, data))
     to_email = data["email"]
 
-    msg = MIMEMultipart()
+    # Root container: inline assets related to the HTML body
+    msg = MIMEMultipart("related")
     msg.set_unixfrom("author")
     msg["From"] = "Future4U <" + config("ADMIN_EMAIL") + ">"
     msg["To"] = to_email
     msg["Subject"] = subject
-    part2 = MIMEText(html_body, "html")
-    msg.attach(part2)
 
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    url = os.path.join(BASE_DIR, "static/images/f4u-h-final.png")
-    img_data = open(url, "rb").read()
-    msImage = MIMEImage(img_data)
-    msImage.add_header("Content-ID", "<image1>")
-    msg.attach(msImage)
+    # HTML body container (recommended for email clients)
+    alt = MIMEMultipart("alternative")
+    alt.attach(MIMEText(html_body, "html"))
+    msg.attach(alt)
 
+    # Inline logo
+    ms_image = MIMEImage(logo_bytes)
+    ms_image.add_header("Content-ID", "<image1>")
+    ms_image.add_header("Content-Disposition", "inline", filename="logo.png")
+    msg.attach(ms_image)
+
+    # Optional inline checkmark
+    if template == "register-success.html" and checked_bytes:
+        ms_image_checked = MIMEImage(checked_bytes)
+        ms_image_checked.add_header("Content-ID", "<image2>")
+        ms_image_checked.add_header(
+            "Content-Disposition", "inline", filename="checked.png"
+        )
+        msg.attach(ms_image_checked)
+
+    return msg, to_email
+
+
+def _get_static_image_bytes(filename):
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    path = os.path.join(base_dir, "static/images", filename)
+    with open(path, "rb") as image_file:
+        return image_file.read()
+
+
+def send_mail(subject, template, data):
+    custom_message_content = None
+    logo_bytes = _get_static_image_bytes("f4u-h-final.png")
+    checked_bytes = None
     if template == "register-success.html":
-        url = os.path.join(BASE_DIR, "static/images/checked.png")
-        img_data1 = open(url, "rb").read()
-        msImage1 = MIMEImage(img_data1)
-        msImage1.add_header("Content-ID", "<image2>")
-        msg.attach(msImage1)
+        checked_bytes = _get_static_image_bytes("checked.png")
+
+    msg, to_email = _build_email_message(
+        subject,
+        template,
+        data,
+        logo_bytes=logo_bytes,
+        checked_bytes=checked_bytes,
+    )
 
     email_password = config("EMAIL_PASSWORD", default=None)
     if not email_password:
-        # Development mode: skip actual email sending
-        print(f"[DEV MODE] Email not sent (EMAIL_PASSWORD not configured)")
+        print("[DEV MODE] Email not sent (EMAIL_PASSWORD not configured)")
         print(f"To: {to_email}")
         print(f"Subject: {subject}")
         print(f"Template: {template}")
@@ -118,19 +159,16 @@ def send_mail(subject, template, data):
 
     mail_server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
     mail_server.ehlo()
-
     mail_server.login(config("ADMIN_EMAIL"), email_password)
 
     try:
         mail_server.sendmail(config("ADMIN_EMAIL"), msg["To"], msg.as_string())
-        # Log successful email
         log_email_sent(
             msg,
             email_type=template.replace(".html", ""),
             custom_message_content=custom_message_content,
         )
     except Exception as e:
-        # Log failed email
         log_email_failed(
             to_email,
             subject,
@@ -139,6 +177,76 @@ def send_mail(subject, template, data):
             email_type=template.replace(".html", ""),
         )
         raise e
+    finally:
+        mail_server.quit()
 
-    mail_server.quit()
     return HttpResponse("Mail Send", status=200)
+
+
+def send_mail_batch(jobs):
+    """
+    Send multiple emails over one SMTP connection.
+    Each job: {"subject": str, "template": str, "data": dict}
+    """
+    jobs = list(jobs)
+    if not jobs:
+        return
+
+    email_password = config("EMAIL_PASSWORD", default=None)
+    if not email_password:
+        for job in jobs:
+            print("[DEV MODE] Email not sent (EMAIL_PASSWORD not configured)")
+            print(f"To: {job['data']['email']}")
+            print(f"Subject: {job['subject']}")
+            print(f"Template: {job['template']}")
+        return
+
+    logo_bytes = _get_static_image_bytes("f4u-h-final.png")
+    checked_bytes = _get_static_image_bytes("checked.png")
+    admin_email = config("ADMIN_EMAIL")
+
+    mail_server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+    mail_server.ehlo()
+    mail_server.login(admin_email, email_password)
+
+    try:
+        for job in jobs:
+            template = job["template"]
+            subject = job["subject"]
+            data = job["data"]
+            msg, to_email = _build_email_message(
+                subject,
+                template,
+                data,
+                logo_bytes=logo_bytes,
+                checked_bytes=checked_bytes if template == "register-success.html" else None,
+            )
+            try:
+                mail_server.sendmail(admin_email, msg["To"], msg.as_string())
+                log_email_sent(msg, email_type=template.replace(".html", ""))
+            except Exception as e:
+                log_email_failed(
+                    to_email,
+                    subject,
+                    str(e),
+                    msg["From"],
+                    email_type=template.replace(".html", ""),
+                )
+    finally:
+        mail_server.quit()
+
+def send_admin_summary_email(admin_user, result):
+    batch_id = str(uuid.uuid4())[:8]
+    send_mail(
+        f"Bulk Upload Summary [{batch_id}]",
+        "bulk-upload-summary.html",
+        {
+            "name": admin_user.first_name or "Admin",
+            "email": admin_user.email,
+            "total_records": result["total_records"],
+            "inserted": result["inserted"],
+            "failed": result["failed"],
+            "skipped": result["skipped"],
+            "errors": result.get("errors", []),
+        },
+    )

@@ -13415,7 +13415,7 @@
                 }
               ]
             },
-            "description": "Super Admin / staff only. Requires Bearer {{access_token}}.\n\nUpload CSV or XLSX to create multiple users. Each row gets a temp password email (same as create-user). Sets created_by to logged-in admin.\n\nRequired columns:\nfirst_name, last_name, about_me, email, user_type, phone, referral_code, country, state, city\n\n- country / state / city: names (not ids), must exist in DB\n- user_type: student | parent | working_professional | school_college | institute | corporate | super_admin\n- phone: 10–15 digits\n\nResponse: total_records, inserted, failed, skipped, errors[]"
+            "description": "Super Admin / staff only. Requires Bearer {{access_token}}.\n\nUpload CSV or XLSX to create multiple users. Each row gets a temp password email (same as create-user). Sets created_by to logged-in admin.\n\nUsers are created immediately; temp-password emails are sent in the background (one SMTP connection).\n\nRequired columns:\nfirst_name, last_name, about_me, email, user_type, phone, referral_code, country, state, city\n\n- country / state / city: names (not ids), must exist in DB\n- user_type: student | parent | working_professional | school_college | institute | corporate | super_admin\n- phone: 10–15 digits\n\nResponse: total_records, inserted, failed, skipped, emails_queued, errors[]"
           },
           "response": [],
           "event": [

@@ -4,7 +4,6 @@ from email_utils.send_email import send_mail
 from utils.auth import generate_temporary_password
 from utils.generate_otp import generate_otp
 
-
 def send_verify_email(user_email, user_name):
     subject = "Verify Your Email for Future4u"
     otp = generate_otp()
@@ -39,6 +38,7 @@ def send_temporary_password_email(user, temporary_password):
 
 
 def activate_web_user_with_temporary_password(user, *, send_email=True):
+    from user.tasks import send_temp_password_email_task
     temporary_password = generate_temporary_password()
     user.set_password(temporary_password)
     user.must_change_password = True
@@ -59,5 +59,9 @@ def activate_web_user_with_temporary_password(user, *, send_email=True):
         ]
     )
     if send_email:
-        send_temporary_password_email(user, temporary_password)
+        send_temp_password_email_task.delay(
+            user.first_name,
+            user.email,
+            temporary_password,
+        )
     return user
