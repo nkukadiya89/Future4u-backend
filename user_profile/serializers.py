@@ -491,9 +491,10 @@ class ParentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializer
         language = validated_data.pop("language", None)
         user_data = validated_data.pop("user", None)
         user = instance.user
-        for attr, value in user_data.items():
-            setattr(user, attr, value)
-        user.save()
+        if user_data:
+            for attr, value in user_data.items():
+                setattr(user, attr, value)
+            user.save()
         instance.updated_at = now()
         instance = super().update(instance, validated_data)
         if language is not None:

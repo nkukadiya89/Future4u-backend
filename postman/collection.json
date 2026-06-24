@@ -11204,7 +11204,7 @@
                 {
                   "key": "assessment_id",
                   "value": "{{assessment_id}}",
-                  "description": "Optional \u00e2\u20ac\u201d filter to one student assessment"
+                  "description": "Optional â€” filter to one student assessment"
                 },
                 {
                   "key": "ordering",
@@ -11566,6 +11566,198 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "assessment-dashboard (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/assessments/dashboard/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "assessments",
+                "dashboard"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "career-suggestions-list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/career-suggestions/?assessment_id={{parent_assessment_id}}&ordering=-created_at&page=1&pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "career-suggestions",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "assessment_id",
+                  "value": "{{parent_assessment_id}}"
+                },
+                {
+                  "key": "ordering",
+                  "value": "-created_at"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "career-suggestions-retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/career-suggestions/{{parent_suggestion_id_1}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "career-suggestions",
+                "{{parent_suggestion_id_1}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "career-suggestions-compare (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/career-suggestions/compare/?suggestion_ids={{parent_suggestion_id_1}},{{parent_suggestion_id_2}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "career-suggestions",
+                "compare",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "suggestion_ids",
+                  "value": "{{parent_suggestion_id_1}},{{parent_suggestion_id_2}}",
+                  "description": "Exactly two ParentCareerRecommendationSuggestion ids (comma-separated)"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "description": "Compare two parent career suggestion rows side by side.\n\nQuery param suggestion_ids (required): comma-separated list of exactly 2 suggestion primary keys.\n\nErrors:\n- 400 if suggestion_ids are missing, not exactly 2 ids, invalid, not owned by user, or from different recommendations\n\nResponse: { success: true, data: [ ParentCareerRecommendationSuggestion, ParentCareerRecommendationSuggestion ] }",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Compare returns two suggestions', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.eql(true);",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "  pm.expect(json.data.length).to.eql(2);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "career-suggestions-detail-list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/career-suggestions-detail/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "career-suggestions-detail",
+                ""
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -11732,6 +11924,108 @@
               }
             }
           ]
+        },
+        {
+          "name": "Parent AI Recommendations (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/ai-recommendations/{{parent_assessment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "ai-recommendations",
+                "{{parent_assessment_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Parent AI Recommendation Chat Context (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/ai-recommendations/{{parent_assessment_id}}/chat/?suggestion_id={{parent_suggestion_id_1}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "ai-recommendations",
+                "{{parent_assessment_id}}",
+                "chat",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "suggestion_id",
+                  "value": "{{parent_suggestion_id_1}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Parent AI Recommendation Chat (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/ai-recommendations/{{parent_assessment_id}}/chat/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "ai-recommendations",
+                "{{parent_assessment_id}}",
+                "chat",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"suggestion_id\": \"{{parent_suggestion_id_1}}\",\n  \"message\": \"What skills should my child build first?\"\n}"
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -15997,7 +16291,7 @@
                 }
               ]
             },
-            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- job (optional, stripped server-side)\n- resume (optional file) \u00e2\u20ac\u201d uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / job / status are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
+            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- job (optional, stripped server-side)\n- resume (optional file) â€” uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / job / status are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
           },
           "response": []
         },
@@ -16406,7 +16700,7 @@
                 }
               ]
             },
-            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- internship (optional)\n- resume (optional file) \u00e2\u20ac\u201d uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / selected / rejected are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
+            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- internship (optional)\n- resume (optional file) â€” uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / selected / rejected are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
           },
           "response": []
         },

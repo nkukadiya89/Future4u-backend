@@ -19,8 +19,12 @@ from django.contrib import admin
 from django.urls import path, include
 from user.user_auth import CustomTokenObtainPairView
 from future4u.routers import future4u_router
-from recommendation.ai_views import AIRecommendationAPIView
-from recommendation.chat_views import AIRecommendationChatAPIView
+from recommendation.profiles.student.views import AIRecommendationAPIView, AIRecommendationChatAPIView
+from recommendation.profiles.parent.views import (
+    ParentAIRecommendationAPIView,
+    ParentAIRecommendationChatAPIView,
+)
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("get-token/", CustomTokenObtainPairView.as_view(), name="get_token"),
@@ -33,6 +37,17 @@ urlpatterns = [
         "api/ai-recommendations/<int:assessment_id>/chat/",
         AIRecommendationChatAPIView.as_view(),
         name="api-ai-recommendations-chat",
+    ),
+    # Parent AI endpoints
+    path(
+        "api/parent/ai-recommendations/<int:assessment_id>/",
+        ParentAIRecommendationAPIView.as_view(),
+        name="api-parent-ai-recommendations",
+    ),
+    path(
+        "api/parent/ai-recommendations/<int:assessment_id>/chat/",
+        ParentAIRecommendationChatAPIView.as_view(),
+        name="api-parent-ai-recommendations-chat",
     ),
     path("", include(future4u_router.urls)),
     path("", include("subscription.urls")),

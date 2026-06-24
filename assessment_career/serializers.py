@@ -2,7 +2,12 @@ from rest_framework import serializers
 
 from common.serializers import BaseModelSerializer
 
-from .models import CareerRecommendation, CareerRecommendationSuggestion
+from .models import (
+    CareerRecommendation,
+    CareerRecommendationSuggestion,
+    ParentCareerRecommendation,
+    ParentCareerRecommendationSuggestion,
+)
 
 
 class CareerRecommendationSuggestionSortSerializer(BaseModelSerializer):
@@ -47,8 +52,6 @@ class CareerRecommendationSuggestionSerializer(BaseModelSerializer):
         ]
 
 class CareerRecommendationDetailSerializer(BaseModelSerializer):
-    suggestions = CareerRecommendationSuggestionSerializer(many=True, read_only=True)
-
     suggestions = serializers.SerializerMethodField()
 
     class Meta:
@@ -58,7 +61,6 @@ class CareerRecommendationDetailSerializer(BaseModelSerializer):
             "assessment",
             "suggestions",
             "easy_decision_making",
-            "suggestions",
             "last_recommended_at",
         ]
 
@@ -69,3 +71,49 @@ class CareerRecommendationDetailSerializer(BaseModelSerializer):
                 "display_order"
             )
         return CareerRecommendationSuggestionSerializer(suggestions, many=True).data
+
+
+class ParentCareerRecommendationSuggestionSortSerializer(BaseModelSerializer):
+    class Meta:
+        model = ParentCareerRecommendationSuggestion
+        fields = [
+            "id",
+            "career_name",
+            "match_percentage",
+        ]
+
+
+class ParentCareerRecommendationSerializer(BaseModelSerializer):
+    suggestions = ParentCareerRecommendationSuggestionSortSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ParentCareerRecommendation
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "user",
+            "assessment",
+            "suggestions",
+            "easy_decision_making",
+            "last_recommended_at",
+        ]
+
+
+class ParentCareerRecommendationSuggestionSerializer(BaseModelSerializer):
+    class Meta:
+        model = ParentCareerRecommendationSuggestion
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "recommendation",
+            "career_name",
+            "match_percentage",
+            "ai_insight",
+            "why_this_career",
+            "required_skills",
+            "required_education",
+            "career_factors",
+            "career_roadmap",
+            "display_order",
+        ]
+
+
+

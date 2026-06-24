@@ -239,14 +239,14 @@ class ParentAssessmentSerializer(BaseModelSerializer):
     limitations_name = serializers.SerializerMethodField()
     career_values_name = serializers.SerializerMethodField()
     user_goals_name = serializers.SerializerMethodField()
+    child_name = serializers.SerializerMethodField()
     user = UserQuickSerializer(read_only=True)
 
     class Meta:
         model = ParentAssessment
-        fields = [
-            "id",
-            "created_at",
-            "updated_at",
+        fields = BaseModelSerializer.Meta.fields + [
+            "child",
+            "child_name",
             "domain_category",
             "domain_category_name",
             "career_direction",
@@ -280,6 +280,7 @@ class ParentAssessmentSerializer(BaseModelSerializer):
             raise serializers.ValidationError(
                 {"domain_category": "Selected category must be a parent domain."}
             )
+
         return attrs
 
     def get_career_direction_name(self, obj):
@@ -299,6 +300,11 @@ class ParentAssessmentSerializer(BaseModelSerializer):
 
     def get_user_goals_name(self, obj):
         return list(obj.user_goals.values_list("name", flat=True))
+
+    def get_child_name(self, obj):
+        if obj.child_id:
+            return str(obj.child) if obj.child else None
+        return None
 
 
 class NextQuestionSerializer(serializers.ModelSerializer):

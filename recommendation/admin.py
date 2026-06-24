@@ -29,7 +29,7 @@ from recommendation.exceptions import (
     AssessmentNotReadyError,
 )
 from recommendation.models import AIRecommendationPanel
-from recommendation.services.ai_recommendation_service import AIRecommendationService
+from recommendation.profiles.student.service import AIRecommendationService
 
 
 def _pretty_json(value) -> str:

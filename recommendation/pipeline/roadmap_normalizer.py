@@ -88,10 +88,10 @@ def normalize_career_roadmap(roadmap: dict[str, Any]) -> dict[str, list[dict[str
         ordered.append(ordered[-1])
 
     if len(ordered) < 4:
-        return {
-            key: _clip_phase_tasks(list(roadmap.get(key) or []))
-            for key in CAREER_ROADMAP_PHASE_KEYS
-        }
+        # No valid tasks at all — don't return empty phases that fail Pydantic.
+        # Instead return empty so the caller (validate_raw_payload or normalize_payload)
+        # catches it and retries the LLM call naturally.
+        return {key: [] for key in CAREER_ROADMAP_PHASE_KEYS}
 
     return {
         CAREER_ROADMAP_PHASE_KEYS[index]: [ordered[index]]

@@ -234,6 +234,7 @@ def normalize_required_education(value: Any) -> dict[str, Any] | None:
             "bachelor": "graduation",
             "bachelors": "graduation",
             "post_graduation": "post_graduation",
+            "postgraduation": "post_graduation",
             "postgraduate": "post_graduation",
             "masters": "post_graduation",
             "master": "post_graduation",

@@ -297,6 +297,14 @@ class ParentAssessment(BaseModule):
         on_delete=models.CASCADE,
         related_name="parent_assessments",
     )
+    child = models.ForeignKey(
+        "user_profile.ChildProfile",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="parent_assessments",
+        help_text="The child this assessment is about.",
+    )
     domain_category = models.ForeignKey(
         "domain.Domain",
         on_delete=models.SET_NULL,
