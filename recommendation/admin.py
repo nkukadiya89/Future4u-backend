@@ -53,7 +53,7 @@ def _provider_status() -> dict:
         "ai_recommendations_enabled": use_llm,
         "groq_configured": groq_ok,
         "ai_tracing_enabled": bool(
-            getattr(settings, "AI_TRACING_ENABLED", False)
+            getattr(settings, "LANGSMITH_TRACING_ENABLED", False)
         ),
         "mode": mode,
     }

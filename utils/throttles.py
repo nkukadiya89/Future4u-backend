@@ -32,3 +32,9 @@ class RecommendationRateThrottle(PerUserBurstRateThrottle):
 class AIChatRateThrottle(PerUserBurstRateThrottle):
     scope = "ai_chat"
     rate = "4/min"
+
+
+class JobGenerationRateThrottle(PerUserBurstRateThrottle):
+    scope = "job_generation"
+    rate = "10/min"
+
