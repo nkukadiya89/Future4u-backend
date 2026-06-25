@@ -110,8 +110,6 @@ INSTALLED_APPS = [
     "course",
     "internship_job",
     "job_generation",
-    "course_generation",
-    "internship_generation",
 
 ]
 
@@ -230,8 +228,6 @@ REST_FRAMEWORK = {
         "user_sustained": "300/hour",
         "recommendation": "10/min",
         "job_generation": "10/min",
-        "course_generation": "10/min",
-        "internship_generation": "10/min",
     },
 
 
@@ -279,16 +275,6 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
-        "course_generation": {
-            "handlers": ["console"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "internship_generation": {
-            "handlers": ["console"],
-            "level": "INFO",
-            "propagate": False,
-        },
 
     },
 }
@@ -328,46 +314,6 @@ JOB_GENERATION_MAX_TOKENS = config(
 )
 JOB_GENERATION_TEMPERATURE = config(
     "JOB_GENERATION_TEMPERATURE",
-    default=0.2,
-    cast=float,
-)
-
-COURSE_GENERATION_ENABLED = config(
-    "COURSE_GENERATION_ENABLED",
-    default=True,
-    cast=bool,
-)
-COURSE_GENERATION_LLM_PROVIDER = config(
-    "COURSE_GENERATION_LLM_PROVIDER",
-    default="groq",
-).strip().lower()
-COURSE_GENERATION_MAX_TOKENS = config(
-    "COURSE_GENERATION_MAX_TOKENS",
-    default=3000,
-    cast=int,
-)
-COURSE_GENERATION_TEMPERATURE = config(
-    "COURSE_GENERATION_TEMPERATURE",
-    default=0.2,
-    cast=float,
-)
-
-INTERNSHIP_GENERATION_ENABLED = config(
-    "INTERNSHIP_GENERATION_ENABLED",
-    default=True,
-    cast=bool,
-)
-INTERNSHIP_GENERATION_LLM_PROVIDER = config(
-    "INTERNSHIP_GENERATION_LLM_PROVIDER",
-    default="groq",
-).strip().lower()
-INTERNSHIP_GENERATION_MAX_TOKENS = config(
-    "INTERNSHIP_GENERATION_MAX_TOKENS",
-    default=3000,
-    cast=int,
-)
-INTERNSHIP_GENERATION_TEMPERATURE = config(
-    "INTERNSHIP_GENERATION_TEMPERATURE",
     default=0.2,
     cast=float,
 )

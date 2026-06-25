@@ -11305,6 +11305,74 @@
       ]
     },
     {
+      "name": "job_generation",
+      "item": [
+        {
+          "name": "AI Job Generation (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-job-generation/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-job-generation",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job_summary\": \"Hiring a junior Python developer to build Django REST APIs for our EdTech platform.\",\n  \"organization_name\": \"Future4U Labs\",\n  \"city\": 1,\n  \"job_type\": \"full_time\",\n  \"experience_level\": \"0_1\",\n  \"mode\": \"hybrid\",\n  \"salary_range\": \"INR 4-6 LPA\",\n  \"application_deadline\": \"2026-07-01\"\n}"
+            },
+            "description": "Generates AI fields for the Add Job form from user-provided details.\n\nAuth: JWT required.\nAllowed roles: institute, corporate, super_admin.\n\nRequires JOB_GENERATION_ENABLED=true and a configured LLM provider (default: GROQ_API_KEY with JOB_GENERATION_LLM_PROVIDER=groq).\n\nRequest body (user-filled fields):\n- job_summary (required, 10–1000 chars — primary AI context)\n- organization_name (required)\n- city (optional, city ID from master list)\n- job_type (optional: part_time, full_time, freelance)\n- experience_level (optional: fresher, 0_1, 1_3, 3_5, 5_10, 10_plus)\n- mode (optional: remote, onsite, hybrid)\n- salary_range (optional)\n- application_deadline (optional, ISO date)\n\nResponse: { success, data: { name, description, responsibilities[], skills[], education_tags, why_this_match, organization_name, city, city_name, salary_range, job_type, experience_level, mode, application_deadline } }\n\nNote: job_summary is request input only and is not returned in the response.\n\nAdmin test panel: /admin/job_generation/jobgenerationpanel/"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Success envelope with job fields', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.eql(true);",
+                  "  pm.expect(json.data).to.be.an('object');",
+                  "  pm.expect(json.data.name).to.be.a('string');",
+                  "  pm.expect(json.data.description).to.be.a('string');",
+                  "  pm.expect(json.data.responsibilities).to.be.an('array');",
+                  "  pm.expect(json.data.skills).to.be.an('array');",
+                  "  pm.expect(json.data.education_tags).to.be.a('string');",
+                  "  pm.expect(json.data.why_this_match).to.be.a('string');",
+                  "  pm.expect(json.data.organization_name).to.be.a('string');",
+                  "  pm.expect(json.data).to.not.have.property('job_summary');",
+                  "  pm.expect(json.data.job_type).to.be.a('string');",
+                  "  pm.expect(json.data.experience_level).to.be.a('string');",
+                  "  pm.expect(json.data.mode).to.be.a('string');",
+                  "  pm.expect(json.data.salary_range).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Domain Master",
       "item": [
         {
@@ -13102,6 +13170,39 @@
               }
             },
             "description": "Set password using token from email link (web register, admin-student-users create, bulk upload, admin).\n\nFor pending users: activates account (pending → active) after success.\n\nToken comes from email URL: {APP_URL}reset-password/{token}\n\nnew_password must meet strength rules (8+ chars, uppercase, number, special char)."
+          },
+          "response": []
+        },
+        {
+          "name": "resend-otp (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/resend-otp/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "resend-otp",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{user_email}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           },
           "response": []
         },
