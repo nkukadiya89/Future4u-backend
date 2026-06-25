@@ -38,3 +38,8 @@ class JobGenerationRateThrottle(PerUserBurstRateThrottle):
     scope = "job_generation"
     rate = "10/min"
 
+
+class CourseGenerationRateThrottle(PerUserBurstRateThrottle):
+    scope = "course_generation"
+    rate = "10/min"
+
