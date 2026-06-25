@@ -38,4 +38,5 @@ urlpatterns = [
     path("", include("subscription.urls")),
     path("api/v1/", include("subscription.urls")),
     path("", include("resume_builder.urls")),
+    path("", include("job_generation.urls")),
 ]

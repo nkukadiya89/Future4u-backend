@@ -109,6 +109,8 @@ INSTALLED_APPS = [
     "assessment_career",
     "course",
     "internship_job",
+    "job_generation",
+
 ]
 
 MIDDLEWARE = [
@@ -225,7 +227,10 @@ REST_FRAMEWORK = {
         "user_burst": "30/min",
         "user_sustained": "300/hour",
         "recommendation": "10/min",
+        "job_generation": "10/min",
     },
+
+
 }
 
 # ── Logging ───────────────────────────────────────────────────────────────────
@@ -265,6 +270,12 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
+        "job_generation": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+
     },
 }
 
@@ -286,6 +297,31 @@ AI_RECOMMENDATIONS_ENABLED = config(
     cast=bool,
 )
 AI_TRACING_ENABLED = config("AI_TRACING_ENABLED", default=False, cast=bool)
+
+JOB_GENERATION_ENABLED = config(
+    "JOB_GENERATION_ENABLED",
+    default=True,
+    cast=bool,
+)
+JOB_GENERATION_LLM_PROVIDER = config(
+    "JOB_GENERATION_LLM_PROVIDER",
+    default="groq",
+).strip().lower()
+JOB_GENERATION_MAX_TOKENS = config(
+    "JOB_GENERATION_MAX_TOKENS",
+    default=3000,
+    cast=int,
+)
+JOB_GENERATION_TEMPERATURE = config(
+    "JOB_GENERATION_TEMPERATURE",
+    default=0.2,
+    cast=float,
+)
+
+OPENAI_API_KEY = config("OPENAI_API_KEY", default="").strip()
+OPENAI_MODEL = config("OPENAI_MODEL", default="gpt-4o-mini").strip()
+GEMINI_API_KEY = config("GEMINI_API_KEY", default="").strip()
+GEMINI_MODEL = config("GEMINI_MODEL", default="gemini-1.5-flash").strip()
 
 # LangSmith only — private settings; never used in recommendation pipeline or API output.
 _LANGSMITH_TRACING_ENABLED = AI_TRACING_ENABLED or config(
@@ -310,10 +346,5 @@ apply_langsmith_tracing_env(
     project=_LANGSMITH_PROJECT,
 )
 
-CELERY_BROKER_URL = config("CELERY_BROKER_URL")
-CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND")
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = "UTC"
-CELERY_ENABLE_UTC = True
+# Public alias for admin panels and diagnostics (AI_TRACING_ENABLED or LANGCHAIN_TRACING_V2).
+LANGSMITH_TRACING_ENABLED = _LANGSMITH_TRACING_ENABLED
