@@ -111,6 +111,21 @@
       "key": "parent_assessment_id",
       "value": "",
       "enabled": true
+    },
+    {
+      "key": "domain_category_id",
+      "value": "05bd3e3f-f113-4aee-a1f3-5c5989978d4a",
+      "enabled": true
+    },
+    {
+      "key": "domain_id",
+      "value": "01cb573f-ac93-4e1f-b449-d709b070eb15",
+      "enabled": true
+    },
+    {
+      "key": "parent_domain_id",
+      "value": "",
+      "enabled": true
     }
   ],
   "_postman_variable_scope": "environment",

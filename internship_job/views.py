@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.db import transaction
 from rest_framework.decorators import action
 from rest_framework import status
-from assessment_career.models import CareerRecommendationSuggestion
+from assessment_career.models import CareerSuggestion
 from.service import match_internships
 
 # Create your views here.
@@ -129,14 +129,14 @@ class InternshipViewSet(BaseModelViewSet):
             )
         try:
             career = (
-                CareerRecommendationSuggestion.objects.get(
+                CareerSuggestion.objects.get(
                     id = career_id,
                     recommendation__user = request.user,
                     deleted=False,
                     recommendation__deleted=False
                 )
             )
-        except CareerRecommendationSuggestion.DoesNotExist:
+        except CareerSuggestion.DoesNotExist:
             return Response(
                 {
                     "success":False,

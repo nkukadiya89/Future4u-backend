@@ -73,7 +73,7 @@ class ChildProfileViewSet(ModelViewSet):
         return ChildProfile.objects.filter(
             parent_profile__user=self.request.user,
             deleted=False,
-        ).select_related("education_level", "stream")
+        ).select_related("education_level", "stream").prefetch_related("language")
 
     def get_serializer_class(self):
         if self.action in ("create", "partial_update", "update"):
@@ -95,9 +95,15 @@ class ChildProfileViewSet(ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        first_name = request.data.get("first_name")
-        last_name = request.data.get("last_name")
-        date_of_birth = request.data.get("date_of_birth")
+        data = request.data.get("data")
+        if data:
+            data = json.loads(data)
+        else:
+            data = request.data
+
+        first_name = data.get("first_name")
+        last_name = data.get("last_name")
+        date_of_birth = data.get("date_of_birth")
 
         if first_name and last_name and date_of_birth:
             exists = ChildProfile.objects.filter(
@@ -123,7 +129,7 @@ class ChildProfileViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=data)
         if not serializer.is_valid():
             return Response(
                 {"success": False, "message": serializer.errors},
@@ -154,7 +160,12 @@ class ChildProfileViewSet(ModelViewSet):
     @transaction.atomic
     def partial_update(self, request, *args, **kwargs):
         child = self.get_object()
-        serializer = self.get_serializer(child, data=request.data, partial=True)
+        data = request.data.get("data")
+        if data:
+            data = json.loads(data)
+        else:
+            data = {}
+        serializer = self.get_serializer(child, data=data, partial=True)
         if not serializer.is_valid():
             return Response(
                 {"success": False, "message": serializer.errors},

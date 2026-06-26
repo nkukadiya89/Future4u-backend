@@ -1,25 +1,11 @@
 from __future__ import annotations
 
-import json
 from typing import Any
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from recommendation.config import (
-    EASY_DECISION_CAREER_COUNT,
-    EASY_DECISION_COUNT,
-    TOP_SUGGESTION_COUNT,
-)
 from recommendation.engine._shared import is_study_abroad_mode
-from recommendation.schemas.recommendation_output import (
-    AI_INSIGHT_MAX_WORDS,
-    AI_INSIGHT_MIN_WORDS,
-    ROADMAP_MAX_WORDS,
-    ROADMAP_MIN_WORDS,
-    WHY_CAREER_MAX_BULLETS,
-    WHY_CAREER_MAX_WORDS,
-    WHY_CAREER_MIN_WORDS,
-)
+from recommendation.prompts import build_prompt, format_inputs
 
 SYSTEM_PROMPT = """You are Future4U's career recommendation engine.
 
@@ -73,45 +59,6 @@ Return ONLY valid JSON using this shape:
 {output_shape}
 """
 
-OUTPUT_SHAPE = """{
-  "top_suggestions": [
-    {
-      "career_name": "Career Name",
-      "match_percentage": 88,
-      "ai_insight": "8-18 word personalized sentence",
-      "why_this_career": ["5-12 word concrete reason"],
-      "required_skills": ["Skill name"],
-      "required_education": {
-        "levels": [
-          {"type": "Display label", "level_key": "graduation", "name": "Course or degree name"}
-        ]
-      },
-      "career_factors": {
-        "salary": {"average": "INR X-Y LPA", "growth_rate": "(+10%)"},
-        "growth_potential": "High",
-        "work_life_balance": "Good",
-        "job_security": {"level": "High", "market_demand_growth": "5% | 25%"},
-        "skill_match": 80,
-        "learning_curve": {"level": "Medium", "description": "To become proficient"},
-        "risk_level": "Medium"
-      },
-      "career_roadmap": {
-        "next_3_months": [{"task_title": "Short action title", "task_description": "8-24 word action sentence"}],
-        "next_3_to_6_months": [{"task_title": "Short action title", "task_description": "8-24 word action sentence"}],
-        "next_6_to_9_months": [{"task_title": "Short action title", "task_description": "8-24 word action sentence"}],
-        "next_9_to_12_months": [{"task_title": "Short action title", "task_description": "8-24 word action sentence"}]
-      }
-    }
-  ],
-  "easy_decision_making": [
-    {"title": "Best for quick start", "career_index": 0},
-    {"title": "Best for high salary", "career_index": 1},
-    {"title": "Best long term bet", "career_index": 2},
-    {"title": "Most stable career", "career_index": 0}
-  ]
-}"""
-
-
 NORMAL_MODE_INSTRUCTIONS = (
     'Normal career mode: use career/job-readiness roadmap tasks and India INR salary.'
 )
@@ -119,6 +66,7 @@ NORMAL_MODE_INSTRUCTIONS = (
 
 STUDY_ABROAD_MODE_INSTRUCTIONS = """Study Abroad mode:
 - Keep ranking career/domain based; adapt only insight, reasons, education, roadmap, and salary.
+- CRITICAL: career_name must be the domain/career only — do NOT include country, destination, or "abroad" in the career name.
 - salary.average: India INR range; abroad varies by country, visa status, degree level, and local demand.
 - CRITICAL: required_education.name MUST use full global names. No degree acronyms, no abbreviations, no period-separated codes at all. Write names exactly as they appear on international university websites.
   GOOD: "Bachelor of Technology"
@@ -134,57 +82,20 @@ STUDY_ABROAD_MODE_INSTRUCTIONS = """Study Abroad mode:
 - Roadmap exact titles: "Start now: country & budget", "Next: course & exams", "Before applying: documents & profile", "Final check: apply safely".
 - Roadmap descriptions stay short and practical; course/exams should cover IELTS/PTE/TOEFL, GRE/GMAT only for postgraduate/advanced paths when relevant, and German/French or other language requirements.
 - Final roadmap needs at least two useful safety checks where relevant: fees, scholarships, refund policy, visa steps, counsellor/agent claims, and backup option.
-- Avoid country-specific exams unless provided in structured_assessment.
+- Avoid country-specific exams unless provided in the assessment.
 - Avoid generic abroad phrases and guaranteed admission, visa, job, PR, scholarship, or salary claims."""
 
-
-
-
-def _escape_langchain_template(text: str) -> str:
-    return text.replace("{", "{{").replace("}", "}}")
-
-
-USER_PROMPT = "structured_assessment:\n{structured_assessment}"
+USER_PROMPT = "student_assessment:\n{student_assessment}"
 
 
 def build_recommendation_prompt() -> ChatPromptTemplate:
-    system_text = SYSTEM_PROMPT.format(
-        top_suggestion_count=TOP_SUGGESTION_COUNT,
-        easy_decision_count=EASY_DECISION_COUNT,
-        easy_decision_career_count=EASY_DECISION_CAREER_COUNT,
-        why_career_min_words=WHY_CAREER_MIN_WORDS,
-        why_career_max_words=WHY_CAREER_MAX_WORDS,
-        why_career_max_bullets=WHY_CAREER_MAX_BULLETS,
-        ai_insight_min_words=AI_INSIGHT_MIN_WORDS,
-        ai_insight_max_words=AI_INSIGHT_MAX_WORDS,
-        roadmap_min_words=ROADMAP_MIN_WORDS,
-        roadmap_max_words=ROADMAP_MAX_WORDS,
-        output_shape=OUTPUT_SHAPE,
-    )
-    system_message = _escape_langchain_template(system_text).replace(
-        "__MODE_INSTRUCTIONS__",
-        "{mode_instructions}",
-    )
-
-    return ChatPromptTemplate.from_messages(
-        [
-            ("system", system_message),
-            ("human", USER_PROMPT),
-        ]
-    )
+    return build_prompt(SYSTEM_PROMPT, USER_PROMPT)
 
 
-def format_prompt_inputs(*, structured_assessment: dict[str, Any]) -> dict[str, str]:
-    return {
-        "structured_assessment": json.dumps(
-            structured_assessment,
-            ensure_ascii=True,
-            separators=(",", ":"),
-            default=str,
-        ),
-        "mode_instructions": (
-            STUDY_ABROAD_MODE_INSTRUCTIONS
-            if is_study_abroad_mode(structured_assessment)
-            else NORMAL_MODE_INSTRUCTIONS
-        ),
-    }
+def format_prompt_inputs(*, student_assessment: dict[str, Any]) -> dict[str, str]:
+    mode = (
+        STUDY_ABROAD_MODE_INSTRUCTIONS
+        if is_study_abroad_mode(student_assessment)
+        else NORMAL_MODE_INSTRUCTIONS
+    )
+    return format_inputs("student_assessment", student_assessment, mode)

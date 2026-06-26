@@ -11,7 +11,10 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from user_profile.models import ChildProfile
 
 from assessment.models import ParentAssessment
-from assessment.serializers import ParentAssessmentSerializer
+from assessment.serializers import (
+    ParentAssessmentSerializer,
+    ParentAssessmentWriteSerializer,
+)
 from utils.pagination import Pagination
 
 
@@ -22,6 +25,8 @@ def calculate_parent_screen(assessment):
 
     if not assessment.domain_category_id:
         return ParentAssessment.Screen.DOMAIN_CATEGORY
+    if not assessment.domain_id:
+        return ParentAssessment.Screen.DOMAIN
     if not assessment.career_direction.exists():
         return ParentAssessment.Screen.CAREER_DIRECTION
     if not assessment.parent_support:
@@ -78,6 +83,11 @@ def assessment_status_payload(assessment):
                 if assessment.domain_category_id
                 else None
             ),
+            "domain": (
+                str(assessment.domain_id)
+                if assessment.domain_id
+                else None
+            ),
         },
     }
 
@@ -110,6 +120,11 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
         "updated_at",
         "is_completed",
     ]
+
+    def get_serializer_class(self):
+        if self.action in ["create", "update", "partial_update"]:
+            return ParentAssessmentWriteSerializer
+        return ParentAssessmentSerializer
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -158,7 +173,7 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
             ).first()
             if assessment:
                 sync_parent_screen(assessment)
-                serializer = self.get_serializer(assessment)
+                serializer = ParentAssessmentSerializer(assessment, context=self.get_serializer_context())
                 return Response(
                     {
                         "success": True,
@@ -177,7 +192,7 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
         assessment._request_user = request.user
         assessment.save()
         sync_parent_screen(assessment)
-        serializer = self.get_serializer(assessment)
+        serializer = ParentAssessmentSerializer(assessment, context=self.get_serializer_context())
         return Response(
             {
                 "success": True,
@@ -221,7 +236,7 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
             )
 
         assessment = self.perform_update(serializer)
-        serializer = self.get_serializer(assessment)
+        serializer = ParentAssessmentSerializer(assessment, context=self.get_serializer_context())
         return Response(
             {"success": True, "data": serializer.data},
             status=status.HTTP_200_OK,

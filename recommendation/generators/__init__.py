@@ -1,3 +1,3 @@
-from recommendation.generators.ai_recommendation_generator import AIRecommendationGenerator
+from recommendation.generators.ai_recommendation_generator import RecommendationGenerator
 
-__all__ = ["AIRecommendationGenerator"]
+__all__ = ["RecommendationGenerator"]

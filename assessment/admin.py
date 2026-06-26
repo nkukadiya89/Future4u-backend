@@ -172,7 +172,9 @@ class ParentAssessmentAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "user",
+        "child",
         "domain_category",
+        "domain",
         "parent_support",
         "career_familiarity",
         "decision_style",
@@ -183,14 +185,19 @@ class ParentAssessmentAdmin(admin.ModelAdmin):
 
     search_fields = (
         "user__email",
+        "child__first_name",
+        "child__last_name",
         "domain_category__domain_name",
         "domain_category__domain_code",
+        "domain__domain_name",
+        "domain__domain_code",
     )
 
     list_filter = (
         "is_completed",
         "current_screen",
         "domain_category",
+        "domain",
         "parent_support",
         "career_familiarity",
         "decision_style",
@@ -198,7 +205,9 @@ class ParentAssessmentAdmin(admin.ModelAdmin):
 
     fields = (
         "user",
+        "child",
         "domain_category",
+        "domain",
         "career_direction",
         "parent_support",
         "concerns",

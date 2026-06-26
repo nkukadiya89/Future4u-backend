@@ -352,6 +352,156 @@ def build_professional_resume_data(
     }
 
 
+def build_child_resume_data(child, template: str = "professional") -> dict:
+    """
+    Map ChildProfile → resume dict.
+
+    Sources every available field from ChildProfile directly (no User model).
+    Mirrors build_student_resume_data but reads from ChildProfile fields.
+    """
+    # ── Personal info (ChildProfile fields) ───────────────────────────────────
+    personal_info = {
+        "name": _safe_str(f"{child.first_name} {child.last_name}".strip()),
+        "email": child.email or "",
+        "phone": _safe_str(child.phone),
+        "about_me": "",
+        "designation": "",
+        "profile_image": _safe_str(child.profile_image),
+        "location": "",
+        "country": "",
+        "state": "",
+        "city": "",
+        "linkedin": child.linkedin_url or None,
+        "github": child.github_url or None,
+        "portfolio": child.portfolio or None,
+    }
+
+    # ── Education level & stream (FK fields) ──────────────────────────────────
+    education_meta = {
+        "education_level_code": (
+            child.education_level.level_code if child.education_level else None
+        ),
+        "education_level_name": (
+            child.education_level.display_name if child.education_level else None
+        ),
+        "stream_code": child.stream.stream_code if child.stream else None,
+        "stream_name": child.stream.stream_name if child.stream else None,
+        "science_track": None,
+        "medium": None,
+    }
+
+    # ── Languages (M2M) ───────────────────────────────────────────────────────
+    languages = [
+        {"id": str(lang.id), "name": lang.name, "code": lang.code}
+        for lang in child.language.all()
+    ]
+
+    # ── Career direction (JSONField) ──────────────────────────────────────────
+    raw_cd = _safe_list(child.career_direction)
+    if raw_cd and isinstance(raw_cd[0], dict):
+        cd_item = raw_cd[0]
+        career_direction = {
+            "target_role": cd_item.get("target_role", ""),
+            "target_industry": cd_item.get("target_industry", ""),
+            "why_this_role": cd_item.get("why_this_role", ""),
+        }
+    else:
+        career_direction = {
+            "target_role": "",
+            "target_industry": "",
+            "why_this_role": "",
+        }
+
+    # ── Education (JSONField) ─────────────────────────────────────────────────
+    raw_edu = _safe_list(child.education)
+    education = []
+    for e in raw_edu:
+        if isinstance(e, dict):
+            education.append(
+                {
+                    "institution": e.get("institution", ""),
+                    "degree": e.get("degree", ""),
+                    "field": e.get("field", ""),
+                    "year": int(e.get("year", 0)) if e.get("year") else None,
+                    "cgpa": float(e["cgpa"]) if e.get("cgpa") else None,
+                }
+            )
+
+    # ── Skills (JSONField) ────────────────────────────────────────────────────
+    raw_skills = child.skills
+    if isinstance(raw_skills, dict):
+        skills = {
+            "technical": raw_skills.get("technical", []),
+            "soft": raw_skills.get("soft", []),
+        }
+    else:
+        skills = {
+            "technical": _safe_list(raw_skills),
+            "soft": [],
+        }
+
+    # ── Projects (JSONField) ──────────────────────────────────────────────────
+    raw_projects = _safe_list(child.projects)
+    projects = []
+    for p in raw_projects:
+        if isinstance(p, dict):
+            projects.append(
+                {
+                    "title": p.get("title", ""),
+                    "problem_statement": p.get("problem_statement", ""),
+                    "your_role": p.get("your_role", ""),
+                    "technologies": p.get("technologies", []),
+                    "impact": p.get("impact", ""),
+                }
+            )
+
+    # ── Internships (JSONField) ───────────────────────────────────────────────
+    raw_internships = _safe_list(child.internships)
+    internships = []
+    for i in raw_internships:
+        if isinstance(i, dict):
+            internships.append(
+                {
+                    "company": i.get("company", ""),
+                    "duration": i.get("duration", ""),
+                    "responsibilities": i.get("responsibilities", []),
+                    "key_achievement": i.get("key_achievement", None),
+                }
+            )
+
+    # ── Certifications (JSONField) ────────────────────────────────────────────
+    raw_certs = _safe_list(child.certifications)
+    certifications = []
+    for c in raw_certs:
+        if isinstance(c, dict):
+            certifications.append(
+                {
+                    "name": c.get("name", ""),
+                    "issuer": c.get("issuer", ""),
+                    "year": int(c.get("year", 0)) if c.get("year") else None,
+                }
+            )
+
+    return {
+        "resume_type": "fresher",
+        "template": template,
+        "personal_info": personal_info,
+        "education_meta": education_meta,
+        "languages": languages,
+        "career_direction": career_direction,
+        "education": education,
+        "skills": skills,
+        "projects": projects,
+        "internships": internships,
+        "certifications": certifications,
+        "achievements": _safe_list(child.achievements),
+        "extra_activities": _safe_list(child.extra_activities),
+        "additional_insights": _safe_list(child.additional_insights),
+        "strengths": [],
+        "preferred_locations": [],
+    }
+
+
 def generate_resume_pdf(resume_data: dict, skip_ai: bool = False) -> bytes:
     """
     Given a fully-built resume dict, call AI enhancement + PDF generation.

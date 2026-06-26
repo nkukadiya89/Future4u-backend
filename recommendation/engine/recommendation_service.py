@@ -24,7 +24,7 @@ AI_RECOMMENDATION_DISCLAIMER = (
     "point and confirm important decisions with a qualified professional."
 )
 
-# ── Study Abroad settings ───────────────────────────────────────────
+# Study Abroad settings
 
 STUDY_ABROAD_ROADMAP_PHASES = (
     "next_3_months",
@@ -111,7 +111,7 @@ def normalize_study_abroad_payload(payload):
     return payload
 
 
-# ── Shared helpers ──────────────────────────────────────────────────
+# Shared helpers
 
 
 def public_career_factors(factors: Any) -> Any:
@@ -128,12 +128,20 @@ def public_career_factors(factors: Any) -> Any:
     return cleaned
 
 
+def _assessment_filter_kwargs(assessment):
+    """Return the correct filter kwargs for the unified CareerRecommendation model."""
+    from assessment.models import StudentAssessment
+    if isinstance(assessment, StudentAssessment):
+        return {"student_assessment": assessment, "profile_type": "student"}
+    return {"parent_assessment": assessment, "profile_type": "parent"}
+
+
 def load_recommendation_and_check_cycle(
     *, assessment, recommendation_model, cycle_days: int = RECOMMENDATION_CYCLE_DAYS,
 ):
     """Return (recommendation, is_within_cycle)."""
     recommendation = recommendation_model.objects.filter(
-        assessment=assessment, deleted=False
+        **_assessment_filter_kwargs(assessment), deleted=False
     ).prefetch_related("suggestions").first()
 
     if recommendation and recommendation.last_recommended_at:
@@ -169,9 +177,10 @@ def save_recommendation(
         )
         recommendation = existing
     else:
+        fk_field = _assessment_filter_kwargs(assessment)
         recommendation = recommendation_model(
             user=user,
-            assessment=assessment,
+            **fk_field,
             raw_ai_response=payload_dict,
             easy_decision_making=payload_dict.get("easy_decision_making", []),
             last_recommended_at=now,

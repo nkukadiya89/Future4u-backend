@@ -422,6 +422,27 @@ class ChildProfile(models.Model):
         choices=AcademicPerformance.choices,
     )
 
+    phone = models.CharField(max_length=15, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    language = models.ManyToManyField(
+        "language_master.Language",
+        blank=True,
+        related_name="child_profiles",
+    )
+    career_direction = models.JSONField(default=list, blank=True, null=True)
+    education = models.JSONField(default=list, blank=True, null=True)
+    skills = models.JSONField(default=list, null=True, blank=True)
+    projects = models.JSONField(default=list, null=True, blank=True)
+    internships = models.JSONField(default=list, null=True, blank=True)
+    certifications = models.JSONField(default=list, null=True, blank=True)
+    achievements = models.JSONField(default=list, null=True, blank=True)
+    extra_activities = models.JSONField(default=list, null=True, blank=True)
+    additional_insights = models.JSONField(default=list, null=True, blank=True)
+    preferred_job_locations = models.JSONField(default=list, blank=True, null=True)
+    linkedin_url = models.CharField(max_length=200, null=True, blank=True)
+    github_url = models.CharField(max_length=200, null=True, blank=True)
+    portfolio = models.CharField(max_length=200, null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True, blank=True)
     deleted = models.BooleanField(default=False)

@@ -16,6 +16,7 @@ class ParentAssessmentContextBuilder:
         return {
             "assessment_type": "parent",
             "domain_category": data.get("domain_category_name"),
+            "domain": data.get("domain_name"),
             "career_direction": data.get("career_direction_name") or [],
             "parent_support": data.get("parent_support"),
             "concerns": data.get("concerns_name") or [],
@@ -40,6 +41,11 @@ class ParentAssessmentContextBuilder:
             "domain_category_name": (
                 assessment.domain_category.domain_name
                 if assessment.domain_category_id and assessment.domain_category
+                else None
+            ),
+            "domain_name": (
+                assessment.domain.domain_name
+                if assessment.domain_id and assessment.domain
                 else None
             ),
             "career_direction_name": (

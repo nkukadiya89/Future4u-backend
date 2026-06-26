@@ -3,9 +3,10 @@ from __future__ import annotations
 from typing import Any
 
 from assessment_career.models import (
-    CareerRecommendationChatMessage,
-    CareerRecommendationChatSession,
-    CareerRecommendationSuggestion,
+    ChatMessage,
+    ChatSession,
+    CareerRecommendation,
+    CareerSuggestion,
 )
 from recommendation.engine.chat_service import BaseAIChatService
 from recommendation.engine.chat_helpers import (
@@ -16,8 +17,6 @@ from recommendation.engine.chat_helpers import (
     format_other_suggestions,
 )
 
-
-# ── Student-specific formatting helpers ─────────────────────────────
 
 
 def _format_career_factors(value: Any) -> str:
@@ -137,11 +136,11 @@ def _factor_value(value: Any, key: str) -> str:
     return ""
 
 
-# Create the service instance
-AIChatService = BaseAIChatService(
-    suggestion_model=CareerRecommendationSuggestion,
-    chat_session_model=CareerRecommendationChatSession,
-    chat_message_model=CareerRecommendationChatMessage,
+StudentChatService = BaseAIChatService(
+    suggestion_model=CareerSuggestion,
+    chat_session_model=ChatSession,
+    chat_message_model=ChatMessage,
     build_career_context=_build_student_career_context,
     get_chips=_get_student_chips,
+    profile_type=CareerRecommendation.ProfileType.STUDENT,
 )

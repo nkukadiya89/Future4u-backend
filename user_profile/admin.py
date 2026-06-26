@@ -205,6 +205,8 @@ class ChildProfileAdmin(admin.ModelAdmin):
     search_fields = (
         "first_name",
         "last_name",
+        "email",
+        "phone",
         "parent_profile__user__email",
     )
     list_filter = (
@@ -215,11 +217,24 @@ class ChildProfileAdmin(admin.ModelAdmin):
     )
     raw_id_fields = ("parent_profile", "education_level", "stream")
     readonly_fields = ("created_at", "updated_at")
+    filter_horizontal = ("language",)
 
     fieldsets = (
         ("Parent", {"fields": ("parent_profile",)}),
-        ("Child", {"fields": ("first_name", "last_name", "profile_image", "date_of_birth")}),
+        ("Child", {"fields": ("first_name", "last_name", "profile_image", "date_of_birth", "phone", "email")}),
+        ("Language", {"fields": ("language",)}),
         ("Education", {"fields": ("education_level", "stream", "academic_performance")}),
+        ("Career Direction", {"fields": ("career_direction",)}),
+        ("Education Details", {"fields": ("education",)}),
+        ("Skills", {"fields": ("skills",)}),
+        ("Projects", {"fields": ("projects",)}),
+        ("Internships", {"fields": ("internships",)}),
+        ("Certifications", {"fields": ("certifications",)}),
+        ("Achievements", {"fields": ("achievements",)}),
+        ("Extra Activities", {"fields": ("extra_activities",)}),
+        ("Additional Insights", {"fields": ("additional_insights",)}),
+        ("Job Preferences", {"fields": ("preferred_job_locations",)}),
+        ("Social Links", {"fields": ("linkedin_url", "github_url", "portfolio")}),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
 

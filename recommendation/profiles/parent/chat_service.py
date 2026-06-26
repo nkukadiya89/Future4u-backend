@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from assessment_career.models import (
-    ParentCareerRecommendationChatMessage,
-    ParentCareerRecommendationChatSession,
-    ParentCareerRecommendationSuggestion,
+    ChatMessage,
+    ChatSession,
+    CareerRecommendation,
+    CareerSuggestion,
 )
 from recommendation.engine.chat_service import BaseAIChatService, CAREER_SCOPE_REFUSAL_PREFIX
 from recommendation.engine.chat_helpers import (
@@ -40,11 +41,11 @@ def _get_parent_chips(suggestion) -> list[str]:
     return questions[:3]
 
 
-# Create the service instance
-ParentAIChatService = BaseAIChatService(
-    suggestion_model=ParentCareerRecommendationSuggestion,
-    chat_session_model=ParentCareerRecommendationChatSession,
-    chat_message_model=ParentCareerRecommendationChatMessage,
+ParentChatService = BaseAIChatService(
+    suggestion_model=CareerSuggestion,
+    chat_session_model=ChatSession,
+    chat_message_model=ChatMessage,
     build_career_context=_build_parent_career_context,
     get_chips=_get_parent_chips,
+    profile_type=CareerRecommendation.ProfileType.PARENT,
 )

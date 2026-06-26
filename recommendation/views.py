@@ -13,26 +13,20 @@ from recommendation.exceptions import (
     AssessmentNotFoundError,
     AssessmentNotReadyError,
 )
-from recommendation.profiles.student.service import AIRecommendationService
-from recommendation.profiles.student.chat_service import AIChatService
 from utils.throttles import RecommendationRateThrottle, AIChatRateThrottle
 
 logger = logging.getLogger(__name__)
 
 
-class AIRecommendationAPIView(APIView):
-    """
-    GET /api/ai-recommendations/{assessment_id}/
-    Generates AI career recommendations from a completed student assessment.
-    """
-
+class RecommendationAPIView(APIView):
+    service_class = None
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     throttle_classes = [RecommendationRateThrottle]
 
     def get(self, request, assessment_id, *args, **kwargs):
         try:
-            data = AIRecommendationService().generate(
+            data = self.service_class().generate(
                 assessment_id=assessment_id,
                 user=request.user,
             )
@@ -55,19 +49,13 @@ class AIRecommendationAPIView(APIView):
         except AIConfigurationError as exc:
             logger.error("AI configuration error: %s", exc)
             return Response(
-                {
-                    "success": False,
-                    "message": "AI recommendations are temporarily unavailable",
-                },
+                {"success": False, "message": "AI recommendations are temporarily unavailable"},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         except AIGenerationError as exc:
             logger.exception("AI generation failed")
             return Response(
-                {
-                    "success": False,
-                    "message": "Unable to generate recommendations right now. Please try again.",
-                },
+                {"success": False, "message": "Unable to generate recommendations right now. Please try again."},
                 status=status.HTTP_502_BAD_GATEWAY,
             )
         except Exception as exc:
@@ -78,22 +66,15 @@ class AIRecommendationAPIView(APIView):
             )
 
 
-class AIRecommendationChatAPIView(APIView):
-    """
-    GET /api/ai-recommendations/{assessment_id}/chat/?suggestion_id=1
-    Returns selected career context and suggested chips without calling AI.
-
-    POST /api/ai-recommendations/{assessment_id}/chat/
-    Career-specific assistant for a saved recommendation suggestion.
-    """
-
+class RecommendationChatAPIView(APIView):
+    chat_service_class = None
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     throttle_classes = [AIChatRateThrottle]
 
     def get(self, request, assessment_id, *args, **kwargs):
         try:
-            data = AIChatService().context(
+            data = self.chat_service_class().context(
                 user=request.user,
                 assessment_id=assessment_id,
                 suggestion_id=request.query_params.get("suggestion_id"),
@@ -117,7 +98,7 @@ class AIRecommendationChatAPIView(APIView):
 
     def post(self, request, assessment_id, *args, **kwargs):
         try:
-            data = AIChatService().ask(
+            data = self.chat_service_class().ask(
                 user=request.user,
                 assessment_id=assessment_id,
                 suggestion_id=request.data.get("suggestion_id"),
@@ -142,27 +123,18 @@ class AIRecommendationChatAPIView(APIView):
         except AIConfigurationError as exc:
             logger.error("AI chat configuration error: %s", exc)
             return Response(
-                {
-                    "success": False,
-                    "message": "AI chat is temporarily unavailable",
-                },
+                {"success": False, "message": "AI chat is temporarily unavailable"},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         except AIGenerationError as exc:
             logger.exception("AI chat failed")
             return Response(
-                {
-                    "success": False,
-                    "message": "Unable to answer right now. Please try again.",
-                },
+                {"success": False, "message": "Unable to answer right now. Please try again."},
                 status=status.HTTP_502_BAD_GATEWAY,
             )
         except Exception as exc:
             logger.exception("Unexpected AI chat error")
             return Response(
-                {
-                    "success": False,
-                    "message": "Unable to answer right now",
-                },
+                {"success": False, "message": "Unable to answer right now"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

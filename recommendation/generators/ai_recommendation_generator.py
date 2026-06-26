@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, Callable
 
 from pydantic import ValidationError
 
@@ -15,24 +15,24 @@ from recommendation.engine._shared import (
 )
 from recommendation.pipeline.validated_payload_normalizer import normalize_payload
 from recommendation.pipeline.payload_validator import parse_ai_payload
-from recommendation.profiles.student.prompts import (
-    build_recommendation_prompt,
-    format_prompt_inputs,
-)
 from recommendation.schemas.recommendation_output import AIRecommendationPayload
 
 logger = logging.getLogger(__name__)
 
 
-class AIRecommendationGenerator:
-    """LLM call: structured_assessment -> career recommendations."""
+class RecommendationGenerator:
+    """LLM call: structured_assessment -> career recommendations (profile-agnostic)."""
 
     @classmethod
     def generate(
-        cls, *, structured_assessment: dict[str, Any]
+        cls,
+        *,
+        structured_assessment: dict[str, Any],
+        build_prompt: Callable,
+        format_inputs: Callable,
     ) -> AIRecommendationPayload:
-        prompt = build_recommendation_prompt()
-        inputs = format_prompt_inputs(structured_assessment=structured_assessment)
+        prompt = build_prompt()
+        inputs = format_inputs(structured_assessment)
         llm = get_chat_model()
         last_error: AIGenerationError | None = None
         for attempt in range(2):

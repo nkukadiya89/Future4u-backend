@@ -19,34 +19,33 @@ from django.contrib import admin
 from django.urls import path, include
 from user.user_auth import CustomTokenObtainPairView
 from future4u.routers import future4u_router
-from recommendation.profiles.student.views import AIRecommendationAPIView, AIRecommendationChatAPIView
-from recommendation.profiles.parent.views import (
-    ParentAIRecommendationAPIView,
-    ParentAIRecommendationChatAPIView,
-)
+from recommendation.views import RecommendationAPIView, RecommendationChatAPIView
+from recommendation.profiles.student.service import StudentRecommendationService
+from recommendation.profiles.student.chat_service import StudentChatService
+from recommendation.profiles.parent.service import ParentRecommendationService
+from recommendation.profiles.parent.chat_service import ParentChatService
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("get-token/", CustomTokenObtainPairView.as_view(), name="get_token"),
     path(
         "api/ai-recommendations/<int:assessment_id>/",
-        AIRecommendationAPIView.as_view(),
+        RecommendationAPIView.as_view(service_class=StudentRecommendationService),
         name="api-ai-recommendations",
     ),
     path(
         "api/ai-recommendations/<int:assessment_id>/chat/",
-        AIRecommendationChatAPIView.as_view(),
+        RecommendationChatAPIView.as_view(chat_service_class=StudentChatService),
         name="api-ai-recommendations-chat",
     ),
-    # Parent AI endpoints
     path(
         "api/parent/ai-recommendations/<int:assessment_id>/",
-        ParentAIRecommendationAPIView.as_view(),
+        RecommendationAPIView.as_view(service_class=ParentRecommendationService),
         name="api-parent-ai-recommendations",
     ),
     path(
         "api/parent/ai-recommendations/<int:assessment_id>/chat/",
-        ParentAIRecommendationChatAPIView.as_view(),
+        RecommendationChatAPIView.as_view(chat_service_class=ParentChatService),
         name="api-parent-ai-recommendations-chat",
     ),
     path("", include(future4u_router.urls)),

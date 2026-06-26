@@ -29,20 +29,32 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from resume_builder.services import (
     build_student_resume_data,
     build_professional_resume_data,
+    build_child_resume_data,
     generate_resume_pdf,
 )
 
 logger = logging.getLogger(__name__)
 
 
-def _get_profile(user):
+def _get_profile(user, child_id=None):
     """
     Return (profile, resume_type) for the logged-in user.
-    Supports student and working_professional roles.
+    Supports student, working_professional, and parent (via child_id).
     """
-    from user_profile.models import StudentProfile, ProfessionalProfile
+    from user_profile.models import StudentProfile, ProfessionalProfile, ChildProfile, ParentProfile
 
     role = getattr(user, "user_type", None)
+
+    if child_id and role == user.Role.PARENT:
+        try:
+            child = (
+                ChildProfile.objects.select_related("education_level", "stream")
+                .prefetch_related("language")
+                .get(id=child_id, parent_profile__user=user, deleted=False)
+            )
+            return child, "child"
+        except ChildProfile.DoesNotExist:
+            return None, "child"
 
     if role == user.Role.STUDENT:
         try:
@@ -106,12 +118,13 @@ class ResumeGenerateView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        profile, resume_type = _get_profile(user)
+        child_id = request.query_params.get("child_id")
+        profile, resume_type = _get_profile(user, child_id=child_id)
         if profile is None and resume_type is None:
             return Response(
                 {
                     "success": False,
-                    "message": "Resume generation is only available for Student and Professional users.",
+                    "message": "Resume generation is only available for Student, Professional, and Parent users.",
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )
@@ -127,6 +140,8 @@ class ResumeGenerateView(APIView):
         # Build resume data dict from profile
         if resume_type == "fresher":
             resume_data = build_student_resume_data(profile, user, template=template)
+        elif resume_type == "child":
+            resume_data = build_child_resume_data(profile, template=template)
         else:
             resume_data = build_professional_resume_data(
                 profile, user, template=template
@@ -188,7 +203,11 @@ class ResumeGenerateView(APIView):
             if tmp_photo_path and os.path.exists(tmp_photo_path):
                 os.unlink(tmp_photo_path)
 
-        name = (user.full_name or user.email).replace(" ", "_")
+        if resume_type == "child":
+            child_name = f"{profile.first_name} {profile.last_name}".strip()
+            name = child_name.replace(" ", "_") if child_name else "child_resume"
+        else:
+            name = (user.full_name or user.email).replace(" ", "_")
         filename = f"{name}_resume.pdf"
         logger.info("Resume generated for user=%s template=%s", user.id, template)
 
@@ -215,12 +234,13 @@ class ResumePreviewView(APIView):
         user = request.user
         template = request.query_params.get("template", "professional").strip()
 
-        profile, resume_type = _get_profile(user)
+        child_id = request.query_params.get("child_id")
+        profile, resume_type = _get_profile(user, child_id=child_id)
         if profile is None and resume_type is None:
             return Response(
                 {
                     "success": False,
-                    "message": "Resume preview is only available for Student and Professional users.",
+                    "message": "Resume preview is only available for Student, Professional, and Parent users.",
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )
@@ -235,6 +255,8 @@ class ResumePreviewView(APIView):
 
         if resume_type == "fresher":
             resume_data = build_student_resume_data(profile, user, template=template)
+        elif resume_type == "child":
+            resume_data = build_child_resume_data(profile, template=template)
         else:
             resume_data = build_professional_resume_data(
                 profile, user, template=template

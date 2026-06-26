@@ -3,7 +3,7 @@ from __future__ import annotations
 from django.db.models import Prefetch
 
 from assessment.models import Option, StudentAssessment, UserResponse
-from assessment_career.models import CareerRecommendation, CareerRecommendationSuggestion
+from assessment_career.models import CareerRecommendation, CareerSuggestion
 from recommendation.engine.recommendation_service import (
     AI_RECOMMENDATION_DISCLAIMER,
     load_recommendation_and_check_cycle,
@@ -19,16 +19,17 @@ from recommendation.exceptions import (
     AssessmentNotReadyError,
 )
 from recommendation.pipeline.recommendation_pipeline import RecommendationPipeline
+from recommendation.profiles.student import prompts as student_prompts
 from recommendation.profiles.student.context_builder import AssessmentContextBuilder
 
 __all__ = [
-    "AIRecommendationService",
+    "StudentRecommendationService",
     "AI_RECOMMENDATION_DISCLAIMER",
     "_normalize_study_abroad_payload",
 ]
 
 
-class AIRecommendationService:
+class StudentRecommendationService:
     """Student-specific AI recommendation service."""
 
     _public_career_factors = staticmethod(public_career_factors)
@@ -49,7 +50,13 @@ class AIRecommendationService:
 
         structured_input = AssessmentContextBuilder.build_llm_input(assessment)
 
-        payload = RecommendationPipeline.run(structured_assessment=structured_input)
+        payload = RecommendationPipeline.run(
+            structured_assessment=structured_input,
+            build_prompt=student_prompts.build_recommendation_prompt,
+            format_inputs=lambda data: student_prompts.format_prompt_inputs(
+                student_assessment=data
+            ),
+        )
         if is_study_abroad_mode(structured_input):
             payload = normalize_study_abroad_payload(payload)
 
@@ -58,7 +65,7 @@ class AIRecommendationService:
             user=user,
             payload=payload,
             recommendation_model=CareerRecommendation,
-            suggestion_model=CareerRecommendationSuggestion,
+            suggestion_model=CareerSuggestion,
             existing=recommendation,
         )
         return serialize_recommendation(recommendation)

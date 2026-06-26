@@ -31,13 +31,12 @@ CAREER_SCOPE_REFUSAL_PREFIX = (
 
 
 class BaseAIChatService:
-    """Generic career chatbot for any profile type.
+   
 
-    Configure with profile-specific models and formatting callables.
-    Supports being called as a factory: service() returns self,
-    so both `Service().method()` and `Service.method()` work.
-    """
 
+
+
+   
     def __init__(
         self,
         *,
@@ -46,12 +45,14 @@ class BaseAIChatService:
         chat_message_model,
         build_career_context: Callable,
         get_chips: Callable,
+        profile_type: str | None = None,
     ):
         self._suggestion_model = suggestion_model
         self._chat_session_model = chat_session_model
         self._chat_message_model = chat_message_model
         self._build_career_context = build_career_context
         self._get_chips = get_chips
+        self._profile_type = profile_type
 
     def __call__(self):
         return self
@@ -63,7 +64,7 @@ class BaseAIChatService:
         )
         session = self._get_existing_chat_session(suggestion)
         return {
-            **self._chat_context(suggestion),
+            **self._chat_context(suggestion, session=session),
             "messages": serialize_messages(session),
         }
 
@@ -83,7 +84,7 @@ class BaseAIChatService:
         reused = self._find_reused_answer(session=session, question=question)
         if reused:
             return {
-                **self._chat_context(suggestion),
+                **self._chat_context(suggestion, session=session),
                 "answer": reused,
                 "messages": serialize_messages(session),
             }
@@ -94,33 +95,37 @@ class BaseAIChatService:
         self._save_chat_turn(session=session, question=question, answer=answer)
 
         return {
-            **self._chat_context(suggestion),
+            **self._chat_context(suggestion, session=session),
             "answer": answer,
             "messages": serialize_messages(session),
         }
 
     def _get_suggestion(self, *, user, assessment_id: int, suggestion_id: int):
-        suggestion = (
-            self._suggestion_model.objects.filter(
-                id=suggestion_id,
-                recommendation__assessment_id=assessment_id,
-                recommendation__user=user,
-                recommendation__deleted=False,
-                deleted=False,
+        from django.db.models import Q
+
+        base_queryset = self._suggestion_model.objects.filter(
+            recommendation__user=user,
+            recommendation__deleted=False,
+            deleted=False,
+        )
+        if self._profile_type:
+            base_queryset = base_queryset.filter(
+                recommendation__profile_type=self._profile_type
             )
+
+        assessment_queryset = base_queryset.filter(
+            Q(recommendation__student_assessment_id=assessment_id) |
+            Q(recommendation__parent_assessment_id=assessment_id)
+        )
+        suggestion = (
+            assessment_queryset.filter(id=suggestion_id)
             .select_related("recommendation")
             .first()
         )
         if suggestion:
             return suggestion
 
-        exists = self._suggestion_model.objects.filter(
-            recommendation__assessment_id=assessment_id,
-            recommendation__user=user,
-            recommendation__deleted=False,
-            deleted=False,
-        ).exists()
-        if exists:
+        if assessment_queryset.exists():
             raise AssessmentAccessDeniedError("Invalid suggestion for this assessment")
         raise AssessmentNotFoundError("Recommendation not found for this assessment")
 
@@ -143,9 +148,9 @@ class BaseAIChatService:
             raise AIGenerationError("AI chat returned an empty answer")
         return answer
 
-    def _chat_context(self, suggestion) -> dict:
+    def _chat_context(self, suggestion, session=None) -> dict:
         from recommendation.engine.recommendation_service import AI_RECOMMENDATION_DISCLAIMER
-        return {
+        ctx = {
             "career_name": suggestion.career_name,
             "suggestion_id": suggestion.id,
             "match_percentage": suggestion.match_percentage,
@@ -154,12 +159,29 @@ class BaseAIChatService:
             "chips": self._get_chips(suggestion),
             "disclaimer": AI_RECOMMENDATION_DISCLAIMER,
         }
+        # Include child_id for parent profile chats (no extra query — reads from FK column directly)
+        if session is not None and session.child_id is not None:
+            ctx["child_id"] = session.child_id
+        return ctx
 
     def _get_chat_session(self, suggestion):
-        session, _ = self._chat_session_model.objects.get_or_create(
+        session, created = self._chat_session_model.objects.get_or_create(
             suggestion=suggestion
         )
+        if created:
+            self._set_session_child(session, suggestion)
         return session
+
+    def _set_session_child(self, session, suggestion):
+        """Denormalize child_id onto ChatSession for parent profile chats."""
+        rec = suggestion.recommendation
+        if rec.profile_type == "parent" and rec.parent_assessment_id:
+            from assessment.models import ParentAssessment
+            child_id = ParentAssessment.objects.filter(
+                id=rec.parent_assessment_id
+            ).values_list("child_id", flat=True).first()
+            if child_id:
+                self._chat_session_model.objects.filter(id=session.id).update(child_id=child_id)
 
     def _get_existing_chat_session(self, suggestion):
         return self._chat_session_model.objects.filter(
