@@ -67,7 +67,7 @@ class UserProfileUpsertSerializer(ProfileLanguageSaveMixin, serializers.ModelSer
 
 class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
     """Student-specific profile serializer with language and educational fields"""
-
+    status = serializers.CharField(source="user.status", read_only=True)
     role = serializers.CharField(source="user.user_type", read_only=True)
     education_level_code = serializers.CharField(
         source="education_level.level_code", read_only=True, default=None
@@ -104,12 +104,14 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
     phone = serializers.CharField(source="user.phone", read_only=True)
     email = serializers.CharField(source="user.email", read_only=True)
     profile_image = serializers.CharField(source="user.profile_image", read_only=True)
-
+    deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
+    deleted_by = serializers.CharField(source="user.deleted_by", read_only=True)
     class Meta:
         model = StudentProfile
         fields = [
             "id",
             "user",
+            "status",
             "role",
             "language",
             "country",
@@ -118,7 +120,6 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
             "state_name",
             "city",
             "city_name",
-            "science_track",
             "medium",
             "education_level",
             "education_level_code",
@@ -145,6 +146,8 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
             "profile_image",
             "created_at",
             "updated_at",
+            "deleted_at",
+            "deleted_by",
         ]
 
 class StudentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer):
@@ -167,7 +170,6 @@ class StudentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serialize
             "phone",
             "profile_image",
             "language",
-            "science_track",
             "medium",
             "education_level",
             "stream",

@@ -92,13 +92,12 @@ class StudentProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
 
     list_display = (
         "user",
-        "science_track",
         "medium",
         "education_level",
         "stream",
     )
     search_fields = ("user__email", "user__first_name", "user__last_name")
-    list_filter = ("science_track", "medium")
+    list_filter = ("medium",)
     readonly_fields = ("user", "created_at", "updated_at")
     raw_id_fields = ("user", "education_level", "stream")
 
@@ -115,7 +114,7 @@ class StudentProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
         ("Language", {"fields": ("language",)}),
         (
             "Education",
-            {"fields": ("education_level", "stream", "science_track", "medium")},
+            {"fields": ("education_level", "stream", "medium")},
         ),
         (
             "Career Direction",

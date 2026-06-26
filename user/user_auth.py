@@ -111,6 +111,14 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             )
 
         # Check if user is active
+        if user.deleted:
+            raise AuthenticationFailed(
+                {
+                    "success": False,
+                    "message": "User account has been deleted. Please contact administrator.",
+                }
+            )
+
         if not user.is_active:
             raise AuthenticationFailed(
                 {

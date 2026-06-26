@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager, Group
 from django.core.files.storage import default_storage
 from django.db import models
+from django.utils import timezone
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 
@@ -95,6 +96,7 @@ class User(AbstractUser):
     city = models.ForeignKey(
         "city.City", on_delete=models.SET_NULL, null=True, blank=True
     )
+    address = models.CharField(max_length=500, null=True, blank=True)
     must_change_password = models.BooleanField(default=False)
     created_by = models.ForeignKey(
         "self",
@@ -104,7 +106,23 @@ class User(AbstractUser):
         related_name="users_created",
     )
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-
+    updated_by = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="users_updated",
+    )
+    updated_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    deleted_by = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="users_deleted",
+    )
     objects = UserManager()
 
     USERNAME_FIELD = "email"
@@ -116,6 +134,26 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         skip_group_assignment = kwargs.pop("skip_group_assignment", False)
+        user = kwargs.pop("user", None)
+        update_fields = kwargs.get("update_fields")
+
+        if self._state.adding:
+            if user and not self.created_by_id:
+                self.created_by = user
+            self.updated_by = None
+            self.updated_at = None
+        else:
+            if update_fields is None:
+                if user:
+                    self.updated_by = user
+                if not self.deleted:
+                    self.updated_at = timezone.now()
+            else:
+                if "updated_by" in update_fields and user:
+                    self.updated_by = user
+                if "updated_at" in update_fields and not self.deleted:
+                    self.updated_at = timezone.now()
+
         self.full_name = f"{self.first_name} {self.last_name}".strip()
         super().save(*args, **kwargs)
 

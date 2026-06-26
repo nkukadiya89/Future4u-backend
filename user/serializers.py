@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
 
-from common.mixins.serializer_mixins import OtpEmailValidationMixin
+from common.mixins.serializer_mixins import DeletedFieldsMixin, OtpEmailValidationMixin, UserNameMixin
 
 from user.models import ContentTypeModel, CustomGroup, RoleFamily, User
 from user.user_auth import get_user_groups, get_user_permissions
@@ -142,6 +142,7 @@ class UserDetailsSerializer(serializers.ModelSerializer):
             "country",
             "states",
             "city",
+            "address"
         ]
         extra_kwargs = {
             "email": {"read_only": True},
@@ -193,7 +194,7 @@ class UserQuickSerializer(serializers.ModelSerializer):
         return obj.get_full_name()
 
 
-class UserListSerializer(serializers.ModelSerializer):
+class UserListSerializer(DeletedFieldsMixin, UserNameMixin, serializers.ModelSerializer):
     country_name = serializers.SerializerMethodField(read_only=True)
     state_name = serializers.SerializerMethodField(read_only=True)
     city_name = serializers.SerializerMethodField(read_only=True)
@@ -201,7 +202,13 @@ class UserListSerializer(serializers.ModelSerializer):
     last_login = serializers.SerializerMethodField(read_only=True)
     password_last_changed = serializers.SerializerMethodField(read_only=True)
     created_by = UserQuickSerializer(read_only=True)
+    updated_by = UserQuickSerializer(read_only=True)
+    deleted_by = UserQuickSerializer(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)
+    updated_at = serializers.SerializerMethodField(read_only=True)
+    updated_by_name = serializers.SerializerMethodField(read_only=True)
+    deleted_by_name = serializers.SerializerMethodField(read_only=True)
+    deleted_at = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
@@ -234,9 +241,17 @@ class UserListSerializer(serializers.ModelSerializer):
             "state_name",
             "city",
             "city_name",
+            "address",
             "must_change_password",
             "created_by",
             "created_at",
+            "updated_by",
+            "updated_by_name",
+            "updated_at",
+            "deleted",
+            "deleted_at",
+            "deleted_by",
+            "deleted_by_name",
         ]
 
     def get_country_name(self, obj):
@@ -259,3 +274,6 @@ class UserListSerializer(serializers.ModelSerializer):
     
     def get_created_at(self, obj):
         return format_datetime(getattr(obj, "created_at", None))
+
+    def get_updated_at(self, obj):
+        return format_datetime(getattr(obj, "updated_at", None))

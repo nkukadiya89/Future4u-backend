@@ -6,9 +6,7 @@ from country.models import Country
 from state.models import State
 from city.models import City
 from user.models import User
-from user.services.registration_service import (
-    activate_web_user_with_temporary_password,
-)
+from user.services.registration_service import setup_web_user_password
 
 
 class BulkUserUploadService:
@@ -17,7 +15,6 @@ class BulkUserUploadService:
         "last_name",
         "about_me",
         "email",
-        "user_type",
         "phone",
         "referral_code",
         "country",
@@ -26,7 +23,7 @@ class BulkUserUploadService:
     ]
 
     @classmethod
-    def process(cls, file, request_user):
+    def process(cls, file, request_user, user_type):
         df = cls._read_file(file)
         cls._validate_headers(df)
 
@@ -42,6 +39,9 @@ class BulkUserUploadService:
         seen_phones = set()
 
         valid_roles = [role.value for role in User.Role]
+        if user_type not in valid_roles:
+            raise ValidationError(f"Invalid user_type. Allowed:{', '.join(valid_roles)}")
+        
         countries = {
             c.name.strip().lower(): c for c in Country.objects.all()
         }
@@ -56,11 +56,12 @@ class BulkUserUploadService:
 
         existing_emails = {
             email.lower()
-            for email in User.objects.values_list("email", flat=True)
+            for email in User.objects.filter(deleted=False).values_list("email", flat=True)
             if email
         }
         existing_phones = set(
-            User.objects.exclude(phone__isnull=True)
+            User.objects.filter(deleted=False)
+            .exclude(phone__isnull=True)
             .exclude(phone="")
             .values_list("phone", flat=True)
         )
@@ -87,7 +88,6 @@ class BulkUserUploadService:
                 required_fields = {
                     "first_name": row.get("first_name"),
                     "email": row.get("email"),
-                    "user_type": row.get("user_type"),
                     "country": row.get("country"),
                     "state": row.get("state"),
                     "city": row.get("city"),
@@ -151,19 +151,6 @@ class BulkUserUploadService:
 
                 if phone in existing_phones:
                     skipped += 1
-                    continue
-
-                user_type = str(row["user_type"]).strip()
-
-                if user_type not in valid_roles:
-                    failed += 1
-                    errors.append(
-                        {
-                            "row": row_number,
-                            "email": email,
-                            "message": f"Invalid user_type. Allowed: {', '.join(valid_roles)}",
-                        }
-                    )
                     continue
 
                 country_name = str(row["country"]).strip().lower()
@@ -239,11 +226,12 @@ class BulkUserUploadService:
                         country=country,
                         states=state,
                         city=city,
+                        address=str(row.get("address", "")).strip() or None,
                         created_by=request_user,
                         terms_accepted=True,
                     )
 
-                    activate_web_user_with_temporary_password(user)
+                    setup_web_user_password(user)
 
                     existing_emails.add(email)
                     existing_phones.add(phone)
@@ -267,9 +255,9 @@ class BulkUserUploadService:
             "errors": errors,
         }
     @classmethod
-    def process_file_path(cls, file_path, request_user):
+    def process_file_path(cls, file_path, request_user, user_type):
         with open(file_path, "rb") as file:
-            return cls.process(file, request_user)
+            return cls.process(file, request_user,user_type)
 
     @classmethod
     def _read_file(cls, file):

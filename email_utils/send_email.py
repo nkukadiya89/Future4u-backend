@@ -5,13 +5,15 @@ from datetime import datetime, timedelta
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
+from django.conf import settings
 import jwt
 from decouple import config
 from django.shortcuts import HttpResponse
 from django.template.loader import render_to_string
 
 from utils.email_logger import log_email_failed, log_email_sent
+
+WEB_PASSWORD_SETUP_TOKEN_DAYS = 1
 
 
 def generate_token(email=None, token_time=None):
@@ -61,7 +63,7 @@ def _build_email_context(template, data):
         context["verification_code"] = data["otp"]
         context["email"] = data["email"]
     elif template == "reset-pass.html":
-        context["path"] = app_url + "reset-password/"
+        context["path"] = "https://dev.future4u.ai/reset-password/"
         token_value = data["token"]
         if isinstance(token_value, (bytes, bytearray)):
             token_value = token_value.decode("utf-8")
@@ -72,6 +74,13 @@ def _build_email_context(template, data):
         if isinstance(token_value, (bytes, bytearray)):
             token_value = token_value.decode("utf-8")
         context["token"] = str(token_value)
+    elif template == "set-password.html":
+        context["path"] = "https://dev.future4u.ai/reset-password/"
+        token_value = data["token"]
+        if isinstance(token_value, (bytes, bytearray)):
+            token_value = token_value.decode("utf-8")
+        context["token"] = str(token_value)
+        context["email"] = data["email"]
     elif template == "temporary-password.html":
         context["temporary_password"] = data["temporary_password"]
         context["login_url"] = app_url + "login"
@@ -83,6 +92,10 @@ def _build_email_context(template, data):
         context["failed"] = data["failed"]
         context["skipped"] = data["skipped"]
         context["errors"] = data.get("errors", [])
+    elif template == "email-changed.html":
+        context["email"] = data["email"]
+        context["old_email"] = data["old_email"]
+        context["new_email"] = data["new_email"]
 
     return context
 
@@ -249,4 +262,40 @@ def send_admin_summary_email(admin_user, result):
             "skipped": result["skipped"],
             "errors": result.get("errors", []),
         },
+    )
+
+def send_email_change_notification(old_email, new_email, user):
+    send_mail(
+        "Your Future4U Email Address Was Updated",
+        "email-changed.html",
+        {
+            "name": user.first_name or "User",
+            "email": old_email,
+            "old_email": old_email,
+            "new_email": new_email,
+        },
+    )
+
+def send_activation_password_setup_email(user):
+    from user.tasks import send_password_setup_link_task
+
+    user.set_unusable_password()
+    user.must_change_password = True
+    user.otp = None
+    user.otp_created_at = None
+    user.save(
+        update_fields=[
+            "password",
+            "must_change_password",
+            "otp",
+            "otp_created_at",
+        ]
+    )
+
+    token = generate_token(user.email, WEB_PASSWORD_SETUP_TOKEN_DAYS)
+
+    send_password_setup_link_task.delay(
+        user.first_name,
+        user.email,
+        token,
     )

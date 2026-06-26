@@ -2,9 +2,10 @@ from django import forms
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm as BaseUserChangeForm
+from django.utils import timezone
 
 from user.models import CustomGroup, EmailPhoneVerify, RoleFamily, User
-from user.services.registration_service import activate_web_user_with_temporary_password
+from user.services.registration_service import setup_web_user_password
 
 
 class UserChangeForm(BaseUserChangeForm):
@@ -42,6 +43,7 @@ class UserAdminAddForm(forms.ModelForm):
             "country",
             "states",
             "city",
+            "address",
             "user_type",
             "terms_accepted",
             "referral_code",
@@ -52,8 +54,8 @@ class UserAdminAddForm(forms.ModelForm):
         )
         help_texts = {
             "email": (
-                "A temporary password will be generated and sent to this email. "
-                "The user must change it on first login."
+                "A password setup link will be sent to this email. "
+                "The user must set their password before logging in."
             ),
         }
 
@@ -100,10 +102,18 @@ class UserAdmin(BaseUserAdmin):
         "is_staff",
         "must_change_password",
     )
-    list_filter = ("is_active", "is_staff", "user_type", "status", "must_change_password")
+    list_filter = ("is_active", "is_staff", "user_type", "status", "must_change_password", "deleted")
     search_fields = ("email", "first_name", "last_name")
     ordering = ("-id",)
-    readonly_fields = ("created_by", "created_at")
+    readonly_fields = (
+        "created_by",
+        "created_at",
+        "updated_by",
+        "updated_at",
+        "deleted",
+        "deleted_at",
+        "deleted_by",
+    )
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
@@ -124,7 +134,7 @@ class UserAdmin(BaseUserAdmin):
         ),
         (
             "Location",
-            {"fields": ("country", "states", "city")},
+            {"fields": ("country", "states", "city", "address")},
         ),
         (
             "Additional info",
@@ -140,6 +150,11 @@ class UserAdmin(BaseUserAdmin):
                     "referral_code",
                     "created_by",
                     "created_at",
+                    "updated_by",
+                    "updated_at",
+                    "deleted",
+                    "deleted_at",
+                    "deleted_by",
                 )
             },
         ),
@@ -167,8 +182,8 @@ class UserAdmin(BaseUserAdmin):
             {
                 "classes": ("wide",),
                 "description": (
-                    "No password is required. After you save, a temporary password "
-                    "will be emailed to the user. They must change it on first login."
+                    "No password is required. After you save, a password setup link "
+                    "will be emailed to the user. They must set their password before logging in."
                 ),
                 "fields": (
                     "email",
@@ -207,12 +222,15 @@ class UserAdmin(BaseUserAdmin):
     def save_model(self, request, obj, form, change):
         if not change:
             obj.created_by = request.user
+        else:
+            obj.updated_by = request.user
+            obj.updated_at = timezone.now()
         super().save_model(request, obj, form, change)
         if not change:
-            activate_web_user_with_temporary_password(obj)
+            setup_web_user_password(obj)
             self.message_user(
                 request,
-                f"User created successfully. A temporary password has been sent to {obj.email}.",
+                f"User created successfully. A password setup link has been sent to {obj.email}.",
                 messages.SUCCESS,
             )
 

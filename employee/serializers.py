@@ -10,7 +10,7 @@ from common.mixins.serializer_mixins import (
 )
 from employee.models import Employee
 from user.models import CustomGroup, User
-from user.services.registration_service import activate_web_user_with_temporary_password
+from user.services.registration_service import setup_web_user_password
 from utils.generate_ip_address import get_client_ip
 
 
@@ -181,7 +181,7 @@ class AddEmployeeSerializer(
 
         user.save()
 
-        activate_web_user_with_temporary_password(user)
+        setup_web_user_password(user)
 
         ActivityLog.log.employee_create(
             employee_instance,

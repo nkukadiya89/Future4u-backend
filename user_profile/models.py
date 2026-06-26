@@ -52,20 +52,6 @@ class StudentProfile(models.Model):
         help_text="Preferred languages selected from Language master",
     )
 
-    # Student-specific fields
-    class ScienceTrack(models.TextChoices):
-        PCM = "pcm", "PCM (Physics, Chemistry, Maths)"
-        PCB = "pcb", "PCB (Physics, Chemistry, Biology)"
-        PCMB = "pcmb", "PCMB (All four)"
-
-    science_track = models.CharField(
-        max_length=10,
-        choices=ScienceTrack.choices,
-        null=True,
-        blank=True,
-        help_text="Science track selection for students",
-    )
-
     medium = models.CharField(
         max_length=20,
         choices=[
@@ -119,7 +105,6 @@ class StudentProfile(models.Model):
             models.Index(fields=["user"]),
             models.Index(fields=["education_level"]),
             models.Index(fields=["stream"]),
-            models.Index(fields=["science_track"]),
             models.Index(fields=["medium"]),
         ]
 

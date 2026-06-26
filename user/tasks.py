@@ -28,25 +28,26 @@ def _serialize_bulk_upload_result(result):
 
 
 @shared_task
-def send_temp_password_email_task(name, email, temporary_password):
+def send_password_setup_link_task(name, email, token):
     send_mail(
-        "Your Future4U Temporary Password",
-        "temporary-password.html",
+        "Set Your Future4U Password",
+        "set-password.html",
         {
             "name": name,
             "email": email,
-            "temporary_password": temporary_password,
+            "token": token,
         },
     )
 
 
 @shared_task
-def bulk_upload_user_task(file_path, admin_id):
+def bulk_upload_user_task(file_path, admin_id,user_type):
     try:
         admin_user = User.objects.get(id=admin_id)
         result = BulkUserUploadService.process_file_path(
             file_path,
             admin_user,
+            user_type,
         )
         serialized = _serialize_bulk_upload_result(result)
 
