@@ -1,0 +1,316 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  .cgp-section {
+    background: var(--body-bg, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    margin-bottom: 20px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .cgp-section h2 {
+    margin: 0 0 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--body-fg, #333);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color, #eee);
+  }
+  .cgp-status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .cgp-status-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .cgp-status-item .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--body-quiet-color, #666);
+    font-weight: 600;
+  }
+  .cgp-status-item .value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--body-fg, #333);
+  }
+  .cgp-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  .cgp-badge-enabled  { background: #ecfdf5; color: #065f46; }
+  .cgp-badge-disabled { background: #fef2f2; color: #991b1b; }
+  .cgp-badge-yes      { background: #ecfdf5; color: #065f46; }
+  .cgp-badge-no       { background: #fef3c7; color: #92400e; }
+  .cgp-badge-provider { background: #eff6ff; color: #1e40af; }
+
+  .cgp-form-row {
+    margin-bottom: 14px;
+  }
+  .cgp-form-row label {
+    display: block;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: var(--body-fg, #333);
+  }
+  .cgp-form-row textarea,
+  .cgp-form-row input[type="text"] {
+    width: 100%;
+    max-width: 600px;
+    box-sizing: border-box;
+  }
+  .cgp-form-row .helptext {
+    font-size: 11px;
+    color: var(--body-quiet-color, #666);
+    margin-top: 2px;
+    display: block;
+  }
+  .cgp-submit-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .cgp-submit-row .spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border-color, #ddd);
+    border-top-color: var(--accent, #447e9b);
+    border-radius: 50%;
+    animation: cgp-spin 0.7s linear infinite;
+  }
+  .cgp-submit-row.processing .spinner { display: inline-block; }
+  .cgp-submit-row.processing .default  { opacity: 0.7; pointer-events: none; }
+
+  @keyframes cgp-spin { to { transform: rotate(360deg); } }
+
+  .cgp-json-block {
+    position: relative;
+    background: #f8f9fa;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 5px;
+    padding: 14px;
+    margin-top: 6px;
+  }
+  .cgp-json-block pre {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 500px;
+    overflow-y: auto;
+    color: #1f2937;
+  }
+  .cgp-copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 10px;
+    font-size: 11px;
+    background: var(--body-bg, #fff);
+    border: 1px solid var(--border-color, #d1d5db);
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--body-fg, #374151);
+    transition: background 0.15s;
+  }
+  .cgp-copy-btn:hover { background: #e5e7eb; }
+  .cgp-copy-btn.copied { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+
+  .cgp-error {
+    padding: 12px 16px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 5px;
+    color: #991b1b;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .cgp-success {
+    padding: 12px 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 5px;
+    color: #166534;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .cgp-section { background: var(--darkened-bg, #1b1e20); border-color: var(--border-color, #333); }
+    .cgp-json-block { background: var(--darkened-bg, #1b1e20); }
+    .cgp-json-block pre { color: var(--body-fg, #ddd); }
+    .cgp-copy-btn { background: var(--darkened-bg, #2b2e30); color: var(--body-fg, #ccc); }
+    .cgp-badge-enabled  { background: #064e3b; color: #6ee7b7; }
+    .cgp-badge-disabled { background: #7f1d1d; color: #fca5a5; }
+    .cgp-badge-yes      { background: #064e3b; color: #6ee7b7; }
+    .cgp-badge-no       { background: #78350f; color: #fcd34d; }
+    .cgp-badge-provider { background: #1e3a5f; color: #93c5fd; }
+    .cgp-error { background: #3b1a1a; border-color: #7f1d1d; color: #fca5a5; }
+    .cgp-success { background: #1a3b2a; border-color: #166534; color: #6ee7b7; }
+  }
+</style>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.cgp-copy-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var code = this.parentElement.querySelector('pre');
+        if (!code) return;
+        navigator.clipboard.writeText(code.textContent).then(function() {
+          var orig = btn.textContent;
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(function() {
+            btn.textContent = orig;
+            btn.classList.remove('copied');
+          }, 1800);
+        });
+      });
+    });
+
+    var form = document.getElementById('cgp-form');
+    var submitRow = document.getElementById('cgp-submit-row');
+    if (form && submitRow) {
+      form.addEventListener('submit', function() {
+        submitRow.classList.add('processing');
+      });
+    }
+  });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="content" style="max-width:960px;">
+
+  <h1>{% translate "AI Internship Generation" %}</h1>
+  <p style="color:var(--body-quiet-color,#666);margin-bottom:20px;">
+    Test the AI internship generation pipeline for the Future4U Post Internship form.
+    Enter employer-provided details (overview, department, stipend, duration, mode, deadline)
+    and the AI generates internship title, improved overview, key responsibilities, and skills.
+  </p>
+
+  <div class="cgp-section">
+    <h2>{% translate "Provider Status" %}</h2>
+    <div class="cgp-status-grid">
+      <div class="cgp-status-item">
+        <span class="label">{% translate "Mode" %}</span>
+        <span class="cgp-badge cgp-badge-provider">{{ provider.mode }}</span>
+      </div>
+      <div class="cgp-status-item">
+        <span class="label">{% translate "Internship Generation" %}</span>
+        <span class="cgp-badge {% if provider.internship_generation_enabled %}cgp-badge-enabled{% else %}cgp-badge-disabled{% endif %}">
+          {% if provider.internship_generation_enabled %}{% translate "Enabled" %}{% else %}{% translate "Disabled" %}{% endif %}
+        </span>
+      </div>
+      <div class="cgp-status-item">
+        <span class="label">{% translate "Provider" %}</span>
+        <span class="value">{{ provider.provider_name }}</span>
+      </div>
+      <div class="cgp-status-item">
+        <span class="label">{% translate "Provider Configured" %}</span>
+        <span class="cgp-badge {% if provider.provider_configured %}cgp-badge-yes{% else %}cgp-badge-no{% endif %}">
+          {% if provider.provider_configured %}{% translate "Yes" %}{% else %}{% translate "No" %}{% endif %}
+        </span>
+      </div>
+      <div class="cgp-status-item">
+        <span class="label">{% translate "AI LLM" %}</span>
+        <span class="cgp-badge {% if provider.ai_llm_enabled %}cgp-badge-yes{% else %}cgp-badge-no{% endif %}">
+          {% if provider.ai_llm_enabled %}{% translate "Ready" %}{% else %}{% translate "Not ready" %}{% endif %}
+        </span>
+      </div>
+      <div class="cgp-status-item">
+        <span class="label">{% translate "AI Tracing" %}</span>
+        <span class="cgp-badge {% if provider.ai_tracing_enabled %}cgp-badge-yes{% else %}cgp-badge-no{% endif %}">
+          {% if provider.ai_tracing_enabled %}{% translate "Enabled" %}{% else %}{% translate "Disabled" %}{% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cgp-section">
+    <h2>{% translate "Generate Internship Details" %}</h2>
+    <form id="cgp-form" method="post">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="cgp-form-row">
+          {{ field.errors }}
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}
+            <span class="helptext">{{ field.help_text }}</span>
+          {% endif %}
+        </div>
+      {% endfor %}
+      <div id="cgp-submit-row" class="cgp-submit-row">
+        <input type="submit" class="default" value="{% translate 'Generate internship details' %}" />
+        <span class="spinner"></span>
+      </div>
+    </form>
+  </div>
+
+  {% if form.errors %}
+    <div class="cgp-error">
+      <strong>{% translate "Form errors:" %}</strong>
+      <ul style="margin:4px 0 0 16px;padding:0;">
+        {% for field_errors in form.errors.values %}
+          {% for message in field_errors %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {% if error %}
+    <div class="cgp-error">
+      <strong>{% translate "Generation error:" %}</strong> {{ error }}
+    </div>
+  {% endif %}
+
+  {% if result_pretty and not error %}
+    <div class="cgp-success">
+      {% translate "Internship details generated successfully." %}
+    </div>
+  {% endif %}
+
+  {% if diagnostics_pretty %}
+    <div class="cgp-section">
+      <h2>{% translate "Run Context" %}</h2>
+      <div class="cgp-json-block">
+        <button type="button" class="cgp-copy-btn">{% translate "Copy" %}</button>
+        <pre>{{ diagnostics_pretty }}</pre>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if result_pretty %}
+    <div class="cgp-section">
+      <h2>{% translate "AI Output" %}</h2>
+      <div class="cgp-json-block">
+        <button type="button" class="cgp-copy-btn">{% translate "Copy" %}</button>
+        <pre>{{ result_pretty }}</pre>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
