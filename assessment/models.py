@@ -259,6 +259,7 @@ class StudentAssessment(BaseModule):
 class ParentAssessment(BaseModule):
     class Screen(models.TextChoices):
         DOMAIN_CATEGORY = "domain_category", "Domain Category"
+        DOMAIN = "domain", "Domain"
         CAREER_DIRECTION = "career_direction", "Career Direction"
         PARENT_SUPPORT = "parent_support", "Parent Support"
         CONCERNS = "concerns", "Concerns"
@@ -297,6 +298,14 @@ class ParentAssessment(BaseModule):
         on_delete=models.CASCADE,
         related_name="parent_assessments",
     )
+    child = models.ForeignKey(
+        "user_profile.ChildProfile",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="parent_assessments",
+        help_text="The child this assessment is about.",
+    )
     domain_category = models.ForeignKey(
         "domain.Domain",
         on_delete=models.SET_NULL,
@@ -304,6 +313,14 @@ class ParentAssessment(BaseModule):
         blank=True,
         related_name="parent_category_assessments",
         help_text="Parent category domain selected by the parent.",
+    )
+    domain = models.ForeignKey(
+        "domain.Domain",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="parent_domain_assessments",
+        help_text="Child domain selected by the parent.",
     )
     career_direction = models.ManyToManyField(CareerDirection, blank=True)
     parent_support = models.CharField(

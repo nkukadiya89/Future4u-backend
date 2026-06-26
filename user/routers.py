@@ -11,6 +11,7 @@ from user.group_and_permission import (
     GroupViewSet,
     PermissionViewSet,
 )
+from user.admin_user_views import AdminStudentViewSet
 from user.resend_password_reset import ResendPasswordResetViewSet
 from user.user_type_views import AuthViewSet
 from user.views import (
@@ -85,4 +86,5 @@ user_router.register(
 )
 
 user_router.register("auth", AuthViewSet, basename="auth")
+user_router.register("admin-student-users", AdminStudentViewSet, basename="admin_users")
 user_router.register("users", UserListViewSet, basename="users")

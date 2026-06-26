@@ -1,5 +1,7 @@
 from datetime import timedelta
-from utils.auth import validate_password_strength
+import json
+
+from utils.auth import is_web_source, validate_password_strength
 from django.contrib.auth import logout
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -8,26 +10,17 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .services.bulk_user_upload import BulkUserUploadService
 from user.models import User
 from email_utils.send_email import generate_token, send_mail, decode_token
 from user.services.registration_service import (
     send_registration_email,
     send_verify_email,
 )
-from django.core.exceptions import ValidationError
-from user.user_type_serializers import AdminCreateUserSerializer, RegisterSerializer,BulkUserUploadSerializer
+from user.user_type_serializers import RegisterSerializer
 
 
 class AuthViewSet(viewsets.ViewSet):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
-
-    def _is_admin_user(self, user):
-        return (
-            user.is_superuser
-            or user.is_staff
-            or user.user_type == User.Role.SUPER_ADMIN
-        )
 
     @action(
         detail=False,
@@ -42,7 +35,13 @@ class AuthViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             user = serializer.save()
 
-            if not user.is_active:
+            try:
+                json_data = json.loads(request.data.get("data", "{}"))
+                source = json_data.get("source")
+            except (json.JSONDecodeError, TypeError, AttributeError):
+                source = None
+
+            if not user.is_active and not is_web_source(source):
                 send_registration_email(user)
 
             response_data = {
@@ -50,11 +49,14 @@ class AuthViewSet(viewsets.ViewSet):
                 "user_id": user.id,
                 "user_type": user.user_type,
             }
-            if user.must_change_password:
+            if is_web_source(source):
                 response_data.update(
                     {
-                        "message": "Registration successful Temporary password sent to your email. reset your password.",
-                        "requires_password_change": True,
+                        "message": (
+                            "Registration successful. "
+                            "A password setup link has been sent to your email."
+                        ),
+                        "must_change_password": True,
                     }
                 )
             else:
@@ -63,41 +65,6 @@ class AuthViewSet(viewsets.ViewSet):
                 )
 
             return Response(response_data, status=status.HTTP_201_CREATED)
-
-        return Response(
-            {"success": False, "errors": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    @action(
-        detail=False,
-        methods=["post"],
-        url_path="create-user",
-        permission_classes=[IsAuthenticated],
-        authentication_classes=[JWTAuthentication],
-    )
-    def create_user(self, request):
-        if not self._is_admin_user(request.user):
-            return Response(
-                {"success": False, "error": "Admin access required"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        serializer = AdminCreateUserSerializer(
-            data=request.data, context={"request": request}
-        )
-        if serializer.is_valid():
-            user = serializer.save()
-            return Response(
-                {
-                    "success": True,
-                    "message": "User created. Temporary password sent to their email. reset your password",
-                    "user_id": user.id,
-                    "user_type": user.user_type,
-                    "requires_password_change": True,
-                },
-                status=status.HTTP_201_CREATED,
-            )
 
         return Response(
             {"success": False, "errors": serializer.errors},
@@ -146,9 +113,19 @@ class AuthViewSet(viewsets.ViewSet):
             )
 
         user.is_active = True
+        user.status = "active"
+        user.email_verified = True
         user.otp = None
         user.otp_created_at = None
-        user.save()
+        user.save(
+            update_fields = [
+                "is_active",
+                "status",
+                "email_verified",
+                "otp",
+                "otp_created_at",
+            ]
+        )
         return Response(
             {"success": True, "message": "Your email has been verified, and your account has been created successfully"},
             status=status.HTTP_200_OK,
@@ -340,6 +317,13 @@ class AuthViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        password_errors = validate_password_strength(new_password)
+        if password_errors:
+            return Response(
+                {"success": False, "errors": password_errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
             payload = decode_token(token)
         except Exception:
@@ -363,53 +347,28 @@ class AuthViewSet(viewsets.ViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        was_pending = not user.is_active or user.status == "pending"
         user.set_password(new_password)
         user.must_change_password = False
         user.password_last_changed = timezone.now()
-        user.save(
-            update_fields=[
-                "password",
-                "must_change_password",
-                "password_last_changed",
-            ]
+        update_fields = [
+            "password",
+            "must_change_password",
+            "password_last_changed",
+        ]
+        if was_pending:
+            user.is_active = True
+            user.status = "active"
+            user.email_verified = True
+            update_fields.extend(["is_active", "status", "email_verified"])
+
+        user.save(update_fields=update_fields)
+        message = (
+            "Password set successfully."
+            if was_pending
+            else "Password reset successfully"
         )
         return Response(
-            {"success": True, "message": "Password reset successfully"},
+            {"success": True, "message": message},
             status=status.HTTP_200_OK,
         )
-
-
-    @action(detail=False, methods=["post"], url_path="bulk-upload-users",
-        permission_classes=[IsAuthenticated],
-        authentication_classes=[JWTAuthentication]
-        )
-    def bulk_upload_users(self, request):
-        if not self._is_admin_user(request.user):
-            return Response(
-                {
-                    "success": False,
-                    "message": "Admin access required",
-                },
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        serializer = BulkUserUploadSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        try:
-            result = BulkUserUploadService.process(serializer.validated_data["file"],request.user)
-
-            return Response(
-                {
-                    "success": True,
-                    **result
-                },
-                status=status.HTTP_200_OK,
-            )
-        
-        except ValidationError as e:
-            return Response(
-                {
-                    "success": False,
-                    "message": e.messages[0] if hasattr(e, "messages") else str(e),
-                },
-                status=400,
-            )

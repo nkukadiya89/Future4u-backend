@@ -73,7 +73,7 @@ class ChildProfileViewSet(ModelViewSet):
         return ChildProfile.objects.filter(
             parent_profile__user=self.request.user,
             deleted=False,
-        ).select_related("education_level", "stream")
+        ).select_related("education_level", "stream").prefetch_related("language")
 
     def get_serializer_class(self):
         if self.action in ("create", "partial_update", "update"):
@@ -95,9 +95,15 @@ class ChildProfileViewSet(ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        first_name = request.data.get("first_name")
-        last_name = request.data.get("last_name")
-        date_of_birth = request.data.get("date_of_birth")
+        data = request.data.get("data")
+        if data:
+            data = json.loads(data)
+        else:
+            data = request.data
+
+        first_name = data.get("first_name")
+        last_name = data.get("last_name")
+        date_of_birth = data.get("date_of_birth")
 
         if first_name and last_name and date_of_birth:
             exists = ChildProfile.objects.filter(
@@ -123,7 +129,7 @@ class ChildProfileViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=data)
         if not serializer.is_valid():
             return Response(
                 {"success": False, "message": serializer.errors},
@@ -154,7 +160,12 @@ class ChildProfileViewSet(ModelViewSet):
     @transaction.atomic
     def partial_update(self, request, *args, **kwargs):
         child = self.get_object()
-        serializer = self.get_serializer(child, data=request.data, partial=True)
+        data = request.data.get("data")
+        if data:
+            data = json.loads(data)
+        else:
+            data = {}
+        serializer = self.get_serializer(child, data=data, partial=True)
         if not serializer.is_valid():
             return Response(
                 {"success": False, "message": serializer.errors},
@@ -559,13 +570,6 @@ class UserProfileViewSet(ModelViewSet):
 
 
 class StudentProfileViewSet(ModelViewSet):
-    """
-    Student-specific profile endpoint
-    Endpoints:
-    - GET   /api/student-profile/
-    - PATCH /api/student-profile/
-    """
-
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     http_method_names = ["get", "patch", "head", "options"]
@@ -573,25 +577,82 @@ class StudentProfileViewSet(ModelViewSet):
     throttle_classes = [PerUserBurstRateThrottle]
 
     def get_queryset(self):
-        return StudentProfile.objects.filter(user=self.request.user).select_related(
+        return StudentProfile.objects.filter(user__deleted=False).select_related(
             "user__country", "user__states", "user__city", "education_level", "stream"
         )
-
+    
+    def get_profile_object(self, request):
+        queryset = self.get_queryset()
+        if request.user.is_superuser:
+            user_id = request.query_params.get("user_id")
+            if user_id:
+                return queryset.filter(user_id=user_id).first()
+        return queryset.filter(user=request.user).first()
+    
     def list(self, request, *args, **kwargs):
-        profile = StudentProfile.objects.filter(user=request.user).first()
+        if request.user.is_superuser:
+            user_id = request.query_params.get("user_id")
+            queryset = self.get_queryset()
+            no_pagination = request.query_params.get("no_pagination")
+            page = self.paginate_queryset(queryset)
+
+            if user_id:
+                profile = queryset.filter(user_id=user_id).first()
+
+                if not profile:
+                    return Response(
+                        {"success": False, "message": "Profile not found"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+
+                serializer = StudentProfileSerializer(profile)
+                return Response(
+                    {
+                        "success": True,
+                        "data": serializer.data
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            if no_pagination:
+                serializer = StudentProfileSerializer(queryset, many=True)
+
+                return Response(
+                    {
+                        "success": True,
+                        "data": serializer.data,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            if page is not None:
+                serializer = StudentProfileSerializer(page, many=True)
+                return self.get_paginated_response(
+                    {
+                        "success": True,
+                        "data": serializer.data,
+                    }
+                )
+            serializer = StudentProfileSerializer(queryset, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+
+        profile = self.get_queryset().filter(user=request.user).first()
+
         if not profile:
             return Response(
                 {"success": False, "message": "Profile not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        data = StudentProfileSerializer(profile).data
+
+        serializer = StudentProfileSerializer(profile)
+
         return Response(
-            {"success": True, "data": data},
+            {"success": True, "data": serializer.data},
             status=status.HTTP_200_OK,
         )
-
+    
     def partial_update(self, request, *args, **kwargs):
-        profile = StudentProfile.objects.filter(user=request.user).first()
+        profile = self.get_profile_object(request)
         if not profile:
             return Response(
                 {"success": False, "message": "Profile not found"},
@@ -605,7 +666,7 @@ class StudentProfileViewSet(ModelViewSet):
 
         profile_image = request.FILES.get("profile_image")
         if profile_image:
-            request.user.upload_profile_image(profile_image)
+            profile.user.upload_profile_image(profile_image)
 
         serializer = StudentProfileUpsertSerializer(profile, data=data, partial=True)
         if not serializer.is_valid():

@@ -92,13 +92,12 @@ class StudentProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
 
     list_display = (
         "user",
-        "science_track",
         "medium",
         "education_level",
         "stream",
     )
     search_fields = ("user__email", "user__first_name", "user__last_name")
-    list_filter = ("science_track", "medium")
+    list_filter = ("medium",)
     readonly_fields = ("user", "created_at", "updated_at")
     raw_id_fields = ("user", "education_level", "stream")
 
@@ -115,7 +114,7 @@ class StudentProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
         ("Language", {"fields": ("language",)}),
         (
             "Education",
-            {"fields": ("education_level", "stream", "science_track", "medium")},
+            {"fields": ("education_level", "stream", "medium")},
         ),
         (
             "Career Direction",
@@ -205,6 +204,8 @@ class ChildProfileAdmin(admin.ModelAdmin):
     search_fields = (
         "first_name",
         "last_name",
+        "email",
+        "phone",
         "parent_profile__user__email",
     )
     list_filter = (
@@ -215,11 +216,24 @@ class ChildProfileAdmin(admin.ModelAdmin):
     )
     raw_id_fields = ("parent_profile", "education_level", "stream")
     readonly_fields = ("created_at", "updated_at")
+    filter_horizontal = ("language",)
 
     fieldsets = (
         ("Parent", {"fields": ("parent_profile",)}),
-        ("Child", {"fields": ("first_name", "last_name", "profile_image", "date_of_birth")}),
+        ("Child", {"fields": ("first_name", "last_name", "profile_image", "date_of_birth", "phone", "email")}),
+        ("Language", {"fields": ("language",)}),
         ("Education", {"fields": ("education_level", "stream", "academic_performance")}),
+        ("Career Direction", {"fields": ("career_direction",)}),
+        ("Education Details", {"fields": ("education",)}),
+        ("Skills", {"fields": ("skills",)}),
+        ("Projects", {"fields": ("projects",)}),
+        ("Internships", {"fields": ("internships",)}),
+        ("Certifications", {"fields": ("certifications",)}),
+        ("Achievements", {"fields": ("achievements",)}),
+        ("Extra Activities", {"fields": ("extra_activities",)}),
+        ("Additional Insights", {"fields": ("additional_insights",)}),
+        ("Job Preferences", {"fields": ("preferred_job_locations",)}),
+        ("Social Links", {"fields": ("linkedin_url", "github_url", "portfolio")}),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
 

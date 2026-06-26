@@ -230,8 +230,16 @@ class ParentAssessmentSerializer(BaseModelSerializer):
         required=False,
         allow_null=True,
     )
+    domain = serializers.PrimaryKeyRelatedField(
+        queryset=Domain.objects.filter(is_active=True, deleted=False),
+        required=False,
+        allow_null=True,
+    )
     domain_category_name = serializers.CharField(
         source="domain_category.domain_name", read_only=True, default=None
+    )
+    domain_name = serializers.CharField(
+        source="domain.domain_name", read_only=True, default=None
     )
     career_direction_name = serializers.SerializerMethodField()
     concerns_name = serializers.SerializerMethodField()
@@ -239,16 +247,18 @@ class ParentAssessmentSerializer(BaseModelSerializer):
     limitations_name = serializers.SerializerMethodField()
     career_values_name = serializers.SerializerMethodField()
     user_goals_name = serializers.SerializerMethodField()
+    child_name = serializers.SerializerMethodField()
     user = UserQuickSerializer(read_only=True)
 
     class Meta:
         model = ParentAssessment
-        fields = [
-            "id",
-            "created_at",
-            "updated_at",
+        fields = BaseModelSerializer.Meta.fields + [
+            "child",
+            "child_name",
             "domain_category",
             "domain_category_name",
+            "domain",
+            "domain_name",
             "career_direction",
             "career_direction_name",
             "parent_support",
@@ -272,14 +282,28 @@ class ParentAssessmentSerializer(BaseModelSerializer):
 
     def validate(self, attrs):
         category = attrs.get("domain_category")
+        domain = attrs.get("domain")
         if self.instance:
             if category is None and self.instance.domain_category_id:
                 category = self.instance.domain_category
+            if domain is None and self.instance.domain_id:
+                domain = self.instance.domain
 
         if category and category.parent_id is not None:
             raise serializers.ValidationError(
                 {"domain_category": "Selected category must be a parent domain."}
             )
+
+        if domain and domain.parent_id is None:
+            raise serializers.ValidationError(
+                {"domain": "Selected domain must be a child domain."}
+            )
+
+        if category and domain and domain.parent_id != category.id:
+            raise serializers.ValidationError(
+                {"domain": "Selected domain must belong to selected category."}
+            )
+
         return attrs
 
     def get_career_direction_name(self, obj):
@@ -300,6 +324,56 @@ class ParentAssessmentSerializer(BaseModelSerializer):
     def get_user_goals_name(self, obj):
         return list(obj.user_goals.values_list("name", flat=True))
 
+    def get_child_name(self, obj):
+        if obj.child_id:
+            return str(obj.child) if obj.child else None
+        return None
+    
+class ParentAssessmentWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ParentAssessment
+        fields = [
+            "child",
+            "domain_category",
+            "domain",
+            "career_direction",
+            "parent_support",
+            "concerns",
+            "parent_career_expectations",
+            "limitations",
+            "career_familiarity",
+            "decision_style",
+            "career_values",
+            "user_goals",
+            "is_completed",
+        ]
+
+    def validate(self, attrs):
+        category = attrs.get("domain_category")
+        domain = attrs.get("domain")
+        if self.instance:
+            if category is None and self.instance.domain_category_id:
+                category = self.instance.domain_category
+            if domain is None and self.instance.domain_id:
+                domain = self.instance.domain
+
+        if category and category.parent_id is not None:
+            raise serializers.ValidationError(
+                {"domain_category": "Selected category must be a parent domain."}
+            )
+
+        if domain and domain.parent_id is None:
+            raise serializers.ValidationError(
+                {"domain": "Selected domain must be a child domain."}
+            )
+
+        if category and domain and domain.parent_id != category.id:
+            raise serializers.ValidationError(
+                {"domain": "Selected domain must belong to selected category."}
+            )
+
+        return attrs
+  
 
 class NextQuestionSerializer(serializers.ModelSerializer):
     options = OptionSerializer(many=True, read_only=True)

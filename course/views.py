@@ -1,4 +1,4 @@
-from assessment_career.models import CareerRecommendationSuggestion
+from assessment_career.models import CareerSuggestion
 from common.master_view import BaseModelViewSet
 from course.services import match_courses
 from django.utils import timezone
@@ -120,13 +120,13 @@ class CoursesViewSet(BaseModelViewSet):
             )
 
         try:
-            career = CareerRecommendationSuggestion.objects.get(
+            career = CareerSuggestion.objects.get(
                 id=career_id,
                 recommendation__user=request.user,
                 deleted=False,
                 recommendation__deleted=False,
             )
-        except CareerRecommendationSuggestion.DoesNotExist:
+        except CareerSuggestion.DoesNotExist:
             return Response(
                 {
                     "success": False,

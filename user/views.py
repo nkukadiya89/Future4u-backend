@@ -624,7 +624,15 @@ class RoleFamilyViewSet(RetrieveSuccessEnvelopeMixin, ModelViewSet):
 
 class UserListViewSet(ModelViewSet):
     queryset = (
-        User.objects.select_related("country", "states", "city", "created_by")
+        User.objects.filter(deleted=False)
+        .select_related(
+            "country",
+            "states",
+            "city",
+            "created_by",
+            "updated_by",
+            "deleted_by",
+        )
         .order_by("-id")
     )
     serializer_class = UserListSerializer
@@ -668,6 +676,8 @@ class UserListViewSet(ModelViewSet):
         "email_verified",
         "date_joined",
         "created_at",
+        "updated_at",
+        "deleted_at",
         "last_login",
         "password_last_changed",
     ]

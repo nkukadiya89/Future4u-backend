@@ -13,10 +13,6 @@
             "method": "GET",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
                 "key": "Authorization",
                 "value": "Bearer {{access_token}}"
               }
@@ -9833,8 +9829,21 @@
               ]
             },
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"first_name\": \"Aarav\",\n  \"last_name\": \"Sharma\",\n  \"date_of_birth\": \"2012-05-15\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"stream\": \"{{stream_id}}\",\n  \"academic_performance\": \"good\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"first_name\":\"Aarav\",\"last_name\":\"Sharma\",\"date_of_birth\":\"2012-05-15\",\"education_level\":\"{{education_level_id}}\",\"stream\":\"{{stream_id}}\",\"academic_performance\":\"good\"}",
+                  "type": "text",
+                  "description": "JSON string. Server parses json.loads(data)."
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "description": "Optional child profile image file"
+                }
+              ]
             }
           },
           "response": []
@@ -9844,10 +9853,6 @@
           "request": {
             "method": "GET",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
               {
                 "key": "Authorization",
                 "value": "Bearer {{access_token}}"
@@ -9897,8 +9902,21 @@
               ]
             },
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"first_name\": \"Aarav\",\n  \"last_name\": \"Sharma\",\n  \"academic_performance\": \"excellent\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"first_name\":\"Aarav\",\"last_name\":\"Sharma\",\"academic_performance\":\"excellent\"}",
+                  "type": "text",
+                  "description": "JSON string. Server parses json.loads(data)."
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "description": "Optional child profile image file"
+                }
+              ]
             }
           },
           "response": []
@@ -11204,7 +11222,7 @@
                 {
                   "key": "assessment_id",
                   "value": "{{assessment_id}}",
-                  "description": "Optional \u00e2\u20ac\u201d filter to one student assessment"
+                  "description": "Optional â€” filter to one student assessment"
                 },
                 {
                   "key": "ordering",
@@ -11326,11 +11344,11 @@
                 {
                   "key": "suggestion_ids",
                   "value": "{{career_suggestion_id_1}},{{career_suggestion_id_2}}",
-                  "description": "Exactly two CareerRecommendationSuggestion ids (comma-separated), owned by the logged-in user"
+                  "description": "Exactly two CareerSuggestion ids (comma-separated), owned by the logged-in user"
                 }
               ]
             },
-            "description": "Compare two career suggestion rows side by side.\n\nQuery param suggestion_ids (required): comma-separated list of exactly 2 suggestion primary keys.\n\nPrerequisites: step 6 then step 7b (ids auto-set from data.suggestions[]) or set {{career_suggestion_id_1}} / {{career_suggestion_id_2}} manually.\n\nErrors:\n- 400 if suggestion_ids are missing, not exactly 2 ids, invalid, not owned by user, or from different recommendations\n\nResponse: { success: true, data: [ CareerRecommendationSuggestion, CareerRecommendationSuggestion ] }"
+            "description": "Compare two career suggestion rows side by side.\n\nQuery param suggestion_ids (required): comma-separated list of exactly 2 suggestion primary keys.\n\nPrerequisites: step 6 then step 7b (ids auto-set from data.suggestions[]) or set {{career_suggestion_id_1}} / {{career_suggestion_id_2}} manually.\n\nErrors:\n- 400 if suggestion_ids are missing, not exactly 2 ids, invalid, not owned by user, or from different recommendations\n\nResponse: { success: true, data: [ CareerSuggestion, CareerSuggestion ] }"
           },
           "response": [],
           "event": [
@@ -11386,7 +11404,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"first_name\": \"Aarav\",\n  \"last_name\": \"Patel\",\n  \"date_of_birth\": \"2010-05-12\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"stream\": \"{{stream_id}}\",\n  \"academic_performance\": \"good\"\n}"
+              "raw": "{\n  \"child\": \"{{child_id}}\"\n}"
             }
           },
           "response": [],
@@ -11425,7 +11443,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/parent/assessments/status/",
+              "raw": "{{base_url}}/api/parent/assessments/status/?child_id={{child_id}}",
               "host": [
                 "{{base_url}}"
               ],
@@ -11469,7 +11487,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"first_name\": \"Aarav\",\n  \"last_name\": \"Patel\",\n  \"date_of_birth\": \"2010-05-12\",\n  \"education_level\": \"{{education_level_id}}\",\n  \"stream\": \"{{stream_id}}\",\n  \"academic_performance\": \"excellent\"\n}"
+              "raw": "{\n  \"domain_category\": \"{{domain_category_id}}\",\n  \"domain\": \"{{domain_id}}\",\n  \"career_direction\": [1],\n  \"parent_support\": \"very_supportive\",\n  \"concerns\": [1],\n  \"parent_career_expectations\": [1],\n  \"limitations\": [1],\n  \"career_familiarity\": \"very_aware\",\n  \"decision_style\": \"interest_based\",\n  \"career_values\": [1],\n  \"user_goals\": [1]\n}"
             }
           },
           "response": []
@@ -11561,6 +11579,198 @@
                 "parent",
                 "assessments",
                 "{{parent_assessment_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "assessment-dashboard (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/assessments/dashboard/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "assessments",
+                "dashboard"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "career-suggestions-list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/career-suggestions/?assessment_id={{parent_assessment_id}}&ordering=-created_at&page=1&pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "career-suggestions",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "assessment_id",
+                  "value": "{{parent_assessment_id}}"
+                },
+                {
+                  "key": "ordering",
+                  "value": "-created_at"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "career-suggestions-retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/career-suggestions/{{parent_suggestion_id_1}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "career-suggestions",
+                "{{parent_suggestion_id_1}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "career-suggestions-compare (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/career-suggestions/compare/?suggestion_ids={{parent_suggestion_id_1}},{{parent_suggestion_id_2}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "career-suggestions",
+                "compare",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "suggestion_ids",
+                  "value": "{{parent_suggestion_id_1}},{{parent_suggestion_id_2}}",
+                  "description": "Exactly two ParentCareerSuggestion ids (comma-separated)"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "description": "Compare two parent career suggestion rows side by side.\n\nQuery param suggestion_ids (required): comma-separated list of exactly 2 suggestion primary keys.\n\nErrors:\n- 400 if suggestion_ids are missing, not exactly 2 ids, invalid, not owned by user, or from different recommendations\n\nResponse: { success: true, data: [ ParentCareerSuggestion, ParentCareerSuggestion ] }",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Compare returns two suggestions', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.eql(true);",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "  pm.expect(json.data.length).to.eql(2);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "career-suggestions-detail-list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/career-suggestions-detail/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "career-suggestions-detail",
                 ""
               ]
             }
@@ -11732,6 +11942,108 @@
               }
             }
           ]
+        },
+        {
+          "name": "Parent AI Recommendations (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/ai-recommendations/{{parent_assessment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "ai-recommendations",
+                "{{parent_assessment_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Parent AI Recommendation Chat Context (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/ai-recommendations/{{parent_assessment_id}}/chat/?suggestion_id={{parent_suggestion_id_1}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "ai-recommendations",
+                "{{parent_assessment_id}}",
+                "chat",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "suggestion_id",
+                  "value": "{{parent_suggestion_id_1}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Parent AI Recommendation Chat (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent/ai-recommendations/{{parent_assessment_id}}/chat/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent",
+                "ai-recommendations",
+                "{{parent_assessment_id}}",
+                "chat",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"suggestion_id\": \"{{parent_suggestion_id_1}}\",\n  \"message\": \"What skills should my child build first?\"\n}"
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -13153,7 +13465,7 @@
                 }
               ]
             },
-            "description": "Public web self-registration only (source=web). For Super Admin creating users from dashboard, use create-user (POST)."
+            "description": "Public web self-registration (source=web). For Super Admin creating users, see the Admin Users folder."
           },
           "response": [],
           "event": [
@@ -13169,7 +13481,7 @@
                   "      pm.collectionVariables.set('user_id', String(json.user_id));",
                   "      pm.environment.set('user_id', String(json.user_id));",
                   "    }",
-                  "    if (json.requires_password_change) {",
+                  "    if (json.must_change_password) {",
                   "      pm.environment.set('must_change_password', 'true');",
                   "    }",
                   "  } catch (e) {}",
@@ -13318,125 +13630,6 @@
             "description": "Mobile flow only — resend OTP while account is inactive (is_active=false)."
           },
           "response": []
-        },
-        {
-          "name": "create-user (POST) — Super Admin",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/create-user/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "create-user",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "data",
-                  "value": "{\"email\":\"{{user_email}}\",\"terms_accepted\":true,\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"user_type\":\"{{user_type}}\",\"country\":{{country_id}},\"state\":{{state_id}},\"city\":{{city_id}},\"referral_code\":\"{{referral_code}}\"}",
-                  "type": "text"
-                },
-                {
-                  "key": "profile_image",
-                  "type": "file",
-                  "src": "",
-                  "disabled": true
-                }
-              ]
-            },
-            "description": "Super Admin / staff only. Requires Bearer {{access_token}}.\n\nSame multipart format as register — Web: form-data with `data` (JSON) + optional `profile_image` file.\n\n`data` fields: email, first_name, last_name, phone, user_type, country, state, city, terms_accepted, referral_code.\n\nNo password. Temp password emailed. Sets created_by to logged-in admin.\n\nuser_type: student | parent | working_professional | school_college | institute | corporate | super_admin"
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "  try {",
-                  "    const json = pm.response.json();",
-                  "    if (json.user_id != null) {",
-                  "      pm.collectionVariables.set('user_id', String(json.user_id));",
-                  "      pm.environment.set('user_id', String(json.user_id));",
-                  "    }",
-                  "    if (json.created_by != null) {",
-                  "      pm.environment.set('created_by', String(json.created_by));",
-                  "    }",
-                  "    pm.environment.set('must_change_password', 'true');",
-                  "  } catch (e) {}",
-                  "}"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "bulk-upload-users (POST) — Super Admin",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/bulk-upload-users/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "auth",
-                "bulk-upload-users",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "file",
-                  "type": "file",
-                  "src": "",
-                  "description": "CSV or XLSX file"
-                }
-              ]
-            },
-            "description": "Super Admin / staff only. Requires Bearer {{access_token}}.\n\nUpload CSV or XLSX to create multiple users. Each row gets a temp password email (same as create-user). Sets created_by to logged-in admin.\n\nRequired columns:\nfirst_name, last_name, about_me, email, user_type, phone, referral_code, country, state, city\n\n- country / state / city: names (not ids), must exist in DB\n- user_type: student | parent | working_professional | school_college | institute | corporate | super_admin\n- phone: 10–15 digits\n\nResponse: total_records, inserted, failed, skipped, errors[]"
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "  try {",
-                  "    const json = pm.response.json();",
-                  "    pm.test('Bulk upload succeeded', () => pm.expect(json.success).to.eql(true));",
-                  "    if (json.inserted != null) {",
-                  "      pm.environment.set('bulk_upload_inserted', String(json.inserted));",
-                  "    }",
-                  "  } catch (e) {}",
-                  "}"
-                ]
-              }
-            }
-          ]
         },
         {
           "name": "list users (GET)",
@@ -13626,7 +13819,7 @@
                 }
               }
             },
-            "description": "Login. Web/bulk users: use temporary password from email as {{user_password}}.\n\nIf must_change_password=true in response, call change-password before using the app."
+            "description": "Login after user has set password via email link (web/bulk/admin-created users).\n\nPending users cannot log in until they complete POST /auth/reset-password/ using the token from the email."
           },
           "response": [],
           "event": [
@@ -13684,7 +13877,7 @@
                 }
               }
             },
-            "description": "Required after first login when must_change_password=true (web/bulk users).\n\ncurrent_password = temporary password from email.\nnew_password must meet strength rules (8+ chars, uppercase, number, special char)."
+            "description": "Change password for logged-in users (not for first-time web setup — use reset-password with email token instead)."
           },
           "response": [],
           "event": [
@@ -13764,9 +13957,543 @@
                   "language": "json"
                 }
               }
-            }
+            },
+            "description": "Set password using token from email link (web register, admin-student-users create, bulk upload, admin).\n\nFor pending users: activates account (pending → active) after success.\n\nToken comes from email URL: {APP_URL}reset-password/{token}\n\nnew_password must meet strength rules (8+ chars, uppercase, number, special char)."
           },
           "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin Users",
+      "description": "Super Admin / staff endpoints for creating and managing student users. Requires Bearer {{access_token}}. Base path: /admin-student-users/\n\nActivate or deactivate students with PATCH {user_id}/update-status/ (status: active | inactive). Active students receive a password setup email when activated.\n\nSoft-delete (archive): DELETE single student or PATCH bulk-archive. Students must be inactive before archiving. Restore archived students with PATCH bulk-restore. List archived students with GET archive-list.",
+      "item": [
+        {
+          "name": "list students (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-student-users/?pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-student-users",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "-id",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: list student users (paginated).\n\nGET /admin-student-users/\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOptional query params: no_pagination, pagesize, search, ordering."
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve student (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-student-users/{{user_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-student-users",
+                "{{user_id}}",
+                ""
+              ]
+            },
+            "description": "Admin-only: retrieve a single student profile by user id.\n\nGET /admin-student-users/{user_id}/\n\nSet {{user_id}} from create response or list students.\n\n200 response: success, data (id, user, language, medium, education_level, stream, first_name, last_name, phone, email, country, country_name, state, state_name, city, city_name, referral_code)\n404 if user is not a student or profile not found."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Student retrieved', () => pm.expect(json.success).to.eql(true));",
+                  "    if (json.data && json.data.user != null) {",
+                  "      pm.collectionVariables.set('user_id', String(json.data.user));",
+                  "      pm.environment.set('user_id', String(json.data.user));",
+                  "    }",
+                  "    if (json.data && json.data.id != null) {",
+                  "      pm.collectionVariables.set('student_profile_id', String(json.data.id));",
+                  "      pm.environment.set('student_profile_id', String(json.data.id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "create student (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-student-users/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-student-users",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"email\":\"{{user_email}}\",\"terms_accepted\":true,\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"country\":\"{{country_id}}\",\"state\":\"{{state_id}}\",\"city\":\"{{city_id}}\",\"address\":\"{{address}}\",\"referral_code\":\"{{referral_code}}\",\"education_level\":\"{{education_level_id}}\",\"stream\":\"{{stream_id}}\",\"medium\":\"{{medium}}\",\"language\":[\"{{language_id_1}}\",\"{{language_id_2}}\",\"{{language_id_3}}\"]}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: create a student from the dashboard.\n\nPOST /admin-student-users/\n\nMultipart form-data: `data` (JSON string) + optional `profile_image`.\n\nRequired in `data`: email, first_name, country, state, city, terms_accepted\nOptional: last_name, phone, address, referral_code, education_level, stream, medium, language (array of ids)\n\nDo not send user_type — always creates a student.\n\nNo password in request. Password setup link is emailed immediately.\nUser stays pending until POST /auth/reset-password/.\n\n201 response: success, message, user_id, user_type, must_change_password, created_by, created_at\n400 response: success, errors"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Student created', () => pm.expect(json.success).to.eql(true));",
+                  "    if (json.user_id != null) {",
+                  "      pm.collectionVariables.set('user_id', String(json.user_id));",
+                  "      pm.environment.set('user_id', String(json.user_id));",
+                  "    }",
+                  "    pm.test('must_change_password', () => pm.expect(json.must_change_password).to.eql(true));",
+                  "    pm.environment.set('must_change_password', 'true');",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "partial_update student (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-student-users/{{user_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-student-users",
+                "{{user_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"first_name\":\"{{first_name}}\",\"phone\":\"{{phone}}\",\"address\":\"{{address}}\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: partially update an existing student.\n\nPATCH /admin-student-users/{user_id}/\n\nSet {{user_id}} from create response or list students.\n\nSend only fields to change in `data` + optional `profile_image`.\n\nOptional fields: email, first_name, last_name, phone, address, country, state, city, referral_code, education_level, stream, medium, language, terms_accepted\n\nWhen email changes:\n- Old email receives email-changed notification\n- New email receives password setup link\n- Account returns to pending until POST /auth/reset-password/\n\n200 response: success, message, user_id, user_type\n400 response: success, errors"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Student updated', () => pm.expect(json.success).to.eql(true));",
+                  "    pm.test('user_type is student', () => pm.expect(json.user_type).to.eql('student'));",
+                  "    if (json.user_id != null) {",
+                  "      pm.collectionVariables.set('user_id', String(json.user_id));",
+                  "      pm.environment.set('user_id', String(json.user_id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "update-status (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-student-users/{{user_id}}/update-status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-student-users",
+                "{{user_id}}",
+                "update-status",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"inactive\"\n}"
+            },
+            "description": "Admin-only: activate or deactivate a student.\n\nPATCH /admin-student-users/{user_id}/update-status/\n\nSet {{user_id}} from create response or list students.\n\nBody: status (required) — \"active\" or \"inactive\".\n\nWhen status is set to active:\n- is_active is set to true\n- Password setup email is sent to the student\n\nWhen status is set to inactive:\n- is_active is set to false\n\nStudent must not be archived (deleted).\nAlready at the requested status returns 200 with success: false.\n\n200 response: success, message\n400 response: success, message (invalid status)\n404 response: success, message (not found)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Student status updated', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "delete student (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-student-users/{{user_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-student-users",
+                "{{user_id}}",
+                ""
+              ]
+            },
+            "description": "Admin-only: soft-delete (archive) a single student.\n\nDELETE /admin-student-users/{user_id}/\n\nSet {{user_id}} from create response or list students.\n\nStudent must be inactive before delete. Active students return 400.\nAlready-archived students return 200 with success: false.\n\n200 response: success, message\n400 response: success, message (active student)\n404 response: success, message (not found)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Student archived', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "archive-list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-student-users/archive-list/?pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-student-users",
+                "archive-list",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "-deleted_at",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: list archived (soft-deleted) student users (paginated).\n\nGET /admin-student-users/archive-list/\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, search, ordering.\n\n200 response: success, data (array of student users)"
+          },
+          "response": []
+        },
+        {
+          "name": "bulk-archive (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-student-users/bulk-archive/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-student-users",
+                "bulk-archive",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [{{user_id}}]\n}"
+            },
+            "description": "Admin-only: soft-delete (archive) multiple students.\n\nPATCH /admin-student-users/bulk-archive/\n\nBody: ids (non-empty array of user ids).\n\nAll students must be inactive. Active students in the set return 400.\nAlready-archived students in the set return 400.\n\n200 response: success, message\n400 response: success, message\n404 response: success, message (none found)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Students archived', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "bulk-restore (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-student-users/bulk-restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-student-users",
+                "bulk-restore",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [{{user_id}}]\n}"
+            },
+            "description": "Admin-only: restore archived students.\n\nPATCH /admin-student-users/bulk-restore/\n\nBody: ids (non-empty array of user ids).\n\nAll ids must refer to archived students. Already-active students in the set return 400.\n\n200 response: success, message\n400 response: success, message"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Students restored', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "bulk-upload-students (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-student-users/bulk-upload-students/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-student-users",
+                "bulk-upload-students",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "CSV, XLS, or XLSX file"
+                },
+                {
+                  "key": "user_type",
+                  "value": "student",
+                  "type": "text",
+                  "description": "Role for all rows: student | teacher | employee | super_admin | ..."
+                }
+              ]
+            },
+            "description": "Admin-only: bulk create users by role.\n\nPOST /admin-student-users/bulk-upload-students/\n\nMultipart form-data: `file` + `user_type`.\n\nPassword setup link emailed per user during processing.\nAdmin receives summary email when complete.\n\nRequired CSV columns:\nfirst_name, last_name, about_me, email, phone, referral_code, country, state, city\n\nOptional CSV column: address\n\n200 response: success, message\n400 response: success, message"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Bulk upload started', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -14479,7 +15206,7 @@
                 {
                   "key": "career_id",
                   "value": "{{career_suggestion_id_1}}",
-                  "description": "CareerRecommendationSuggestion id"
+                  "description": "CareerSuggestion id"
                 },
                 {
                   "key": "mode",
@@ -14505,7 +15232,7 @@
                 }
               ]
             },
-            "description": "Recommended courses for an AI career suggestion.\n\nRequires career_id (CareerRecommendationSuggestion id for the authenticated user). Optional filters: mode, city_id, course_type, search.\n\nResponse: { success, count, message, data: [{ score, courses }] }"
+            "description": "Recommended courses for an AI career suggestion.\n\nRequires career_id (CareerSuggestion id for the authenticated user). Optional filters: mode, city_id, course_type, search.\n\nResponse: { success, count, message, data: [{ score, courses }] }"
           },
           "response": []
         }
@@ -15243,7 +15970,7 @@
                 {
                   "key": "career_id",
                   "value": "{{career_suggestion_id_1}}",
-                  "description": "Required. CareerRecommendationSuggestion id for the authenticated user."
+                  "description": "Required. CareerSuggestion id for the authenticated user."
                 },
                 {
                   "key": "mode",
@@ -15263,7 +15990,7 @@
                 }
               ]
             },
-            "description": "Recommended internships for an AI career suggestion.\n\nRequires career_id (CareerRecommendationSuggestion id for the authenticated user). Optional filters: mode, city_id, search.\n\nResponse: { success, count, message, data: [{ score, skill_matches, internship }] }"
+            "description": "Recommended internships for an AI career suggestion.\n\nRequires career_id (CareerSuggestion id for the authenticated user). Optional filters: mode, city_id, search.\n\nResponse: { success, count, message, data: [{ score, skill_matches, internship }] }"
           },
           "response": []
         }
@@ -15614,7 +16341,7 @@
                 {
                   "key": "career_id",
                   "value": "{{career_suggestion_id_1}}",
-                  "description": "Required. CareerRecommendationSuggestion id for the authenticated user."
+                  "description": "Required. CareerSuggestion id for the authenticated user."
                 },
                 {
                   "key": "mode",
@@ -15635,7 +16362,7 @@
                 }
               ]
             },
-            "description": "Recommended jobs for an AI career suggestion.\n\nRequires career_id (CareerRecommendationSuggestion id for the authenticated user). Optional filters: mode, city_id, search.\n\nOnly returns active, non-deleted jobs. For student/parent users, results are limited to fresher and 0_1 experience levels.\n\nResponse: { success, count, message, data: [{ score, skill_matches, job }] }"
+            "description": "Recommended jobs for an AI career suggestion.\n\nRequires career_id (CareerSuggestion id for the authenticated user). Optional filters: mode, city_id, search.\n\nOnly returns active, non-deleted jobs. For student/parent users, results are limited to fresher and 0_1 experience levels.\n\nResponse: { success, count, message, data: [{ score, skill_matches, job }] }"
           },
           "response": [],
           "event": [
@@ -15997,7 +16724,7 @@
                 }
               ]
             },
-            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- job (optional, stripped server-side)\n- resume (optional file) \u00e2\u20ac\u201d uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / job / status are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
+            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- job (optional, stripped server-side)\n- resume (optional file) â€” uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / job / status are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
           },
           "response": []
         },
@@ -16406,7 +17133,7 @@
                 }
               ]
             },
-            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- internship (optional)\n- resume (optional file) \u00e2\u20ac\u201d uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / selected / rejected are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
+            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- internship (optional)\n- resume (optional file) â€” uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / selected / rejected are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
           },
           "response": []
         },
@@ -16691,6 +17418,10 @@
     },
     {
       "key": "referral_code",
+      "value": ""
+    },
+    {
+      "key": "address",
       "value": ""
     },
     {

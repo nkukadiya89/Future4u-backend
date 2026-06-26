@@ -310,6 +310,9 @@ apply_langsmith_tracing_env(
     project=_LANGSMITH_PROJECT,
 )
 
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+FRONTEND_URL = "https://dev.future4u.ai"
+
 CELERY_BROKER_URL = config("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND")
 CELERY_ACCEPT_CONTENT = ["json"]

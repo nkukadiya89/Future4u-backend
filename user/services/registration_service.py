@@ -1,7 +1,6 @@
 from django.utils import timezone
 
-from email_utils.send_email import send_mail
-from utils.auth import generate_temporary_password
+from email_utils.send_email import WEB_PASSWORD_SETUP_TOKEN_DAYS, generate_token, send_mail
 from utils.generate_otp import generate_otp
 
 
@@ -26,25 +25,14 @@ def send_registration_email(user):
     user.save(update_fields=["otp", "otp_created_at"])
 
 
-def send_temporary_password_email(user, temporary_password):
-    send_mail(
-        "Your Future4U Temporary Password",
-        "temporary-password.html",
-        {
-            "name": user.first_name,
-            "email": user.email,
-            "temporary_password": temporary_password,
-        },
-    )
+def setup_web_user_password(user, *, send_email=True):
+    from user.tasks import send_password_setup_link_task
 
-
-def activate_web_user_with_temporary_password(user, *, send_email=True):
-    temporary_password = generate_temporary_password()
-    user.set_password(temporary_password)
+    user.set_unusable_password()
     user.must_change_password = True
-    user.email_verified = True
-    user.is_active = True
-    user.status = "active"
+    user.email_verified = False
+    user.is_active = False
+    user.status = "pending"
     user.otp = None
     user.otp_created_at = None
     user.save(
@@ -59,5 +47,10 @@ def activate_web_user_with_temporary_password(user, *, send_email=True):
         ]
     )
     if send_email:
-        send_temporary_password_email(user, temporary_password)
+        token = generate_token(user.email, WEB_PASSWORD_SETUP_TOKEN_DAYS)
+        send_password_setup_link_task.delay(
+            user.first_name,
+            user.email,
+            token,
+        )
     return user

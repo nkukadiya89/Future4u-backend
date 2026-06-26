@@ -282,7 +282,7 @@ class Command(BaseCommand):
             "course|Can add course inquiry",
             "course|Can view course inquiry",
             "assessment_career|Can view career recommendation",
-            "assessment_career|Can view career recommendation suggestion",
+            "assessment_career|Can view career suggestion",
             "internship_job|Can view internship",
             "internship_job|Can view internship application",
             "internship_job|Can add internship application",
@@ -296,6 +296,7 @@ class Command(BaseCommand):
         # Parent Permissions - View linked child's data
         parent_permissions = [
             "assessment|Can view student assessment",
+            "assessment|Can view parent assessment",
             "domain|Can view domain",
             "education_level|Can view education level",
             "stream|Can view stream",
@@ -305,12 +306,11 @@ class Command(BaseCommand):
             "internship_job|Can add internship application",
             "internship_job|Can change internship application",
             "assessment_career|Can view career recommendation",
-            "assessment_career|Can view career recommendation suggestion",
+            "assessment_career|Can view career suggestion",
             "internship_job|Can view job",
             "internship_job|Can view job application",
             "internship_job|Can add job application",
             "internship_job|Can change job application",
-
         ]
 
         # Professional Permissions - View career resources, update own profile
@@ -326,7 +326,7 @@ class Command(BaseCommand):
             "internship_job|Can add internship application",
             "internship_job|Can change internship application",
             "assessment_career|Can view career recommendation",
-            "assessment_career|Can view career recommendation suggestion",
+            "assessment_career|Can view career suggestion",
             "internship_job|Can view job",
             "internship_job|Can view job application",
             "internship_job|Can add job application",

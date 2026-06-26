@@ -6,7 +6,7 @@ from django.db import transaction
 from rest_framework.response import Response
 from common.master_view import BaseModelViewSet
 from django.utils import timezone
-from assessment_career.models import CareerRecommendationSuggestion
+from assessment_career.models import CareerSuggestion
 from .service import match_jobs
 
 
@@ -148,14 +148,14 @@ class JobViewSet(BaseModelViewSet):
             )
         try:
             career = (
-                CareerRecommendationSuggestion.objects.get(
+                CareerSuggestion.objects.get(
                     id=career_id,
                     recommendation__user = request.user,
                     deleted=False,
                     recommendation__deleted=False
                 )
             )
-        except CareerRecommendationSuggestion.DoesNotExist:
+        except CareerSuggestion.DoesNotExist:
             return Response(
                 {
                     "success": False,

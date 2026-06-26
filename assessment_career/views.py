@@ -1,4 +1,5 @@
-from django.db.models import Prefetch
+from django.db.models import Q
+
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -7,28 +8,22 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from common.master_view import BaseModelViewSet
 from utils.pagination import Pagination
 
-from .models import CareerRecommendation, CareerRecommendationSuggestion
-from .serializers import (
-    CareerRecommendationDetailSerializer,
-    CareerRecommendationSerializer,
-    CareerRecommendationSuggestionSerializer,
+from .models import (
+    CareerRecommendation,
+    CareerSuggestion,
 )
-from rest_framework.viewsets import ModelViewSet
-from .models import CareerRecommendation, CareerRecommendationSuggestion
-from rest_framework.filters import SearchFilter, OrderingFilter
-from utils.pagination import Pagination
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework import status
-from common.master_view import BaseModelViewSet
+from .serializers import (
+    CareerRecommendationSerializer,
+    CareerSuggestionSerializer,
+)
 
 
 class CareerSuggestionViewSet(ModelViewSet):
     serializer_class = CareerRecommendationSerializer
+    profile_type = None
     filter_backends = [SearchFilter, OrderingFilter]
     pagination_class = Pagination
     permission_classes = [IsAuthenticated]
@@ -41,12 +36,26 @@ class CareerSuggestionViewSet(ModelViewSet):
     ]
 
     def get_queryset(self):
-        queryset = CareerRecommendation.objects.filter(deleted=False, user=self.request.user).select_related("assessment", "user").prefetch_related("suggestions").order_by("-id")
+        queryset = CareerRecommendation.objects.filter(
+            deleted=False, user=self.request.user,
+        ).select_related(
+            "student_assessment", "parent_assessment", "user",
+        ).prefetch_related("suggestions").order_by("-id")
+        if self.profile_type:
+            queryset = queryset.filter(profile_type=self.profile_type)
         assessment_id = self.request.query_params.get("assessment_id")
         if assessment_id:
-            queryset = queryset.filter(assessment_id=assessment_id)
+            if self.profile_type == CareerRecommendation.ProfileType.STUDENT:
+                queryset = queryset.filter(student_assessment_id=assessment_id)
+            elif self.profile_type == CareerRecommendation.ProfileType.PARENT:
+                queryset = queryset.filter(parent_assessment_id=assessment_id)
+            else:
+                queryset = queryset.filter(
+                    Q(student_assessment_id=assessment_id) |
+                    Q(parent_assessment_id=assessment_id)
+                )
         return queryset
-    
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         no_pagination = request.query_params.get("no_pagination")
@@ -65,7 +74,10 @@ class CareerSuggestionViewSet(ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         if not instance:
-            return Response({"success":False, "message":"No CareerRecommendation matches the given query"},status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "No recommendation matches the given query"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         serializer = self.serializer_class(instance)
         return Response(
             {"success": True, "data": serializer.data},
@@ -105,9 +117,13 @@ class CareerSuggestionViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        suggestions = CareerRecommendationSuggestion.objects.filter(
-            id__in = suggestion_ids, recommendation__user=request.user, deleted=False
+        suggestions = CareerSuggestion.objects.filter(
+            id__in=suggestion_ids,
+            recommendation__user=request.user,
+            deleted=False,
         ).order_by("display_order")
+        if self.profile_type:
+            suggestions = suggestions.filter(recommendation__profile_type=self.profile_type)
 
         if suggestions.count() != 2:
             return Response(
@@ -115,9 +131,7 @@ class CareerSuggestionViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        recommendation_ids = {
-            suggestion.recommendation_id for suggestion in suggestions
-        }
+        recommendation_ids = {suggestion.recommendation_id for suggestion in suggestions}
         if len(recommendation_ids) != 1:
             return Response(
                 {
@@ -127,14 +141,39 @@ class CareerSuggestionViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        serializer = CareerRecommendationSuggestionSerializer(suggestions, many=True)
-        return Response({"success":True, "data":serializer.data}, status=status.HTTP_200_OK)
-    
-class CareerSuggestionDetailViewSet(BaseModelViewSet):
-    serializer_class = CareerRecommendationSuggestionSerializer
-    
-    def get_queryset(self):
-        return CareerRecommendationSuggestion.objects.filter(
-            deleted=False,
-            recommendation__user=self.request.user
+        serializer = CareerSuggestionSerializer(suggestions, many=True)
+        return Response(
+            {"success": True, "data": serializer.data},
+            status=status.HTTP_200_OK,
         )
+
+
+class CareerSuggestionDetailViewSet(BaseModelViewSet):
+    serializer_class = CareerSuggestionSerializer
+    profile_type = None
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = CareerSuggestion.objects.filter(
+            deleted=False,
+            recommendation__user=self.request.user,
+        )
+        if self.profile_type:
+            queryset = queryset.filter(recommendation__profile_type=self.profile_type)
+        return queryset
+
+
+class StudentCareerSuggestionViewSet(CareerSuggestionViewSet):
+    profile_type = CareerRecommendation.ProfileType.STUDENT
+
+
+class StudentCareerSuggestionDetailViewSet(CareerSuggestionDetailViewSet):
+    profile_type = CareerRecommendation.ProfileType.STUDENT
+
+
+class ParentCareerSuggestionViewSet(CareerSuggestionViewSet):
+    profile_type = CareerRecommendation.ProfileType.PARENT
+
+
+class ParentCareerSuggestionDetailViewSet(CareerSuggestionDetailViewSet):
+    profile_type = CareerRecommendation.ProfileType.PARENT

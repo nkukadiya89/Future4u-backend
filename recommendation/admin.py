@@ -2,7 +2,7 @@
 Django admin for AI career recommendations (recommendation).
 
 No database table; changelist is a live panel to test AI recommendations
-against student assessments.
+against student and parent assessments.
 
 URL: /admin/recommendation/airecommendationpanel/
 """
@@ -18,7 +18,7 @@ from django.contrib import admin
 from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from django.shortcuts import render
 
-from assessment.models import StudentAssessment
+from assessment.models import ParentAssessment, StudentAssessment
 from recommendation.clients.groq_client import get_groq_api_key_optional
 from recommendation.config import ai_recommendations_enabled
 from recommendation.exceptions import (
@@ -29,7 +29,8 @@ from recommendation.exceptions import (
     AssessmentNotReadyError,
 )
 from recommendation.models import AIRecommendationPanel
-from recommendation.services.ai_recommendation_service import AIRecommendationService
+from recommendation.profiles.parent.service import ParentRecommendationService
+from recommendation.profiles.student.service import StudentRecommendationService
 
 
 def _pretty_json(value) -> str:
@@ -58,7 +59,13 @@ def _provider_status() -> dict:
     }
 
 
-def _assessment_choices_queryset():
+def _assessment_queryset(assessment_type):
+    if assessment_type == "parent":
+        return (
+            ParentAssessment.objects.filter(deleted=False, domain_category__isnull=False)
+            .select_related("user", "domain_category", "child")
+            .order_by("-id")
+        )
     return (
         StudentAssessment.objects.filter(deleted=False, domain__isnull=False)
         .select_related("user", "domain", "domain_category")
@@ -66,18 +73,28 @@ def _assessment_choices_queryset():
     )
 
 
+def _assessment_service(assessment_type):
+    return ParentRecommendationService() if assessment_type == "parent" else StudentRecommendationService()
+
+
 class AIRecommendationRunForm(forms.Form):
+    assessment_type = forms.ChoiceField(
+        choices=[("student", "Student"), ("parent", "Parent")],
+        initial="student",
+        required=True,
+    )
     assessment = forms.TypedChoiceField(
         choices=[],
         coerce=int,
         required=True,
         empty_value=None,
-        help_text="Student assessment used for AI recommendations (must have a domain).",
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        assessments = list(_assessment_choices_queryset()[:500])
+        assessment_type = self.data.get("assessment_type", "student") if self.is_bound else "student"
+        qs = _assessment_queryset(assessment_type)
+        assessments = list(qs[:500])
         if self.is_bound:
             raw = self.data.get("assessment")
             if raw:
@@ -86,11 +103,7 @@ class AIRecommendationRunForm(forms.Form):
                 except (TypeError, ValueError):
                     selected_id = None
                 if selected_id and not any(a.id == selected_id for a in assessments):
-                    extra = (
-                        _assessment_choices_queryset()
-                        .filter(pk=selected_id)
-                        .first()
-                    )
+                    extra = qs.filter(pk=selected_id).first()
                     if extra:
                         assessments.insert(0, extra)
         self.fields["assessment"].choices = [
@@ -99,12 +112,11 @@ class AIRecommendationRunForm(forms.Form):
 
     def clean_assessment(self):
         assessment_id = self.cleaned_data["assessment"]
-        try:
-            return _assessment_choices_queryset().get(pk=assessment_id)
-        except StudentAssessment.DoesNotExist as exc:
-            raise forms.ValidationError(
-                "Select a valid assessment with a domain assigned."
-            ) from exc
+        assessment_type = self.cleaned_data.get("assessment_type", "student")
+        qs = _assessment_queryset(assessment_type)
+        if not qs.filter(pk=assessment_id).exists():
+            raise forms.ValidationError("Select a valid assessment.")
+        return assessment_id
 
 
 @admin.register(AIRecommendationPanel)
@@ -116,18 +128,21 @@ class AIRecommendationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         error = None
 
         if request.method == "POST" and form.is_valid():
-            assessment = form.cleaned_data["assessment"]
+            assessment_id = form.cleaned_data["assessment"]
+            assessment_type = form.cleaned_data["assessment_type"]
+            assessment = _assessment_queryset(assessment_type).get(pk=assessment_id)
             try:
                 diagnostics = {
                     "assessment_id": assessment.id,
                     "user_id": assessment.user_id,
                     "user_email": getattr(assessment.user, "email", ""),
-                    "domain": getattr(assessment.domain, "domain_code", None),
+                    "type": assessment_type,
+                    "domain": getattr(assessment, "domain_category_id" if assessment_type == "parent" else "domain_id", None),
                     "is_completed": assessment.is_completed,
                     "current_screen": assessment.current_screen,
                     "provider": _provider_status(),
                 }
-                result = AIRecommendationService().generate(
+                result = _assessment_service(assessment_type).generate(
                     assessment_id=assessment.id,
                     user=assessment.user,
                 )
