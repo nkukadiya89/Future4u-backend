@@ -1,0 +1,61 @@
+from __future__ import annotations
+
+import re
+from typing import Any
+
+
+def clip(value: object, max_len: int) -> str:
+    text = str(value or "").strip()
+    if len(text) <= max_len:
+        return text
+    return text[: max_len - 3].rstrip() + "..."
+
+
+def word_count(text: str) -> int:
+    return len([w for w in re.split(r"\s+", (text or "").strip()) if w])
+
+
+def contains_banned_phrase(text: str, banned_phrases: tuple[str, ...]) -> bool:
+    return find_banned_phrase(text, banned_phrases) is not None
+
+
+def find_banned_phrase(text: str, banned_phrases: tuple[str, ...]) -> str | None:
+    lowered = (text or "").casefold()
+    for phrase in banned_phrases:
+        if phrase and phrase in lowered:
+            return phrase
+    return None
+
+
+def contains_placeholder(text: str, disallowed: tuple[str, ...]) -> bool:
+    lowered = (text or "").casefold()
+    return any(p in lowered for p in disallowed if p)
+
+
+def has_broken_punctuation(text: str) -> bool:
+    if ", ," in text:
+        return True
+    if re.search(r"\[\s*\]", text):
+        return True
+    if re.search(r"\(\s*\)", text):
+        return True
+    return False
+
+
+def deduplicate(items: list[Any]) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+    for item in items:
+        text = str(item or "").strip()
+        if not text:
+            continue
+        key = " ".join(text.casefold().split())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(text)
+    return out
+
+
+def normalize_text(text: str) -> str:
+    return re.sub(r"\s+", " ", (text or "").strip().casefold())
