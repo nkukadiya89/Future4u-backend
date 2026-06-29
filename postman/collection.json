@@ -11439,6 +11439,140 @@
       ]
     },
     {
+      "name": "job_generation",
+      "item": [
+        {
+          "name": "AI Job Generation (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-job-generation/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-job-generation",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job_summary\": \"Hiring a junior Python developer to build Django REST APIs for our EdTech platform.\",\n  \"organization_name\": \"Future4U Labs\",\n  \"city\": 1,\n  \"job_type\": \"full_time\",\n  \"experience_level\": \"0_1\",\n  \"mode\": \"hybrid\",\n  \"salary_range\": \"INR 4-6 LPA\",\n  \"application_deadline\": \"2026-07-01\"\n}"
+            },
+            "description": "Generates AI fields for the Add Job form from user-provided details.\n\nAuth: JWT required.\nAllowed roles: institute, corporate, super_admin.\n\nRequires JOB_GENERATION_ENABLED=true and a configured LLM provider (default: GROQ_API_KEY with JOB_GENERATION_LLM_PROVIDER=groq).\n\nRequest body (user-filled fields):\n- job_summary (required, 10–1000 chars — primary AI context)\n- organization_name (required)\n- city (optional, city ID from master list)\n- job_type (optional: part_time, full_time, freelance)\n- experience_level (optional: fresher, 0_1, 1_3, 3_5, 5_10, 10_plus)\n- mode (optional: remote, onsite, hybrid)\n- salary_range (optional)\n- application_deadline (optional, ISO date)\n\nResponse: { success, data: { name, description, responsibilities[], skills[], education_tags, why_this_match, organization_name, city, city_name, salary_range, job_type, experience_level, mode, application_deadline } }\n\nNote: job_summary is request input only and is not returned in the response.\n\nAdmin test panel: /admin/job_generation/jobgenerationpanel/"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Success envelope with job fields', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.eql(true);",
+                  "  pm.expect(json.data).to.be.an('object');",
+                  "  pm.expect(json.data.name).to.be.a('string');",
+                  "  pm.expect(json.data.description).to.be.a('string');",
+                  "  pm.expect(json.data.responsibilities).to.be.an('array');",
+                  "  pm.expect(json.data.skills).to.be.an('array');",
+                  "  pm.expect(json.data.education_tags).to.be.a('string');",
+                  "  pm.expect(json.data.why_this_match).to.be.a('string');",
+                  "  pm.expect(json.data.organization_name).to.be.a('string');",
+                  "  pm.expect(json.data).to.not.have.property('job_summary');",
+                  "  pm.expect(json.data.job_type).to.be.a('string');",
+                  "  pm.expect(json.data.experience_level).to.be.a('string');",
+                  "  pm.expect(json.data.mode).to.be.a('string');",
+                  "  pm.expect(json.data.salary_range).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "course_generation",
+      "item": [
+        {
+          "name": "AI Course Generation (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-course-generation/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-course-generation",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"course_overview\": \"Learn Python programming from basics to advanced concepts for data science and machine learning.\",\n  \"course_price\": \"24999\",\n  \"course_type\": \"certification\",\n  \"mode\": \"online\",\n  \"duration\": \"8 Weeks\"\n}"
+            },
+            "description": "Generates AI fields for the Add Course form from institute-provided details.\n\nAuth: JWT required.\nAllowed roles: institute, super_admin.\n\nRequires COURSE_GENERATION_ENABLED=true and a configured LLM provider (default: GROQ_API_KEY with COURSE_GENERATION_LLM_PROVIDER=groq).\n\nRequest body (user-filled fields):\n- course_overview (required, 10-2000 chars — primary AI context)\n- course_price (optional)\n- course_type (optional: higher_secondary, diploma, degree, certification, training)\n- mode (optional: online, offline)\n- duration (optional)\n\nResponse: { success, data: { course_title, course_overview, skills[], course_content[], why_this_course, certification_info, course_price, course_type, mode, duration } }\n\nAdmin test panel: /admin/course_generation/coursegenerationpanel/"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Success envelope with course fields', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.success).to.eql(true);",
+                  "  pm.expect(json.data).to.be.an('object');",
+                  "  pm.expect(json.data.course_title).to.be.a('string');",
+                  "  pm.expect(json.data.course_overview).to.be.a('string');",
+                  "  pm.expect(json.data.skills).to.be.an('array');",
+                  "  pm.expect(json.data.course_content).to.be.an('array');",
+                  "  pm.expect(json.data.why_this_course).to.be.a('string');",
+                  "  pm.expect(json.data.certification_info).to.be.a('string');",
+                  "  pm.expect(json.data.course_price).to.be.a('string');",
+                  "  pm.expect(json.data.course_type).to.be.a('string');",
+                  "  pm.expect(json.data.mode).to.be.a('string');",
+                  "  pm.expect(json.data.duration).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Domain Master",
       "item": [
         {
@@ -13304,539 +13438,6 @@
             }
           },
           "response": []
-        }
-      ]
-    },
-    {
-      "name": "Admin Users",
-      "description": "Super Admin / staff endpoints for creating and managing student users. Requires Bearer {{access_token}}. Base path: /admin-student-users/\n\nActivate or deactivate students with PATCH {user_id}/update-status/ (status: active | inactive). Active students receive a password setup email when activated.\n\nSoft-delete (archive): DELETE single student or PATCH bulk-archive. Students must be inactive before archiving. Restore archived students with PATCH bulk-restore. List archived students with GET archive-list.",
-      "item": [
-        {
-          "name": "list students (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/admin-student-users/?pagesize=10",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "admin-student-users",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1",
-                  "disabled": true
-                },
-                {
-                  "key": "pagesize",
-                  "value": "10"
-                },
-                {
-                  "key": "search",
-                  "value": "",
-                  "disabled": true
-                },
-                {
-                  "key": "ordering",
-                  "value": "-id",
-                  "disabled": true
-                }
-              ]
-            },
-            "description": "Admin-only: list student users (paginated).\n\nGET /admin-student-users/\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOptional query params: no_pagination, pagesize, search, ordering."
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve student (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/admin-student-users/{{user_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "admin-student-users",
-                "{{user_id}}",
-                ""
-              ]
-            },
-            "description": "Admin-only: retrieve a single student profile by user id.\n\nGET /admin-student-users/{user_id}/\n\nSet {{user_id}} from create response or list students.\n\n200 response: success, data (id, user, language, medium, education_level, stream, first_name, last_name, phone, email, country, country_name, state, state_name, city, city_name, referral_code)\n404 if user is not a student or profile not found."
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "  try {",
-                  "    const json = pm.response.json();",
-                  "    pm.test('Student retrieved', () => pm.expect(json.success).to.eql(true));",
-                  "    if (json.data && json.data.user != null) {",
-                  "      pm.collectionVariables.set('user_id', String(json.data.user));",
-                  "      pm.environment.set('user_id', String(json.data.user));",
-                  "    }",
-                  "    if (json.data && json.data.id != null) {",
-                  "      pm.collectionVariables.set('student_profile_id', String(json.data.id));",
-                  "      pm.environment.set('student_profile_id', String(json.data.id));",
-                  "    }",
-                  "  } catch (e) {}",
-                  "}"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "create student (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/admin-student-users/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "admin-student-users",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "data",
-                  "value": "{\"email\":\"{{user_email}}\",\"terms_accepted\":true,\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"country\":\"{{country_id}}\",\"state\":\"{{state_id}}\",\"city\":\"{{city_id}}\",\"address\":\"{{address}}\",\"referral_code\":\"{{referral_code}}\",\"education_level\":\"{{education_level_id}}\",\"stream\":\"{{stream_id}}\",\"medium\":\"{{medium}}\",\"language\":[\"{{language_id_1}}\",\"{{language_id_2}}\",\"{{language_id_3}}\"]}",
-                  "type": "text"
-                },
-                {
-                  "key": "profile_image",
-                  "type": "file",
-                  "src": "",
-                  "disabled": true
-                }
-              ]
-            },
-            "description": "Admin-only: create a student from the dashboard.\n\nPOST /admin-student-users/\n\nMultipart form-data: `data` (JSON string) + optional `profile_image`.\n\nRequired in `data`: email, first_name, country, state, city, terms_accepted\nOptional: last_name, phone, address, referral_code, education_level, stream, medium, language (array of ids)\n\nDo not send user_type — always creates a student.\n\nNo password in request. Password setup link is emailed immediately.\nUser stays pending until POST /auth/reset-password/.\n\n201 response: success, message, user_id, user_type, must_change_password, created_by, created_at\n400 response: success, errors"
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "  try {",
-                  "    const json = pm.response.json();",
-                  "    pm.test('Student created', () => pm.expect(json.success).to.eql(true));",
-                  "    if (json.user_id != null) {",
-                  "      pm.collectionVariables.set('user_id', String(json.user_id));",
-                  "      pm.environment.set('user_id', String(json.user_id));",
-                  "    }",
-                  "    pm.test('must_change_password', () => pm.expect(json.must_change_password).to.eql(true));",
-                  "    pm.environment.set('must_change_password', 'true');",
-                  "  } catch (e) {}",
-                  "}"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "partial_update student (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/admin-student-users/{{user_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "admin-student-users",
-                "{{user_id}}",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "data",
-                  "value": "{\"first_name\":\"{{first_name}}\",\"phone\":\"{{phone}}\",\"address\":\"{{address}}\"}",
-                  "type": "text"
-                },
-                {
-                  "key": "profile_image",
-                  "type": "file",
-                  "src": "",
-                  "disabled": true
-                }
-              ]
-            },
-            "description": "Admin-only: partially update an existing student.\n\nPATCH /admin-student-users/{user_id}/\n\nSet {{user_id}} from create response or list students.\n\nSend only fields to change in `data` + optional `profile_image`.\n\nOptional fields: email, first_name, last_name, phone, address, country, state, city, referral_code, education_level, stream, medium, language, terms_accepted\n\nWhen email changes:\n- Old email receives email-changed notification\n- New email receives password setup link\n- Account returns to pending until POST /auth/reset-password/\n\n200 response: success, message, user_id, user_type\n400 response: success, errors"
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "  try {",
-                  "    const json = pm.response.json();",
-                  "    pm.test('Student updated', () => pm.expect(json.success).to.eql(true));",
-                  "    pm.test('user_type is student', () => pm.expect(json.user_type).to.eql('student'));",
-                  "    if (json.user_id != null) {",
-                  "      pm.collectionVariables.set('user_id', String(json.user_id));",
-                  "      pm.environment.set('user_id', String(json.user_id));",
-                  "    }",
-                  "  } catch (e) {}",
-                  "}"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "update-status (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/admin-student-users/{{user_id}}/update-status/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "admin-student-users",
-                "{{user_id}}",
-                "update-status",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"status\": \"inactive\"\n}"
-            },
-            "description": "Admin-only: activate or deactivate a student.\n\nPATCH /admin-student-users/{user_id}/update-status/\n\nSet {{user_id}} from create response or list students.\n\nBody: status (required) — \"active\" or \"inactive\".\n\nWhen status is set to active:\n- is_active is set to true\n- Password setup email is sent to the student\n\nWhen status is set to inactive:\n- is_active is set to false\n\nStudent must not be archived (deleted).\nAlready at the requested status returns 200 with success: false.\n\n200 response: success, message\n400 response: success, message (invalid status)\n404 response: success, message (not found)"
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "  try {",
-                  "    const json = pm.response.json();",
-                  "    pm.test('Student status updated', () => pm.expect(json.success).to.eql(true));",
-                  "  } catch (e) {}",
-                  "}"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "delete student (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/admin-student-users/{{user_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "admin-student-users",
-                "{{user_id}}",
-                ""
-              ]
-            },
-            "description": "Admin-only: soft-delete (archive) a single student.\n\nDELETE /admin-student-users/{user_id}/\n\nSet {{user_id}} from create response or list students.\n\nStudent must be inactive before delete. Active students return 400.\nAlready-archived students return 200 with success: false.\n\n200 response: success, message\n400 response: success, message (active student)\n404 response: success, message (not found)"
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "  try {",
-                  "    const json = pm.response.json();",
-                  "    pm.test('Student archived', () => pm.expect(json.success).to.eql(true));",
-                  "  } catch (e) {}",
-                  "}"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "archive-list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/admin-student-users/archive-list/?pagesize=10",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "admin-student-users",
-                "archive-list",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1",
-                  "disabled": true
-                },
-                {
-                  "key": "pagesize",
-                  "value": "10"
-                },
-                {
-                  "key": "search",
-                  "value": "",
-                  "disabled": true
-                },
-                {
-                  "key": "ordering",
-                  "value": "-deleted_at",
-                  "disabled": true
-                }
-              ]
-            },
-            "description": "Admin-only: list archived (soft-deleted) student users (paginated).\n\nGET /admin-student-users/archive-list/\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, search, ordering.\n\n200 response: success, data (array of student users)"
-          },
-          "response": []
-        },
-        {
-          "name": "bulk-archive (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/admin-student-users/bulk-archive/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "admin-student-users",
-                "bulk-archive",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ids\": [{{user_id}}]\n}"
-            },
-            "description": "Admin-only: soft-delete (archive) multiple students.\n\nPATCH /admin-student-users/bulk-archive/\n\nBody: ids (non-empty array of user ids).\n\nAll students must be inactive. Active students in the set return 400.\nAlready-archived students in the set return 400.\n\n200 response: success, message\n400 response: success, message\n404 response: success, message (none found)"
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "  try {",
-                  "    const json = pm.response.json();",
-                  "    pm.test('Students archived', () => pm.expect(json.success).to.eql(true));",
-                  "  } catch (e) {}",
-                  "}"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "bulk-restore (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/admin-student-users/bulk-restore/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "admin-student-users",
-                "bulk-restore",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ids\": [{{user_id}}]\n}"
-            },
-            "description": "Admin-only: restore archived students.\n\nPATCH /admin-student-users/bulk-restore/\n\nBody: ids (non-empty array of user ids).\n\nAll ids must refer to archived students. Already-active students in the set return 400.\n\n200 response: success, message\n400 response: success, message"
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "  try {",
-                  "    const json = pm.response.json();",
-                  "    pm.test('Students restored', () => pm.expect(json.success).to.eql(true));",
-                  "  } catch (e) {}",
-                  "}"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "bulk-upload-students (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/admin-student-users/bulk-upload-students/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "admin-student-users",
-                "bulk-upload-students",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "file",
-                  "type": "file",
-                  "src": "",
-                  "description": "CSV, XLS, or XLSX file"
-                },
-                {
-                  "key": "user_type",
-                  "value": "student",
-                  "type": "text",
-                  "description": "Role for all rows: student | teacher | employee | super_admin | ..."
-                }
-              ]
-            },
-            "description": "Admin-only: bulk create users by role.\n\nPOST /admin-student-users/bulk-upload-students/\n\nMultipart form-data: `file` + `user_type`.\n\nPassword setup link emailed per user during processing.\nAdmin receives summary email when complete.\n\nRequired CSV columns:\nfirst_name, last_name, about_me, email, phone, referral_code, country, state, city\n\nOptional CSV column: address\n\n200 response: success, message\n400 response: success, message"
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "  try {",
-                  "    const json = pm.response.json();",
-                  "    pm.test('Bulk upload started', () => pm.expect(json.success).to.eql(true));",
-                  "  } catch (e) {}",
-                  "}"
-                ]
-              }
-            }
-          ]
         }
       ]
     },
