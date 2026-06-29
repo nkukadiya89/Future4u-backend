@@ -6,7 +6,6 @@ import re
 from dataclasses import dataclass
 from typing import Any, TypeVar
 
-from django.conf import settings
 from pydantic import BaseModel, ValidationError
 
 from course_generation.services.payload_parser import parse_ai_payload
@@ -171,10 +170,6 @@ class JsonResponseParser:
     @classmethod
     def _log_result(cls, result: JsonParseValidateResult) -> None:
         if result.success:
-            if settings.DEBUG:
-                logger.debug("raw_llm_response=%r", result.raw_llm_response)
-                logger.debug("extracted_json=%r", result.extracted_json)
-                logger.debug("validation_errors=None")
             return
 
         logger.warning(
@@ -182,10 +177,6 @@ class JsonResponseParser:
             result.parse_error,
             result.validation_errors,
         )
-        if settings.DEBUG:
-            logger.debug("raw_llm_response=%r", result.raw_llm_response)
-            logger.debug("extracted_json=%r", result.extracted_json)
-            logger.debug("validation_errors=%r", result.validation_errors)
 
 
 def format_validation_errors(exc: Exception) -> str:

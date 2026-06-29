@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n static %}
+{% load i18n %}
 
 {% block extrastyle %}
 {{ block.super }}
@@ -290,16 +290,6 @@
   {% if result_pretty and not error %}
     <div class="cgp-success">
       {% translate "Course details generated successfully." %}
-    </div>
-  {% endif %}
-
-  {% if diagnostics_pretty %}
-    <div class="cgp-section">
-      <h2>{% translate "Run Context" %}</h2>
-      <div class="cgp-json-block">
-        <button type="button" class="cgp-copy-btn">{% translate "Copy" %}</button>
-        <pre>{{ diagnostics_pretty }}</pre>
-      </div>
     </div>
   {% endif %}
 

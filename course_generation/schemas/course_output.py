@@ -18,6 +18,7 @@ from course_generation.constants.course_generation_constants import (
     INVENTED_CERT_PROVIDERS,
     OVERVIEW_MAX_WORDS,
     OVERVIEW_MIN_WORDS,
+    SKILLS_ITEM_MAX_WORDS,
     SKILLS_MAX,
     SKILLS_MIN,
     WHY_THIS_COURSE_MAX_WORDS,
@@ -28,9 +29,9 @@ from course_generation.utils import (
     contains_banned_phrase,
     contains_invented_cert_provider,
     contains_placeholder,
+    count_overview_repeated_items,
     deduplicate,
     has_broken_punctuation,
-    normalize_text,
     word_count,
 )
 
@@ -118,6 +119,12 @@ class CourseGenerationPayload(BaseModel):
         if len(self.course_content) > COURSE_CONTENT_MAX:
             raise ValueError(f"course_content must have at most {COURSE_CONTENT_MAX} items")
 
+        for index, item in enumerate(self.skills, start=1):
+            if word_count(item) > SKILLS_ITEM_MAX_WORDS:
+                raise ValueError(f"skills item {index} must be a short skill tag")
+            if "(" in item or ")" in item:
+                raise ValueError(f"skills item {index} must not include parenthetical text")
+
         for index, item in enumerate(self.course_content, start=1):
             if word_count(item) > 12:
                 raise ValueError(f"course_content item {index} must be a short module title")
@@ -164,10 +171,7 @@ class CourseGenerationPayload(BaseModel):
         if contains_invented_cert_provider(self.certification_info, INVENTED_CERT_PROVIDERS):
             raise ValueError("certification_info must not name external certificate providers")
 
-        overview_norm = normalize_text(self.course_overview)
-        for item in self.skills + self.course_content:
-            item_norm = normalize_text(item)
-            if len(item_norm.split()) >= 3 and item_norm in overview_norm:
-                raise ValueError("course_overview repeats content from skills or course_content")
+        if count_overview_repeated_items(self.course_overview, self.course_content) >= 2:
+            raise ValueError("course_overview repeats content from skills or course_content")
 
         return self

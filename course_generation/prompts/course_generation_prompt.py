@@ -12,6 +12,7 @@ from course_generation.constants.course_generation_constants import (
     OVERVIEW_MIN_WORDS,
     OVERVIEW_TARGET_MAX_WORDS,
     OVERVIEW_TARGET_MIN_WORDS,
+    SKILLS_ITEM_MAX_WORDS,
     SKILLS_MAX,
     SKILLS_MIN,
     WHY_THIS_COURSE_MAX_WORDS,
@@ -38,7 +39,7 @@ The institute has already filled these fields on the form — use them only as c
 - mode
 - duration
 
-Generate ONLY the six fields in the JSON shape above.
+Generate ONLY the six fields in the JSON shape above. Every value must be written fresh from the institute-provided details in the user message. Never copy placeholder or example text from these instructions.
 
 FIELD RULES
 
@@ -54,12 +55,15 @@ course_overview
 - Avoid marketing buzzwords (no industry-leading, world-class, cutting-edge, transformative, revolutionary, comprehensive ecosystem)
 
 skills
-- {SKILLS_MIN}-{SKILLS_MAX} practical skills relevant to this course
+- {SKILLS_MIN}-{SKILLS_MAX} short skill tags for a "Skills You Will Learn" pill UI
+- Each skill is 1-{SKILLS_ITEM_MAX_WORDS} words — concise labels only (no sentences, no examples in parentheses)
+- Derive every skill from the institute course overview and form context
 - No duplicates
 
 course_content
-- {COURSE_CONTENT_MIN}-{COURSE_CONTENT_MAX} short learning module titles
+- {COURSE_CONTENT_MIN}-{COURSE_CONTENT_MAX} short learning module titles as strings
 - One title per item — no paragraphs, no commas joining multiple topics
+- Derive every module title from the institute course overview and form context
 
 why_this_course
 - {WHY_THIS_COURSE_MIN_WORDS}-{WHY_THIS_COURSE_MAX_WORDS} words
@@ -74,8 +78,10 @@ certification_info
 STRICT VALIDATION (output will be rejected if violated)
 - Invalid JSON, missing fields, or empty arrays
 - Duplicate skills or course_content items
+- course_overview that copies two or more course_content module titles verbatim
 - course_overview outside {OVERVIEW_MIN_WORDS}-{OVERVIEW_MAX_WORDS} words
 - skills count outside {SKILLS_MIN}-{SKILLS_MAX}
+- any skill longer than {SKILLS_ITEM_MAX_WORDS} words or with parenthetical text
 - course_content count outside {COURSE_CONTENT_MIN}-{COURSE_CONTENT_MAX}
 - why_this_course outside {WHY_THIS_COURSE_MIN_WORDS}-{WHY_THIS_COURSE_MAX_WORDS} words
 - certification_info outside {CERTIFICATION_INFO_MIN_WORDS}-{CERTIFICATION_INFO_MAX_WORDS} words
@@ -83,7 +89,7 @@ STRICT VALIDATION (output will be rejected if violated)
 - Broken text like ", ,"
 - Markdown or explanations outside JSON
 
-Previous validation feedback (fix these issues): {{validation_feedback}}
+Previous validation feedback (fix these issues if provided): {{validation_feedback}}
 """
 
 USER_PROMPT = """Generate AI fields for the Future4U Add Course form using the institute-provided details below.
@@ -107,19 +113,18 @@ def build_course_generation_prompt() -> ChatPromptTemplate:
 
 def _choice_display(choices: tuple[tuple[str, str], ...], value: object) -> str:
     if not value:
-        return "Not provided"
+        return ""
     return dict(choices).get(str(value), str(value))
 
 
 def format_prompt_inputs(*, generation_input: dict) -> dict[str, str]:
     return {
-        "course_overview": str(generation_input.get("course_overview") or "").strip()
-        or "Not provided",
-        "course_price": str(generation_input.get("course_price") or "").strip() or "Not provided",
+        "course_overview": str(generation_input.get("course_overview") or "").strip(),
+        "course_price": str(generation_input.get("course_price") or "").strip(),
         "course_type": _choice_display(
             Courses.COURSE_TYPE_CHOICES, generation_input.get("course_type")
         ),
         "mode": _choice_display(Courses.MODE_CHOICE, generation_input.get("mode")),
-        "duration": str(generation_input.get("duration") or "").strip() or "Not provided",
-        "validation_feedback": str(generation_input.get("validation_feedback") or "None").strip(),
+        "duration": str(generation_input.get("duration") or "").strip(),
+        "validation_feedback": str(generation_input.get("validation_feedback") or "").strip(),
     }

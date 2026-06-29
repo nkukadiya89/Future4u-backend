@@ -31,9 +31,12 @@ class GroqProvider(LLMProvider):
         model_name = getattr(settings, "GROQ_MODEL", "openai/gpt-oss-120b")
         kwargs = {
             "model": model_name,
-            "temperature": float(getattr(settings, "GROQ_TEMPERATURE", 0.2)),
+            "temperature": float(
+                getattr(settings, "COURSE_GENERATION_TEMPERATURE", None)
+                or getattr(settings, "GROQ_TEMPERATURE", 0.2)
+            ),
             "max_tokens": int(
-                max_tokens or getattr(settings, "GROQ_MAX_TOKENS", COURSE_GENERATION_MAX_TOKENS)
+                max_tokens or getattr(settings, "COURSE_GENERATION_MAX_TOKENS", COURSE_GENERATION_MAX_TOKENS)
             ),
             "max_retries": 2,
             "api_key": groq_api_key(),

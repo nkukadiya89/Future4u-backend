@@ -61,6 +61,22 @@ def normalize_text(text: str) -> str:
     return re.sub(r"\s+", " ", (text or "").strip().casefold())
 
 
+def count_overview_repeated_items(
+    overview: str,
+    items: list[str],
+    *,
+    min_item_words: int = 4,
+) -> int:
+    """Count list items whose normalized text appears verbatim in the overview."""
+    overview_norm = normalize_text(overview)
+    repeated = 0
+    for item in items:
+        item_norm = normalize_text(item)
+        if len(item_norm.split()) >= min_item_words and item_norm in overview_norm:
+            repeated += 1
+    return repeated
+
+
 def contains_invented_cert_provider(text: str, providers: tuple[str, ...]) -> bool:
     lowered = (text or "").casefold()
     for provider in providers:
