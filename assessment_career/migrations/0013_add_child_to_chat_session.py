@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('assessment_career', '0012_convert_career_factors_list_to_dict'),
-        ('user_profile', '0049_childprofile_achievements_and_more'),
+        ('user_profile', '0049_studentprofile_and_childprofile_updates'),
     ]
 
     operations = [

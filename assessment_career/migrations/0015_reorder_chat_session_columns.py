@@ -12,7 +12,7 @@ BEGIN
       AND confrelid = 'career_chat_session'::regclass
       AND contype = 'f';
     IF fk_name IS NOT NULL THEN
-        EXECUTE format('ALTER TABLE career_chat_message DROP CONSTRAINT %%I', fk_name);
+        EXECUTE 'ALTER TABLE career_chat_message DROP CONSTRAINT ' || quote_ident(fk_name);
     END IF;
 END $$;
 
@@ -26,7 +26,7 @@ BEGIN
         WHERE conrelid = 'career_chat_session'::regclass
           AND contype = 'f'
     LOOP
-        EXECUTE format('ALTER TABLE career_chat_session DROP CONSTRAINT %%I', rec.conname);
+        EXECUTE 'ALTER TABLE career_chat_session DROP CONSTRAINT ' || quote_ident(rec.conname);
     END LOOP;
 END $$;
 
@@ -123,7 +123,7 @@ BEGIN
       AND confrelid = 'career_chat_session'::regclass
       AND contype = 'f';
     IF fk_name IS NOT NULL THEN
-        EXECUTE format('ALTER TABLE career_chat_message DROP CONSTRAINT %%I', fk_name);
+        EXECUTE 'ALTER TABLE career_chat_message DROP CONSTRAINT ' || quote_ident(fk_name);
     END IF;
 END $$;
 
@@ -136,7 +136,7 @@ BEGIN
         WHERE conrelid = 'career_chat_session'::regclass
           AND contype = 'f'
     LOOP
-        EXECUTE format('ALTER TABLE career_chat_session DROP CONSTRAINT %%I', rec.conname);
+        EXECUTE 'ALTER TABLE career_chat_session DROP CONSTRAINT ' || quote_ident(rec.conname);
     END LOOP;
 END $$;
 
