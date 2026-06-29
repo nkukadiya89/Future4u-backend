@@ -27,8 +27,8 @@ class CareerSuggestionInline(admin.TabularInline):
         return super().get_queryset(request).filter(deleted=False)
 
 
-class CareerRecommendationChatMessageInline(ReadOnlyAdminMixin, admin.TabularInline):
-    model = CareerRecommendationChatMessage
+class ChatMessageInline(ReadOnlyAdminMixin, admin.TabularInline):
+    model = ChatMessage
     extra = 0
     fields = ("id", "role", "content", "created_at")
     readonly_fields = ("id", "role", "content", "created_at")

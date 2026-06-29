@@ -10,6 +10,7 @@ from common.mixins.serializer_mixins import (
 )
 from employee.models import Employee
 from user.models import CustomGroup, User
+from user.services.registration_service import setup_web_user_password
 from utils.generate_ip_address import get_client_ip
 
 

@@ -63,6 +63,155 @@ from utils.cache_keys import recommendation_key
 from utils.throttles import PerUserBurstRateThrottle
 
 
+class ChildProfileViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    pagination_class = Pagination
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+
+    def get_queryset(self):
+        return ChildProfile.objects.filter(
+            parent_profile__user=self.request.user,
+            deleted=False,
+        ).select_related("education_level", "stream").prefetch_related("language")
+
+    def get_serializer_class(self):
+        if self.action in ("create", "partial_update", "update"):
+            return ChildProfileCreateSerializer
+        return ChildProfileSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        no_pagination = request.query_params.get("no_pagination")
+        if no_pagination:
+            serializer = self.get_serializer(queryset, many=True)
+            return Response({"success": True, "data": serializer.data})
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response({"success": True, "data": serializer.data})
+        serializer = self.get_serializer(queryset, many=True)
+        return self.get_paginated_response({"success": True, "data": serializer.data})
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        data = request.data.get("data")
+        if data:
+            data = json.loads(data)
+        else:
+            data = request.data
+
+        first_name = data.get("first_name")
+        last_name = data.get("last_name")
+        date_of_birth = data.get("date_of_birth")
+
+        if first_name and last_name and date_of_birth:
+            exists = ChildProfile.objects.filter(
+                parent_profile__user=request.user,
+                first_name=first_name,
+                last_name=last_name,
+                date_of_birth=date_of_birth,
+                deleted=False,
+            ).exists()
+            if exists:
+                return Response(
+                    {
+                        "success": False,
+                        "message": "A child with the same name and date of birth already exists under your profile.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        parent_profile = ParentProfile.objects.filter(user=request.user).first()
+        if not parent_profile:
+            return Response(
+                {"success": False, "message": "Parent profile not found. Please set up your profile first."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = self.get_serializer(data=data)
+        if not serializer.is_valid():
+            return Response(
+                {"success": False, "message": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        child = serializer.save(parent_profile=parent_profile)
+
+        profile_image_file = request.FILES.get("profile_image")
+        if profile_image_file:
+            try:
+                child.upload_profile_image(profile_image_file)
+            except Exception as e:
+                return Response(
+                    {"success": False, "message": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        return Response(
+            {
+                "success": True,
+                "message": "Child profile created",
+                "data": ChildProfileSerializer(child).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    @transaction.atomic
+    def partial_update(self, request, *args, **kwargs):
+        child = self.get_object()
+        data = request.data.get("data")
+        if data:
+            data = json.loads(data)
+        else:
+            data = {}
+        serializer = self.get_serializer(child, data=data, partial=True)
+        if not serializer.is_valid():
+            return Response(
+                {"success": False, "message": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        child = serializer.save()
+
+        profile_image_file = request.FILES.get("profile_image")
+        if profile_image_file:
+            try:
+                child.upload_profile_image(profile_image_file)
+            except Exception as e:
+                return Response(
+                    {"success": False, "message": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        return Response(
+            {
+                "success": True,
+                "message": "Child profile updated",
+                "data": ChildProfileSerializer(child).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def retrieve(self, request, *args, **kwargs):
+        child = self.get_object()
+        serializer = self.get_serializer(child)
+        return Response(
+            {"success": True, "data": serializer.data},
+            status=status.HTTP_200_OK,
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        child = self.get_object()
+        child.deleted = True
+        child.deleted_at = timezone.now()
+        child.save(update_fields=["deleted", "deleted_at"])
+        return Response(
+            {"success": True, "message": "Child removed"},
+            status=status.HTTP_200_OK,
+        )
+
+
 class BusinessSettingViewSet(ListEnvelopeMixin, ModelViewSet):
     queryset = BusinessSetting.objects.all().order_by("-id")
     serializer_class = BusinessSettingInfoSerializer

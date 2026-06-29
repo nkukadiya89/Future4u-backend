@@ -174,9 +174,12 @@ class ParentProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
     readonly_fields = ("user", "created_at", "updated_at")
     raw_id_fields = ("user",)
     filter_horizontal = ("language",)
-    list_select_related = ("user", "child_education_level", "stream")
+    list_select_related = ("user",)
 
-    autocomplete_fields = ("child_education_level", "stream")
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ("user", "created_at", "updated_at")
+        return ()
 
     fieldsets = (
         ("Identity", {"fields": ("user",)}),

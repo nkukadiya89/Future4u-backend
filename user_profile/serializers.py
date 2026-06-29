@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from language_master.models import Language
 from common.mixins.serializer_mixins import (
     ProfileLanguageMixin,
     ProfileLanguageSaveMixin,
@@ -416,6 +417,37 @@ class ParentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializer
             "profile_image",
         ]
 
+    def validate(self, attrs):
+        relationship = attrs.get(
+            "relationship",
+            getattr(self.instance, "relationship", None),
+        )
+        other_text = attrs.get(
+            "other_relationship_text",
+            getattr(self.instance, "other_relationship_text", ""),
+        )
+
+        if not relationship:
+            raise serializers.ValidationError(
+                {"relationship": "This field is required."}
+            )
+
+        if relationship == ParentProfile.Relationship.OTHER and not (
+            other_text or ""
+        ).strip():
+            raise serializers.ValidationError(
+                {
+                    "other_relationship_text": (
+                        "This field is required when relationship is other."
+                    )
+                }
+            )
+
+        if relationship != ParentProfile.Relationship.OTHER:
+            attrs["other_relationship_text"] = ""
+
+        return attrs
+
 
 class ChildProfileSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
@@ -481,7 +513,7 @@ class ChildProfileSerializer(serializers.ModelSerializer):
         ]
 
 
-class ChildProfileCreateSerializer(serializers.ModelSerializer):
+class ChildProfileCreateSerializer(ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer):
     language = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Language.objects.filter(is_active=True, deleted=False),
@@ -514,7 +546,8 @@ class ChildProfileCreateSerializer(serializers.ModelSerializer):
             "github_url",
             "portfolio",
         ]
-]
+
+
 class BusinessSettingInfoSerializer(serializers.ModelSerializer):
     company_name = serializers.CharField(source="company.name", required=False)
     country_name = serializers.CharField(
