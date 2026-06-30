@@ -10026,7 +10026,7 @@
               "formdata": [
                 {
                   "key": "data",
-                  "value": "{\"student_trained\":500,\"placements\":400,\"success_rate\":85.5,\"about_us\":\"Leading institute focused on career-ready education.\",\"courses_offered\":[\"B.Tech\",\"MBA\",\"Data Science Bootcamp\"],\"key_highlights\":[\"Top placements\",\"Industry partnerships\",\"Modern labs\"]}",
+                  "value": "{\"student_trained\":500,\"placements\":400,\"success_rate\":85.5,\"about_us\":\"Leading institute focused on career-ready education.\",\"courses_offered\":[\"B.Tech\",\"MBA\",\"Data Science Bootcamp\"],\"key_highlights\":[\"Top placements\",\"Industry partnerships\",\"Modern labs\"],\"website\":\"https://future4u.example.com\",\"institute_name\":\"Future4u Institute\"}",
                   "type": "text",
                   "description": "JSON string. Server parses json.loads(data)."
                 },
@@ -10038,7 +10038,7 @@
                 }
               ]
             },
-            "description": "Update institute profile (authenticated institute user).\n\nMultipart fields:\n- data (JSON string): student_trained, placements, success_rate, about_us, courses_offered, key_highlights\n- profile_image (optional file)\n\nResponse: { success, data }"
+            "description": "Update institute profile (authenticated institute user).\n\nMultipart fields:\n- data (JSON string): student_trained, placements, success_rate, about_us, courses_offered, key_highlights, website, institute_name\n- profile_image (optional file)\n\nResponse: { success, data }"
           },
           "response": []
         },
@@ -10451,7 +10451,7 @@
               "formdata": [
                 {
                   "key": "data",
-                  "value": "{\"open_job\":25,\"employees\":900,\"years_in_business\":12,\"about_us\":\"Corporate employer focused on talent development.\",\"perks_benefits\":[\"Health insurance\",\"Remote work\",\"Learning budget\"]}",
+                  "value": "{\"open_job\":25,\"employees\":900,\"years_in_business\":12,\"about_us\":\"Corporate employer focused on talent development.\",\"perks_benefits\":[\"Health insurance\",\"Remote work\",\"Learning budget\"],\"website\":\"https://future4u.example.com\",\"institute_name\":\"Future4u Corporate\"}",
                   "type": "text"
                 },
                 {
@@ -10460,7 +10460,8 @@
                   "src": ""
                 }
               ]
-            }
+            },
+            "description": "Update corporate profile (authenticated corporate user).\n\nMultipart fields:\n- data (JSON string): open_job, employees, years_in_business, about_us, perks_benefits, website, institute_name\n- profile_image (optional file)\n\nResponse: { success, data }"
           },
           "response": []
         },

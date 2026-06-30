@@ -491,7 +491,9 @@ class InstituteProfile(BaseModule):
     about_us = models.TextField(null=True, blank=True)
     courses_offered = models.JSONField(default=list, blank=True)
     key_highlights = models.JSONField(default=list, blank=True)
-    
+    website = models.CharField(max_length=250, null=True, blank=True)
+    institute_name = models.CharField(max_length=200, null=True, blank=True)
+
     class Meta:
         db_table = "institute_profile"
         ordering = ["-created_at"]
@@ -598,6 +600,8 @@ class CorporateProfile(BaseModule):
         on_delete=models.CASCADE,
         related_name="corporate_profile",
     )
+    website = models.CharField(max_length=250, null=True, blank=True)
+    institute_name = models.CharField(max_length=200, null=True, blank=True)
     open_job = models.PositiveIntegerField(null=True, blank=True)
     employees = models.PositiveIntegerField(null=True, blank=True)
     years_in_business = models.PositiveIntegerField(null=True, blank=True)

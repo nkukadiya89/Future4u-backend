@@ -572,10 +572,59 @@ class UserProfileViewSet(ModelViewSet):
 class StudentProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+    filter_backends = [SearchFilter, OrderingFilter]
     http_method_names = ["get", "patch", "head", "options"]
 
     throttle_classes = [PerUserBurstRateThrottle]
 
+    search_fields = [
+        "user__status",
+        "user__user_type",
+        "education_level__level_code",
+        "education_level__display_name",
+        "stream__stream_code",
+        "stream__stream_name",
+        "user__country__name",
+        "user__states__name",
+        "user__city__name",
+        "user__first_name",
+        "user__last_name",
+        "user__phone",
+        "user__email",
+        "medium",
+        "linkedin_url",
+        "github_url",
+        "portfolio",
+        "skills",
+        "projects",
+        "internships",
+        "certifications",
+        "achievements",
+        "additional_insights",
+        "extra_activities",
+    ]
+    ordering_fields = [
+        "id",
+        "user",
+        "language",
+        "medium",
+        "education_level",
+        "stream",
+        "career_direction",
+        "education",
+        "skills",
+        "projects",
+        "internships",
+        "certifications",
+        "achievements",
+        "extra_activities",
+        "additional_insights",
+        "linkedin_url",
+        "github_url",
+        "portfolio",
+        "created_at",
+        "updated_at",
+    ]
     def get_queryset(self):
         return StudentProfile.objects.filter(user__deleted=False).select_related(
             "user__country", "user__states", "user__city", "education_level", "stream"
@@ -589,12 +638,31 @@ class StudentProfileViewSet(ModelViewSet):
                 return queryset.filter(user_id=user_id).first()
         return queryset.filter(user=request.user).first()
     
+
     def list(self, request, *args, **kwargs):
         if request.user.is_superuser:
             user_id = request.query_params.get("user_id")
             queryset = self.get_queryset()
             no_pagination = request.query_params.get("no_pagination")
-            page = self.paginate_queryset(queryset)
+
+            status_filter = request.query_params.get("status")
+            city_id = request.query_params.get("city")
+            state_id = request.query_params.get("state")
+            country_id = request.query_params.get("country")
+            
+            if status_filter:
+                queryset = queryset.filter(user__status=status_filter)
+            
+            if city_id:
+                queryset = queryset.filter(user__city_id=city_id)
+            
+            if state_id:
+                queryset = queryset.filter(user__states_id = state_id)
+            
+            if country_id:
+                queryset = queryset.filter(user__country_id=country_id)
+            
+            queryset = self.filter_queryset(queryset)
 
             if user_id:
                 profile = queryset.filter(user_id=user_id).first()
@@ -623,6 +691,8 @@ class StudentProfileViewSet(ModelViewSet):
                     },
                     status=status.HTTP_200_OK,
                 )
+            page = self.paginate_queryset(queryset)
+
             if page is not None:
                 serializer = StudentProfileSerializer(page, many=True)
                 return self.get_paginated_response(
