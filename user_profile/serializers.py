@@ -765,7 +765,12 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
             "success_rate",
             "about_us",
             "courses_offered",
-            "key_highlights",
+            "education",
+            "institute_name",
+            "total_student",
+            "board",
+            "partnership_readiness",
+            "website",
             "first_name",
             "last_name",
             "full_name",
@@ -789,7 +794,12 @@ class SchoolCollegeProfileUpSerializer(BaseModelSerializer):
             "success_rate",
             "about_us",
             "courses_offered",
-            "key_highlights",
+            "education",
+            "institute_name",
+            "total_student",
+            "board",
+            "partnership_readiness",
+            "website",
         ]
 
     def update(self, instance, validated_data):

@@ -10,6 +10,7 @@ from company.models import Company
 from country.models import Country
 from domain.models import Domain
 from state.models import State
+from education_level.models import EducationLevel
 from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
 
 
@@ -542,6 +543,19 @@ class InstituteGallery(BaseModule):
 
 
 class SchoolCollegeProfile(BaseModule):
+
+    TOTAL_STUDENT = (
+        ("under_500","Under 500"),
+        ("500_1000","500-1000"),
+        ("1000_3000","1000-3000"),
+        ("above_3000","3000+"),
+    )
+    READINESS = (
+        ("immediately", "Immediately"),
+        ("within_1month", "Within 1 month"),
+        ("within_3month", "Within 3 month"),
+        ("flexible_timeline", "Flexible timeline"),
+    )
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -552,7 +566,12 @@ class SchoolCollegeProfile(BaseModule):
     success_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     about_us = models.TextField(null=True, blank=True)
     courses_offered = models.JSONField(default=list, blank=True)
-    key_highlights = models.JSONField(default=list, blank=True)
+    education  = models.ManyToManyField(EducationLevel, blank=True, related_name="school_college_profiles")
+    institute_name = models.CharField(max_length=200, null=True, blank=True)
+    total_student = models.CharField(max_length=50, choices=TOTAL_STUDENT, default="under_500")
+    board = models.CharField(max_length=200, null=True, blank=True)
+    partnership_readiness = models.CharField(max_length=50, choices=READINESS, default="flexible_timeline")
+    website = models.CharField(max_length=250, null=True, blank=True)
 
     class Meta:
         db_table = "school_college_profile"

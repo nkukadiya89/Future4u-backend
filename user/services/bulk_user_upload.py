@@ -7,6 +7,8 @@ from state.models import State
 from city.models import City
 from user.models import User
 from user.services.registration_service import setup_web_user_password
+from user.services.bulkupload_profiles.student_bulkupload import StudentBulkUpload
+from user.services.bulkupload_profiles.school_colleges_bulkupload import SchoolCollegeBulkUpload
 
 
 class BulkUserUploadService:
@@ -21,14 +23,43 @@ class BulkUserUploadService:
         "state",
         "city",
     ]
+    @classmethod
+    def get_required_columns(cls, user_type):
+        required_columns = cls.REQUIRED_COLUMNS.copy()
 
+        if user_type == User.Role.STUDENT:
+            required_columns += StudentBulkUpload.REQUIRED_COLUMNS
+
+        elif user_type == User.Role.SCHOOL_COLLEGE:
+            required_columns += SchoolCollegeBulkUpload.REQUIRED_COLUMNS
+
+        return required_columns
+    
     @classmethod
     def process(cls, file, request_user, user_type):
         df = cls._read_file(file)
-        cls._validate_headers(df)
+
+        valid_roles = [role.value for role in User.Role]
+        if user_type not in valid_roles:
+            raise ValidationError(
+                f"Invalid user_type. Allowed: {', '.join(valid_roles)}"
+            )
+        required_columns = cls.get_required_columns(user_type)
+
+        profile_service = None
+        profile_masters = {}
+
+        if user_type == User.Role.STUDENT:
+            profile_service = StudentBulkUpload
+            profile_masters = StudentBulkUpload.preload()
+
+        elif user_type == User.Role.SCHOOL_COLLEGE:
+            profile_service = SchoolCollegeBulkUpload
+            profile_masters = SchoolCollegeBulkUpload.preload()
+            
+        cls._validate_headers(df, required_columns)
 
         total_records = len(df)
-
         inserted = 0
         failed = 0
         skipped = 0
@@ -38,10 +69,6 @@ class BulkUserUploadService:
         seen_emails = set()
         seen_phones = set()
 
-        valid_roles = [role.value for role in User.Role]
-        if user_type not in valid_roles:
-            raise ValidationError(f"Invalid user_type. Allowed:{', '.join(valid_roles)}")
-        
         countries = {
             c.name.strip().lower(): c for c in Country.objects.all()
         }
@@ -213,6 +240,9 @@ class BulkUserUploadService:
                         }
                     )
                     continue
+                profile_data = {}
+                if profile_service:
+                    profile_data = profile_service.validate_row(row, profile_masters)
 
                 with transaction.atomic():
                     user = User.objects.create(
@@ -230,6 +260,9 @@ class BulkUserUploadService:
                         created_by=request_user,
                         terms_accepted=True,
                     )
+
+                    if profile_service:
+                        profile_service.create_profile(user, profile_data)
 
                     setup_web_user_password(user)
 
@@ -275,12 +308,13 @@ class BulkUserUploadService:
         raise ValidationError("Only CSV, XLS and XLSX files are allowed.")
 
     @classmethod
-    def _validate_headers(cls, df):
+    def _validate_headers(cls, df, required_columns=None):
+        required_columns = required_columns or cls.REQUIRED_COLUMNS
         uploaded_columns = [col.strip() for col in df.columns]
 
         missing_columns = [
             column
-            for column in cls.REQUIRED_COLUMNS
+            for column in required_columns
             if column not in uploaded_columns
         ]
 

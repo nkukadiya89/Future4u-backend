@@ -19,29 +19,105 @@ class OrganizationProfileViewSet(BaseModelViewSet):
     read_serializer_class = None
     update_serializer_class = None
 
+    # def get_queryset(self):
+    #     return self.profile_model.objects.filter(
+    #         user=self.request.user,
+    #         deleted=False,
+    #     ).select_related("user", "user__city", "user__states").prefetch_related(
+    #         "gallery_images"
+    #     )
+
+    # def list(self, request, *args, **kwargs):
+    #     profile = self.get_queryset().first()
+    #     if not profile:
+    #         return Response(
+    #             {"success": False, "message": "Profile not found"},
+    #             status=status.HTTP_404_NOT_FOUND,
+    #         )
+    #     return Response(
+    #         {"success": True, "data": self.read_serializer_class(profile).data},
+    #         status=status.HTTP_200_OK,
+    #     )
+
     def get_queryset(self):
         return self.profile_model.objects.filter(
-            user=self.request.user,
             deleted=False,
         ).select_related("user", "user__city", "user__states").prefetch_related(
             "gallery_images"
         )
-
+    def get_profile_object(self, request):
+            queryset = self.get_queryset()
+            if request.user.is_superuser:
+                user_id = request.query_params.get("user_id")
+                if user_id:
+                    return queryset.filter(user_id=user_id).first()
+            return queryset.filter(user=request.user).first()
+    
     def list(self, request, *args, **kwargs):
-        profile = self.get_queryset().first()
-        if not profile:
-            return Response(
-                {"success": False, "message": "Profile not found"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        return Response(
-            {"success": True, "data": self.read_serializer_class(profile).data},
-            status=status.HTTP_200_OK,
-        )
+            if request.user.is_superuser:
+                user_id = request.query_params.get("user_id")
+                queryset = self.get_queryset()
+                no_pagination = request.query_params.get("no_pagination")
+                page = self.paginate_queryset(queryset)
 
+                if user_id:
+                    profile = queryset.filter(user_id=user_id).first()
+
+                    if not profile:
+                        return Response(
+                            {"success": False, "message": "Profile not found"},
+                            status=status.HTTP_404_NOT_FOUND,
+                        )
+
+                    serializer = self.read_serializer_class(profile)
+                    return Response(
+                        {
+                            "success": True,
+                            "data": serializer.data
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                if no_pagination:
+                    serializer = self.read_serializer_class(queryset, many=True)
+
+                    return Response(
+                        {
+                            "success": True,
+                            "data": serializer.data,
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                if page is not None:
+                    serializer = self.read_serializer_class(page, many=True)
+                    return self.get_paginated_response(
+                        {
+                            "success": True,
+                            "data": serializer.data,
+                        }
+                    )
+                serializer = self.read_serializer_class(queryset, many=True)
+                return self.get_paginated_response(
+                    {"success": True, "data": serializer.data}
+                )
+
+            profile = self.get_queryset().filter(user=request.user).first()
+
+            if not profile:
+                return Response(
+                    {"success": False, "message": "Profile not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            serializer = self.read_serializer_class(profile)
+
+            return Response(
+                {"success": True, "data": serializer.data},
+                status=status.HTTP_200_OK,
+            )
+    
     @transaction.atomic()
     def partial_update(self, request, *args, **kwargs):
-        profile = self.get_queryset().first()
+        profile = self.get_profile_object().first()
         if not profile:
             return Response(
                 {"success": False, "message": "Profile not found"},
@@ -56,7 +132,7 @@ class OrganizationProfileViewSet(BaseModelViewSet):
 
         profile_image = request.FILES.get("profile_image")
         if profile_image:
-            request.user.upload_profile_image(profile_image)
+            profile.user.upload_profile_image(profile_image)
 
         serializer = self.update_serializer_class(
             profile, data=data, partial=True, context={"request": request}
