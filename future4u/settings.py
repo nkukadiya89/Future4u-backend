@@ -109,6 +109,8 @@ INSTALLED_APPS = [
     "assessment_career",
     "course",
     "internship_job",
+    "news",
+    "notifications",
 ]
 
 MIDDLEWARE = [

@@ -8,6 +8,7 @@ from .models import (
     SubscriptionFeature,
     SubscriptionInvoice,
     UserSubscription,
+    PlanPrice,
 )
 
 
@@ -19,17 +20,24 @@ class SubscriptionFeatureSerializer(serializers.ModelSerializer):
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     features = SubscriptionFeatureSerializer(many=True, read_only=True)
+    prices = serializers.SerializerMethodField()
+
+    def get_prices(self, obj):
+        prices = obj.prices.filter(is_active=True, deleted=False)
+        return [
+            {"id": p.id, "period": p.period, "price": p.price, "duration_days": p.duration_days}
+            for p in prices
+        ]
 
     class Meta:
         model = Subscription
         fields = [
             "id",
             "package_name",
-            "price",
-            "duration_days",
             "description",
             "is_active",
             "features",
+            "prices",
         ]
 
 
@@ -37,6 +45,14 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSubscription
         fields = "__all__"
+
+
+class PlanPriceSerializer(serializers.ModelSerializer):
+    plan_name = serializers.CharField(source="plan.package_name", read_only=True)
+
+    class Meta:
+        model = PlanPrice
+        fields = ["id", "plan_name", "period", "price", "duration_days", "is_active"]
 
 
 class SubscriptionInvoiceSerializer(serializers.ModelSerializer):
@@ -68,17 +84,22 @@ class SubscriptionAPISerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "package_name",
-            "price",
-            "duration_days",
             "description",
             "is_active",
             "discounted_price",
             "discount_amount",
+            "prices",
         ]
 
     def _get_pricing(self, obj):
+        # Determine a PlanPrice to calculate pricing for. Use first active price.
         if not hasattr(obj, "_pricing_cache"):
-            obj._pricing_cache = calculate_price(obj)
+            plan_price = (
+                obj.prices.filter(is_active=True, deleted=False).order_by("-price").first()
+            )
+            if not plan_price:
+                raise Exception("No active price available for subscription")
+            obj._pricing_cache = calculate_price(plan_price)
         return obj._pricing_cache
 
     def get_discounted_price(self, obj):
@@ -86,3 +107,12 @@ class SubscriptionAPISerializer(serializers.ModelSerializer):
 
     def get_discount_amount(self, obj):
         return self._get_pricing(obj)["discount"]
+
+    prices = serializers.SerializerMethodField()
+
+    def get_prices(self, obj):
+        prices = obj.prices.filter(is_active=True, deleted=False)
+        return [
+            {"id": p.id, "period": p.period, "price": p.price, "duration_days": p.duration_days}
+            for p in prices
+        ]

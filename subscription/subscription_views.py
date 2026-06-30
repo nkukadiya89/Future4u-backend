@@ -29,6 +29,7 @@ from .models import (
     Subscription,
     SubscriptionInvoice,
     UserSubscription,
+    PlanPrice,
 )
 from subscription.models import SubscriptionFeature, FeatureUsage
 
@@ -54,7 +55,7 @@ class UserSubscriptionViewSet(ModelViewSet):
         user = request.user
         user_sub = (
             UserSubscription.objects.filter(user=user, is_active=True)
-            .select_related("subscription")
+            .select_related("plan_price__plan")
             .first()
         )
 
@@ -63,15 +64,16 @@ class UserSubscriptionViewSet(ModelViewSet):
 
         # default feature to report (assessment)
         feature_code = "assessment"
+        plan = getattr(user_sub.plan_price, "plan", None)
         feature = SubscriptionFeature.objects.filter(
-            subscription=user_sub.subscription,
+            subscription=plan,
             feature_code=feature_code,
             is_enabled=True,
             deleted=False,
         ).first()
 
         usage = FeatureUsage.objects.filter(
-            user=user, feature_code=feature_code, subscription=user_sub.subscription
+            user=user, feature_code=feature_code, plan_price=user_sub.plan_price
         ).first()
 
         used = usage.used if usage else 0
@@ -85,7 +87,8 @@ class UserSubscriptionViewSet(ModelViewSet):
 
         return Response(
             {
-                "subscription": user_sub.subscription.package_name,
+                "subscription": plan.package_name if plan else None,
+                "period": user_sub.plan_price.period if user_sub.plan_price else None,
                 "start_date": user_sub.start_date,
                 "end_date": user_sub.end_date,
                 "features": {
@@ -121,12 +124,16 @@ class PaymentSubscriptionViewSet(ModelViewSet):
         payment.razorpay_payment_id = request.data.get("payment_id")
         payment.save()
 
-        # activate or renew subscription
-        duration = payment.subscription.duration_days
+        # activate or renew subscription using plan_price
+        plan_price = payment.plan_price
+        if not plan_price:
+            return Response({"detail": "No plan price associated with payment"}, status=400)
+
+        duration = plan_price.duration_days
 
         user_sub, created = UserSubscription.objects.get_or_create(
             user=payment.user,
-            subscription=payment.subscription,
+            plan_price=plan_price,
             defaults={
                 "start_date": now().date(),
                 "end_date": now().date() + timedelta(days=duration),
@@ -146,24 +153,39 @@ class PaymentSubscriptionViewSet(ModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="create-order")
     def create_order(self, request):
+        # Accept either `plan_price_id` (preferred) or legacy `subscription_id`
+        plan_price_id = request.data.get("plan_price_id")
         subscription_id = request.data.get("subscription_id")
         promo_code_str = request.data.get("promo_code")
         user = request.user
 
-        try:
-            subscription = Subscription.objects.get(id=subscription_id, deleted=False)
-        except Subscription.DoesNotExist:
-            return Response(
-                {"success": False, "message": "Invalid subscription"}, status=400
-            )
         promocode = (
             PromoCode.objects.filter(code=promo_code_str).first()
             if promo_code_str
             else None
         )
 
+        # Resolve plan_price
+        plan_price = None
+        if plan_price_id:
+            plan_price = PlanPrice.objects.filter(id=plan_price_id, deleted=False).first()
+            if not plan_price:
+                return Response({"success": False, "message": "Invalid plan_price_id"}, status=400)
+        elif subscription_id:
+            subscription = Subscription.objects.filter(id=subscription_id, deleted=False).first()
+            if not subscription:
+                return Response({"success": False, "message": "Invalid subscription"}, status=400)
+            # pick default active price
+            plan_price = (
+                PlanPrice.objects.filter(plan=subscription, is_active=True, deleted=False)
+                .order_by("-price")
+                .first()
+            )
+            if not plan_price:
+                return Response({"success": False, "message": "No active prices for subscription"}, status=400)
+
         try:
-            pricing = calculate_price(subscription, promocode)
+            pricing = calculate_price(plan_price, promocode)
         except Exception as e:
             return Response({"success": False, "message": str(e)}, status=400)
 
@@ -175,6 +197,7 @@ class PaymentSubscriptionViewSet(ModelViewSet):
         if promocode_applied and promocode:
             promocode.used_count += 1
             promocode.save()
+
         # create razorpay order
         order = self.client.order.create(
             {
@@ -187,7 +210,7 @@ class PaymentSubscriptionViewSet(ModelViewSet):
         # store in DB
         payment = PaymentSubscription.objects.create(
             user=user,
-            subscription=subscription,
+            plan_price=plan_price,
             amount=amount,
             discount_amount=discount,
             final_amount=final_amount,
@@ -304,12 +327,16 @@ def razorpay_webhook(request):
         payment.amount = amount
         payment.save()
 
-        # Activate / renew subscription
-        duration = payment.subscription.duration_days
+        # Activate / renew subscription using plan_price
+        plan_price = payment.plan_price
+        if not plan_price:
+            return HttpResponse(status=400)
+
+        duration = plan_price.duration_days
 
         user_sub, created = UserSubscription.objects.get_or_create(
             user=payment.user,
-            subscription=payment.subscription,
+            plan_price=plan_price,
             defaults={
                 "start_date": now().date(),
                 "end_date": now().date() + timedelta(days=duration),
