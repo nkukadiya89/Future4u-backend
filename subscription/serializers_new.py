@@ -78,6 +78,7 @@ from subscription.services.pricing import calculate_price
 class SubscriptionAPISerializer(serializers.ModelSerializer):
     discounted_price = serializers.SerializerMethodField()
     discount_amount = serializers.SerializerMethodField()
+    features = serializers.SerializerMethodField()
 
     class Meta:
         model = Subscription
@@ -89,6 +90,7 @@ class SubscriptionAPISerializer(serializers.ModelSerializer):
             "discounted_price",
             "discount_amount",
             "prices",
+            "features",
         ]
 
     def _get_pricing(self, obj):
@@ -109,10 +111,23 @@ class SubscriptionAPISerializer(serializers.ModelSerializer):
         return self._get_pricing(obj)["discount"]
 
     prices = serializers.SerializerMethodField()
+    features = serializers.SerializerMethodField()
 
     def get_prices(self, obj):
         prices = obj.prices.filter(is_active=True, deleted=False)
         return [
             {"id": p.id, "period": p.period, "price": p.price, "duration_days": p.duration_days}
             for p in prices
+        ]
+
+    def get_features(self, obj):
+        features = obj.features.filter(is_enabled=True, deleted=False)
+        return [
+            {
+                "feature_name": feature.feature_name,
+                "value": feature.value,
+                "is_unlimited": feature.is_unlimited,
+                "is_core": feature.is_core,
+            }
+            for feature in features
         ]

@@ -59,12 +59,13 @@ class UserSubscriptionViewSet(ModelViewSet):
             .first()
         )
 
-        if not user_sub:
+        if not user_sub or not user_sub.plan_price or not user_sub.plan_price.plan:
             return Response({"subscription": None})
+
+        plan = user_sub.plan_price.plan
 
         # default feature to report (assessment)
         feature_code = "assessment"
-        plan = getattr(user_sub.plan_price, "plan", None)
         feature = SubscriptionFeature.objects.filter(
             subscription=plan,
             feature_code=feature_code,
@@ -73,7 +74,9 @@ class UserSubscriptionViewSet(ModelViewSet):
         ).first()
 
         usage = FeatureUsage.objects.filter(
-            user=user, feature_code=feature_code, plan_price=user_sub.plan_price
+            user=user,
+            feature_code=feature_code,
+            plan_price=user_sub.plan_price,
         ).first()
 
         used = usage.used if usage else 0
@@ -87,8 +90,7 @@ class UserSubscriptionViewSet(ModelViewSet):
 
         return Response(
             {
-                "subscription": plan.package_name if plan else None,
-                "period": user_sub.plan_price.period if user_sub.plan_price else None,
+                "subscription": plan.package_name,
                 "start_date": user_sub.start_date,
                 "end_date": user_sub.end_date,
                 "features": {

@@ -185,21 +185,17 @@ class UserSubscription(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        # UserSubscription is linked to a user and a subscription
-        plan_name = None
-        if self.plan_price and self.plan_price.plan:
-            plan_name = self.plan_price.plan.package_name
-        return f"{getattr(self.user, 'first_name', '') or getattr(self.user, 'email', '')} - {plan_name or ''}"
+        plan_name = getattr(getattr(self.plan_price, 'plan', None), 'package_name', None)
+        return f"{getattr(self.user, 'first_name', '') or getattr(self.user, 'email', '')} - {plan_name or 'Subscription'}"
 
     def can_consume(self, feature_code, quantity=1):
         """Return True if the user can consume `quantity` of `feature_code` under this subscription."""
-        from subscription.models import FeatureUsage, SubscriptionFeature
+        from subscription.models import SubscriptionFeature, FeatureUsage
 
         if not self.is_active:
             return False
 
-        # Features are defined at the plan level (Subscription.plan)
-        plan = getattr(self.plan_price, "plan", None)
+        plan = getattr(self.plan_price, 'plan', None)
         if not plan:
             return False
 
@@ -218,7 +214,9 @@ class UserSubscription(models.Model):
 
         limit = int(feature.value or 0)
         usage = FeatureUsage.objects.filter(
-            user=self.user, feature_code=feature_code, plan_price=self.plan_price
+            user=self.user,
+            feature_code=feature_code,
+            plan_price=self.plan_price,
         ).first()
         used = usage.used if usage else 0
 
