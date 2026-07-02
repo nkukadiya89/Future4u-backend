@@ -115,7 +115,8 @@ class BaseAIChatService:
 
         assessment_queryset = base_queryset.filter(
             Q(recommendation__student_assessment_id=assessment_id) |
-            Q(recommendation__parent_assessment_id=assessment_id)
+            Q(recommendation__parent_assessment_id=assessment_id) |
+            Q(recommendation__professional_assessment_id=assessment_id)
         )
         suggestion = (
             assessment_queryset.filter(id=suggestion_id)

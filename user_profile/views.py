@@ -772,11 +772,19 @@ class ProfessionalProfileViewSet(ModelViewSet):
         return ProfessionalProfile.objects.filter(
             user=self.request.user
         ).select_related(
-            "user__country", "user__states", "user__city", "education_level"
-        )
+            "user__country", "user__states", "user__city", "education_level", "stream"
+        ).prefetch_related("language")
+    
+    def get_profile_object(self, request):
+        queryset = self.get_queryset()
+        if request.user.is_superuser:
+             user_id = request.query_params.get("user_id")
+             if user_id:
+                 return queryset.filter(user_id=user_id).first()
+        return queryset.filter(user=request.user).first()
 
     def list(self, request, *args, **kwargs):
-        profile = ProfessionalProfile.objects.filter(user=request.user).first()
+        profile = self.get_profile_object(request)
         if not profile:
             return Response(
                 {"success": False, "message": "Profile not found"},
@@ -789,7 +797,7 @@ class ProfessionalProfileViewSet(ModelViewSet):
         )
 
     def partial_update(self, request, *args, **kwargs):
-        profile = ProfessionalProfile.objects.filter(user=request.user).first()
+        profile = self.get_profile_object(request)
         if not profile:
             return Response(
                 {"success": False, "message": "Profile not found"},
@@ -839,7 +847,6 @@ class ParentProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     http_method_names = ["get", "patch", "head", "options"]
-    lookup_value_regex = r'[0-9]+'
 
     throttle_classes = [PerUserBurstRateThrottle]
 
@@ -850,8 +857,18 @@ class ParentProfileViewSet(ModelViewSet):
             .prefetch_related("language")
         )
 
+    def get_profile_object(self, request):
+        queryset = ParentProfile.objects.select_related(
+            "user__country", "user__states", "user__city"
+        ).prefetch_related("language")
+        if request.user.is_superuser:
+            user_id = request.query_params.get("user_id")
+            if user_id:
+                return queryset.filter(user_id=user_id).first()
+        return queryset.filter(user=request.user).first()
+
     def list(self, request, *args, **kwargs):
-        profile = ParentProfile.objects.filter(user=request.user).first()
+        profile = self.get_profile_object(request)
         if not profile:
             return Response(
                 {"success": False, "message": "Profile not found"},

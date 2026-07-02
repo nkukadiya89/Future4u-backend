@@ -25,9 +25,11 @@ from assessment.models import (
     CareerDirection,
     CareerValue,
     Concern,
+    GuidanceReason,
     ParentCareerExpectation,
     ParentConstraint,
     UserGoal,
+    WorkConstraint,
 )
 
 try:
@@ -563,6 +565,27 @@ class Command(BaseCommand):
                     "Family business preference",
                     "No relocation",
                     "No restriction",
+                ],
+            ),
+            (
+                WorkConstraint,
+                [
+                    "Cannot relocate",
+                    "Physical or health limitations",
+                    "Need flexible schedule",
+                    "Prefer remote work only",
+                    "Limited time due to other commitments",
+                ],
+            ),
+            (
+                GuidanceReason,
+                [
+                    "Feeling stuck or unsure about career path",
+                    "Want to explore new career options",
+                    "Need help with skill development",
+                    "Planning for a promotion or growth",
+                    "Considering starting my own business",
+                    "Recently graduated or lost my job",
                 ],
             ),
         )

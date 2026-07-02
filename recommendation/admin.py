@@ -2,7 +2,7 @@
 Django admin for AI career recommendations (recommendation).
 
 No database table; changelist is a live panel to test AI recommendations
-against student and parent assessments.
+against student, parent, and professional assessments.
 
 URL: /admin/recommendation/airecommendationpanel/
 """
@@ -18,7 +18,11 @@ from django.contrib import admin
 from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from django.shortcuts import render
 
-from assessment.models import ParentAssessment, StudentAssessment
+from assessment.models import (
+    ParentAssessment,
+    ProfessionalAssessment,
+    StudentAssessment,
+)
 from recommendation.clients.groq_client import get_groq_api_key_optional
 from recommendation.config import ai_recommendations_enabled
 from recommendation.exceptions import (
@@ -30,7 +34,15 @@ from recommendation.exceptions import (
 )
 from recommendation.models import AIRecommendationPanel
 from recommendation.profiles.parent.service import ParentRecommendationService
+from recommendation.profiles.professional.service import ProfessionalRecommendationService
 from recommendation.profiles.student.service import StudentRecommendationService
+
+
+ASSESSMENT_TYPE_CHOICES = [
+    ("student", "Student"),
+    ("parent", "Parent"),
+    ("professional", "Professional"),
+]
 
 
 def _pretty_json(value) -> str:
@@ -66,6 +78,12 @@ def _assessment_queryset(assessment_type):
             .select_related("user", "domain_category", "child")
             .order_by("-id")
         )
+    if assessment_type == "professional":
+        return (
+            ProfessionalAssessment.objects.filter(deleted=False, domain__isnull=False)
+            .select_related("user", "domain_category", "domain")
+            .order_by("-id")
+        )
     return (
         StudentAssessment.objects.filter(deleted=False, domain__isnull=False)
         .select_related("user", "domain", "domain_category")
@@ -74,12 +92,16 @@ def _assessment_queryset(assessment_type):
 
 
 def _assessment_service(assessment_type):
-    return ParentRecommendationService() if assessment_type == "parent" else StudentRecommendationService()
+    if assessment_type == "parent":
+        return ParentRecommendationService()
+    if assessment_type == "professional":
+        return ProfessionalRecommendationService()
+    return StudentRecommendationService()
 
 
 class AIRecommendationRunForm(forms.Form):
     assessment_type = forms.ChoiceField(
-        choices=[("student", "Student"), ("parent", "Parent")],
+        choices=ASSESSMENT_TYPE_CHOICES,
         initial="student",
         required=True,
     )

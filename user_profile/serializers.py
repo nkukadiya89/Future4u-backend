@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.utils.timezone import now
 from language_master.models import Language
+from education_level.models import EducationLevel
 from common.mixins.serializer_mixins import (
     ProfileLanguageMixin,
     ProfileLanguageSaveMixin,
@@ -260,12 +261,6 @@ class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestamp
     """Working Professional-specific profile serializer matching StudentProfile pattern"""
 
     role = serializers.CharField(source="user.user_type", read_only=True)
-    education_level_code = serializers.CharField(
-        source="education_level.level_code", read_only=True, default=None
-    )
-    education_level_name = serializers.CharField(
-        source="education_level.display_name", read_only=True, default=None
-    )
     language = serializers.SerializerMethodField()
     # Location fields from User model
     country = serializers.IntegerField(
@@ -290,6 +285,23 @@ class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestamp
     phone = serializers.CharField(source="user.phone", read_only=True)
     email = serializers.CharField(source="user.email", read_only=True)
     profile_image = serializers.CharField(source="user.profile_image", read_only=True)
+    highest_education_level = serializers.PrimaryKeyRelatedField(
+        source="education_level",
+        read_only=True,
+    )
+    highest_education_level_code = serializers.CharField(
+        source="education_level.level_code", read_only=True, default=None
+    )
+    highest_education_level_name = serializers.CharField(
+        source="education_level.display_name", read_only=True, default=None
+    )
+
+    current_industry_category_name = serializers.CharField(
+        source="current_industry_category.domain_name", read_only=True, default=None
+    )
+    current_industry_name = serializers.CharField(
+        source="current_industry.domain_name", read_only=True, default=None
+    )
 
     class Meta:
         model = ProfessionalProfile
@@ -305,12 +317,17 @@ class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestamp
             "city",
             "city_name",
             "employment_type",
+            "employment_type_other_text",
             "years_of_experience",
-            "education_level",
-            "education_level_code",
-            "education_level_name",
+            "highest_education_level",
+            "highest_education_level_code",
+            "highest_education_level_name",
+            "stream",
             "current_job_title",
+            "current_industry_category",
+            "current_industry_category_name",
             "current_industry",
+            "current_industry_name",
             "company_size",
             "career_direction",
             "education",
@@ -344,6 +361,18 @@ class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, seri
     phone = serializers.CharField(source="user.phone", required=False)
     profile_image = serializers.CharField(source="user.profile_image", required=False)
 
+
+
+
+
+
+    highest_education_level = serializers.PrimaryKeyRelatedField(
+        source="education_level",
+        queryset=EducationLevel.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+
     class Meta:
         model = ProfessionalProfile
         fields = [
@@ -353,10 +382,13 @@ class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, seri
             "profile_image",
             "language",
             "employment_type",
+            "employment_type_other_text",
             "years_of_experience",
-            "education_level",
+            "stream",
             "current_job_title",
+            "current_industry_category",
             "current_industry",
+            "highest_education_level",
             "company_size",
             "career_direction",
             "education",
@@ -372,12 +404,77 @@ class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, seri
 
     def update(self, instance, validated_data):
         user_data = validated_data.pop("user", {})
+        language = validated_data.pop("language", None)
+
         user = instance.user
         for attr, value in user_data.items():
             setattr(user, attr, value)
         user.save()
-        return super().update(instance, validated_data)
 
+        instance = super().update(instance, validated_data)
+
+        if language is not None:
+            instance.language.set(language)
+
+        return instance
+
+    def create(self, validated_data):
+        language = validated_data.pop("language", None)
+        user_data = validated_data.pop("user", {})
+
+        instance = super().create(validated_data)
+
+        if user_data:
+            user = instance.user
+            for attr, value in user_data.items():
+                setattr(user, attr, value)
+            user.save()
+
+        if language is not None:
+            instance.language.set(language)
+
+        return instance
+
+    def validate(self, attrs):
+        instance = getattr(self, "instance", None)
+
+        # Domain hierarchy validation
+        category = attrs.get("current_industry_category", getattr(instance, "current_industry_category", None))
+        industry = attrs.get("current_industry", getattr(instance, "current_industry", None))
+
+        if category and getattr(category, "parent_id", None) is not None:
+            raise serializers.ValidationError(
+                {"current_industry_category": "Must be a parent domain"}
+            )
+
+        if industry and getattr(industry, "parent_id", None) is None:
+            raise serializers.ValidationError(
+                {"current_industry": "Must be a child domain"}
+            )
+
+        if category and industry:
+            if getattr(industry, "parent_id", None) != category.id:
+                raise serializers.ValidationError(
+                    {"current_industry": "Must belong to selected category"}
+                )
+
+        # employment_type_other_text: clear if not OTHER, require if OTHER
+        # Matches ParentProfileUpsertSerializer's pattern for other_relationship_text
+        employment_type = attrs.get("employment_type", getattr(instance, "employment_type", None))
+        other_text = attrs.get(
+            "employment_type_other_text",
+            getattr(instance, "employment_type_other_text", ""),
+        )
+
+        if employment_type == ProfessionalProfile.EmploymentType.OTHER and not (other_text or "").strip():
+            raise serializers.ValidationError(
+                {"employment_type_other_text": "This field is required when employment type is Other."}
+            )
+
+        if employment_type and employment_type != ProfessionalProfile.EmploymentType.OTHER:
+            attrs["employment_type_other_text"] = None
+
+        return attrs
 
 class ParentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
     """Parent-specific profile serializer"""

@@ -1,5 +1,3 @@
-from django.db.models import Q
-
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -39,7 +37,7 @@ class CareerSuggestionViewSet(ModelViewSet):
         queryset = CareerRecommendation.objects.filter(
             deleted=False, user=self.request.user,
         ).select_related(
-            "student_assessment", "parent_assessment", "user",
+            "student_assessment", "parent_assessment", "professional_assessment", "user",
         ).prefetch_related("suggestions").order_by("-id")
         if self.profile_type:
             queryset = queryset.filter(profile_type=self.profile_type)
@@ -49,11 +47,8 @@ class CareerSuggestionViewSet(ModelViewSet):
                 queryset = queryset.filter(student_assessment_id=assessment_id)
             elif self.profile_type == CareerRecommendation.ProfileType.PARENT:
                 queryset = queryset.filter(parent_assessment_id=assessment_id)
-            else:
-                queryset = queryset.filter(
-                    Q(student_assessment_id=assessment_id) |
-                    Q(parent_assessment_id=assessment_id)
-                )
+            elif self.profile_type == CareerRecommendation.ProfileType.PROFESSIONAL:
+                queryset = queryset.filter(professional_assessment_id=assessment_id)
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -177,3 +172,11 @@ class ParentCareerSuggestionViewSet(CareerSuggestionViewSet):
 
 class ParentCareerSuggestionDetailViewSet(CareerSuggestionDetailViewSet):
     profile_type = CareerRecommendation.ProfileType.PARENT
+
+
+class ProfessionalCareerSuggestionViewSet(CareerSuggestionViewSet):
+    profile_type = CareerRecommendation.ProfileType.PROFESSIONAL
+
+
+class ProfessionalCareerSuggestionDetailViewSet(CareerSuggestionDetailViewSet):
+    profile_type = CareerRecommendation.ProfileType.PROFESSIONAL

@@ -12,6 +12,9 @@ from assessment.models import (
     StudentAssessment,
     UserGoal,
     UserResponse,
+    GuidanceReason,
+    WorkConstraint,
+    ProfessionalAssessment
 )
 
 admin.site.register(CareerDirection)
@@ -20,6 +23,8 @@ admin.site.register(Concern)
 admin.site.register(UserGoal)
 admin.site.register(ParentCareerExpectation)
 admin.site.register(ParentConstraint)
+admin.site.register(GuidanceReason)
+admin.site.register(WorkConstraint)
 
 class OptionInline(admin.TabularInline):
     model = Option
@@ -258,3 +263,33 @@ class StudentAssessmentAdmin(admin.ModelAdmin):
         "domain_category",
         "domain",
     )
+
+@admin.register(ProfessionalAssessment)
+class ProfessionalAssessmentAdmin(admin.ModelAdmin):
+    list_display = (
+        "id", "user", "career_intention", "preferred_environment", "preferred_structure",
+        "domain_category", "domain", "salary_expectation", "timeline",
+        "current_screen", "is_completed", "created_at"
+    )
+
+    list_filter = (
+        "is_completed", "current_screen", "career_intention",
+        "preferred_environment", "preferred_structure"
+    )
+
+    search_fields = (
+        "user__email",
+        "domain_category__domain_name",
+        "domain_category__domain_code",
+        "domain__domain_name",
+        "domain__domain_code",
+    )
+
+    raw_id_fields = ("domain_category", "domain")
+
+    filter_horizontal = (
+        "guidance_reasons", "work_constraints", "career_values", "platform_goals"
+    )
+
+    list_select_related = ("domain_category", "domain")
+

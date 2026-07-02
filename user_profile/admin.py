@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin
+from domain.models import Domain
 
 from common.mixins.admin_mixins import ProfileReadonlyFieldsAdminMixin
 from user_profile.models import (
@@ -245,9 +246,14 @@ class ProfessionalProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin
     list_display = (
         "user",
         "employment_type",
+        "employment_type_other_text",
         "years_of_experience",
         "education_level",
         "current_job_title",
+        "current_industry_category",
+        "current_industry",
+        "company_size",
+        "stream",
     )
     search_fields = (
         "user__email",
@@ -255,17 +261,33 @@ class ProfessionalProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin
         "user__last_name",
         "current_job_title",
     )
-    list_filter = ("employment_type", "years_of_experience")
+    list_filter = ("employment_type", "years_of_experience", "company_size")
     readonly_fields = ("user", "created_at", "updated_at")
-    raw_id_fields = ("user", "education_level")
+    raw_id_fields = ("user", "education_level", "stream", "current_industry_category", "current_industry")
 
-    autocomplete_fields = ("education_level",)
+    autocomplete_fields = ("education_level", "stream", "current_industry_category", "current_industry")
     filter_horizontal = ("language",)
     list_select_related = (
         "user",
         "education_level",
+        "stream",
+        "current_industry_category",
+        "current_industry",
     )
 
+    def save_model(self, request, obj, form, change):
+         obj.full_clean()
+         super().save_model(request, obj, form, change)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+         if db_field.name == "current_industry_category":
+             kwargs["queryset"] = Domain.objects.filter(parent__isnull=True)
+
+         if db_field.name == "current_industry":
+             kwargs["queryset"] = Domain.objects.filter(parent__isnull=False)
+
+         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    
     fieldsets = (
         ("Identity", {"fields": ("user",)}),
         ("Language", {"fields": ("language",)}),
@@ -274,8 +296,10 @@ class ProfessionalProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin
             {
                 "fields": (
                     "employment_type",
+                    "employment_type_other_text",
                     "years_of_experience",
                     "current_job_title",
+                    "current_industry_category",
                     "current_industry",
                     "company_size",
                 )
@@ -283,7 +307,7 @@ class ProfessionalProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin
         ),
         (
             "Education",
-            {"fields": ("education_level",)},
+            {"fields": ("education_level", "stream")},
         ),
         (
             "Career Direction",

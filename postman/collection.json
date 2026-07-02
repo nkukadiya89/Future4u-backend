@@ -9687,7 +9687,7 @@
               "formdata": [
                 {
                   "key": "data",
-                  "value": "{\"employment_type\":\"salaried_employee\",\"years_of_experience\":\"1-3\",\"education_level\":\"{{education_level_id}}\",\"language\":[\"{{language_id}}\"],\"current_job_title\":\"Software Engineer\"}",
+                  "value": "{\"employment_type\":\"salaried_employee\",\"employment_type_other_text\":\"\",\"years_of_experience\":\"1_3_years\",\"education_level\":\"{{education_level_id}}\",\"stream\":\"{{stream_id}}\",\"language\":[\"{{language_id}}\"],\"current_job_title\":\"Software Engineer\",\"current_industry_category\":\"{{domain_category_id}}\",\"current_industry\":\"{{domain_id}}\",\"company_size\":\"startup_1_50\"}",
                   "type": "text",
                   "description": "JSON string. Server parses json.loads(data)."
                 },
@@ -11782,6 +11782,381 @@
       ]
     },
     {
+      "name": "professional_assessment",
+      "item": [
+        {
+          "name": "1. Start Assessment (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/assessments/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "assessments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"force_new\": false\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const id = json.data && json.data.id;",
+                  "    if (id !== undefined && id !== null) {",
+                  "      pm.collectionVariables.set('professional_assessment_id', String(id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assessment Status (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/assessments/status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "assessments",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Update Assessment Fields (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/assessments/{{professional_assessment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "assessments",
+                "{{professional_assessment_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"career_intention\": \"career_change\",\n  \"guidance_reasons\": [1],\n  \"work_constraints\": [1],\n  \"preferred_environment\": \"remote_work_from_home\",\n  \"preferred_structure\": \"flexible_hours\",\n  \"domain_category\": \"{{domain_category_id}}\",\n  \"domain\": \"{{domain_id}}\",\n  \"career_values\": [1],\n  \"salary_expectation\": \"8_15_lakhs_per_year\",\n  \"timeline\": \"within_6_months\",\n  \"platform_goals\": [1]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5. Complete Assessment (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/assessments/{{professional_assessment_id}}/complete/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "assessments",
+                "{{professional_assessment_id}}",
+                "complete"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Assessments (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/assessments/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "assessments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Assessment Details (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/assessments/{{professional_assessment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "assessments",
+                "{{professional_assessment_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7. List career suggestions (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/career-suggestions/?assessment_id={{professional_assessment_id}}&ordering=-created_at&page=1&pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "career-suggestions"
+              ],
+              "query": [
+                {
+                  "key": "assessment_id",
+                  "value": "{{professional_assessment_id}}",
+                  "description": ""
+                },
+                {
+                  "key": "ordering",
+                  "value": "-created_at",
+                  "description": ""
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": ""
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Lists stored AI career recommendations for a professional assessment. Records are created/updated by the recommendation generation endpoint.\n\nThe response is paginated (fields: `success`, `count`, `next`, `previous`, `data`). Each item in `data` contains: `{ id, user, assessment, suggestions: [{ id, career_name, match_percentage }] }`."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.length > 0) {",
+                  "    const rec = jsonData.data[0];",
+                  "    if (rec.suggestions && rec.suggestions.length > 0) {",
+                  "        pm.collectionVariables.set('professional_suggestion_id_1', rec.suggestions[0].id);",
+                  "    }",
+                  "    if (rec.suggestions && rec.suggestions.length > 1) {",
+                  "        pm.collectionVariables.set('professional_suggestion_id_2', rec.suggestions[1].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "7b. Get career suggestions Detail by Id (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/career-suggestions-detail/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "career-suggestions-detail",
+                "1"
+              ]
+            },
+            "description": "Retrieves a detailed career suggestion by ID for a professional user."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.suggestions) {",
+                  "    const s = jsonData.data.suggestions;",
+                  "    if (s.length > 0) pm.collectionVariables.set('professional_suggestion_id_1', s[0].id);",
+                  "    if (s.length > 1) pm.collectionVariables.set('professional_suggestion_id_2', s[1].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. Compare career suggestions (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/career-suggestions/compare/?suggestion_ids={{professional_suggestion_id_1}},{{professional_suggestion_id_2}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "career-suggestions",
+                "compare"
+              ],
+              "query": [
+                {
+                  "key": "suggestion_ids",
+                  "value": "{{professional_suggestion_id_1}},{{professional_suggestion_id_2}}",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Compares two professional career suggestions side-by-side."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Returns success and data array', function () {",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.be.an('array').with.lengthOf(2);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "recommendations",
       "item": [
         {
@@ -11944,108 +12319,6 @@
               }
             }
           ]
-        },
-        {
-          "name": "Parent AI Recommendations (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/parent/ai-recommendations/{{parent_assessment_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "parent",
-                "ai-recommendations",
-                "{{parent_assessment_id}}",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Parent AI Recommendation Chat Context (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/parent/ai-recommendations/{{parent_assessment_id}}/chat/?suggestion_id={{parent_suggestion_id_1}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "parent",
-                "ai-recommendations",
-                "{{parent_assessment_id}}",
-                "chat",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "suggestion_id",
-                  "value": "{{parent_suggestion_id_1}}"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Parent AI Recommendation Chat (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/parent/ai-recommendations/{{parent_assessment_id}}/chat/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "parent",
-                "ai-recommendations",
-                "{{parent_assessment_id}}",
-                "chat",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"suggestion_id\": \"{{parent_suggestion_id_1}}\",\n  \"message\": \"What skills should my child build first?\"\n}"
-            }
-          },
-          "response": []
         }
       ]
     },

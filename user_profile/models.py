@@ -1,17 +1,16 @@
 import os
 
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.utils.timezone import now
 from common.models import BaseModule
 from city.models import City
 from company.models import Company
 from country.models import Country
-from domain.models import Domain
 from state.models import State
 from education_level.models import EducationLevel
 from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
+from django.core.exceptions import ValidationError
+
 
 
 class UserProfile(models.Model):
@@ -238,8 +237,6 @@ class ProfessionalProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
         related_name="professional_profile",
     )
 
@@ -252,9 +249,10 @@ class ProfessionalProfile(models.Model):
 
     class EmploymentType(models.TextChoices):
         SALARIED = "salaried_employee", "Salaried Employee"
-        SELF_EMPLOYED = "self_employed", "Self-employed / Business Owner"
+        SELF_EMPLOYED = "self_employed_business_owner", "Self Employed / Business Owner"
         FREELANCER = "freelancer", "Freelancer"
-        JOB_SEEKER = "job_seeker", "Looking for first job"
+        JOB_SEEKER = "looking_for_first_job", "Looking for first job"
+        OTHER = "other", "Other"
 
     employment_type = models.CharField(
         max_length=50,
@@ -264,15 +262,51 @@ class ProfessionalProfile(models.Model):
         help_text="Current employment status",
     )
 
+    employment_type_other_text = models.CharField(
+        max_length=150,
+        null=True,
+        blank=True
+    )
+
+    current_industry_category = models.ForeignKey(
+         "domain.Domain",
+         on_delete=models.SET_NULL,
+         null=True,
+         blank=True,
+         related_name="current_industry_category_profiles",
+    )
+
+    current_industry = models.ForeignKey(
+        "domain.Domain",
+         on_delete=models.SET_NULL,
+         null=True,
+         blank=True,
+         related_name="current_industry_profiles",
+    )
+
+    class CompanySize(models.TextChoices):
+        STARTUP = "startup_1_50", "Startup (1–50)"
+        SMALL = "small_51_200", "Small (51–200)"
+        MEDIUM = "medium_201_1000", "Medium (201–1000)"
+        LARGE = "large_1000_plus", "Large (1000+)"
+
+    company_size = models.CharField(
+        max_length=30,
+        choices=CompanySize.choices,
+        null=True,
+        blank=True
+    )
+ 
     class ExperienceRange(models.TextChoices):
-        ZERO_TO_ONE = "0-1", "0-1 years"
-        ONE_TO_THREE = "1-3", "1-3 years"
-        THREE_TO_FIVE = "3-5", "3-5 years"
-        FIVE_TO_TEN = "5-10", "5-10 years"
-        TEN_PLUS = "10+", "10+ years"
+        ZERO_TO_ONE = "0_1_years", "0–1 years"
+        ONE_TO_THREE = "1_3_years", "1–3 years"
+        THREE_TO_FIVE = "3_5_years", "3–5 years"
+        FIVE_PLUS = "5_plus_years", "5+ years"
+    
+    
 
     years_of_experience = models.CharField(
-        max_length=10,
+        max_length=20,
         choices=ExperienceRange.choices,
         null=True,
         blank=True,
@@ -287,9 +321,48 @@ class ProfessionalProfile(models.Model):
         related_name="professional_profiles",
     )
 
+    stream = models.ForeignKey(
+    "stream.Stream",
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name="professional_profiles",
+    )
+
+    def clean(self):
+       super().clean()
+
+       if self.employment_type != self.EmploymentType.OTHER:
+           self.employment_type_other_text = None
+
+       if (
+           self.employment_type == self.EmploymentType.OTHER
+           and not self.employment_type_other_text
+    ):
+           raise ValidationError({
+             "employment_type_other_text": "Please specify the employment type."
+    })
+
+       category = self.current_industry_category
+       industry = self.current_industry
+
+       if category and category.parent_id is not None:
+           raise ValidationError({
+                "current_industry_category": "Must be a parent domain"
+           })
+
+       if industry and industry.parent_id is None:
+           raise ValidationError({
+                "current_industry": "Must be a child domain"
+           })
+
+       if category and industry and industry.parent_id != category.id:
+           raise ValidationError({
+                "current_industry": "Must belong to selected category"
+           })
+       
+
     current_job_title = models.CharField(max_length=150, null=True, blank=True)
-    current_industry = models.CharField(max_length=100, null=True, blank=True)
-    company_size = models.CharField(max_length=50, null=True, blank=True)
 
     # JSONField sections for professional profile
     career_direction = models.JSONField(default=list, blank=True, null=True)
@@ -319,6 +392,9 @@ class ProfessionalProfile(models.Model):
             models.Index(fields=["education_level"]),
             models.Index(fields=["employment_type"]),
             models.Index(fields=["years_of_experience"]),
+            models.Index(fields=["current_industry_category"]),
+            models.Index(fields=["current_industry"]),
+            models.Index(fields=["stream"]),
         ]
 
 
@@ -327,8 +403,6 @@ class ParentProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
         related_name="parent_profile",
     )
 

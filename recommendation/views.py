@@ -6,31 +6,58 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from recommendation.engine.dispatch import (
+    resolve_chat_service,
+    resolve_recommendation_service,
+)
 from recommendation.exceptions import (
     AIConfigurationError,
     AIGenerationError,
+    AmbiguousAssessmentError,
     AssessmentAccessDeniedError,
     AssessmentNotFoundError,
     AssessmentNotReadyError,
 )
-from utils.throttles import RecommendationRateThrottle, AIChatRateThrottle
+from utils.throttles import AIChatRateThrottle, RecommendationRateThrottle
 
 logger = logging.getLogger(__name__)
 
 
 class RecommendationAPIView(APIView):
-    service_class = None
+    """
+    Unified recommendation endpoint.
+
+    Auto-detects the assessment type (Student / Parent / Professional) from the
+    assessment_id and dispatches to the correct service implementation.
+    """
+
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     throttle_classes = [RecommendationRateThrottle]
 
     def get(self, request, assessment_id, *args, **kwargs):
         try:
-            data = self.service_class().generate(
+            profile_type = request.query_params.get("profile_type")
+            result = resolve_recommendation_service(assessment_id, profile_type=profile_type)
+            data = result.service.generate(
                 assessment_id=assessment_id,
                 user=request.user,
             )
-            return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
+            return Response({
+                "success": True,
+                "profile_type": result.profile_type,
+                "data": data,
+            }, status=status.HTTP_200_OK)
+        except (TypeError, ValueError) as exc:
+            return Response(
+                {"success": False, "message": str(exc)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except AmbiguousAssessmentError as exc:
+            return Response(
+                {"success": False, "message": str(exc)},
+                status=status.HTTP_409_CONFLICT,
+            )
         except AssessmentNotFoundError:
             return Response(
                 {"success": False, "message": "Assessment not found"},
@@ -67,23 +94,40 @@ class RecommendationAPIView(APIView):
 
 
 class RecommendationChatAPIView(APIView):
-    chat_service_class = None
+    """
+    Unified chat endpoint (GET = context, POST = ask).
+
+    Auto-detects the assessment type from the assessment_id and dispatches to
+    the correct chat service implementation.
+    """
+
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     throttle_classes = [AIChatRateThrottle]
 
     def get(self, request, assessment_id, *args, **kwargs):
         try:
-            data = self.chat_service_class().context(
+            profile_type = request.query_params.get("profile_type")
+            result = resolve_chat_service(assessment_id, profile_type=profile_type)
+            data = result.service.context(
                 user=request.user,
                 assessment_id=assessment_id,
                 suggestion_id=request.query_params.get("suggestion_id"),
             )
-            return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
+            return Response({
+                "success": True,
+                "profile_type": result.profile_type,
+                "data": data,
+            }, status=status.HTTP_200_OK)
         except (TypeError, ValueError) as exc:
             return Response(
                 {"success": False, "message": str(exc)},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+        except AmbiguousAssessmentError as exc:
+            return Response(
+                {"success": False, "message": str(exc)},
+                status=status.HTTP_409_CONFLICT,
             )
         except AssessmentNotFoundError:
             return Response(
@@ -98,17 +142,28 @@ class RecommendationChatAPIView(APIView):
 
     def post(self, request, assessment_id, *args, **kwargs):
         try:
-            data = self.chat_service_class().ask(
+            profile_type = request.query_params.get("profile_type")
+            result = resolve_chat_service(assessment_id, profile_type=profile_type)
+            data = result.service.ask(
                 user=request.user,
                 assessment_id=assessment_id,
                 suggestion_id=request.data.get("suggestion_id"),
                 question=request.data.get("message"),
             )
-            return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
+            return Response({
+                "success": True,
+                "profile_type": result.profile_type,
+                "data": data,
+            }, status=status.HTTP_200_OK)
         except (TypeError, ValueError) as exc:
             return Response(
                 {"success": False, "message": str(exc)},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+        except AmbiguousAssessmentError as exc:
+            return Response(
+                {"success": False, "message": str(exc)},
+                status=status.HTTP_409_CONFLICT,
             )
         except AssessmentNotFoundError:
             return Response(
