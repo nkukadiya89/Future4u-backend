@@ -5,9 +5,7 @@ from user_profile.models import SchoolCollegeProfile
 
 class SchoolCollegeBulkUpload:
     REQUIRED_COLUMNS = [
-        "Institute Name",
-        "Board",
-        "Courses Offered",
+        "Institute Name"
     ]
 
     @classmethod

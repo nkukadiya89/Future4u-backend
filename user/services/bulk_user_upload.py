@@ -16,7 +16,6 @@ class BulkUserUploadService:
     REQUIRED_COLUMNS = [
         "First Name",
         "Last Name",
-        "About Me",
         "Email",
         "Phone",
         "Referral Code",

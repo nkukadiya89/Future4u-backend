@@ -7,9 +7,6 @@ from user_profile.models import StudentProfile
 
 class StudentBulkUpload:
     REQUIRED_COLUMNS = [
-        "Medium",
-        "Education Level",
-        "Language",
     ]
 
     STREAM_REQUIRED_LEVEL_CODES = {
@@ -26,7 +23,7 @@ class StudentBulkUpload:
     def preload(cls):
         return{
             "education_levels":{
-                obj.level_code.strip().lower():obj
+                obj.display_name.strip().lower():obj
                 for obj in EducationLevel.objects.filter(is_active=True)
             },
             "streams":{
