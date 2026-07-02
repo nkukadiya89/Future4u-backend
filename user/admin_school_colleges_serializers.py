@@ -1,20 +1,16 @@
 import json
-
+from django.db import transaction
 from rest_framework import serializers
-
 from city.models import City
+from state.models import State
 from country.models import Country
 from education_level.models import EducationLevel
 from email_utils.send_email import send_email_change_notification
-from language_master.models import Language
-from state.models import State
-from stream.models import Stream
 from user.models import User
 from user.services.registration_service import setup_web_user_password
-from user_profile.models import StudentProfile
-from django.db import transaction
+from user_profile.models import SchoolCollegeProfile
 
-class AdminStudentSerializer(serializers.ModelSerializer):
+class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
     data = serializers.CharField(write_only=True, required=False)
     profile_image = serializers.ImageField(required=False, write_only=True)
 
@@ -24,11 +20,14 @@ class AdminStudentSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         raw_data = data.get("data") or "{}"
+
         try:
             json_data = json.loads(raw_data)
         except json.JSONDecodeError:
-            raise serializers.ValidationError({"data": "Invalid JSON format"})
+            raise serializers.ValidationError({"data":"Invalid JSON format"})
+        
         errors = {}
+
         is_update = self.instance is not None
 
         email = json_data.get("email")
@@ -39,14 +38,16 @@ class AdminStudentSerializer(serializers.ModelSerializer):
         state_id = json_data.get("state")
         city_id = json_data.get("city")
         address = json_data.get("address")
-        education_level_id = json_data.get("education_level")
-        stream_id = json_data.get("stream")
-        language_ids = json_data.get("language", [])
-        medium = json_data.get("medium")
         referral_code = (json_data.get("referral_code") or "").strip()
 
-        language_sent = "language" in json_data
-        language_ids = json_data.get("language", [])
+        education_ids = json_data.get("education", [])
+        education_sent = "education" in json_data
+
+        institute_name = json_data.get("institute_name")
+        board = json_data.get("board")
+        about_us = json_data.get("about_us")
+        courses_offered = json_data.get("courses_offered")
+        website = json_data.get("website")
 
         if not is_update:
             if not email:
@@ -59,12 +60,16 @@ class AdminStudentSerializer(serializers.ModelSerializer):
                 errors["state"] = "This field is required."
             if not city_id:
                 errors["city"] = "This field is required."
+        
+        if email and User.objects.filter(email=email, deleted=False).exclude(
+            id=getattr(self.instance, "id", None)
+        ).exists():
+            errors["email"] = "An account with this email already exists"
 
-        if email and User.objects.filter(email=email, deleted=False).exclude(id=getattr(self.instance, "id", None)).exists():
-            errors ["email"] = "An account with this email already exists"
-
-        if phone and User.objects.filter(phone=phone, deleted=False).exclude(id=getattr(self.instance, "id", None)).exists():
-            errors ["phone"] = "An Account with this phone number already exists"
+        if phone and User.objects.filter(phone=phone, deleted=False).exclude(
+            id=getattr(self.instance, "id", None)
+        ).exists():
+            errors["phone"] = "An account with this phone number already exists"
 
         country = None
         if country_id is not None:
@@ -77,49 +82,27 @@ class AdminStudentSerializer(serializers.ModelSerializer):
             state = State.objects.filter(id=state_id).first()
             if not state:
                 errors["state"] = "Invalid state id"
+
         
         city = None
         if city_id is not None:
             city = City.objects.filter(id=city_id).first()
             if not city:
                 errors["city"] = "Invalid city id"
-            
-        education_level = None
-        if education_level_id:
-            education_level = EducationLevel.objects.filter(
-                id = education_level_id
-            ).first()
-            if not education_level:
-                errors["education_level"] = "Invalid education level"
-        
-        stream = None
-        if stream_id:
-            stream = Stream.objects.filter(
-                id = stream_id
-            ).first()
-            if not stream:
-                errors["stream"] = "Invalid stream"
-        
-        languages = []
-        if language_sent:
-            if not isinstance(language_ids, list):
-                errors["languages"] = "Language must be a list of ids"
-            else:
-                languages = Language.objects.filter(
-                    id__in=language_ids,
-                    deleted = False
-                )
-                if len(language_ids) != languages.count():
-                    errors["language"] = "Invalid language ids"
-        
-        if medium is not None:
-            valid_mediums = [
-                choice[0]
-                for choice in StudentProfile._meta.get_field("medium").choices
-            ]
-            if medium not in valid_mediums:
-                errors["medium"] = "Invalid medium"
 
+        educations = []
+        if education_sent:
+            if not isinstance(education_ids, list):
+                errors["education"] = "Education must be a list of ids"
+            else:
+                educations = EducationLevel.objects.filter(
+                    id__in=education_ids,
+                    is_active=True,
+                ) 
+                if len(education_ids) != educations.count():
+                    errors["education"] = "Invalid education ids"
+        if courses_offered is not None and not isinstance(courses_offered, list):
+            errors["courses_offered"] = "Courses offered must be a list"
         if errors:
             raise serializers.ValidationError(errors)
         
@@ -139,22 +122,23 @@ class AdminStudentSerializer(serializers.ModelSerializer):
             validated["states"] = state
         if city_id is not None:
             validated["city"] = city
-        if education_level_id is not None:
-            validated["education_level"] = education_level
-        if stream_id is not None:
-            validated["stream"] = stream
-        if medium is not None:
-            validated["medium"] = medium
-        if language_sent:
-            validated["language"] = list(languages)
         if referral_code:
             validated["referral_code"] = referral_code
+
         if "address" in json_data:
-            address_value = (address or "").strip()
-            if address_value and len(address_value) > 500:
-                errors["address"] = "Address must be 500 characters or less."
-            else:
-                validated["address"] = address_value or None
+            validated["address"] = (address or "").strip() or None
+        if education_sent:
+            validated["education"] = list(educations)
+        if institute_name is not None:
+            validated["institute_name"] = institute_name
+        if board is not None:
+            validated["board"] = board
+        if about_us is not None:
+            validated["about_us"] = about_us
+        if courses_offered is not None:
+            validated["courses_offered"] = courses_offered
+        if website is not None:
+            validated["website"] = website
 
         data["validated_data"] = validated
         data["profile_image_file"] = self.context["request"].FILES.get("profile_image")
@@ -163,29 +147,40 @@ class AdminStudentSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         request = self.context["request"]
-        validated_data_inner = validated_data.get("validated_data", {})
+        data = validated_data.get("validated_data", {})
         profile_image_file = validated_data.get("profile_image_file")
-        languages = validated_data_inner.pop("language", [])
-        education_level = validated_data_inner.pop("education_level", None)
-        stream = validated_data_inner.pop("stream", None)
-        medium = validated_data_inner.pop("medium", None)
 
+        educations = data.pop("education", [])
+        institute_name = data.pop("institute_name", None)
+        board = data.pop("board", None)
+        about_us = data.pop("about_us", None)
+        courses_offered = data.pop("courses_offered", None)
+        website = data.pop("website", None)
+        user = User.objects.create(
+            **data,
+            user_type = User.Role.SCHOOL_COLLEGE,
+            created_by = request.user,
+            terms_accepted=True,
+        )
 
-        user = User.objects.create(**validated_data_inner,user_type = User.Role.STUDENT,created_by=request.user,terms_accepted=True,)
         setup_web_user_password(user)
 
         if profile_image_file:
             user.upload_profile_image(profile_image_file)
-        profile, created = StudentProfile.objects.get_or_create(user=user)
-        profile.education_level = education_level
-        profile.stream = stream
-        profile.medium = medium
-        profile.save()
-        if languages:
-            profile.language.set(languages)
+
+        profile = SchoolCollegeProfile.objects.create(
+            user=user,
+            institute_name=institute_name,
+            board=board,
+            about_us=about_us,
+            courses_offered=courses_offered or [],
+            website=website,
+        )
+
+        if educations:
+            profile.education.set(educations)
         return user
-    
-    @transaction.atomic()
+    @transaction.atomic
     def update(self, instance, validated_data):
         request = self.context["request"]
         data = validated_data.get("validated_data", {})
@@ -193,51 +188,63 @@ class AdminStudentSerializer(serializers.ModelSerializer):
 
         old_email = instance.email
 
-        languages = data.pop("language", None)
-        education_level = data.pop("education_level", None)
-        stream = data.pop("stream", None)
-        medium = data.pop("medium", None)
+        educations = data.pop("education", None)
+        institute_name = data.pop("institute_name", None)
+        board = data.pop("board", None)
+        about_us = data.pop("about_us", None)
+        courses_offered = data.pop("courses_offered", None)
+        website = data.pop("website", None)
 
         for attr, value in data.items():
             setattr(instance, attr, value)
-
+        
         instance.save(user=request.user)
 
         if profile_image_file:
             instance.upload_profile_image(profile_image_file)
-        
+
         try:
-            profile = instance.student_profile
-        except StudentProfile.DoesNotExist:
+            profile = instance.school_college_profile
+        except SchoolCollegeProfile.DoesNotExist:
             raise serializers.ValidationError(
-                {"student_profile": "Student Profile Not found"}
+                {
+                    "school_college_profile":"School College Profile not found"
+                }
             )
-        if education_level is not None:
-            profile.education_level = education_level
         
-        if stream is not None:
-            profile.stream = stream
+        if institute_name is not None:
+            profile.institute_name = institute_name
+
+        if board is not None:
+            profile.board = board
         
-        if medium is not None:
-            profile.medium = medium
+        if about_us is not None:
+            profile.about_us = about_us
+
+        if courses_offered is not None:
+            profile.courses_offered = courses_offered
+        
+        if website is not None:
+            profile.website = website
 
         profile.save()
-
-        if languages is not None:
-            profile.language.set(languages)
-
+        
+        if educations is not None:
+            profile.education.set(educations)
+        
         email_changed = old_email.lower() != instance.email.lower()
+
         if email_changed:
             send_email_change_notification(
                 old_email=old_email,
                 new_email=instance.email,
-                user=instance,
+                user = instance,
             )
             setup_web_user_password(instance)
-
         return instance
-    
-class AdminStudentSortSerializer(serializers.ModelSerializer):
+
+ 
+class AdminSchoolCollegeSortSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
     phone = serializers.CharField(source="user.phone")
@@ -249,17 +256,14 @@ class AdminStudentSortSerializer(serializers.ModelSerializer):
     city = serializers.IntegerField(source="user.city.id", default=None)
     city_name = serializers.CharField(source="user.city.name")
     referral_code = serializers.CharField(source="user.referral_code")
+    address = serializers.CharField(source="user.address")
+    education_name = serializers.ReadOnlyField(source="get_education_names")
     
-
     class Meta:
-        model = StudentProfile
+        model = SchoolCollegeProfile
         fields = [
             "id",
             "user",
-            "language",
-            "medium",
-            "education_level",
-            "stream",
             "first_name",
             "last_name",
             "phone",
@@ -270,22 +274,13 @@ class AdminStudentSortSerializer(serializers.ModelSerializer):
             "state_name",
             "city",
             "city_name",
+            "address",
             "referral_code",
+            "institute_name",
+            "board",
+            "about_us",
+            "courses_offered",
+            "website",
+            "education",
+            "education_name",
         ]
-
-class BulkUserUploadSerializer(serializers.Serializer):
-    file = serializers.FileField()
-    user_type = serializers.ChoiceField(choices=User.Role.choices)
-
-    def validate_file(self, value):
-        allowed_extensions = [".csv", ".xlsx", ".xls"]
-
-        filename = value.name.lower()
-
-        if not any(filename.endswith(ext) for ext in allowed_extensions):
-            raise serializers.ValidationError(
-                "Only CSV, XLS and XLSX files are allowed."
-            )
-
-        return value
-    

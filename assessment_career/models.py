@@ -35,6 +35,13 @@ class CareerRecommendation(BaseModule):
         blank=True,
         related_name="career_recommendation",
     )
+    professional_assessment = models.OneToOneField(
+        "assessment.ProfessionalAssessment",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="career_recommendation",
+    )
     raw_ai_response = models.JSONField(default=dict, blank=True)
     easy_decision_making = models.JSONField(default=list, blank=True)
     last_recommended_at = models.DateTimeField(null=True, blank=True, db_index=True)
@@ -48,7 +55,7 @@ class CareerRecommendation(BaseModule):
 
     @property
     def assessment(self):
-        return self.student_assessment or self.parent_assessment
+        return self.student_assessment or self.parent_assessment or self.professional_assessment
 
 
 class CareerSuggestion(BaseModule):

@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
+from common.master_view import BaseModelViewSet
 from utils.throttles import (PerUserBurstRateThrottle)  
 
 from activity_log.models import ActivityLog
@@ -572,10 +573,59 @@ class UserProfileViewSet(ModelViewSet):
 class StudentProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+    filter_backends = [SearchFilter, OrderingFilter]
     http_method_names = ["get", "patch", "head", "options"]
 
     throttle_classes = [PerUserBurstRateThrottle]
 
+    search_fields = [
+        "user__status",
+        "user__user_type",
+        "education_level__level_code",
+        "education_level__display_name",
+        "stream__stream_code",
+        "stream__stream_name",
+        "user__country__name",
+        "user__states__name",
+        "user__city__name",
+        "user__first_name",
+        "user__last_name",
+        "user__phone",
+        "user__email",
+        "medium",
+        "linkedin_url",
+        "github_url",
+        "portfolio",
+        "skills",
+        "projects",
+        "internships",
+        "certifications",
+        "achievements",
+        "additional_insights",
+        "extra_activities",
+    ]
+    ordering_fields = [
+        "id",
+        "user",
+        "language",
+        "medium",
+        "education_level",
+        "stream",
+        "career_direction",
+        "education",
+        "skills",
+        "projects",
+        "internships",
+        "certifications",
+        "achievements",
+        "extra_activities",
+        "additional_insights",
+        "linkedin_url",
+        "github_url",
+        "portfolio",
+        "created_at",
+        "updated_at",
+    ]
     def get_queryset(self):
         return StudentProfile.objects.filter(user__deleted=False).select_related(
             "user__country", "user__states", "user__city", "education_level", "stream"
@@ -589,12 +639,31 @@ class StudentProfileViewSet(ModelViewSet):
                 return queryset.filter(user_id=user_id).first()
         return queryset.filter(user=request.user).first()
     
+
     def list(self, request, *args, **kwargs):
         if request.user.is_superuser:
             user_id = request.query_params.get("user_id")
             queryset = self.get_queryset()
             no_pagination = request.query_params.get("no_pagination")
-            page = self.paginate_queryset(queryset)
+
+            status_filter = request.query_params.get("status")
+            city_id = request.query_params.get("city")
+            state_id = request.query_params.get("state")
+            country_id = request.query_params.get("country")
+            
+            if status_filter:
+                queryset = queryset.filter(user__status=status_filter)
+            
+            if city_id:
+                queryset = queryset.filter(user__city_id=city_id)
+            
+            if state_id:
+                queryset = queryset.filter(user__states_id = state_id)
+            
+            if country_id:
+                queryset = queryset.filter(user__country_id=country_id)
+            
+            queryset = self.filter_queryset(queryset)
 
             if user_id:
                 profile = queryset.filter(user_id=user_id).first()
@@ -623,6 +692,8 @@ class StudentProfileViewSet(ModelViewSet):
                     },
                     status=status.HTTP_200_OK,
                 )
+            page = self.paginate_queryset(queryset)
+
             if page is not None:
                 serializer = StudentProfileSerializer(page, many=True)
                 return self.get_paginated_response(
@@ -701,11 +772,19 @@ class ProfessionalProfileViewSet(ModelViewSet):
         return ProfessionalProfile.objects.filter(
             user=self.request.user
         ).select_related(
-            "user__country", "user__states", "user__city", "education_level"
-        )
+            "user__country", "user__states", "user__city", "education_level", "stream"
+        ).prefetch_related("language")
+    
+    def get_profile_object(self, request):
+        queryset = self.get_queryset()
+        if request.user.is_superuser:
+             user_id = request.query_params.get("user_id")
+             if user_id:
+                 return queryset.filter(user_id=user_id).first()
+        return queryset.filter(user=request.user).first()
 
     def list(self, request, *args, **kwargs):
-        profile = ProfessionalProfile.objects.filter(user=request.user).first()
+        profile = self.get_profile_object(request)
         if not profile:
             return Response(
                 {"success": False, "message": "Profile not found"},
@@ -718,7 +797,7 @@ class ProfessionalProfileViewSet(ModelViewSet):
         )
 
     def partial_update(self, request, *args, **kwargs):
-        profile = ProfessionalProfile.objects.filter(user=request.user).first()
+        profile = self.get_profile_object(request)
         if not profile:
             return Response(
                 {"success": False, "message": "Profile not found"},
@@ -768,7 +847,6 @@ class ParentProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     http_method_names = ["get", "patch", "head", "options"]
-    lookup_value_regex = r'[0-9]+'
 
     throttle_classes = [PerUserBurstRateThrottle]
 
@@ -779,8 +857,18 @@ class ParentProfileViewSet(ModelViewSet):
             .prefetch_related("language")
         )
 
+    def get_profile_object(self, request):
+        queryset = ParentProfile.objects.select_related(
+            "user__country", "user__states", "user__city"
+        ).prefetch_related("language")
+        if request.user.is_superuser:
+            user_id = request.query_params.get("user_id")
+            if user_id:
+                return queryset.filter(user_id=user_id).first()
+        return queryset.filter(user=request.user).first()
+
     def list(self, request, *args, **kwargs):
-        profile = ParentProfile.objects.filter(user=request.user).first()
+        profile = self.get_profile_object(request)
         if not profile:
             return Response(
                 {"success": False, "message": "Profile not found"},
@@ -833,6 +921,28 @@ class InstituteProfileViewSet(OrganizationProfileViewSet):
     profile_model = InstituteProfile
     read_serializer_class = InstituteProfileSerializer
     update_serializer_class = InstituteProfileUpSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+
+    search_fields = OrganizationProfileViewSet.search_fields + [
+        "student_trained",
+        "placements",
+        "success_rate",
+        "about_us",
+        "courses_offered",
+        "key_highlights",
+        "website",
+        "institute_name",
+    ]
+    ordering_fields = OrganizationProfileViewSet.ordering_fields+[
+        "student_trained",
+        "placements",
+        "success_rate",
+        "about_us",
+        "courses_offered",
+        "key_highlights",
+        "website",
+        "institute_name",
+    ]
 
 
 class InstituteGalleryViewSet(OrganizationGalleryViewSet):
@@ -847,7 +957,34 @@ class SchoolCollegeProfileViewSet(OrganizationProfileViewSet):
     profile_model = SchoolCollegeProfile
     read_serializer_class = SchoolCollegeProfileSerializer
     update_serializer_class = SchoolCollegeProfileUpSerializer
+    filter_backends = [SearchFilter,OrderingFilter]
 
+    search_fields = OrganizationProfileViewSet.search_fields + [
+        "student_trained",
+        "education__display_name",
+        "placements",
+        "success_rate",
+        "about_us",
+        "courses_offered",
+        "institute_name",
+        "total_student",
+        "board",
+        "partnership_readiness",
+        "website",
+    ]
+    ordering_fields = OrganizationProfileViewSet.ordering_fields+[
+        "user",
+        "student_trained"
+        "placements",
+        "success_rate",
+        "about_us",
+        "courses_offered",
+        "institute_name",
+        "total_student",
+        "board",
+        "partnership_readiness",
+        "website",
+    ]
 
 class SchoolCollegeGalleryViewSet(OrganizationGalleryViewSet):
     profile_model = SchoolCollegeProfile
@@ -856,11 +993,30 @@ class SchoolCollegeGalleryViewSet(OrganizationGalleryViewSet):
     gallery_serializer_class = SchoolCollegeGallerySerializer
     profile_not_found_message = "School / college profile not found"
 
-
 class CorporateProfileViewSet(OrganizationProfileViewSet):
     profile_model = CorporateProfile
     read_serializer_class = CorporateProfileSerializer
     update_serializer_class = CorporateProfileUpSerializer
+
+    search_fields = OrganizationProfileViewSet.search_fields +[
+        "website",
+        "company_name",
+        "open_job",
+        "employees",
+        "years_in_business",
+        "about_us",
+        "perks_benefits",
+    ]
+
+    ordering_fields = OrganizationProfileViewSet.ordering_fields+[
+        "website",
+        "company_name",
+        "open_job",
+        "employees",
+        "years_in_business",
+        "about_us",
+        "perks_benefits",
+    ]
 
 
 class CorporateGalleryViewSet(OrganizationGalleryViewSet):

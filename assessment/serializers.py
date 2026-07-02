@@ -12,7 +12,11 @@ from assessment.models import (
     StudentAssessment,
     UserGoal,
     UserResponse,
+    GuidanceReason,
+    WorkConstraint,
+    ProfessionalAssessment
 )
+
 from common.serializers import BaseModelSerializer
 from domain.models import Domain
 from user.serializers import UserQuickSerializer
@@ -140,7 +144,7 @@ class StudentAssessmentSerializer(BaseModelSerializer):
     career_values_name = serializers.SerializerMethodField()
     user_goals_name = serializers.SerializerMethodField()
     user = UserQuickSerializer(read_only=True)
-    responses = AssessmentQuestionResponseSerializer(many=True, read_only=True)
+    # responses = AssessmentQuestionResponseSerializer(many=True, read_only=True)
 
     class Meta:
         model = StudentAssessment
@@ -161,7 +165,7 @@ class StudentAssessmentSerializer(BaseModelSerializer):
             "current_screen",
             "user",
             "is_completed",
-            "responses",
+            # "responses",
         ]
         read_only_fields = ("id", "user", "current_screen", "created_at", "updated_at")
 
@@ -423,3 +427,141 @@ class CareerDirectionSerializer(BaseModelSerializer):
     class Meta:
         model = CareerDirection
         fields = BaseModelSerializer.Meta.fields + ["name"]
+
+class ProfessionalAssessmentSerializer(serializers.ModelSerializer):
+    user = serializers.IntegerField(source="user.id", read_only=True)
+    career_intention_display = serializers.CharField(
+        source="get_career_intention_display", read_only=True
+    )
+    preferred_environment_display = serializers.CharField(
+        source="get_preferred_environment_display", read_only=True
+    )
+    preferred_structure_display = serializers.CharField(
+        source="get_preferred_structure_display", read_only=True
+    )
+    guidance_reasons = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=True,
+    )
+    guidance_reason_names = serializers.SerializerMethodField()
+    work_constraints = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=True,
+    )
+    work_constraint_names = serializers.SerializerMethodField()
+    domain_category_name = serializers.CharField(
+        source="domain_category.domain_name", read_only=True, default=None
+    )
+    domain_name = serializers.CharField(
+        source="domain.domain_name", read_only=True, default=None
+    )
+    salary_expectation_display = serializers.CharField(
+        source="get_salary_expectation_display", read_only=True, default=None
+    )
+    timeline_display = serializers.CharField(
+        source="get_timeline_display", read_only=True, default=None
+    )
+    career_value_names = serializers.SerializerMethodField()
+    platform_goal_names = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProfessionalAssessment
+        fields = [
+            "id", "user", "current_screen", "is_completed",
+            "career_intention", "career_intention_display",
+            "guidance_reasons", "guidance_reason_names",
+            "work_constraints", "work_constraint_names",
+            "preferred_environment", "preferred_environment_display",
+            "preferred_structure", "preferred_structure_display",
+            "domain_category", "domain_category_name",
+            "domain", "domain_name",
+            "career_values", "career_value_names",
+            "platform_goals", "platform_goal_names",
+            "timeline", "timeline_display",
+            "salary_expectation", "salary_expectation_display",
+            "created_at", "updated_at",
+        ]
+ 
+    def get_guidance_reason_names(self, obj):
+        return list(obj.guidance_reasons.values_list("name", flat=True))
+ 
+    def get_work_constraint_names(self, obj):
+        return list(obj.work_constraints.values_list("name", flat=True))
+    
+    def get_career_value_names(self, obj):
+        return list(obj.career_values.values_list("name", flat=True))
+    
+    def get_platform_goal_names(self, obj):
+         return list(obj.platform_goals.values_list("name", flat=True))
+    
+ 
+ 
+class ProfessionalAssessmentWriteSerializer(serializers.ModelSerializer):
+    guidance_reasons = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=GuidanceReason.objects.filter(deleted=False),
+        required=False,
+    )
+    work_constraints = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=WorkConstraint.objects.filter(deleted=False),
+        required=False,
+    )
+
+    domain_category = serializers.PrimaryKeyRelatedField(
+        queryset=Domain.objects.filter(is_active=True, deleted=False),
+        required=False, allow_null=True
+    )
+
+    domain = serializers.PrimaryKeyRelatedField(
+        queryset=Domain.objects.filter(is_active=True, deleted=False),
+        required=False, allow_null=True
+    )
+
+    career_values = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=CareerValue.objects.filter(deleted=False),
+        required=False,
+    )
+
+    platform_goals = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=UserGoal.objects.filter(deleted=False),
+        required=False,
+    )
+
+    class Meta:
+        model = ProfessionalAssessment
+        fields = [
+            "career_intention",
+            "guidance_reasons",
+            "work_constraints",
+            "preferred_environment",
+            "preferred_structure",
+            "domain_category",
+            "domain",
+            "career_values",
+            "salary_expectation",
+            "timeline",
+            "platform_goals",
+        ]
+
+    def validate(self, attrs):
+        instance = getattr(self, "instance", None)
+        category = attrs.get("domain_category", getattr(instance, "domain_category", None))
+        domain = attrs.get("domain", getattr(instance, "domain", None))
+
+        if category and getattr(category, "parent_id", None) is not None:
+            raise serializers.ValidationError(
+                {"domain_category": "Must be a parent domain"}
+            )
+
+        if domain and getattr(domain, "parent_id", None) is None:
+            raise serializers.ValidationError(
+                {"domain": "Must be a child domain"}
+            )
+
+        if category and domain and getattr(domain, "parent_id", None) != category.id:
+            raise serializers.ValidationError(
+                {"domain": "Must belong to selected category"}
+            )
+
+        return attrs

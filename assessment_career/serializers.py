@@ -27,6 +27,7 @@ class CareerRecommendationSerializer(BaseModelSerializer):
             "profile_type",
             "student_assessment",
             "parent_assessment",
+            "professional_assessment",
             "suggestions",
             "easy_decision_making",
             "last_recommended_at",
