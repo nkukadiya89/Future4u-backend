@@ -7,9 +7,9 @@ from user_profile.models import StudentProfile
 
 class StudentBulkUpload:
     REQUIRED_COLUMNS = [
-        "medium",
-        "education_level",
-        "language",
+        "Medium",
+        "Education Level",
+        "Language",
     ]
 
     STREAM_REQUIRED_LEVEL_CODES = {
@@ -41,7 +41,7 @@ class StudentBulkUpload:
     
     @classmethod
     def validate_row(cls, row, masters):
-        medium = str(row.get("medium", "")).strip().lower()
+        medium = str(row.get("Medium", "")).strip().lower()
 
         if medium and medium not in cls.VALID_MEDIUMS:
                     raise ValidationError(
@@ -49,17 +49,17 @@ class StudentBulkUpload:
                     )
         
         education_level = None
-        education_level_code = str(row.get("education_level", "")).strip().lower()
+        education_level_code = str(row.get("Education Level", "")).strip().lower()
 
         if education_level_code:
             education_level = masters["education_levels"].get(education_level_code)
             if not education_level:
                 raise ValidationError(
-                    f"Invalid education_level code '{row.get('education_level')}'"
+                    f"Invalid Education Level code '{row.get('Education Level')}'"
                 )
             
         stream = None
-        stream_value = row.get("stream")
+        stream_value = row.get("Stream")
         stream_code = "" if pd.isna(stream_value) else str(stream_value).strip().lower()
 
         if(education_level_code in cls.STREAM_REQUIRED_LEVEL_CODES and not stream_code):
@@ -68,10 +68,10 @@ class StudentBulkUpload:
             stream = masters["streams"].get(stream_code)
             if not stream:
                 raise ValidationError(
-                    f"Invalid stream code '{row.get('stream')}'"
+                    f"Invalid Stream code '{row.get('Stream')}'"
                 )
         languages = []
-        language_value = row.get("language")
+        language_value = row.get("Language")
 
         if not pd.isna(language_value) and str(language_value).strip():
             language_names = [

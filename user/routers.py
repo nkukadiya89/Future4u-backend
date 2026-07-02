@@ -11,7 +11,7 @@ from user.group_and_permission import (
     GroupViewSet,
     PermissionViewSet,
 )
-from user.admin_user_views import AdminStudentViewSet,AdminSchoolCollegeViewSet
+from user.admin_user_views import AdminStudentViewSet,AdminSchoolCollegeViewSet,AdminCorporateViewSet,AdminInstituteViewSet
 from user.resend_password_reset import ResendPasswordResetViewSet
 from user.user_type_views import AuthViewSet
 from user.views import (
@@ -88,4 +88,6 @@ user_router.register(
 user_router.register("auth", AuthViewSet, basename="auth")
 user_router.register("admin-student-users", AdminStudentViewSet, basename="admin_users")
 user_router.register("admin-school-colleges-users", AdminSchoolCollegeViewSet, basename="admin_school_colleges_users")
+user_router.register("admin-institute-users", AdminInstituteViewSet, basename="admin_institute_users")
+user_router.register("admin-corporate-users", AdminCorporateViewSet, basename="admin_corporate_users")
 user_router.register("users", UserListViewSet, basename="users")

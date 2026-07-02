@@ -16,11 +16,13 @@ from user.models import User
 from user.permissions import IsAdminUser
 from user.services.bulk_user_upload import BulkUserUploadService
 from user.tasks import bulk_upload_user_task
-from user_profile.models import StudentProfile, SchoolCollegeProfile
+from user_profile.models import InstituteProfile, StudentProfile, SchoolCollegeProfile,CorporateProfile
 from rest_framework.viewsets import ModelViewSet
 from user_profile.serializers import StudentProfileSerializer
-from user_profile.serializers import SchoolCollegeProfileSerializer
-from user.admin_school_colleges_serializer import AdminSchoolCollegesSerializer
+from user_profile.serializers import SchoolCollegeProfileSerializer,InstituteProfileSerializer,CorporateProfileSerializer
+from user.admin_school_colleges_serializers import AdminSchoolCollegesSerializer,AdminSchoolCollegeSortSerializer
+from user.admin_institute_serializers import AdminInstituteSerializer,AdminInstituteSortSerializer
+from user.admin_corporate_serializers import AdminCorporateSerializer,AdminCorporateSortSerializer
 
 class BaseAdminProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser]
@@ -439,6 +441,21 @@ class AdminSchoolCollegeViewSet(BaseAdminProfileViewSet):
     role_name = "School College"
     profile_model = SchoolCollegeProfile
     serializer_class = AdminSchoolCollegesSerializer
-    detail_serializer_class = AdminStudentSortSerializer
+    detail_serializer_class = AdminSchoolCollegeSortSerializer
     archive_serializer_class = SchoolCollegeProfileSerializer
-    
+
+class AdminInstituteViewSet(BaseAdminProfileViewSet):
+    user_role = User.Role.INSTITUTE
+    role_name = "Institute"
+    profile_model = InstituteProfile
+    serializer_class = AdminInstituteSerializer
+    detail_serializer_class = AdminInstituteSortSerializer
+    archive_serializer_class = InstituteProfileSerializer
+
+class AdminCorporateViewSet(BaseAdminProfileViewSet):
+    user_role = User.Role.CORPORATE
+    role_name = "Corporate"
+    profile_model = CorporateProfile
+    serializer_class = AdminCorporateSerializer
+    detail_serializer_class = AdminCorporateSortSerializer
+    archive_serializer_class = CorporateProfileSerializer

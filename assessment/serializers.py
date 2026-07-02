@@ -140,7 +140,7 @@ class StudentAssessmentSerializer(BaseModelSerializer):
     career_values_name = serializers.SerializerMethodField()
     user_goals_name = serializers.SerializerMethodField()
     user = UserQuickSerializer(read_only=True)
-    responses = AssessmentQuestionResponseSerializer(many=True, read_only=True)
+    # responses = AssessmentQuestionResponseSerializer(many=True, read_only=True)
 
     class Meta:
         model = StudentAssessment
@@ -161,7 +161,7 @@ class StudentAssessmentSerializer(BaseModelSerializer):
             "current_screen",
             "user",
             "is_completed",
-            "responses",
+            # "responses",
         ]
         read_only_fields = ("id", "user", "current_screen", "created_at", "updated_at")
 

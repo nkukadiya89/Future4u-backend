@@ -1,27 +1,31 @@
+# user/services/bulkupload_profiles/institute_bulkupload.py
+
 import pandas as pd
-from django.core.exceptions import ValidationError
-from user_profile.models import SchoolCollegeProfile
+from user_profile.models import InstituteProfile
 
 
-class SchoolCollegeBulkUpload:
+class InstituteBulkUpload:
     REQUIRED_COLUMNS = [
         "Institute Name",
-        "Board",
-        "Courses Offered",
     ]
 
     @classmethod
     def preload(cls):
         return {}
-    
+
     @staticmethod
     def clean(value):
         if pd.isna(value):
             return None
-
         value = str(value).strip()
         return value or None
-    
+
+    @staticmethod
+    def clean_int(value):
+        if pd.isna(value) or str(value).strip() == "":
+            return None
+        return int(value)
+
     @classmethod
     def validate_row(cls, row, masters):
         courses_value = row.get("Courses Offered")
@@ -36,7 +40,8 @@ class SchoolCollegeBulkUpload:
 
         return {
             "institute_name": cls.clean(row.get("Institute Name")),
-            "board": cls.clean(row.get("Board")),
+            "student_trained": cls.clean_int(row.get("Student Trained")),
+            "placements": cls.clean_int(row.get("Placements")),
             "about_us": cls.clean(row.get("About Us")),
             "courses_offered": courses_offered,
             "website": cls.clean(row.get("Website")),
@@ -44,10 +49,11 @@ class SchoolCollegeBulkUpload:
 
     @classmethod
     def create_profile(cls, user, profile_data):
-        return SchoolCollegeProfile.objects.create(
+        return InstituteProfile.objects.create(
             user=user,
             institute_name=profile_data.get("institute_name"),
-            board=profile_data.get("board"),
+            student_trained=profile_data.get("student_trained"),
+            placements=profile_data.get("placements"),
             about_us=profile_data.get("about_us"),
             courses_offered=profile_data.get("courses_offered", []),
             website=profile_data.get("website"),

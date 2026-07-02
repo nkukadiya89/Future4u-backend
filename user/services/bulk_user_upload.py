@@ -9,19 +9,20 @@ from user.models import User
 from user.services.registration_service import setup_web_user_password
 from user.services.bulkupload_profiles.student_bulkupload import StudentBulkUpload
 from user.services.bulkupload_profiles.school_colleges_bulkupload import SchoolCollegeBulkUpload
-
+from user.services.bulkupload_profiles.institute_bulkupload import InstituteBulkUpload
+from user.services.bulkupload_profiles.corporate_bulkupload import CorporateBulkUpload
 
 class BulkUserUploadService:
     REQUIRED_COLUMNS = [
-        "first_name",
-        "last_name",
-        "about_me",
-        "email",
-        "phone",
-        "referral_code",
-        "country",
-        "state",
-        "city",
+        "First Name",
+        "Last Name",
+        "About Me",
+        "Email",
+        "Phone",
+        "Referral Code",
+        "Country",
+        "State",
+        "City",
     ]
     @classmethod
     def get_required_columns(cls, user_type):
@@ -32,6 +33,12 @@ class BulkUserUploadService:
 
         elif user_type == User.Role.SCHOOL_COLLEGE:
             required_columns += SchoolCollegeBulkUpload.REQUIRED_COLUMNS
+
+        elif user_type == User.Role.INSTITUTE:
+            required_columns += InstituteBulkUpload.REQUIRED_COLUMNS
+        
+        elif user_type == User.Role.CORPORATE:
+            required_columns += CorporateBulkUpload.REQUIRED_COLUMNS
 
         return required_columns
     
@@ -56,6 +63,14 @@ class BulkUserUploadService:
         elif user_type == User.Role.SCHOOL_COLLEGE:
             profile_service = SchoolCollegeBulkUpload
             profile_masters = SchoolCollegeBulkUpload.preload()
+        
+        elif user_type == User.Role.INSTITUTE:
+            profile_service = InstituteBulkUpload
+            profile_masters = InstituteBulkUpload.preload()
+            
+        elif user_type == User.Role.CORPORATE:
+            profile_service = CorporateBulkUpload
+            profile_masters = CorporateBulkUpload.preload()
             
         cls._validate_headers(df, required_columns)
 
@@ -97,8 +112,8 @@ class BulkUserUploadService:
             row_number = int(index) + 2
 
             try:
-                email = str(row.get("email", "")).strip().lower()
-                phone = str(row.get("phone", "")).strip()
+                email = str(row.get("Email", "")).strip().lower()
+                phone = str(row.get("Phone", "")).strip()
 
                 if email:
                     if email in seen_emails:
@@ -113,12 +128,12 @@ class BulkUserUploadService:
                     seen_phones.add(phone)
 
                 required_fields = {
-                    "first_name": row.get("first_name"),
-                    "email": row.get("email"),
-                    "country": row.get("country"),
-                    "state": row.get("state"),
-                    "city": row.get("city"),
-                    "phone": row.get("phone"),
+                    "First Name": row.get("First Name"),
+                    "Email": row.get("Email"),
+                    "Country": row.get("Country"),
+                    "State": row.get("State"),
+                    "City": row.get("City"),
+                    "Phone": row.get("Phone"),
                 }
                 missing_fields = []
 
@@ -180,7 +195,7 @@ class BulkUserUploadService:
                     skipped += 1
                     continue
 
-                country_name = str(row["country"]).strip().lower()
+                country_name = str(row["Country"]).strip().lower()
                 country = countries.get(country_name)
 
                 if not country:
@@ -189,12 +204,12 @@ class BulkUserUploadService:
                         {
                             "row": row_number,
                             "email": email,
-                            "message": f"Country '{row['country']}' does not exist.",
+                            "message": f"Country '{row['Country']}' does not exist.",
                         }
                     )
                     continue
 
-                state_name = str(row["state"]).strip().lower()
+                state_name = str(row["State"]).strip().lower()
                 state = states.get((country.id, state_name))
 
                 if not state:
@@ -202,11 +217,11 @@ class BulkUserUploadService:
                     state_exists = state_name in all_state_names
                     if state_exists:
                         message = (
-                            f"State '{row['state']}' does not belong to "
-                            f"country '{row['country']}'"
+                            f"State '{row['State']}' does not belong to "
+                            f"country '{row['Country']}'"
                         )
                     else:
-                        message = f"State '{row['state']}' does not exists."
+                        message = f"State '{row['State']}' does not exists."
 
                     errors.append(
                         {
@@ -217,7 +232,7 @@ class BulkUserUploadService:
                     )
                     continue
 
-                city_name = str(row["city"]).strip().lower()
+                city_name = str(row["City"]).strip().lower()
                 city = cities.get((state.id, city_name))
 
                 if not city:
@@ -226,11 +241,11 @@ class BulkUserUploadService:
 
                     if city_exists:
                         message = (
-                            f"City '{row['city']}' does not belong to "
-                            f"state '{row['state']}'"
+                            f"City '{row['City']}' does not belong to "
+                            f"state '{row['State']}'"
                         )
                     else:
-                        message = f"City '{row['city']}' does not exist."
+                        message = f"City '{row['City']}' does not exist."
 
                     errors.append(
                         {
@@ -246,17 +261,17 @@ class BulkUserUploadService:
 
                 with transaction.atomic():
                     user = User.objects.create(
-                        first_name=str(row.get("first_name", "")).strip(),
-                        last_name=str(row.get("last_name", "")).strip(),
-                        about_me=str(row.get("about_me", "")).strip(),
+                        first_name=str(row.get("First Name", "")).strip(),
+                        last_name=str(row.get("Last Name", "")).strip(),
+                        about_me=str(row.get("About Me", "")).strip(),
                         email=email,
                         phone=phone,
                         user_type=user_type,
-                        referral_code=str(row.get("referral_code", "")).strip(),
+                        referral_code=str(row.get("Referral Code", "")).strip(),
                         country=country,
                         states=state,
                         city=city,
-                        address=str(row.get("address", "")).strip() or None,
+                        address=str(row.get("Address", "")).strip() or None,
                         created_by=request_user,
                         terms_accepted=True,
                     )

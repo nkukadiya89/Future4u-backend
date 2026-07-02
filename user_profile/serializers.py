@@ -115,7 +115,6 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
             "user",
             "status",
             "role",
-            "language",
             "country",
             "country_name",
             "state",
@@ -123,6 +122,10 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
             "city",
             "city_name",
             "medium",
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
             "education_level",
             "education_level_code",
             "education_level_name",
@@ -141,10 +144,7 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
             "linkedin_url",
             "github_url",
             "portfolio",
-            "first_name",
-            "last_name",
-            "phone",
-            "email",
+            "language",
             "profile_image",
             "created_by",
             "created_at",
@@ -688,7 +688,12 @@ class InstituteProfileSerializer(BaseModelSerializer):
     profile_image = serializers.CharField(source="user.profile_image", read_only=True)
     city = serializers.CharField(source="user.city.name", read_only=True)
     state = serializers.CharField(source="user.states.name", read_only=True)
+    address = serializers.CharField(source="user.address", read_only=True)
+    country = serializers.CharField(source="user.country.name", read_only=True)
+    status = serializers.CharField(source="user.status", read_only=True)
+    status = serializers.CharField(source="user.status", read_only=True)
     gallery_images = InstituteGallerySerializer(many=True, read_only=True)
+
     created_by = serializers.CharField(source="user.created_by", read_only=True)
 
     class Meta:
@@ -708,8 +713,11 @@ class InstituteProfileSerializer(BaseModelSerializer):
             "phone",
             "email",
             "profile_image",
-            "city",
+            "country",
             "state",
+            "city",
+            "address",
+            "status",
             "website",
             "institute_name",
             "gallery_images",
@@ -762,8 +770,13 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
     profile_image = serializers.CharField(source="user.profile_image", read_only=True)
     city = serializers.CharField(source="user.city.name", read_only=True)
     state = serializers.CharField(source="user.states.name", read_only=True)
+    country = serializers.CharField(source="user.country.name", read_only=True)
+    status = serializers.CharField(source="user.status", read_only=True)
     gallery_images = SchoolCollegeGallerySerializer(many=True, read_only=True)
+    education_name = serializers.ReadOnlyField(source="get_education_names")
+    address = serializers.CharField(source="user.address", read_only=True)
     created_by = serializers.CharField(source="user.created_by", read_only=True)
+
 
     class Meta:
         model = SchoolCollegeProfile
@@ -776,6 +789,7 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
             "about_us",
             "courses_offered",
             "education",
+            "education_name",
             "institute_name",
             "total_student",
             "board",
@@ -787,11 +801,13 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
             "phone",
             "email",
             "profile_image",
-            "city",
+            "country",
             "state",
+            "city",
+            "address",
+            "status",
             "gallery_images",
         ]
-
 
 class SchoolCollegeProfileUpSerializer(BaseModelSerializer):
     class Meta:
@@ -841,7 +857,10 @@ class CorporateProfileSerializer(BaseModelSerializer):
     email = serializers.CharField(source="user.email", read_only=True)
     profile_image = serializers.CharField(source="user.profile_image", read_only=True)
     city = serializers.CharField(source="user.city.name", read_only=True)
+    address = serializers.CharField(source="user.address", read_only=True)
     state = serializers.CharField(source="user.states.name", read_only=True)
+    country = serializers.CharField(source="user.country.name", read_only=True)
+    status = serializers.CharField(source="user.status", read_only=True)
     gallery_images = CorporateGallerySerializer(many=True, read_only=True)
     created_by = serializers.CharField(source = "user.created_by", read_only=True)
 
@@ -861,10 +880,13 @@ class CorporateProfileSerializer(BaseModelSerializer):
             "phone",
             "email",
             "profile_image",
-            "city",
+            "country",
             "state",
+            "city",
+            "address",
+            "status",
             "website",
-            "institute_name",
+            "company_name",
             "gallery_images",
         ]
 
@@ -881,7 +903,7 @@ class CorporateProfileUpSerializer(BaseModelSerializer):
             "about_us",
             "perks_benefits",
             "website",
-            "institute_name",
+            "company_name",
         ]
 
     def update(self, instance, validated_data):

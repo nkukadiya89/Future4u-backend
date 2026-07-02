@@ -579,6 +579,9 @@ class SchoolCollegeProfile(BaseModule):
         db_table = "school_college_profile"
         ordering = ["-created_at"]
 
+    def get_education_names(self):
+        return list(self.education.values_list("display_name", flat=True))
+
 
 class SchoolCollegeGallery(BaseModule):
     school_college = models.ForeignKey(
@@ -601,7 +604,7 @@ class CorporateProfile(BaseModule):
         related_name="corporate_profile",
     )
     website = models.CharField(max_length=250, null=True, blank=True)
-    institute_name = models.CharField(max_length=200, null=True, blank=True)
+    company_name = models.CharField(max_length=200, null=True, blank=True)
     open_job = models.PositiveIntegerField(null=True, blank=True)
     employees = models.PositiveIntegerField(null=True, blank=True)
     years_in_business = models.PositiveIntegerField(null=True, blank=True)

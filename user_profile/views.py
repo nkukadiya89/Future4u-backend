@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
+from common.master_view import BaseModelViewSet
 from utils.throttles import (PerUserBurstRateThrottle)  
 
 from activity_log.models import ActivityLog
@@ -903,6 +904,28 @@ class InstituteProfileViewSet(OrganizationProfileViewSet):
     profile_model = InstituteProfile
     read_serializer_class = InstituteProfileSerializer
     update_serializer_class = InstituteProfileUpSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+
+    search_fields = OrganizationProfileViewSet.search_fields + [
+        "student_trained",
+        "placements",
+        "success_rate",
+        "about_us",
+        "courses_offered",
+        "key_highlights",
+        "website",
+        "institute_name",
+    ]
+    ordering_fields = OrganizationProfileViewSet.ordering_fields+[
+        "student_trained",
+        "placements",
+        "success_rate",
+        "about_us",
+        "courses_offered",
+        "key_highlights",
+        "website",
+        "institute_name",
+    ]
 
 
 class InstituteGalleryViewSet(OrganizationGalleryViewSet):
@@ -917,7 +940,34 @@ class SchoolCollegeProfileViewSet(OrganizationProfileViewSet):
     profile_model = SchoolCollegeProfile
     read_serializer_class = SchoolCollegeProfileSerializer
     update_serializer_class = SchoolCollegeProfileUpSerializer
+    filter_backends = [SearchFilter,OrderingFilter]
 
+    search_fields = OrganizationProfileViewSet.search_fields + [
+        "student_trained",
+        "education__display_name",
+        "placements",
+        "success_rate",
+        "about_us",
+        "courses_offered",
+        "institute_name",
+        "total_student",
+        "board",
+        "partnership_readiness",
+        "website",
+    ]
+    ordering_fields = OrganizationProfileViewSet.ordering_fields+[
+        "user",
+        "student_trained"
+        "placements",
+        "success_rate",
+        "about_us",
+        "courses_offered",
+        "institute_name",
+        "total_student",
+        "board",
+        "partnership_readiness",
+        "website",
+    ]
 
 class SchoolCollegeGalleryViewSet(OrganizationGalleryViewSet):
     profile_model = SchoolCollegeProfile
@@ -926,11 +976,30 @@ class SchoolCollegeGalleryViewSet(OrganizationGalleryViewSet):
     gallery_serializer_class = SchoolCollegeGallerySerializer
     profile_not_found_message = "School / college profile not found"
 
-
 class CorporateProfileViewSet(OrganizationProfileViewSet):
     profile_model = CorporateProfile
     read_serializer_class = CorporateProfileSerializer
     update_serializer_class = CorporateProfileUpSerializer
+
+    search_fields = OrganizationProfileViewSet.search_fields +[
+        "website",
+        "company_name",
+        "open_job",
+        "employees",
+        "years_in_business",
+        "about_us",
+        "perks_benefits",
+    ]
+
+    ordering_fields = OrganizationProfileViewSet.ordering_fields+[
+        "website",
+        "company_name",
+        "open_job",
+        "employees",
+        "years_in_business",
+        "about_us",
+        "perks_benefits",
+    ]
 
 
 class CorporateGalleryViewSet(OrganizationGalleryViewSet):

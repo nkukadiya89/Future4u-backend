@@ -30,7 +30,6 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
 
         is_update = self.instance is not None
 
-        terms_accepted = json_data.get("terms_accepted")
         email = json_data.get("email")
         first_name = json_data.get("first_name")
         last_name = json_data.get("last_name")
@@ -61,8 +60,6 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
                 errors["state"] = "This field is required."
             if not city_id:
                 errors["city"] = "This field is required."
-            if terms_accepted is None:
-                errors["terms_accepted"] = "This field is required."
         
         if email and User.objects.filter(email=email, deleted=False).exclude(
             id=getattr(self.instance, "id", None)
@@ -73,9 +70,6 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
             id=getattr(self.instance, "id", None)
         ).exists():
             errors["phone"] = "An account with this phone number already exists"
-
-        if terms_accepted is not None and not terms_accepted:
-            errors["terms_accepted"] = "You must accept the Terms & Conditions."
 
         country = None
         if country_id is not None:
@@ -130,8 +124,6 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
             validated["city"] = city
         if referral_code:
             validated["referral_code"] = referral_code
-        if terms_accepted is not None:
-            validated["terms_accepted"] = terms_accepted
 
         if "address" in json_data:
             validated["address"] = (address or "").strip() or None
@@ -164,7 +156,6 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
         about_us = data.pop("about_us", None)
         courses_offered = data.pop("courses_offered", None)
         website = data.pop("website", None)
-        terms_accepted = data.pop("terms_accepted")
         user = User.objects.create(
             **data,
             user_type = User.Role.SCHOOL_COLLEGE,
@@ -173,9 +164,6 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
         )
 
         setup_web_user_password(user)
-
-        user.terms_accepted = terms_accepted
-        user.save(update_fields=["terms_accepted"])
 
         if profile_image_file:
             user.upload_profile_image(profile_image_file)
@@ -242,7 +230,7 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
         profile.save()
         
         if educations is not None:
-            profile.educations.set(educations)
+            profile.education.set(educations)
         
         email_changed = old_email.lower() != instance.email.lower()
 
@@ -256,7 +244,7 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
         return instance
 
  
-class AdminStudentSortSerializer(serializers.ModelSerializer):
+class AdminSchoolCollegeSortSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
     phone = serializers.CharField(source="user.phone")
@@ -269,7 +257,8 @@ class AdminStudentSortSerializer(serializers.ModelSerializer):
     city_name = serializers.CharField(source="user.city.name")
     referral_code = serializers.CharField(source="user.referral_code")
     address = serializers.CharField(source="user.address")
-
+    education_name = serializers.ReadOnlyField(source="get_education_names")
+    
     class Meta:
         model = SchoolCollegeProfile
         fields = [
@@ -291,4 +280,7 @@ class AdminStudentSortSerializer(serializers.ModelSerializer):
             "board",
             "about_us",
             "courses_offered",
+            "website",
+            "education",
+            "education_name",
         ]

@@ -1,11 +1,12 @@
 import json
 
 from django.db import transaction
+from django.db.models import F
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
+from rest_framework.filters import OrderingFilter, SearchFilter
 from common.master_view import BaseModelViewSet
 from utils.aws_file_upload import delete_uploaded_file
 
@@ -14,37 +15,54 @@ class OrganizationProfileViewSet(BaseModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     http_method_names = ["get", "patch", "head", "options"]
-
+    filter_backends = [SearchFilter, OrderingFilter]
     profile_model = None
     read_serializer_class = None
     update_serializer_class = None
 
-    # def get_queryset(self):
-    #     return self.profile_model.objects.filter(
-    #         user=self.request.user,
-    #         deleted=False,
-    #     ).select_related("user", "user__city", "user__states").prefetch_related(
-    #         "gallery_images"
-    #     )
-
-    # def list(self, request, *args, **kwargs):
-    #     profile = self.get_queryset().first()
-    #     if not profile:
-    #         return Response(
-    #             {"success": False, "message": "Profile not found"},
-    #             status=status.HTTP_404_NOT_FOUND,
-    #         )
-    #     return Response(
-    #         {"success": True, "data": self.read_serializer_class(profile).data},
-    #         status=status.HTTP_200_OK,
-    #     )
+    search_fields = BaseModelViewSet.searching_fields + [
+        "user__country__name",
+        "user__states__name",
+        "user__city__name",
+        "user__address",
+        "user__first_name",
+        "user__last_name",
+        "user__phone",
+        "user__email",
+        "user__status",
+        "user__user_type",
+    ]
+    ordering_fields = BaseModelViewSet.ordering_fields +[
+        "country",
+        "state",
+        "city",
+        "address",
+        "first_name",
+        "last_name",
+        "phone",
+        "email",
+        "status",
+        "user_type",
+    ]
 
     def get_queryset(self):
         return self.profile_model.objects.filter(
-            deleted=False,
-        ).select_related("user", "user__city", "user__states").prefetch_related(
+            user__deleted=False,
+        ).select_related("user", "user__city", "user__states","user__country").prefetch_related(
             "gallery_images"
+        ).annotate(
+            country = F("user__country__name"),
+            state=F("user__states__name"),
+            city=F("user__city__name"),
+            address=F("user__address"),
+            first_name=F("user__first_name"),
+            last_name=F("user__last_name"),
+            phone=F("user__phone"),
+            email=F("user__email"),
+            status=F("user__status"),
+            user_type=F("user__user_type"),
         )
+        
     def get_profile_object(self, request):
         queryset = self.get_queryset()
         if request.user.is_superuser:
@@ -58,7 +76,25 @@ class OrganizationProfileViewSet(BaseModelViewSet):
             user_id = request.query_params.get("user_id")
             queryset = self.get_queryset()
             no_pagination = request.query_params.get("no_pagination")
-            page = self.paginate_queryset(queryset)
+
+            status_filter = request.query_params.get("status")
+            city_id = request.query_params.get("city")
+            state_id = request.query_params.get("state")
+            country_id = request.query_params.get("country")
+
+            if status_filter:
+                queryset = queryset.filter(user__status=status_filter)
+            
+            if city_id:
+                queryset = queryset.filter(user__city_id=city_id)
+            
+            if state_id:
+                queryset = queryset.filter(user__states_id=state_id)
+            
+            if country_id:
+                queryset = queryset.filter(user__country_id=country_id)
+            
+            queryset = self.filter_queryset(queryset)
 
             if user_id:
                 profile = queryset.filter(user_id=user_id).first()
@@ -87,6 +123,8 @@ class OrganizationProfileViewSet(BaseModelViewSet):
                     },
                     status=status.HTTP_200_OK,
                 )
+            
+            page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = self.read_serializer_class(page, many=True)
                 return self.get_paginated_response(
