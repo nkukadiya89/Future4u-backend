@@ -63,7 +63,7 @@ def _build_email_context(template, data):
         context["verification_code"] = data["otp"]
         context["email"] = data["email"]
     elif template == "reset-pass.html":
-        context["path"] = "https://dev.future4u.ai/reset-password/"
+        context["path"] = app_url + "reset-password/"
         token_value = data["token"]
         if isinstance(token_value, (bytes, bytearray)):
             token_value = token_value.decode("utf-8")
@@ -75,7 +75,7 @@ def _build_email_context(template, data):
             token_value = token_value.decode("utf-8")
         context["token"] = str(token_value)
     elif template == "set-password.html":
-        context["path"] = "https://dev.future4u.ai/reset-password/"
+        context["path"] = app_url + "reset-password/"
         token_value = data["token"]
         if isinstance(token_value, (bytes, bytearray)):
             token_value = token_value.decode("utf-8")

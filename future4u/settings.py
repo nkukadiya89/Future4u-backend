@@ -400,5 +400,13 @@ apply_langsmith_tracing_env(
     project=_LANGSMITH_PROJECT,
 )
 
-# Public alias for admin panels and diagnostics (AI_TRACING_ENABLED or LANGCHAIN_TRACING_V2).
-LANGSMITH_TRACING_ENABLED = _LANGSMITH_TRACING_ENABLED
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+FRONTEND_URL = "https://app.future4u.ai"
+
+CELERY_BROKER_URL = config("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
+CELERY_ENABLE_UTC = True
