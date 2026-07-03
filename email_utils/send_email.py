@@ -53,29 +53,36 @@ def pr_decode_token(token):
         return {"error": "Invalid token"}
 
 
+def _get_app_url():
+    return config(
+        "APP_URL",
+        default=getattr(settings, "FRONTEND_URL", "https://app.future4u.ai"),
+    ).rstrip("/")
+
+
 def _build_email_context(template, data):
     context = {"name": data["name"]}
-    app_url = config("APP_URL")
+    app_url = _get_app_url()
     if template == "register-success.html" or template == "verify_account.html":
         generate_token(data["email"], 30)
-        context["login_url"] = app_url + "login"
-        context["verify_link"] = app_url + "verify-success/"
+        context["login_url"] = app_url + "/login"
+        context["verify_link"] = app_url + "/verify-success/"
         context["verification_code"] = data["otp"]
         context["email"] = data["email"]
     elif template == "reset-pass.html":
-        context["path"] = app_url + "reset-password/"
+        context["path"] = app_url + "/reset-password/"
         token_value = data["token"]
         if isinstance(token_value, (bytes, bytearray)):
             token_value = token_value.decode("utf-8")
         context["token"] = str(token_value)
     elif template == "forgot-pass.html":
-        context["path"] = app_url + "forgot-password/"
+        context["path"] = app_url + "/forgot-password/"
         token_value = data["token"]
         if isinstance(token_value, (bytes, bytearray)):
             token_value = token_value.decode("utf-8")
         context["token"] = str(token_value)
     elif template == "set-password.html":
-        context["path"] = app_url + "reset-password/"
+        context["path"] = app_url + "/reset-password/"
         token_value = data["token"]
         if isinstance(token_value, (bytes, bytearray)):
             token_value = token_value.decode("utf-8")
