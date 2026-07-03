@@ -41,41 +41,62 @@ The institute has already filled these fields on the form — use them only as c
 
 Generate ONLY the six fields in the JSON shape above. Every value must be written fresh from the institute-provided details in the user message. Never copy placeholder or example text from these instructions.
 
-FIELD RULES
+--- QUALITY EXPECTATIONS ---
+
+Each generated field must feel specific to the institute's course, not generic. A reader should be able to identify this course from the generated fields alone. Avoid:
+- Vague statements that could apply to any course (e.g. "learn valuable skills", "gain practical knowledge")
+- Padding sentences that add word count without substance
+- Copying phrases from the instructions or examples
+
+The output must be concrete: name specific tools, technologies, domains, or skills the user provided. Use natural, varied language — do not repeat the same sentence structures across fields.
+
+--- FIELD RULES ---
 
 course_title
-- Clear, professional course title inferred from the institute's course overview
+- Clear, professional course title that precisely reflects the course content
+- Must be specific enough to distinguish this course from generic offerings
 - Avoid hype titles (no Best Course Ever, Ultimate, World Class Course)
+- Good: "Advanced Data Analytics with Python" | "Full-Stack Web Development with React & Django"
+- Poor: "Computer Course" | "Skill Development Program"
 
 course_overview
 - {OVERVIEW_TARGET_MIN_WORDS}-{OVERVIEW_TARGET_MAX_WORDS} words (target), {OVERVIEW_MIN_WORDS}-{OVERVIEW_MAX_WORDS} words (allowed range)
-- Write naturally in simple English
-- Explain what the course teaches, who it is for, and what learners will gain
-- Do NOT repeat course_content items or skills
+- Write naturally in simple English — be direct and informative
+- Structure: what the course covers → who it is for → what learners will gain
+- Mention specific tools, technologies, or frameworks when provided in the input
+- Do NOT repeat course_content module titles or skills as bullet points
 - Avoid marketing buzzwords (no industry-leading, world-class, cutting-edge, transformative, revolutionary, comprehensive ecosystem)
+- Avoid generic phrases like "hands-on training", "real-world projects", "expert faculty" unless the input supports them
 
 skills
 - {SKILLS_MIN}-{SKILLS_MAX} short skill tags for a "Skills You Will Learn" pill UI
-- Each skill is 1-{SKILLS_ITEM_MAX_WORDS} words — concise labels only (no sentences, no examples in parentheses)
+- Each skill is 1-{SKILLS_ITEM_MAX_WORDS} words — concise labels only (no sentences, no descriptions, no examples in parentheses)
 - Derive every skill from the institute course overview and form context
+- Skills should be specific and scannable: "Python", "Data Visualization", "Circuit Design" — not sentences or paragraphs
 - No duplicates
 
 course_content
 - {COURSE_CONTENT_MIN}-{COURSE_CONTENT_MAX} short learning module titles as strings
 - One title per item — no paragraphs, no commas joining multiple topics
+- Each title should read like a real course module (e.g. "Introduction to Data Structures", "Advanced SQL Queries")
 - Derive every module title from the institute course overview and form context
+- Progress from fundamentals to advanced where natural
 
 why_this_course
 - {WHY_THIS_COURSE_MIN_WORDS}-{WHY_THIS_COURSE_MAX_WORDS} words
-- Explain why someone should take this course, career benefits, and practical outcomes
-- Write like a course counselor — simple, professional, student friendly
+- Explain why someone should choose this specific course — career outcomes, practical skills gained, and real-world applicability
+- Make it compelling but honest: tie benefits back to the course content
+- Write like a course counselor who knows this particular course well
+- Avoid clichés: "unlock your potential", "transform your career", "take the next step" — instead describe actual outcomes
 
 certification_info
 - One short paragraph, {CERTIFICATION_INFO_MIN_WORDS}-{CERTIFICATION_INFO_MAX_WORDS} words
-- Describe completion certificate in general terms
+- Describe the completion certificate in general but meaningful terms
+- Mention what the certificate demonstrates or validates (e.g. proficiency in the subject area)
 - Do NOT name external providers (no Coursera, Google, Microsoft, Udemy, edX) unless explicitly stated in the input
+- Keep it realistic — do not promise industry accreditation unless the input suggests it
 
-STRICT VALIDATION (output will be rejected if violated)
+--- STRICT VALIDATION (output will be rejected if violated) ---
 - Invalid JSON, missing fields, or empty arrays
 - Duplicate skills or course_content items
 - course_overview that copies two or more course_content module titles verbatim
@@ -86,8 +107,9 @@ STRICT VALIDATION (output will be rejected if violated)
 - why_this_course outside {WHY_THIS_COURSE_MIN_WORDS}-{WHY_THIS_COURSE_MAX_WORDS} words
 - certification_info outside {CERTIFICATION_INFO_MIN_WORDS}-{CERTIFICATION_INFO_MAX_WORDS} words
 - Placeholder text (TBD, N/A, null, <placeholder>)
-- Broken text like ", ,"
+- Broken text like ", ," or empty brackets
 - Markdown or explanations outside JSON
+- Generic content that could describe any course (lacks specificity)
 
 Previous validation feedback (fix these issues if provided): {{validation_feedback}}
 """

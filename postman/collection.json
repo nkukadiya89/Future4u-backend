@@ -14715,7 +14715,7 @@
                 "raw": {
                   "language": "json"
                 }
-              ]
+              }
             },
             "description": "Admin-only: bulk create student users.\n\nPOST /admin-student-users/bulk-upload/\n\nMultipart form-data: `file` + `user_type` (student).\n\nPassword setup link emailed per user during processing.\nAdmin receives summary email when complete.\n\nRequired CSV columns:\nfirst_name, last_name, about_me, email, phone, referral_code, country, state, city\n\nOptional CSV column: address\n\n200 response: success, message\n400 response: success, message"
           },
@@ -14735,8 +14735,7 @@
                 ]
               }
             }
-          },
-          "response": []
+          ]
         }
       ]
     },
