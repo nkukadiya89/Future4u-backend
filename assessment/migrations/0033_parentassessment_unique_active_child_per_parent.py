@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddConstraint(
             model_name='parentassessment',
-            constraint=models.UniqueConstraint(condition=models.Q(('deleted', False)), fields=('user', 'first_name', 'last_name', 'date_of_birth'), name='unique_active_child_per_parent'),
+            constraint=models.UniqueConstraint(condition=models.Q(('deleted', False)), fields=('user', 'first_name', 'last_name', 'date_of_birth'), name='assessment_parentassessment_active_child_unique'),
         ),
     ]

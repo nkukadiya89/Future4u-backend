@@ -10,10 +10,10 @@ from assessment.studentassessment import (
     CareerValueViewSet,
     CareerDirectionViewSet,
 )
+from assessment.professionalassessment import ProfessionalAssessmentViewSet
 
 assessment_router = DefaultRouter()
 
-# Student Assessment session endpoints
 assessment_router.register(
     "api/student/assessments",
     StudentAssessmentViewSet,
@@ -38,3 +38,4 @@ assessment_router.register(
     ParentAssessmentViewSet,
     basename="parent_assessment",
 )
+assessment_router.register("api/professional/assessments",ProfessionalAssessmentViewSet,basename="professional_assessment")

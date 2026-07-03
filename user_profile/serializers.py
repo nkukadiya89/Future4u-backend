@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from language_master.models import Language
+from education_level.models import EducationLevel
 from common.mixins.serializer_mixins import (
     ProfileLanguageMixin,
     ProfileLanguageSaveMixin,
@@ -65,7 +66,6 @@ class UserProfileUpsertSerializer(ProfileLanguageSaveMixin, serializers.ModelSer
 
 
 class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
-    """Student-specific profile serializer with language and educational fields"""
     status = serializers.CharField(source="user.status", read_only=True)
     role = serializers.CharField(source="user.user_type", read_only=True)
     education_level_code = serializers.CharField(
@@ -98,6 +98,16 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
     city_name = serializers.CharField(
         source="user.city.name", read_only=True, default=None
     )
+    first_name =serializers.CharField(source="user.first_name", read_only=True)
+    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
+    created_by = serializers.CharField(source="user.created_by", read_only=True)
+    updated_by = serializers.CharField(source="user.updated_by", read_only=True)
+    deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
+    deleted_by = serializers.CharField(source="user.deleted_by", read_only=True)
+    
     class Meta:
         model = StudentProfile
         fields = [
@@ -105,7 +115,6 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
             "user",
             "status",
             "role",
-            "language",
             "country",
             "country_name",
             "state",
@@ -113,6 +122,10 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
             "city",
             "city_name",
             "medium",
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
             "education_level",
             "education_level_code",
             "education_level_name",
@@ -131,12 +144,11 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
             "linkedin_url",
             "github_url",
             "portfolio",
-            "first_name",
-            "last_name",
-            "phone",
-            "email",
+            "language",
             "profile_image",
+            "created_by",
             "created_at",
+            "updated_by",
             "updated_at",
             "deleted_at",
             "deleted_by",
@@ -241,12 +253,6 @@ class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestamp
     """Working Professional-specific profile serializer matching StudentProfile pattern"""
 
     role = serializers.CharField(source="user.user_type", read_only=True)
-    education_level_code = serializers.CharField(
-        source="education_level.level_code", read_only=True, default=None
-    )
-    education_level_name = serializers.CharField(
-        source="education_level.display_name", read_only=True, default=None
-    )
     language = serializers.SerializerMethodField()
     # Location fields from User model
     country = serializers.IntegerField(
@@ -266,6 +272,29 @@ class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestamp
         source="user.city.name", read_only=True, default=None
     )
 
+    first_name =serializers.CharField(source="user.first_name", read_only=True)
+    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
+    highest_education_level = serializers.PrimaryKeyRelatedField(
+        source="education_level",
+        read_only=True,
+    )
+    highest_education_level_code = serializers.CharField(
+        source="education_level.level_code", read_only=True, default=None
+    )
+    highest_education_level_name = serializers.CharField(
+        source="education_level.display_name", read_only=True, default=None
+    )
+
+    current_industry_category_name = serializers.CharField(
+        source="current_industry_category.domain_name", read_only=True, default=None
+    )
+    current_industry_name = serializers.CharField(
+        source="current_industry.domain_name", read_only=True, default=None
+    )
+
     class Meta:
         model = ProfessionalProfile
         fields = [
@@ -280,12 +309,17 @@ class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestamp
             "city",
             "city_name",
             "employment_type",
+            "employment_type_other_text",
             "years_of_experience",
-            "education_level",
-            "education_level_code",
-            "education_level_name",
+            "highest_education_level",
+            "highest_education_level_code",
+            "highest_education_level_name",
+            "stream",
             "current_job_title",
+            "current_industry_category",
+            "current_industry_category_name",
             "current_industry",
+            "current_industry_name",
             "company_size",
             "career_direction",
             "education",
@@ -319,6 +353,18 @@ class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, seri
     phone = serializers.CharField(source="user.phone", required=False)
     profile_image = serializers.CharField(source="user.profile_image", required=False)
 
+
+
+
+
+
+    highest_education_level = serializers.PrimaryKeyRelatedField(
+        source="education_level",
+        queryset=EducationLevel.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+
     class Meta:
         model = ProfessionalProfile
         fields = [
@@ -328,10 +374,13 @@ class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, seri
             "profile_image",
             "language",
             "employment_type",
+            "employment_type_other_text",
             "years_of_experience",
-            "education_level",
+            "stream",
             "current_job_title",
+            "current_industry_category",
             "current_industry",
+            "highest_education_level",
             "company_size",
             "career_direction",
             "education",
@@ -345,6 +394,79 @@ class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, seri
             "portfolio",
         ]
 
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop("user", {})
+        language = validated_data.pop("language", None)
+
+        user = instance.user
+        for attr, value in user_data.items():
+            setattr(user, attr, value)
+        user.save()
+
+        instance = super().update(instance, validated_data)
+
+        if language is not None:
+            instance.language.set(language)
+
+        return instance
+
+    def create(self, validated_data):
+        language = validated_data.pop("language", None)
+        user_data = validated_data.pop("user", {})
+
+        instance = super().create(validated_data)
+
+        if user_data:
+            user = instance.user
+            for attr, value in user_data.items():
+                setattr(user, attr, value)
+            user.save()
+
+        if language is not None:
+            instance.language.set(language)
+
+        return instance
+
+    def validate(self, attrs):
+        instance = getattr(self, "instance", None)
+
+        # Domain hierarchy validation
+        category = attrs.get("current_industry_category", getattr(instance, "current_industry_category", None))
+        industry = attrs.get("current_industry", getattr(instance, "current_industry", None))
+
+        if category and getattr(category, "parent_id", None) is not None:
+            raise serializers.ValidationError(
+                {"current_industry_category": "Must be a parent domain"}
+            )
+
+        if industry and getattr(industry, "parent_id", None) is None:
+            raise serializers.ValidationError(
+                {"current_industry": "Must be a child domain"}
+            )
+
+        if category and industry:
+            if getattr(industry, "parent_id", None) != category.id:
+                raise serializers.ValidationError(
+                    {"current_industry": "Must belong to selected category"}
+                )
+
+        # employment_type_other_text: clear if not OTHER, require if OTHER
+        # Matches ParentProfileUpsertSerializer's pattern for other_relationship_text
+        employment_type = attrs.get("employment_type", getattr(instance, "employment_type", None))
+        other_text = attrs.get(
+            "employment_type_other_text",
+            getattr(instance, "employment_type_other_text", ""),
+        )
+
+        if employment_type == ProfessionalProfile.EmploymentType.OTHER and not (other_text or "").strip():
+            raise serializers.ValidationError(
+                {"employment_type_other_text": "This field is required when employment type is Other."}
+            )
+
+        if employment_type and employment_type != ProfessionalProfile.EmploymentType.OTHER:
+            attrs["employment_type_other_text"] = None
+
+        return attrs
 
 class ParentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
     """Parent-specific profile serializer"""
@@ -613,7 +735,13 @@ class InstituteProfileSerializer(BaseModelSerializer):
     profile_image = serializers.CharField(source="user.profile_image", read_only=True)
     city = serializers.CharField(source="user.city.name", read_only=True)
     state = serializers.CharField(source="user.states.name", read_only=True)
+    address = serializers.CharField(source="user.address", read_only=True)
+    country = serializers.CharField(source="user.country.name", read_only=True)
+    status = serializers.CharField(source="user.status", read_only=True)
+    status = serializers.CharField(source="user.status", read_only=True)
     gallery_images = InstituteGallerySerializer(many=True, read_only=True)
+
+    created_by = serializers.CharField(source="user.created_by", read_only=True)
 
     class Meta:
         model = InstituteProfile
@@ -632,8 +760,13 @@ class InstituteProfileSerializer(BaseModelSerializer):
             "phone",
             "email",
             "profile_image",
-            "city",
+            "country",
             "state",
+            "city",
+            "address",
+            "status",
+            "website",
+            "institute_name",
             "gallery_images",
         ]
 
@@ -650,6 +783,8 @@ class InstituteProfileUpSerializer(BaseModelSerializer):
             "about_us",
             "courses_offered",
             "key_highlights",
+            "website",
+            "institute_name",
         ]
 
     def update(self, instance, validated_data):
@@ -682,7 +817,13 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
     profile_image = serializers.CharField(source="user.profile_image", read_only=True)
     city = serializers.CharField(source="user.city.name", read_only=True)
     state = serializers.CharField(source="user.states.name", read_only=True)
+    country = serializers.CharField(source="user.country.name", read_only=True)
+    status = serializers.CharField(source="user.status", read_only=True)
     gallery_images = SchoolCollegeGallerySerializer(many=True, read_only=True)
+    education_name = serializers.ReadOnlyField(source="get_education_names")
+    address = serializers.CharField(source="user.address", read_only=True)
+    created_by = serializers.CharField(source="user.created_by", read_only=True)
+
 
     class Meta:
         model = SchoolCollegeProfile
@@ -694,18 +835,26 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
             "success_rate",
             "about_us",
             "courses_offered",
-            "key_highlights",
+            "education",
+            "education_name",
+            "institute_name",
+            "total_student",
+            "board",
+            "partnership_readiness",
+            "website",
             "first_name",
             "last_name",
             "full_name",
             "phone",
             "email",
             "profile_image",
-            "city",
+            "country",
             "state",
+            "city",
+            "address",
+            "status",
             "gallery_images",
         ]
-
 
 class SchoolCollegeProfileUpSerializer(BaseModelSerializer):
     class Meta:
@@ -718,7 +867,12 @@ class SchoolCollegeProfileUpSerializer(BaseModelSerializer):
             "success_rate",
             "about_us",
             "courses_offered",
-            "key_highlights",
+            "education",
+            "institute_name",
+            "total_student",
+            "board",
+            "partnership_readiness",
+            "website",
         ]
 
     def update(self, instance, validated_data):
@@ -750,8 +904,12 @@ class CorporateProfileSerializer(BaseModelSerializer):
     email = serializers.CharField(source="user.email", read_only=True)
     profile_image = serializers.CharField(source="user.profile_image", read_only=True)
     city = serializers.CharField(source="user.city.name", read_only=True)
+    address = serializers.CharField(source="user.address", read_only=True)
     state = serializers.CharField(source="user.states.name", read_only=True)
+    country = serializers.CharField(source="user.country.name", read_only=True)
+    status = serializers.CharField(source="user.status", read_only=True)
     gallery_images = CorporateGallerySerializer(many=True, read_only=True)
+    created_by = serializers.CharField(source = "user.created_by", read_only=True)
 
     class Meta:
         model = CorporateProfile
@@ -769,8 +927,13 @@ class CorporateProfileSerializer(BaseModelSerializer):
             "phone",
             "email",
             "profile_image",
-            "city",
+            "country",
             "state",
+            "city",
+            "address",
+            "status",
+            "website",
+            "company_name",
             "gallery_images",
         ]
 
@@ -786,6 +949,8 @@ class CorporateProfileUpSerializer(BaseModelSerializer):
             "years_in_business",
             "about_us",
             "perks_benefits",
+            "website",
+            "company_name",
         ]
 
     def update(self, instance, validated_data):

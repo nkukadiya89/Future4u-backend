@@ -3,6 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ParentCareerSuggestionDetailViewSet,
     ParentCareerSuggestionViewSet,
+    ProfessionalCareerSuggestionDetailViewSet,
+    ProfessionalCareerSuggestionViewSet,
     StudentCareerSuggestionDetailViewSet,
     StudentCareerSuggestionViewSet,
 )
@@ -28,4 +30,14 @@ assessment_career_router.register(
     "api/parent/career-suggestions-detail",
     ParentCareerSuggestionDetailViewSet,
     basename="parent_career_suggestion_detail",
+)
+assessment_career_router.register(
+    "api/professional/career-suggestions",
+    ProfessionalCareerSuggestionViewSet,
+    basename="professional_career_suggestions",
+)
+assessment_career_router.register(
+    "api/professional/career-suggestions-detail",
+    ProfessionalCareerSuggestionDetailViewSet,
+    basename="professional_career_suggestion_detail",
 )

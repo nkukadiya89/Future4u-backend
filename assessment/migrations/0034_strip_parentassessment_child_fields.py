@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RemoveConstraint(
             model_name='parentassessment',
-            name='unique_active_child_per_parent',
+            name='assessment_parentassessment_active_child_unique',
         ),
         migrations.RemoveIndex(
             model_name='parentassessment',

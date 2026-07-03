@@ -130,9 +130,11 @@ def public_career_factors(factors: Any) -> Any:
 
 def _assessment_filter_kwargs(assessment):
     """Return the correct filter kwargs for the unified CareerRecommendation model."""
-    from assessment.models import StudentAssessment
+    from assessment.models import ProfessionalAssessment, StudentAssessment
     if isinstance(assessment, StudentAssessment):
         return {"student_assessment": assessment, "profile_type": "student"}
+    if isinstance(assessment, ProfessionalAssessment):
+        return {"professional_assessment": assessment, "profile_type": "working_professional"}
     return {"parent_assessment": assessment, "profile_type": "parent"}
 
 

@@ -1,16 +1,16 @@
 import os
 
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.utils.timezone import now
 from common.models import BaseModule
 from city.models import City
 from company.models import Company
 from country.models import Country
-from domain.models import Domain
 from state.models import State
+from education_level.models import EducationLevel
 from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
+from django.core.exceptions import ValidationError
+
 
 
 class UserProfile(models.Model):
@@ -237,8 +237,6 @@ class ProfessionalProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
         related_name="professional_profile",
     )
 
@@ -251,9 +249,10 @@ class ProfessionalProfile(models.Model):
 
     class EmploymentType(models.TextChoices):
         SALARIED = "salaried_employee", "Salaried Employee"
-        SELF_EMPLOYED = "self_employed", "Self-employed / Business Owner"
+        SELF_EMPLOYED = "self_employed_business_owner", "Self Employed / Business Owner"
         FREELANCER = "freelancer", "Freelancer"
-        JOB_SEEKER = "job_seeker", "Looking for first job"
+        JOB_SEEKER = "looking_for_first_job", "Looking for first job"
+        OTHER = "other", "Other"
 
     employment_type = models.CharField(
         max_length=50,
@@ -263,15 +262,51 @@ class ProfessionalProfile(models.Model):
         help_text="Current employment status",
     )
 
+    employment_type_other_text = models.CharField(
+        max_length=150,
+        null=True,
+        blank=True
+    )
+
+    current_industry_category = models.ForeignKey(
+         "domain.Domain",
+         on_delete=models.SET_NULL,
+         null=True,
+         blank=True,
+         related_name="current_industry_category_profiles",
+    )
+
+    current_industry = models.ForeignKey(
+        "domain.Domain",
+         on_delete=models.SET_NULL,
+         null=True,
+         blank=True,
+         related_name="current_industry_profiles",
+    )
+
+    class CompanySize(models.TextChoices):
+        STARTUP = "startup_1_50", "Startup (1–50)"
+        SMALL = "small_51_200", "Small (51–200)"
+        MEDIUM = "medium_201_1000", "Medium (201–1000)"
+        LARGE = "large_1000_plus", "Large (1000+)"
+
+    company_size = models.CharField(
+        max_length=30,
+        choices=CompanySize.choices,
+        null=True,
+        blank=True
+    )
+ 
     class ExperienceRange(models.TextChoices):
-        ZERO_TO_ONE = "0-1", "0-1 years"
-        ONE_TO_THREE = "1-3", "1-3 years"
-        THREE_TO_FIVE = "3-5", "3-5 years"
-        FIVE_TO_TEN = "5-10", "5-10 years"
-        TEN_PLUS = "10+", "10+ years"
+        ZERO_TO_ONE = "0_1_years", "0–1 years"
+        ONE_TO_THREE = "1_3_years", "1–3 years"
+        THREE_TO_FIVE = "3_5_years", "3–5 years"
+        FIVE_PLUS = "5_plus_years", "5+ years"
+    
+    
 
     years_of_experience = models.CharField(
-        max_length=10,
+        max_length=20,
         choices=ExperienceRange.choices,
         null=True,
         blank=True,
@@ -286,9 +321,48 @@ class ProfessionalProfile(models.Model):
         related_name="professional_profiles",
     )
 
+    stream = models.ForeignKey(
+    "stream.Stream",
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name="professional_profiles",
+    )
+
+    def clean(self):
+       super().clean()
+
+       if self.employment_type != self.EmploymentType.OTHER:
+           self.employment_type_other_text = None
+
+       if (
+           self.employment_type == self.EmploymentType.OTHER
+           and not self.employment_type_other_text
+    ):
+           raise ValidationError({
+             "employment_type_other_text": "Please specify the employment type."
+    })
+
+       category = self.current_industry_category
+       industry = self.current_industry
+
+       if category and category.parent_id is not None:
+           raise ValidationError({
+                "current_industry_category": "Must be a parent domain"
+           })
+
+       if industry and industry.parent_id is None:
+           raise ValidationError({
+                "current_industry": "Must be a child domain"
+           })
+
+       if category and industry and industry.parent_id != category.id:
+           raise ValidationError({
+                "current_industry": "Must belong to selected category"
+           })
+       
+
     current_job_title = models.CharField(max_length=150, null=True, blank=True)
-    current_industry = models.CharField(max_length=100, null=True, blank=True)
-    company_size = models.CharField(max_length=50, null=True, blank=True)
 
     # JSONField sections for professional profile
     career_direction = models.JSONField(default=list, blank=True, null=True)
@@ -318,6 +392,9 @@ class ProfessionalProfile(models.Model):
             models.Index(fields=["education_level"]),
             models.Index(fields=["employment_type"]),
             models.Index(fields=["years_of_experience"]),
+            models.Index(fields=["current_industry_category"]),
+            models.Index(fields=["current_industry"]),
+            models.Index(fields=["stream"]),
         ]
 
 
@@ -326,8 +403,6 @@ class ParentProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
         related_name="parent_profile",
     )
 
@@ -490,7 +565,9 @@ class InstituteProfile(BaseModule):
     about_us = models.TextField(null=True, blank=True)
     courses_offered = models.JSONField(default=list, blank=True)
     key_highlights = models.JSONField(default=list, blank=True)
-    
+    website = models.CharField(max_length=250, null=True, blank=True)
+    institute_name = models.CharField(max_length=200, null=True, blank=True)
+
     class Meta:
         db_table = "institute_profile"
         ordering = ["-created_at"]
@@ -542,6 +619,19 @@ class InstituteGallery(BaseModule):
 
 
 class SchoolCollegeProfile(BaseModule):
+
+    TOTAL_STUDENT = (
+        ("under_500","Under 500"),
+        ("500_1000","500-1000"),
+        ("1000_3000","1000-3000"),
+        ("above_3000","3000+"),
+    )
+    READINESS = (
+        ("immediately", "Immediately"),
+        ("within_1month", "Within 1 month"),
+        ("within_3month", "Within 3 month"),
+        ("flexible_timeline", "Flexible timeline"),
+    )
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -552,11 +642,19 @@ class SchoolCollegeProfile(BaseModule):
     success_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     about_us = models.TextField(null=True, blank=True)
     courses_offered = models.JSONField(default=list, blank=True)
-    key_highlights = models.JSONField(default=list, blank=True)
+    education  = models.ManyToManyField(EducationLevel, blank=True, related_name="school_college_profiles")
+    institute_name = models.CharField(max_length=200, null=True, blank=True)
+    total_student = models.CharField(max_length=50, choices=TOTAL_STUDENT, default="under_500")
+    board = models.CharField(max_length=200, null=True, blank=True)
+    partnership_readiness = models.CharField(max_length=50, choices=READINESS, default="flexible_timeline")
+    website = models.CharField(max_length=250, null=True, blank=True)
 
     class Meta:
         db_table = "school_college_profile"
         ordering = ["-created_at"]
+
+    def get_education_names(self):
+        return list(self.education.values_list("display_name", flat=True))
 
 
 class SchoolCollegeGallery(BaseModule):
@@ -579,6 +677,8 @@ class CorporateProfile(BaseModule):
         on_delete=models.CASCADE,
         related_name="corporate_profile",
     )
+    website = models.CharField(max_length=250, null=True, blank=True)
+    company_name = models.CharField(max_length=200, null=True, blank=True)
     open_job = models.PositiveIntegerField(null=True, blank=True)
     employees = models.PositiveIntegerField(null=True, blank=True)
     years_in_business = models.PositiveIntegerField(null=True, blank=True)

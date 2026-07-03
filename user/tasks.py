@@ -50,7 +50,6 @@ def bulk_upload_user_task(file_path, admin_id,user_type):
             user_type,
         )
         serialized = _serialize_bulk_upload_result(result)
-
         logger.info("Sending bulk upload summary to %s", admin_user.email)
         send_admin_summary_email(admin_user, serialized)
         logger.info("Bulk upload summary sent to %s", admin_user.email)

@@ -9838,7 +9838,7 @@
               "formdata": [
                 {
                   "key": "data",
-                  "value": "{\"employment_type\":\"salaried_employee\",\"years_of_experience\":\"1-3\",\"education_level\":\"{{education_level_id}}\",\"language\":[\"{{language_id}}\"],\"current_job_title\":\"Software Engineer\"}",
+                  "value": "{\"employment_type\":\"salaried_employee\",\"employment_type_other_text\":\"\",\"years_of_experience\":\"1_3_years\",\"education_level\":\"{{education_level_id}}\",\"stream\":\"{{stream_id}}\",\"language\":[\"{{language_id}}\"],\"current_job_title\":\"Software Engineer\",\"current_industry_category\":\"{{domain_category_id}}\",\"current_industry\":\"{{domain_id}}\",\"company_size\":\"startup_1_50\"}",
                   "type": "text",
                   "description": "JSON string. Server parses json.loads(data)."
                 },
@@ -9918,6 +9918,810 @@
                   "src": "",
                   "description": "Optional profile image file"
                 }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "children (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent-profile/children/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent-profile",
+                "children",
+                ""
+              ],
+              "query": []
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "children-create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent-profile/children/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent-profile",
+                "children",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"first_name\":\"Aarav\",\"last_name\":\"Sharma\",\"date_of_birth\":\"2012-05-15\",\"education_level\":\"{{education_level_id}}\",\"stream\":\"{{stream_id}}\",\"academic_performance\":\"good\"}",
+                  "type": "text",
+                  "description": "JSON string. Server parses json.loads(data)."
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "description": "Optional child profile image file"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "children-retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent-profile/children/{{child_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent-profile",
+                "children",
+                "{{child_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "children-update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent-profile/children/{{child_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent-profile",
+                "children",
+                "{{child_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"first_name\":\"Aarav\",\"last_name\":\"Sharma\",\"academic_performance\":\"excellent\"}",
+                  "type": "text",
+                  "description": "JSON string. Server parses json.loads(data)."
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "description": "Optional child profile image file"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "children-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/parent-profile/children/{{child_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "parent-profile",
+                "children",
+                "{{child_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "institute-profile (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/institute-profile/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "institute-profile",
+                ""
+              ]
+            },
+            "description": "Get institute profile for the authenticated user.\n\nResponse: { success, data } including gallery_images."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const row = json.data;",
+                  "    if (row && row.id != null) pm.collectionVariables.set('institute_profile_id', String(row.id));",
+                  "    const gallery = row && row.gallery_images ? row.gallery_images[0] : null;",
+                  "    if (gallery && gallery.id != null) pm.collectionVariables.set('institute_gallery_id', String(gallery.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "institute-profile (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/institute-profile/{{institute_profile_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "institute-profile",
+                "{{institute_profile_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"student_trained\":500,\"placements\":400,\"success_rate\":85.5,\"about_us\":\"Leading institute focused on career-ready education.\",\"courses_offered\":[\"B.Tech\",\"MBA\",\"Data Science Bootcamp\"],\"key_highlights\":[\"Top placements\",\"Industry partnerships\",\"Modern labs\"],\"website\":\"https://future4u.example.com\",\"institute_name\":\"Future4u Institute\"}",
+                  "type": "text",
+                  "description": "JSON string. Server parses json.loads(data)."
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "description": "Optional institute user profile image (.jpg, .jpeg, .png)"
+                }
+              ]
+            },
+            "description": "Update institute profile (authenticated institute user).\n\nMultipart fields:\n- data (JSON string): student_trained, placements, success_rate, about_us, courses_offered, key_highlights, website, institute_name\n- profile_image (optional file)\n\nResponse: { success, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "institute-gallery list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/institute-profile/gallery/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "institute-profile",
+                "gallery",
+                ""
+              ]
+            },
+            "description": "List gallery images for the authenticated institute user.\n\nResponse: { success, data: [{ id, institute, image, ... }] }"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('institute_gallery_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "institute-gallery upload (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/institute-profile/gallery/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "institute-profile",
+                "gallery",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "",
+                  "description": "Gallery image (.jpg, .jpeg, .png). Add multiple rows with key images for batch upload (max 10 total)."
+                }
+              ]
+            },
+            "description": "Upload one or more gallery images.\n\nMultipart field: images (file, repeatable)\n\nRules:\n- Requires institute profile for authenticated user\n- Max 10 images total per institute\n- Max 5MB per image\n\nResponse: { success, message, data }"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('institute_gallery_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "institute-gallery delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/institute-profile/gallery/{{institute_gallery_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "institute-profile",
+                "gallery",
+                "{{institute_gallery_id}}",
+                ""
+              ]
+            },
+            "description": "Delete a gallery image (hard delete + removes file from storage).\n\nResponse: { success, message }"
+          },
+          "response": []
+        },
+        {
+          "name": "school-college-profile (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/school-college-profile/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "school-college-profile",
+                ""
+              ]
+            },
+            "description": "Get school/college profile for the authenticated user."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const row = json.data;",
+                  "    if (row && row.id != null) pm.collectionVariables.set('school_college_profile_id', String(row.id));",
+                  "    const gallery = row && row.gallery_images ? row.gallery_images[0] : null;",
+                  "    if (gallery && gallery.id != null) pm.collectionVariables.set('school_college_gallery_id', String(gallery.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "school-college-profile (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/school-college-profile/{{school_college_profile_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "school-college-profile",
+                "{{school_college_profile_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"student_trained\":300,\"placements\":250,\"success_rate\":90.0,\"about_us\":\"Leading school/college focused on student success.\",\"courses_offered\":[\"Science\",\"Commerce\",\"Arts\"],\"education\":[1,2],\"institute_name\":\"Future4u Academy\",\"total_student\":\"500_1000\",\"board\":\"CBSE\",\"partnership_readiness\":\"flexible_timeline\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "description": "Update school/college profile (authenticated school/college user).\n\nMultipart fields:\n- data (JSON string): student_trained, placements, success_rate, about_us, courses_offered, education (array of education_level ids), institute_name, total_student (under_500|500_1000|1000_3000|above_3000), board, partnership_readiness (immediately|within_1month|within_3month|flexible_timeline)\n- profile_image (optional file)\n\nResponse: { success, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "school-college-gallery list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/school-college-profile/gallery/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "school-college-profile",
+                "gallery",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const rows = pm.response.json().data || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('school_college_gallery_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "school-college-gallery upload (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/school-college-profile/gallery/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "school-college-profile",
+                "gallery",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "school-college-gallery delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/school-college-profile/gallery/{{school_college_gallery_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "school-college-profile",
+                "gallery",
+                "{{school_college_gallery_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "corporate-profile (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate-profile/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "corporate-profile",
+                ""
+              ]
+            },
+            "description": "Get corporate profile for the authenticated user."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const row = json.data;",
+                  "    if (row && row.id != null) pm.collectionVariables.set('corporate_profile_id', String(row.id));",
+                  "    const gallery = row && row.gallery_images ? row.gallery_images[0] : null;",
+                  "    if (gallery && gallery.id != null) pm.collectionVariables.set('corporate_gallery_id', String(gallery.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "corporate-profile (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate-profile/{{corporate_profile_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "corporate-profile",
+                "{{corporate_profile_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"open_job\":25,\"employees\":900,\"years_in_business\":12,\"about_us\":\"Corporate employer focused on talent development.\",\"perks_benefits\":[\"Health insurance\",\"Remote work\",\"Learning budget\"],\"website\":\"https://future4u.example.com\",\"institute_name\":\"Future4u Corporate\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "description": "Update corporate profile (authenticated corporate user).\n\nMultipart fields:\n- data (JSON string): open_job, employees, years_in_business, about_us, perks_benefits, website, institute_name\n- profile_image (optional file)\n\nResponse: { success, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "corporate-gallery list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate-profile/gallery/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "corporate-profile",
+                "gallery",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const rows = pm.response.json().data || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('corporate_gallery_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "corporate-gallery upload (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate-profile/gallery/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "corporate-profile",
+                "gallery",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "corporate-gallery delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate-profile/gallery/{{corporate_gallery_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "corporate-profile",
+                "gallery",
+                "{{corporate_gallery_id}}",
+                ""
               ]
             }
           },
@@ -10903,6 +11707,381 @@
       ]
     },
     {
+      "name": "professional_assessment",
+      "item": [
+        {
+          "name": "1. Start Assessment (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/assessments/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "assessments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"force_new\": false\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const id = json.data && json.data.id;",
+                  "    if (id !== undefined && id !== null) {",
+                  "      pm.collectionVariables.set('professional_assessment_id', String(id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assessment Status (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/assessments/status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "assessments",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Update Assessment Fields (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/assessments/{{professional_assessment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "assessments",
+                "{{professional_assessment_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"career_intention\": \"career_change\",\n  \"guidance_reasons\": [1],\n  \"work_constraints\": [1],\n  \"preferred_environment\": \"remote_work_from_home\",\n  \"preferred_structure\": \"flexible_hours\",\n  \"domain_category\": \"{{domain_category_id}}\",\n  \"domain\": \"{{domain_id}}\",\n  \"career_values\": [1],\n  \"salary_expectation\": \"8_15_lakhs_per_year\",\n  \"timeline\": \"within_6_months\",\n  \"platform_goals\": [1]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5. Complete Assessment (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/assessments/{{professional_assessment_id}}/complete/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "assessments",
+                "{{professional_assessment_id}}",
+                "complete"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Assessments (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/assessments/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "assessments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Assessment Details (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/assessments/{{professional_assessment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "assessments",
+                "{{professional_assessment_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7. List career suggestions (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/career-suggestions/?assessment_id={{professional_assessment_id}}&ordering=-created_at&page=1&pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "career-suggestions"
+              ],
+              "query": [
+                {
+                  "key": "assessment_id",
+                  "value": "{{professional_assessment_id}}",
+                  "description": ""
+                },
+                {
+                  "key": "ordering",
+                  "value": "-created_at",
+                  "description": ""
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": ""
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Lists stored AI career recommendations for a professional assessment. Records are created/updated by the recommendation generation endpoint.\n\nThe response is paginated (fields: `success`, `count`, `next`, `previous`, `data`). Each item in `data` contains: `{ id, user, assessment, suggestions: [{ id, career_name, match_percentage }] }`."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.length > 0) {",
+                  "    const rec = jsonData.data[0];",
+                  "    if (rec.suggestions && rec.suggestions.length > 0) {",
+                  "        pm.collectionVariables.set('professional_suggestion_id_1', rec.suggestions[0].id);",
+                  "    }",
+                  "    if (rec.suggestions && rec.suggestions.length > 1) {",
+                  "        pm.collectionVariables.set('professional_suggestion_id_2', rec.suggestions[1].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "7b. Get career suggestions Detail by Id (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/career-suggestions-detail/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "career-suggestions-detail",
+                "1"
+              ]
+            },
+            "description": "Retrieves a detailed career suggestion by ID for a professional user."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.suggestions) {",
+                  "    const s = jsonData.data.suggestions;",
+                  "    if (s.length > 0) pm.collectionVariables.set('professional_suggestion_id_1', s[0].id);",
+                  "    if (s.length > 1) pm.collectionVariables.set('professional_suggestion_id_2', s[1].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. Compare career suggestions (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional/career-suggestions/compare/?suggestion_ids={{professional_suggestion_id_1}},{{professional_suggestion_id_2}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "professional",
+                "career-suggestions",
+                "compare"
+              ],
+              "query": [
+                {
+                  "key": "suggestion_ids",
+                  "value": "{{professional_suggestion_id_1}},{{professional_suggestion_id_2}}",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Compares two professional career suggestions side-by-side."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Returns success and data array', function () {",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.be.an('array').with.lengthOf(2);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "recommendations",
       "item": [
         {
@@ -11065,108 +12244,6 @@
               }
             }
           ]
-        },
-        {
-          "name": "Parent AI Recommendations (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/parent/ai-recommendations/{{parent_assessment_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "parent",
-                "ai-recommendations",
-                "{{parent_assessment_id}}",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Parent AI Recommendation Chat Context (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/parent/ai-recommendations/{{parent_assessment_id}}/chat/?suggestion_id={{parent_suggestion_id_1}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "parent",
-                "ai-recommendations",
-                "{{parent_assessment_id}}",
-                "chat",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "suggestion_id",
-                  "value": "{{parent_suggestion_id_1}}"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Parent AI Recommendation Chat (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/parent/ai-recommendations/{{parent_assessment_id}}/chat/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "parent",
-                "ai-recommendations",
-                "{{parent_assessment_id}}",
-                "chat",
-                ""
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"suggestion_id\": \"{{parent_suggestion_id_1}}\",\n  \"message\": \"What skills should my child build first?\"\n}"
-            }
-          },
-          "response": []
         }
       ]
     },
@@ -13372,6 +14449,112 @@
             "description": "Set password using token from email link (web register, admin-student-users create, bulk upload, admin).\n\nFor pending users: activates account (pending → active) after success.\n\nToken comes from email URL: {APP_URL}reset-password/{token}\n\nnew_password must meet strength rules (8+ chars, uppercase, number, special char)."
           },
           "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin Users",
+      "description": "Super Admin / staff endpoints for creating and managing student users. Requires Bearer {{access_token}}. Base path: /admin-student-users/\n\nList active students with GET /api/student-profile/ (superuser token).\n\nActivate or deactivate students with PATCH {user_id}/update-status/ (status: active | inactive). Active students receive a password setup email when activated.\n\nSoft-delete (archive): DELETE single student or PATCH bulk-archive. Students must be inactive before archiving. Restore archived students with PATCH bulk-restore. List archived students with GET archive-list.",
+      "item": [
+        {
+          "name": "list students (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/student-profile/?pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "student-profile",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "-id",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "active",
+                  "disabled": true
+                },
+                {
+                  "key": "country",
+                  "value": "{{country_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "state",
+                  "value": "{{state_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "city",
+                  "value": "{{city_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "user_id",
+                  "value": "{{user_id}}",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: list student profiles (paginated).\n\nGET /api/student-profile/\n\nRequires Bearer {{access_token}} with superuser/admin permissions.\n\nOptional query params: no_pagination, pagesize, search, ordering, status, country, state, city, user_id."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || (json.results && json.results.data) || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.user != null) {",
+                  "      pm.collectionVariables.set('user_id', String(first.user));",
+                  "      pm.environment.set('user_id', String(first.user));",
+                  "    }",
+                  "    if (first && first.id != null) {",
+                  "      pm.collectionVariables.set('student_profile_id', String(first.id));",
+                  "      pm.environment.set('student_profile_id', String(first.id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "resend-otp (POST)",
@@ -13407,7 +14590,105 @@
           "response": []
         },
         {
-          "name": "resend-otp (POST)",
+          "name": "bulk-archive (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-student-users/bulk-archive/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-student-users",
+                "bulk-archive",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [{{user_id}}]\n}"
+            },
+            "description": "Admin-only: soft-delete (archive) multiple students.\n\nPATCH /admin-student-users/bulk-archive/\n\nBody: ids (non-empty array of user ids).\n\nAll students must be inactive. Active students in the set return 400.\nAlready-archived students in the set return 400.\n\n200 response: success, message\n400 response: success, message\n404 response: success, message (none found)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Students archived', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "bulk-restore (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-student-users/bulk-restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-student-users",
+                "bulk-restore",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [{{user_id}}]\n}"
+            },
+            "description": "Admin-only: restore archived students.\n\nPATCH /admin-student-users/bulk-restore/\n\nBody: ids (non-empty array of user ids).\n\nAll ids must refer to archived students. Already-active students in the set return 400.\n\n200 response: success, message\n400 response: success, message"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Students restored', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "bulk-upload (POST)",
           "request": {
             "method": "POST",
             "header": [
@@ -13417,13 +14698,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/auth/resend-otp/",
+              "raw": "{{base_url}}/admin-student-users/bulk-upload/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "auth",
-                "resend-otp",
+                "admin-student-users",
+                "bulk-upload",
                 ""
               ]
             },
@@ -13434,8 +14715,1583 @@
                 "raw": {
                   "language": "json"
                 }
+              ]
+            },
+            "description": "Admin-only: bulk create student users.\n\nPOST /admin-student-users/bulk-upload/\n\nMultipart form-data: `file` + `user_type` (student).\n\nPassword setup link emailed per user during processing.\nAdmin receives summary email when complete.\n\nRequired CSV columns:\nfirst_name, last_name, about_me, email, phone, referral_code, country, state, city\n\nOptional CSV column: address\n\n200 response: success, message\n400 response: success, message"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Bulk upload started', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
               }
             }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin School College Users",
+      "description": "Super Admin / staff endpoints for creating and managing school/college users. Requires Bearer {{access_token}}. Base path: /admin-school-colleges-users/\n\nList active school/college profiles with GET /api/school-college-profile/ (superuser token).\n\nActivate or deactivate users with PATCH {user_id}/update-status/ (status: active | inactive). Active users receive a password setup email when activated.\n\nSoft-delete (archive): DELETE single user or PATCH bulk-archive. Users must be inactive before archiving. Restore archived users with PATCH bulk-restore. List archived users with GET archive-list.",
+      "item": [
+        {
+          "name": "list school colleges (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/school-college-profile/?pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "school-college-profile",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "-id",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "active",
+                  "disabled": true
+                },
+                {
+                  "key": "country",
+                  "value": "{{country_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "state",
+                  "value": "{{state_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "city",
+                  "value": "{{city_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "user_id",
+                  "value": "{{user_id}}",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: list school/college profiles (paginated).\n\nGET /api/school-college-profile/\n\nRequires Bearer {{access_token}} with superuser/admin permissions.\n\nOptional query params: no_pagination, pagesize, search, ordering, status, country, state, city, user_id."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || (json.results && json.results.data) || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.user != null) {",
+                  "      pm.collectionVariables.set('user_id', String(first.user));",
+                  "      pm.environment.set('user_id', String(first.user));",
+                  "    }",
+                  "    if (first && first.id != null) {",
+                  "      pm.collectionVariables.set('school_college_profile_id', String(first.id));",
+                  "      pm.environment.set('school_college_profile_id', String(first.id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "retrieve school college (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-school-colleges-users/{{user_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-school-colleges-users",
+                "{{user_id}}",
+                ""
+              ]
+            },
+            "description": "Admin-only: retrieve a single school/college profile by user id.\n\nGET /admin-school-colleges-users/{user_id}/\n\nSet {{user_id}} from create response or list users.\n\n200 response: success, data (id, user, first_name, last_name, phone, email, country, country_name, state, state_name, city, city_name, address, referral_code, institute_name, board, about_us, courses_offered)\n404 if user is not a school/college or profile not found."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('School/college retrieved', () => pm.expect(json.success).to.eql(true));",
+                  "    if (json.data && json.data.user != null) {",
+                  "      pm.collectionVariables.set('user_id', String(json.data.user));",
+                  "      pm.environment.set('user_id', String(json.data.user));",
+                  "    }",
+                  "    if (json.data && json.data.id != null) {",
+                  "      pm.collectionVariables.set('school_college_profile_id', String(json.data.id));",
+                  "      pm.environment.set('school_college_profile_id', String(json.data.id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "create school college (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-school-colleges-users/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-school-colleges-users",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"email\":\"{{user_email}}\",\"terms_accepted\":true,\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"country\":\"{{country_id}}\",\"state\":\"{{state_id}}\",\"city\":\"{{city_id}}\",\"address\":\"{{address}}\",\"referral_code\":\"{{referral_code}}\",\"education\":[1,2],\"institute_name\":\"Future4u Academy\",\"board\":\"CBSE\",\"about_us\":\"Leading school/college focused on student success.\",\"courses_offered\":[\"Science\",\"Commerce\",\"Arts\"],\"website\":\"https://future4u.example.com\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: create a school/college user from the dashboard.\n\nPOST /admin-school-colleges-users/\n\nMultipart form-data: `data` (JSON string) + optional `profile_image`.\n\nRequired in `data`: email, first_name, country, state, city, terms_accepted\nOptional: last_name, phone, address, referral_code, education (array of education_level ids), institute_name, board, about_us, courses_offered, website\n\nDo not send user_type — always creates a school_college user.\n\nNo password in request. Password setup link is emailed immediately.\nUser stays pending until POST /auth/reset-password/.\n\n201 response: success, message, user_id, user_type, must_change_password, created_by, created_at\n400 response: success, errors"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('School/college created', () => pm.expect(json.success).to.eql(true));",
+                  "    pm.test('user_type is school_college', () => pm.expect(json.user_type).to.eql('school_college'));",
+                  "    if (json.user_id != null) {",
+                  "      pm.collectionVariables.set('user_id', String(json.user_id));",
+                  "      pm.environment.set('user_id', String(json.user_id));",
+                  "    }",
+                  "    pm.test('must_change_password', () => pm.expect(json.must_change_password).to.eql(true));",
+                  "    pm.environment.set('must_change_password', 'true');",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "partial_update school college (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-school-colleges-users/{{user_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-school-colleges-users",
+                "{{user_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"first_name\":\"{{first_name}}\",\"phone\":\"{{phone}}\",\"address\":\"{{address}}\",\"institute_name\":\"Future4u Academy\",\"board\":\"CBSE\",\"about_us\":\"Updated about us text.\",\"courses_offered\":[\"Science\",\"Commerce\"],\"website\":\"https://future4u.example.com\",\"education\":[1]}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: partially update an existing school/college user.\n\nPATCH /admin-school-colleges-users/{user_id}/\n\nSet {{user_id}} from create response or list users.\n\nSend only fields to change in `data` + optional `profile_image`.\n\nOptional fields: email, first_name, last_name, phone, address, country, state, city, referral_code, terms_accepted, education, institute_name, board, about_us, courses_offered, website\n\nWhen email changes:\n- Old email receives email-changed notification\n- New email receives password setup link\n- Account returns to pending until POST /auth/reset-password/\n\n200 response: success, message, user_id, user_type\n400 response: success, errors"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('School/college updated', () => pm.expect(json.success).to.eql(true));",
+                  "    pm.test('user_type is school_college', () => pm.expect(json.user_type).to.eql('school_college'));",
+                  "    if (json.user_id != null) {",
+                  "      pm.collectionVariables.set('user_id', String(json.user_id));",
+                  "      pm.environment.set('user_id', String(json.user_id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "update-status (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-school-colleges-users/{{user_id}}/update-status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-school-colleges-users",
+                "{{user_id}}",
+                "update-status",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"inactive\"\n}"
+            },
+            "description": "Admin-only: activate or deactivate a school/college user.\n\nPATCH /admin-school-colleges-users/{user_id}/update-status/\n\nSet {{user_id}} from create response or list users.\n\nBody: status (required) — \"active\" or \"inactive\".\n\nWhen status is set to active:\n- is_active is set to true\n- Password setup email is sent to the user\n\nWhen status is set to inactive:\n- is_active is set to false\n\nUser must not be archived (deleted).\nAlready at the requested status returns 200 with success: false.\n\n200 response: success, message\n400 response: success, message (invalid status)\n404 response: success, message (not found)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('School/college status updated', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "delete school college (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-school-colleges-users/{{user_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-school-colleges-users",
+                "{{user_id}}",
+                ""
+              ]
+            },
+            "description": "Admin-only: soft-delete (archive) a single school/college user.\n\nDELETE /admin-school-colleges-users/{user_id}/\n\nSet {{user_id}} from create response or list users.\n\nUser must be inactive before delete. Active users return 400.\nAlready-archived users return 200 with success: false.\n\n200 response: success, message\n400 response: success, message (active user)\n404 response: success, message (not found)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('School/college archived', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "archive-list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-school-colleges-users/archive-list/?pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-school-colleges-users",
+                "archive-list",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "-deleted_at",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: list archived (soft-deleted) school/college users (paginated).\n\nGET /admin-school-colleges-users/archive-list/\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, search, ordering.\n\n200 response: success, data (array of school/college profiles)"
+          },
+          "response": []
+        },
+        {
+          "name": "bulk-archive (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-school-colleges-users/bulk-archive/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-school-colleges-users",
+                "bulk-archive",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [{{user_id}}]\n}"
+            },
+            "description": "Admin-only: soft-delete (archive) multiple school/college users.\n\nPATCH /admin-school-colleges-users/bulk-archive/\n\nBody: ids (non-empty array of user ids).\n\nAll users must be inactive. Active users in the set return 400.\nAlready-archived users in the set return 400.\n\n200 response: success, message\n400 response: success, message\n404 response: success, message (none found)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('School/colleges archived', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "bulk-restore (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-school-colleges-users/bulk-restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-school-colleges-users",
+                "bulk-restore",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [{{user_id}}]\n}"
+            },
+            "description": "Admin-only: restore archived school/college users.\n\nPATCH /admin-school-colleges-users/bulk-restore/\n\nBody: ids (non-empty array of user ids).\n\nAll ids must refer to archived users. Already-active users in the set return 400.\n\n200 response: success, message\n400 response: success, message"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('School/colleges restored', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "bulk-upload (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-school-colleges-users/bulk-upload/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-school-colleges-users",
+                "bulk-upload",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "CSV, XLS, or XLSX file"
+                },
+                {
+                  "key": "user_type",
+                  "value": "school_college",
+                  "type": "text",
+                  "description": "Role for all rows: school_college"
+                }
+              ]
+            },
+            "description": "Admin-only: bulk create school/college users.\n\nPOST /admin-school-colleges-users/bulk-upload/\n\nMultipart form-data: `file` + `user_type` (school_college).\n\nPassword setup link emailed per user during processing.\nAdmin receives summary email when complete.\n\nRequired CSV columns:\nfirst_name, last_name, about_me, email, phone, referral_code, country, state, city, institute_name, board, courses_offered\n\nOptional CSV columns: address, about_us, website\n\ncourses_offered: comma-separated values in a single cell.\n\n200 response: success, message\n400 response: success, message"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Bulk upload started', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin Institute Users",
+      "description": "Super Admin / staff endpoints for creating and managing institute users. Requires Bearer {{access_token}}. Base path: /admin-institute-users/\n\nList active institute profiles with GET /api/institute-profile/ (superuser token).\n\nActivate or deactivate users with PATCH {user_id}/update-status/ (status: active | inactive). Active users receive a password setup email when activated.\n\nSoft-delete (archive): DELETE single user or PATCH bulk-archive. Users must be inactive before archiving. Restore archived users with PATCH bulk-restore. List archived users with GET archive-list.",
+      "item": [
+        {
+          "name": "list institutes (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/institute-profile/?pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "institute-profile",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "-id",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "active",
+                  "disabled": true
+                },
+                {
+                  "key": "country",
+                  "value": "{{country_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "state",
+                  "value": "{{state_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "city",
+                  "value": "{{city_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "user_id",
+                  "value": "{{user_id}}",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: list institute profiles (paginated).\n\nGET /api/institute-profile/\n\nRequires Bearer {{access_token}} with superuser/admin permissions.\n\nOptional query params: no_pagination, pagesize, search, ordering, status, country, state, city, user_id."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || (json.results && json.results.data) || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.user != null) {",
+                  "      pm.collectionVariables.set('user_id', String(first.user));",
+                  "      pm.environment.set('user_id', String(first.user));",
+                  "    }",
+                  "    if (first && first.id != null) {",
+                  "      pm.collectionVariables.set('institute_profile_id', String(first.id));",
+                  "      pm.environment.set('institute_profile_id', String(first.id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "retrieve institute (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-institute-users/{{user_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-institute-users",
+                "{{user_id}}",
+                ""
+              ]
+            },
+            "description": "Admin-only: retrieve a single institute profile by user id.\n\nGET /admin-institute-users/{user_id}/\n\nSet {{user_id}} from create response or list institutes.\n\n200 response: success, data (id, user, first_name, last_name, phone, email, country, country_name, state, state_name, city, city_name, address, referral_code, institute_name, student_trained, placements, about_us, courses_offered, website)\n404 if user is not an institute or profile not found."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Institute retrieved', () => pm.expect(json.success).to.eql(true));",
+                  "    if (json.data && json.data.user != null) {",
+                  "      pm.collectionVariables.set('user_id', String(json.data.user));",
+                  "      pm.environment.set('user_id', String(json.data.user));",
+                  "    }",
+                  "    if (json.data && json.data.id != null) {",
+                  "      pm.collectionVariables.set('institute_profile_id', String(json.data.id));",
+                  "      pm.environment.set('institute_profile_id', String(json.data.id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "create institute (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-institute-users/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-institute-users",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"email\":\"{{user_email}}\",\"terms_accepted\":true,\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"country\":\"{{country_id}}\",\"state\":\"{{state_id}}\",\"city\":\"{{city_id}}\",\"address\":\"{{address}}\",\"referral_code\":\"{{referral_code}}\",\"institute_name\":\"Future4u Institute\",\"student_trained\":500,\"placements\":400,\"about_us\":\"Leading institute focused on career-ready education.\",\"courses_offered\":[\"B.Tech\",\"MBA\",\"Data Science Bootcamp\"],\"website\":\"https://future4u.example.com\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: create an institute user from the dashboard.\n\nPOST /admin-institute-users/\n\nMultipart form-data: `data` (JSON string) + optional `profile_image`.\n\nRequired in `data`: email, first_name, country, state, city, terms_accepted\nOptional: last_name, phone, address, referral_code, institute_name, student_trained, placements, about_us, courses_offered, website\n\nDo not send user_type — always creates an institute user.\n\nNo password in request. Password setup link is emailed immediately.\nUser stays pending until POST /auth/reset-password/.\n\n201 response: success, message, user_id, user_type, must_change_password, created_by, created_at\n400 response: success, errors"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Institute created', () => pm.expect(json.success).to.eql(true));",
+                  "    pm.test('user_type is institute', () => pm.expect(json.user_type).to.eql('institute'));",
+                  "    if (json.user_id != null) {",
+                  "      pm.collectionVariables.set('user_id', String(json.user_id));",
+                  "      pm.environment.set('user_id', String(json.user_id));",
+                  "    }",
+                  "    pm.test('must_change_password', () => pm.expect(json.must_change_password).to.eql(true));",
+                  "    pm.environment.set('must_change_password', 'true');",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "partial_update institute (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-institute-users/{{user_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-institute-users",
+                "{{user_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"first_name\":\"{{first_name}}\",\"phone\":\"{{phone}}\",\"address\":\"{{address}}\",\"institute_name\":\"Future4u Institute\",\"student_trained\":600,\"placements\":450,\"about_us\":\"Updated institute profile.\",\"courses_offered\":[\"B.Tech\",\"MBA\"],\"website\":\"https://future4u.example.com\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: partially update an existing institute user.\n\nPATCH /admin-institute-users/{user_id}/\n\nSet {{user_id}} from create response or list institutes.\n\nSend only fields to change in `data` + optional `profile_image`.\n\nOptional fields: email, first_name, last_name, phone, address, country, state, city, referral_code, terms_accepted, institute_name, student_trained, placements, about_us, courses_offered, website\n\nWhen email changes:\n- Old email receives email-changed notification\n- New email receives password setup link\n- Account returns to pending until POST /auth/reset-password/\n\n200 response: success, message, user_id, user_type\n400 response: success, errors"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Institute updated', () => pm.expect(json.success).to.eql(true));",
+                  "    pm.test('user_type is institute', () => pm.expect(json.user_type).to.eql('institute'));",
+                  "    if (json.user_id != null) {",
+                  "      pm.collectionVariables.set('user_id', String(json.user_id));",
+                  "      pm.environment.set('user_id', String(json.user_id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "update-status (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-institute-users/{{user_id}}/update-status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-institute-users",
+                "{{user_id}}",
+                "update-status",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"inactive\"\n}"
+            },
+            "description": "Admin-only: activate or deactivate an institute user.\n\nPATCH /admin-institute-users/{user_id}/update-status/\n\nBody: status (required) — \"active\" or \"inactive\"."
+          },
+          "response": []
+        },
+        {
+          "name": "delete institute (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-institute-users/{{user_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-institute-users",
+                "{{user_id}}",
+                ""
+              ]
+            },
+            "description": "Admin-only: soft-delete (archive) a single institute user.\n\nDELETE /admin-institute-users/{user_id}/\n\nUser must be inactive before delete."
+          },
+          "response": []
+        },
+        {
+          "name": "archive-list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-institute-users/archive-list/?pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-institute-users",
+                "archive-list",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Admin-only: list archived institute users (paginated).\n\nGET /admin-institute-users/archive-list/"
+          },
+          "response": []
+        },
+        {
+          "name": "bulk-archive (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-institute-users/bulk-archive/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-institute-users",
+                "bulk-archive",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [{{user_id}}]\n}"
+            },
+            "description": "Admin-only: soft-delete (archive) multiple institute users.\n\nPATCH /admin-institute-users/bulk-archive/"
+          },
+          "response": []
+        },
+        {
+          "name": "bulk-restore (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-institute-users/bulk-restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-institute-users",
+                "bulk-restore",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [{{user_id}}]\n}"
+            },
+            "description": "Admin-only: restore archived institute users.\n\nPATCH /admin-institute-users/bulk-restore/"
+          },
+          "response": []
+        },
+        {
+          "name": "bulk-upload (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-institute-users/bulk-upload/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-institute-users",
+                "bulk-upload",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "CSV, XLS, or XLSX file"
+                },
+                {
+                  "key": "user_type",
+                  "value": "institute",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Admin-only: bulk create institute users.\n\nPOST /admin-institute-users/bulk-upload/\n\nRequired CSV columns:\nfirst_name, last_name, about_me, email, phone, referral_code, country, state, city, institute_name\n\nOptional CSV columns: address, student_trained, placements, about_us, courses_offered, website"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin Corporate Users",
+      "description": "Super Admin / staff endpoints for creating and managing corporate users. Requires Bearer {{access_token}}. Base path: /admin-corporate-users/\n\nList active corporate profiles with GET /api/corporate-profile/ (superuser token).\n\nActivate or deactivate users with PATCH {user_id}/update-status/ (status: active | inactive). Active users receive a password setup email when activated.\n\nSoft-delete (archive): DELETE single user or PATCH bulk-archive. Users must be inactive before archiving. Restore archived users with PATCH bulk-restore. List archived users with GET archive-list.",
+      "item": [
+        {
+          "name": "list corporates (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/corporate-profile/?pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "corporate-profile",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "-id",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "active",
+                  "disabled": true
+                },
+                {
+                  "key": "country",
+                  "value": "{{country_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "state",
+                  "value": "{{state_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "city",
+                  "value": "{{city_id}}",
+                  "disabled": true
+                },
+                {
+                  "key": "user_id",
+                  "value": "{{user_id}}",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: list corporate profiles (paginated).\n\nGET /api/corporate-profile/\n\nRequires Bearer {{access_token}} with superuser/admin permissions.\n\nOptional query params: no_pagination, pagesize, search, ordering, status, country, state, city, user_id."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || (json.results && json.results.data) || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.user != null) {",
+                  "      pm.collectionVariables.set('user_id', String(first.user));",
+                  "      pm.environment.set('user_id', String(first.user));",
+                  "    }",
+                  "    if (first && first.id != null) {",
+                  "      pm.collectionVariables.set('corporate_profile_id', String(first.id));",
+                  "      pm.environment.set('corporate_profile_id', String(first.id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "retrieve corporate (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-corporate-users/{{user_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-corporate-users",
+                "{{user_id}}",
+                ""
+              ]
+            },
+            "description": "Admin-only: retrieve a single corporate profile by user id.\n\nGET /admin-corporate-users/{user_id}/\n\n200 response: success, data (id, user, first_name, last_name, phone, email, country, country_name, state, state_name, city, city_name, address, referral_code, institute_name, open_job, employees, years_in_business, about_us, website)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Corporate retrieved', () => pm.expect(json.success).to.eql(true));",
+                  "    if (json.data && json.data.user != null) {",
+                  "      pm.collectionVariables.set('user_id', String(json.data.user));",
+                  "      pm.environment.set('user_id', String(json.data.user));",
+                  "    }",
+                  "    if (json.data && json.data.id != null) {",
+                  "      pm.collectionVariables.set('corporate_profile_id', String(json.data.id));",
+                  "      pm.environment.set('corporate_profile_id', String(json.data.id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "create corporate (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-corporate-users/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-corporate-users",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"email\":\"{{user_email}}\",\"terms_accepted\":true,\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"country\":\"{{country_id}}\",\"state\":\"{{state_id}}\",\"city\":\"{{city_id}}\",\"address\":\"{{address}}\",\"referral_code\":\"{{referral_code}}\",\"institute_name\":\"Future4u Corporate\",\"open_job\":25,\"employees\":900,\"years_in_business\":12,\"about_us\":\"Corporate employer focused on talent development.\",\"website\":\"https://future4u.example.com\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: create a corporate user from the dashboard.\n\nPOST /admin-corporate-users/\n\nRequired in `data`: email, first_name, country, state, city, terms_accepted\nOptional: last_name, phone, address, referral_code, institute_name, open_job, employees, years_in_business, about_us, website"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Corporate created', () => pm.expect(json.success).to.eql(true));",
+                  "    pm.test('user_type is corporate', () => pm.expect(json.user_type).to.eql('corporate'));",
+                  "    if (json.user_id != null) {",
+                  "      pm.collectionVariables.set('user_id', String(json.user_id));",
+                  "      pm.environment.set('user_id', String(json.user_id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "partial_update corporate (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-corporate-users/{{user_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-corporate-users",
+                "{{user_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"first_name\":\"{{first_name}}\",\"phone\":\"{{phone}}\",\"address\":\"{{address}}\",\"institute_name\":\"Future4u Corporate\",\"open_job\":30,\"employees\":950,\"years_in_business\":13,\"about_us\":\"Updated corporate profile.\",\"website\":\"https://future4u.example.com\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: partially update an existing corporate user.\n\nPATCH /admin-corporate-users/{user_id}/\n\nOptional fields: email, first_name, last_name, phone, address, country, state, city, referral_code, terms_accepted, institute_name, open_job, employees, years_in_business, about_us, website"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Corporate updated', () => pm.expect(json.success).to.eql(true));",
+                  "    pm.test('user_type is corporate', () => pm.expect(json.user_type).to.eql('corporate'));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "update-status (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-corporate-users/{{user_id}}/update-status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-corporate-users",
+                "{{user_id}}",
+                "update-status",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"inactive\"\n}"
+            },
+            "description": "Admin-only: activate or deactivate a corporate user.\n\nPATCH /admin-corporate-users/{user_id}/update-status/"
+          },
+          "response": []
+        },
+        {
+          "name": "delete corporate (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-corporate-users/{{user_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-corporate-users",
+                "{{user_id}}",
+                ""
+              ]
+            },
+            "description": "Admin-only: soft-delete (archive) a single corporate user.\n\nDELETE /admin-corporate-users/{user_id}/"
+          },
+          "response": []
+        },
+        {
+          "name": "archive-list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-corporate-users/archive-list/?pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-corporate-users",
+                "archive-list",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Admin-only: list archived corporate users (paginated).\n\nGET /admin-corporate-users/archive-list/"
+          },
+          "response": []
+        },
+        {
+          "name": "bulk-archive (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-corporate-users/bulk-archive/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-corporate-users",
+                "bulk-archive",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [{{user_id}}]\n}"
+            },
+            "description": "Admin-only: soft-delete (archive) multiple corporate users.\n\nPATCH /admin-corporate-users/bulk-archive/"
+          },
+          "response": []
+        },
+        {
+          "name": "bulk-restore (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-corporate-users/bulk-restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-corporate-users",
+                "bulk-restore",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [{{user_id}}]\n}"
+            },
+            "description": "Admin-only: restore archived corporate users.\n\nPATCH /admin-corporate-users/bulk-restore/"
+          },
+          "response": []
+        },
+        {
+          "name": "bulk-upload (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-corporate-users/bulk-upload/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-corporate-users",
+                "bulk-upload",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "CSV, XLS, or XLSX file"
+                },
+                {
+                  "key": "user_type",
+                  "value": "corporate",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Admin-only: bulk create corporate users.\n\nPOST /admin-corporate-users/bulk-upload/\n\nRequired CSV columns:\nfirst_name, last_name, about_me, email, phone, referral_code, country, state, city, institute_name\n\nOptional CSV columns: address, open_job, employees, years_in_business, about_us, website"
           },
           "response": []
         }

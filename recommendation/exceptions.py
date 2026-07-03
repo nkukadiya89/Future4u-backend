@@ -20,3 +20,8 @@ class AIConfigurationError(AIRecommendationError):
 
 class AIGenerationError(AIRecommendationError):
     pass
+
+
+class AmbiguousAssessmentError(AIRecommendationError):
+    """Raised when an assessment ID exists in multiple tables and auto-detect cannot disambiguate."""
+    pass

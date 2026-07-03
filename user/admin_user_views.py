@@ -16,53 +16,75 @@ from user.models import User
 from user.permissions import IsAdminUser
 from user.services.bulk_user_upload import BulkUserUploadService
 from user.tasks import bulk_upload_user_task
-from user_profile.models import StudentProfile
+from user_profile.models import InstituteProfile, StudentProfile, SchoolCollegeProfile,CorporateProfile
 from rest_framework.viewsets import ModelViewSet
-
 from user_profile.serializers import StudentProfileSerializer
+from user_profile.serializers import SchoolCollegeProfileSerializer,InstituteProfileSerializer,CorporateProfileSerializer
+from user.admin_school_colleges_serializers import AdminSchoolCollegesSerializer,AdminSchoolCollegeSortSerializer
+from user.admin_institute_serializers import AdminInstituteSerializer,AdminInstituteSortSerializer
+from user.admin_corporate_serializers import AdminCorporateSerializer,AdminCorporateSortSerializer
 
-
-class AdminStudentViewSet(ModelViewSet):
+class BaseAdminProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser]
     authentication_classes = [JWTAuthentication]
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
-    queryset = User.objects.filter(user_type=User.Role.STUDENT, deleted=False)
-    serializer_class = AdminStudentSerializer
+    user_role = None
+    role_name = None
+    profile_model = None
+    detail_serializer_class = None
+    archive_serializer_class = None
 
     def get_queryset(self):
-        return User.objects.filter(user_type=User.Role.STUDENT, deleted=False)
+        return User.objects.filter(
+            user_type=self.user_role,
+            deleted=False,
+        )
+
+    def get_user(self, pk, include_deleted=False):
+        queryset = User.objects.filter(
+            id=pk,
+            user_type=self.user_role,
+        )
+        if not include_deleted:
+            queryset = queryset.filter(deleted=False)
+        return queryset.first()
 
     def retrieve(self, request, pk=None):
-        profile = StudentProfile.objects.filter(
+        profile = self.profile_model.objects.filter(
             user_id=pk,
-            user__user_type=User.Role.STUDENT,
+            user__user_type=self.user_role,
             user__deleted=False,
         ).first()
+
         if not profile:
             return Response(
                 {
                     "success": False,
-                    "message": "Student profile not found",
+                    "message": f"{self.role_name} profile not found",
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
-        serializer = AdminStudentSortSerializer(profile)
+
+        serializer = self.detail_serializer_class(profile)
 
         return Response({
             "success": True,
-            "data": serializer.data
+            "data": serializer.data,
         })
 
     def create(self, request):
-        serializer = AdminStudentSerializer(data=request.data,context={"request": request})
+        serializer = self.serializer_class(
+            data=request.data,
+            context={"request": request},
+        )
 
         if serializer.is_valid():
             user = serializer.save()
             return Response(
                 {
                     "success": True,
-                    "message": "Student created. A password setup link has been sent to their email.",
+                    "message": f"{self.role_name} created. A password setup link has been sent to their email.",
                     "user_id": user.id,
                     "user_type": user.user_type,
                     "must_change_password": True,
@@ -78,23 +100,30 @@ class AdminStudentViewSet(ModelViewSet):
         )
 
     def partial_update(self, request, pk=None):
-        user = User.objects.filter(
-            id=pk, user_type=User.Role.STUDENT, deleted=False
-        ).first()
+        user = self.get_user(pk)
+
         if not user:
             return Response(
                 {
-                    "success":False,
-                    "message": "Student not found"
-                }
+                    "success": False,
+                    "message": f"{self.role_name} not found",
+                },
+                status=status.HTTP_404_NOT_FOUND,
             )
-        serializer = AdminStudentSerializer(user,data=request.data,partial=True,context={"request": request})
+
+        serializer = self.serializer_class(
+            user,
+            data=request.data,
+            partial=True,
+            context={"request": request},
+        )
+
         if serializer.is_valid():
             user = serializer.save()
             return Response(
                 {
                     "success": True,
-                    "message": "Student updated successfully",
+                    "message": f"{self.role_name} updated successfully",
                     "user_id": user.id,
                     "user_type": user.user_type,
                 },
@@ -105,32 +134,35 @@ class AdminStudentViewSet(ModelViewSet):
             {"success": False, "errors": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
     @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
-        user = User.objects.filter(id=pk, user_type=User.Role.STUDENT).first()
+        user = self.get_user(pk, include_deleted=True)
+
         if not user:
             return Response(
                 {
                     "success": False,
-                    "message": "Student not found"
+                    "message": f"{self.role_name} not found",
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
+
         if user.deleted:
             return Response(
                 {
                     "success": False,
-                    "message": "Student is alredy archived.",
+                    "message": f"{self.role_name} is already archived.",
                 },
-                status=status.HTTP_200_OK
+                status=status.HTTP_200_OK,
             )
 
         if user.status == "active":
             return Response(
                 {
                     "success": False,
-                    "message": "Active student can not delete. Please Inactive this student first."
+                    "message": f"Active {self.role_name.lower()} can not delete. Please inactive this {self.role_name.lower()} first.",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -139,11 +171,15 @@ class AdminStudentViewSet(ModelViewSet):
         user.deleted_at = timezone.now()
         user.deleted_by = request.user
         user.save(update_fields=["deleted", "deleted_at", "deleted_by"])
+
         return Response(
-            {"success": True, "message": "Student deleted successfully"},
+            {
+                "success": True,
+                "message": f"{self.role_name} deleted successfully",
+            },
             status=status.HTTP_200_OK,
         )
-    
+
     @action(detail=True, methods=["patch"], url_path="update-status")
     @transaction.atomic
     def update_status(self, request, *args, **kwargs):
@@ -158,17 +194,14 @@ class AdminStudentViewSet(ModelViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        user = User.objects.filter(
-            id=pk,
-            user_type=User.Role.STUDENT,
-            deleted=False,
-        ).first()
+
+        user = self.get_user(pk)
 
         if not user:
             return Response(
                 {
                     "success": False,
-                    "message": "Student not found"
+                    "message": f"{self.role_name} not found",
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
@@ -177,19 +210,15 @@ class AdminStudentViewSet(ModelViewSet):
             return Response(
                 {
                     "success": False,
-                    "message": f"Student is already {status_value}."
+                    "message": f"{self.role_name} is already {status_value}.",
                 },
                 status=status.HTTP_200_OK,
             )
 
         user.status = status_value
+        user.is_active = status_value == "active"
         user.updated_by = request.user
         user.updated_at = timezone.now()
-
-        if status_value == "active":
-            user.is_active = True
-        else:
-            user.is_active = False
 
         user.save(
             update_fields=[
@@ -206,11 +235,11 @@ class AdminStudentViewSet(ModelViewSet):
         return Response(
             {
                 "success": True,
-                "message": f"Student status updated to {status_value} successfully.",
+                "message": f"{self.role_name} status updated to {status_value} successfully.",
             },
             status=status.HTTP_200_OK,
         )
-
+    
     @action(detail=False, methods=["patch"], url_path="bulk-archive")
     @transaction.atomic
     def bulk_archive(self, request, *args, **kwargs):
@@ -224,63 +253,73 @@ class AdminStudentViewSet(ModelViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        users = User.objects.filter(id__in = ids, user_type=User.Role.STUDENT)
+
+        users = User.objects.filter(
+            id__in=ids,
+            user_type=self.user_role,
+        )
 
         if not users.exists():
             return Response(
                 {
                     "success": False,
-                    "message": "Student not found",
+                    "message": f"{self.role_name} not found",
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
+
         if users.filter(deleted=True).exists():
             return Response(
                 {
                     "success": False,
-                    "message": "Some student are already archived."
+                    "message": f"Some {self.role_name.lower()} are already archived.",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
         if users.filter(status="active").exists():
             return Response(
                 {
                     "success": False,
-                    "message": "Active student can not delete. Please Inactive first."
+                    "message": f"Active {self.role_name.lower()} can not delete. Please inactive first.",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
         users.update(
-            deleted = True,
-            deleted_at = timezone.now(),
-            deleted_by = request.user,
+            deleted=True,
+            deleted_at=timezone.now(),
+            deleted_by=request.user,
         )
 
         return Response(
             {
                 "success": True,
-                "message": "Student deleted successfully",
+                "message": f"{self.role_name} deleted successfully",
             },
             status=status.HTTP_200_OK,
         )
-    
 
     @action(detail=False, methods=["get"], url_path="archive-list")
     def archive_list(self, request, *args, **kwargs):
-        queryset = StudentProfile.objects.select_related("user").filter(
-            user__user_type=User.Role.STUDENT,
+        queryset = self.profile_model.objects.select_related("user").filter(
+            user__user_type=self.user_role,
             user__deleted=True,
         ).order_by("-user__deleted_at")
+
         page = self.paginate_queryset(queryset)
+
         if page is not None:
-            serializer = StudentProfileSerializer(page, many=True)
+            serializer = self.archive_serializer_class(page, many=True)
             return self.get_paginated_response(
                 {
                     "success": True,
-                    "data": serializer.data
+                    "data": serializer.data,
                 }
             )
-        serializer = StudentProfileSerializer(queryset, many=True)
+
+        serializer = self.archive_serializer_class(queryset, many=True)
+
         return Response(
             {
                 "success": True,
@@ -288,7 +327,8 @@ class AdminStudentViewSet(ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
-    
+
+
     @action(detail=False, methods=["patch"], url_path="bulk-restore")
     @transaction.atomic
     def bulk_restore(self, request, *args, **kwargs):
@@ -302,41 +342,46 @@ class AdminStudentViewSet(ModelViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        users = User.objects.filter(id__in=ids, user_type=User.Role.STUDENT)
+
+        users = User.objects.filter(
+            id__in=ids,
+            user_type=self.user_role,
+        )
 
         if not users.exists():
             return Response(
                 {
                     "success": False,
-                    "message": "Student not found",
+                    "message": f"{self.role_name} not found",
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_404_NOT_FOUND,
             )
+
         if users.filter(deleted=False).exists():
             return Response(
                 {
                     "success": False,
-                    "message": "Some student are already active",
+                    "message": f"Some {self.role_name.lower()} are already active",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
         users.update(
             deleted=False,
             deleted_at=None,
             deleted_by=None,
-            updated_at = timezone.now(),
-            updated_by = request.user,
+            updated_at=timezone.now(),
+            updated_by=request.user,
         )
+
         return Response(
             {
                 "success": True,
-                "message": "Students restored successfully",
+                "message": f"{self.role_name}s restored successfully",
             },
             status=status.HTTP_200_OK,
         )
-        
-
-    @action(detail=False, methods=["post"], url_path="bulk-upload-students")
+    @action(detail=False, methods=["post"], url_path="bulk-upload")
     def bulk_upload_users(self, request):
         serializer = BulkUserUploadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -344,7 +389,10 @@ class AdminStudentViewSet(ModelViewSet):
             uploaded_file = serializer.validated_data["file"]
 
             df = BulkUserUploadService._read_file(uploaded_file)
-            BulkUserUploadService._validate_headers(df)
+            user_type = serializer.validated_data.get("user_type", self.user_role)
+            
+            required_columns = BulkUserUploadService.get_required_columns(user_type)
+            BulkUserUploadService._validate_headers(df, required_columns)
 
             uploaded_file.seek(0)
 
@@ -354,11 +402,8 @@ class AdminStudentViewSet(ModelViewSet):
                 for chunk in uploaded_file.chunks():
                     tmp.write(chunk)
 
-            file_path = tmp.name
-            user_type = serializer.validated_data["user_type"]
-
             bulk_upload_user_task.delay(
-                file_path,
+                tmp.name,
                 request.user.id,
                 user_type,
             )
@@ -375,9 +420,42 @@ class AdminStudentViewSet(ModelViewSet):
             )
         except ValidationError as e:
             return Response(
-                {
-                    "success": False,
-                    "message": e.messages[0] if hasattr(e, "messages") else str(e),
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            {
+                "success": False,
+                "message": "".join(e.message) if hasattr(e, "message") else str(e),
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class AdminStudentViewSet(BaseAdminProfileViewSet):
+    user_role = User.Role.STUDENT
+    role_name = "Student"
+    profile_model = StudentProfile
+    serializer_class = AdminStudentSerializer
+    detail_serializer_class = AdminStudentSortSerializer
+    archive_serializer_class = StudentProfileSerializer
+
+class AdminSchoolCollegeViewSet(BaseAdminProfileViewSet):
+    user_role = User.Role.SCHOOL_COLLEGE
+    role_name = "School College"
+    profile_model = SchoolCollegeProfile
+    serializer_class = AdminSchoolCollegesSerializer
+    detail_serializer_class = AdminSchoolCollegeSortSerializer
+    archive_serializer_class = SchoolCollegeProfileSerializer
+
+class AdminInstituteViewSet(BaseAdminProfileViewSet):
+    user_role = User.Role.INSTITUTE
+    role_name = "Institute"
+    profile_model = InstituteProfile
+    serializer_class = AdminInstituteSerializer
+    detail_serializer_class = AdminInstituteSortSerializer
+    archive_serializer_class = InstituteProfileSerializer
+
+class AdminCorporateViewSet(BaseAdminProfileViewSet):
+    user_role = User.Role.CORPORATE
+    role_name = "Corporate"
+    profile_model = CorporateProfile
+    serializer_class = AdminCorporateSerializer
+    detail_serializer_class = AdminCorporateSortSerializer
+    archive_serializer_class = CorporateProfileSerializer
