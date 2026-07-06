@@ -122,22 +122,22 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
             validated["states"] = state
         if city_id is not None:
             validated["city"] = city
-        if referral_code:
+        if "referral_code" in json_data:
             validated["referral_code"] = referral_code
 
         if "address" in json_data:
             validated["address"] = (address or "").strip() or None
         if education_sent:
             validated["education"] = list(educations)
-        if institute_name is not None:
+        if "institute_name" in json_data:
             validated["institute_name"] = institute_name
-        if board is not None:
+        if "board" in json_data:
             validated["board"] = board
-        if about_us is not None:
+        if "about_us" in json_data:
             validated["about_us"] = about_us
-        if courses_offered is not None:
+        if "courses_offered" in json_data:
             validated["courses_offered"] = courses_offered
-        if website is not None:
+        if "website" in json_data:
             validated["website"] = website
 
         data["validated_data"] = validated
@@ -189,10 +189,15 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
         old_email = instance.email
 
         educations = data.pop("education", None)
+        institute_name_sent = "institute_name" in data
         institute_name = data.pop("institute_name", None)
+        board_sent = "board" in data
         board = data.pop("board", None)
+        about_us_sent = "about_us" in data
         about_us = data.pop("about_us", None)
+        courses_offered_sent = "courses_offered" in data
         courses_offered = data.pop("courses_offered", None)
+        website_sent = "website" in data
         website = data.pop("website", None)
 
         for attr, value in data.items():
@@ -212,19 +217,19 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
                 }
             )
         
-        if institute_name is not None:
+        if institute_name_sent:
             profile.institute_name = institute_name
 
-        if board is not None:
+        if board_sent:
             profile.board = board
         
-        if about_us is not None:
+        if about_us_sent:
             profile.about_us = about_us
 
-        if courses_offered is not None:
+        if courses_offered_sent:
             profile.courses_offered = courses_offered
         
-        if website is not None:
+        if website_sent:
             profile.website = website
 
         profile.save()

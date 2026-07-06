@@ -139,15 +139,15 @@ class AdminStudentSerializer(serializers.ModelSerializer):
             validated["states"] = state
         if city_id is not None:
             validated["city"] = city
-        if education_level_id is not None:
+        if "education_level" in json_data:
             validated["education_level"] = education_level
-        if stream_id is not None:
+        if "stream" in json_data:
             validated["stream"] = stream
-        if medium is not None:
+        if "medium" in json_data:
             validated["medium"] = medium
         if language_sent:
             validated["language"] = list(languages)
-        if referral_code:
+        if "referral_code" in json_data:
             validated["referral_code"] = referral_code
         if "address" in json_data:
             address_value = (address or "").strip()
@@ -194,8 +194,11 @@ class AdminStudentSerializer(serializers.ModelSerializer):
         old_email = instance.email
 
         languages = data.pop("language", None)
+        edu_sent = "education_level" in data
         education_level = data.pop("education_level", None)
+        stream_sent = "stream" in data
         stream = data.pop("stream", None)
+        medium_sent = "medium" in data
         medium = data.pop("medium", None)
 
         for attr, value in data.items():
@@ -212,13 +215,13 @@ class AdminStudentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"student_profile": "Student Profile Not found"}
             )
-        if education_level is not None:
+        if edu_sent:
             profile.education_level = education_level
-        
-        if stream is not None:
+
+        if stream_sent:
             profile.stream = stream
-        
-        if medium is not None:
+
+        if medium_sent:
             profile.medium = medium
 
         profile.save()
