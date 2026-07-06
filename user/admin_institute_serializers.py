@@ -88,11 +88,11 @@ class AdminInstituteSerializer(serializers.ModelSerializer):
             if not city:
                 errors["city"] = "Invalid city id"
 
-        if student_trained is not None:
+        if student_trained is not None and student_trained != "":
             if not isinstance(student_trained, int) or student_trained < 0:
                 errors["student_trained"] = "Student trained must be a positive integer"
 
-        if placements is not None:
+        if placements is not None and placements != "":
             if not isinstance(placements, int) or placements < 0:
                 errors["placements"] = "Placements must be a positive integer"
 
@@ -118,24 +118,29 @@ class AdminInstituteSerializer(serializers.ModelSerializer):
             validated["states"] = state
         if city_id is not None:
             validated["city"] = city
-        if referral_code:
+        if "referral_code" in json_data:
             validated["referral_code"] = referral_code
 
         if "address" in json_data:
             validated["address"] = (address or "").strip() or None
 
-        if institute_name is not None:
+        if "institute_name" in json_data:
             validated["institute_name"] = institute_name
-        if student_trained is not None:
-            validated["student_trained"] = student_trained
-        if placements is not None:
-            validated["placements"] = placements
-        if about_us is not None:
+        if "student_trained" in json_data:
+            val = student_trained
+            if isinstance(val, str) and val.strip() == "":
+                val = None
+            validated["student_trained"] = val
+        if "placements" in json_data:
+            val = placements
+            if isinstance(val, str) and val.strip() == "":
+                val = None
+            validated["placements"] = val
+        if "about_us" in json_data:
             validated["about_us"] = about_us
-        if courses_offered is not None:
+        if "courses_offered" in json_data:
             validated["courses_offered"] = courses_offered
-       
-        if website is not None:
+        if "website" in json_data:
             validated["website"] = website
 
         data["validated_data"] = validated
@@ -187,11 +192,17 @@ class AdminInstituteSerializer(serializers.ModelSerializer):
 
         old_email = instance.email
 
+        institute_name_sent = "institute_name" in data
         institute_name = data.pop("institute_name", None)
+        student_trained_sent = "student_trained" in data
         student_trained = data.pop("student_trained", None)
+        placements_sent = "placements" in data
         placements = data.pop("placements", None)
+        about_us_sent = "about_us" in data
         about_us = data.pop("about_us", None)
+        courses_offered_sent = "courses_offered" in data
         courses_offered = data.pop("courses_offered", None)
+        website_sent = "website" in data
         website = data.pop("website", None)
 
         for attr, value in data.items():
@@ -209,17 +220,17 @@ class AdminInstituteSerializer(serializers.ModelSerializer):
                 {"institute_profile": "Institute Profile not found"}
             )
 
-        if institute_name is not None:
+        if institute_name_sent:
             profile.institute_name = institute_name
-        if student_trained is not None:
+        if student_trained_sent:
             profile.student_trained = student_trained
-        if placements is not None:
+        if placements_sent:
             profile.placements = placements
-        if about_us is not None:
+        if about_us_sent:
             profile.about_us = about_us
-        if courses_offered is not None:
+        if courses_offered_sent:
             profile.courses_offered = courses_offered
-        if website is not None:
+        if website_sent:
             profile.website = website
 
         profile.save()
