@@ -86,13 +86,13 @@ class AdminCorporateSerializer(serializers.ModelSerializer):
             if not city:
                 errors["city"] = "Invalid city id"
 
-        if open_job is not None and (not isinstance(open_job, int) or open_job < 0):
+        if open_job is not None and open_job != "" and (not isinstance(open_job, int) or open_job < 0):
             errors["open_job"] = "Open job must be a positive integer"
 
-        if employees is not None and (not isinstance(employees, int) or employees < 0):
+        if employees is not None and employees != "" and (not isinstance(employees, int) or employees < 0):
             errors["employees"] = "Employees must be a positive integer"
 
-        if years_in_business is not None and (
+        if years_in_business is not None and years_in_business != "" and (
             not isinstance(years_in_business, int) or years_in_business < 0
         ):
             errors["years_in_business"] = "Years in business must be a positive integer"
@@ -116,23 +116,32 @@ class AdminCorporateSerializer(serializers.ModelSerializer):
             validated["states"] = state
         if city_id is not None:
             validated["city"] = city
-        if referral_code:
+        if "referral_code" in json_data:
             validated["referral_code"] = referral_code
 
         if "address" in json_data:
             validated["address"] = (address or "").strip() or None
 
-        if company_name is not None:
+        if "company_name" in json_data:
             validated["company_name"] = company_name
-        if open_job is not None:
-            validated["open_job"] = open_job
-        if employees is not None:
-            validated["employees"] = employees
-        if years_in_business is not None:
-            validated["years_in_business"] = years_in_business
-        if about_us is not None:
+        if "open_job" in json_data:
+            val = open_job
+            if isinstance(val, str) and val.strip() == "":
+                val = None
+            validated["open_job"] = val
+        if "employees" in json_data:
+            val = employees
+            if isinstance(val, str) and val.strip() == "":
+                val = None
+            validated["employees"] = val
+        if "years_in_business" in json_data:
+            val = years_in_business
+            if isinstance(val, str) and val.strip() == "":
+                val = None
+            validated["years_in_business"] = val
+        if "about_us" in json_data:
             validated["about_us"] = about_us
-        if website is not None:
+        if "website" in json_data:
             validated["website"] = website
 
         data["validated_data"] = validated
@@ -184,11 +193,17 @@ class AdminCorporateSerializer(serializers.ModelSerializer):
 
         old_email = instance.email
 
+        company_name_sent = "company_name" in data
         company_name = data.pop("company_name", None)
+        open_job_sent = "open_job" in data
         open_job = data.pop("open_job", None)
+        employees_sent = "employees" in data
         employees = data.pop("employees", None)
+        years_in_business_sent = "years_in_business" in data
         years_in_business = data.pop("years_in_business", None)
+        about_us_sent = "about_us" in data
         about_us = data.pop("about_us", None)
+        website_sent = "website" in data
         website = data.pop("website", None)
 
         for attr, value in data.items():
@@ -206,17 +221,17 @@ class AdminCorporateSerializer(serializers.ModelSerializer):
                 {"corporate_profile": "Corporate Profile not found"}
             )
 
-        if company_name is not None:
+        if company_name_sent:
             profile.company_name = company_name
-        if open_job is not None:
+        if open_job_sent:
             profile.open_job = open_job
-        if employees is not None:
+        if employees_sent:
             profile.employees = employees
-        if years_in_business is not None:
+        if years_in_business_sent:
             profile.years_in_business = years_in_business
-        if about_us is not None:
+        if about_us_sent:
             profile.about_us = about_us
-        if website is not None:
+        if website_sent:
             profile.website = website
 
         profile.save()

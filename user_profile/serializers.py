@@ -821,6 +821,7 @@ class InstituteProfileSerializer(BaseModelSerializer):
         ]
 
 class InstituteProfileUpSerializer(BaseModelSerializer):
+    address = serializers.CharField(required=False, allow_null=True, allow_blank=True)
 
     class Meta:
         model = InstituteProfile
@@ -835,11 +836,17 @@ class InstituteProfileUpSerializer(BaseModelSerializer):
             "key_highlights",
             "website",
             "institute_name",
+            "address",
         ]
 
     def update(self, instance, validated_data):
+        address_sent = "address" in validated_data
+        address = validated_data.pop("address", None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+        if address_sent:
+            instance.user.address = address if address else None
+            instance.user.save(update_fields=["address"])
         request = self.context.get("request")
         if request:
             instance.save(user=request.user)
@@ -907,6 +914,8 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
         ]
 
 class SchoolCollegeProfileUpSerializer(BaseModelSerializer):
+    address = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+
     class Meta:
         model = SchoolCollegeProfile
         fields = BaseModelSerializer.Meta.fields + [
@@ -923,11 +932,17 @@ class SchoolCollegeProfileUpSerializer(BaseModelSerializer):
             "board",
             "partnership_readiness",
             "website",
+            "address",
         ]
 
     def update(self, instance, validated_data):
+        address_sent = "address" in validated_data
+        address = validated_data.pop("address", None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+        if address_sent:
+            instance.user.address = address if address else None
+            instance.user.save(update_fields=["address"])
         request = self.context.get("request")
         if request:
             instance.save(user=request.user)
@@ -989,6 +1004,8 @@ class CorporateProfileSerializer(BaseModelSerializer):
 
 
 class CorporateProfileUpSerializer(BaseModelSerializer):
+    address = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+
     class Meta:
         model = CorporateProfile
         fields = BaseModelSerializer.Meta.fields + [
@@ -1001,15 +1018,20 @@ class CorporateProfileUpSerializer(BaseModelSerializer):
             "perks_benefits",
             "website",
             "company_name",
+            "address",
         ]
 
     def update(self, instance, validated_data):
+        address_sent = "address" in validated_data
+        address = validated_data.pop("address", None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+        if address_sent:
+            instance.user.address = address if address else None
+            instance.user.save(update_fields=["address"])
         request = self.context.get("request")
         if request:
             instance.save(user=request.user)
         else:
             instance.save()
         return instance
-
