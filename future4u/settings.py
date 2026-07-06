@@ -383,6 +383,8 @@ _LANGSMITH_TRACING_ENABLED = AI_TRACING_ENABLED or config(
     default=config("LANGSMITH_TRACING_V2", default=False),
     cast=bool,
 )
+# Public alias used by admin panels to display tracing status.
+LANGSMITH_TRACING_ENABLED = _LANGSMITH_TRACING_ENABLED
 _LANGSMITH_API_KEY = config(
     "LANGSMITH_API_KEY",
     default=config("LANGCHAIN_API_KEY", default=""),
