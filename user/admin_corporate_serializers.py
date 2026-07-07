@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from django.db import transaction
 from rest_framework import serializers
@@ -233,7 +234,8 @@ class AdminCorporateSerializer(serializers.ModelSerializer):
             profile.about_us = about_us
         if website_sent:
             profile.website = website
-
+        profile.updated_by = request.user
+        profile.updated_at = datetime.now()
         profile.save()
 
         if old_email.lower() != instance.email.lower():

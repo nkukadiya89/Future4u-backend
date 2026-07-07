@@ -1,3 +1,4 @@
+from datetime import timezone
 import json
 
 from django.db import transaction
@@ -176,8 +177,10 @@ class OrganizationProfileViewSet(BaseModelViewSet):
             profile, data=data, partial=True, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-
+        profile = serializer.save()
+        profile.updated_by = request.user
+        profile.updated_at = timezone.now()
+        profile.save(update_fields=["updated_by", "updated_at"])
         return Response(
             {"success": True, "data": self.read_serializer_class(profile).data},
             status=status.HTTP_200_OK,

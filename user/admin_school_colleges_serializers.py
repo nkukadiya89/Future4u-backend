@@ -9,7 +9,7 @@ from email_utils.send_email import send_email_change_notification
 from user.models import User
 from user.services.registration_service import setup_web_user_password
 from user_profile.models import SchoolCollegeProfile
-
+from datetime import datetime
 class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
     data = serializers.CharField(write_only=True, required=False)
     profile_image = serializers.ImageField(required=False, write_only=True)
@@ -232,6 +232,8 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
         if website_sent:
             profile.website = website
 
+        profile.updated_by = request.user
+        profile.updated_at = datetime.now()
         profile.save()
         
         if educations is not None:

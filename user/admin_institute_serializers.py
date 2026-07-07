@@ -2,7 +2,7 @@ import json
 
 from django.db import transaction
 from rest_framework import serializers
-
+from datetime import datetime
 from city.models import City
 from country.models import Country
 from state.models import State
@@ -232,7 +232,8 @@ class AdminInstituteSerializer(serializers.ModelSerializer):
             profile.courses_offered = courses_offered
         if website_sent:
             profile.website = website
-
+        profile.updated_by = request.user
+        profile.updated_at = datetime.now()
         profile.save()
 
         email_changed = old_email.lower() != instance.email.lower()
