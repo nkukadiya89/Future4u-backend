@@ -2,6 +2,7 @@ from django.utils import timezone
 import os
 import tempfile
 from django.db import transaction
+from django.db.models import Q
 from django.core.exceptions import ValidationError
 from rest_framework import status
 from rest_framework.decorators import action
@@ -306,6 +307,16 @@ class BaseAdminProfileViewSet(ModelViewSet):
             user__user_type=self.user_role,
             user__deleted=True,
         ).order_by("-user__deleted_at")
+
+
+        search = request.query_params.get("search", "").strip()
+        if search:
+            queryset = queryset.filter(
+                Q(user__first_name__icontains=search) |
+                Q(user__last_name__icontains=search) |
+                Q(user__email__icontains=search) |
+                Q(user__phone__icontains=search)
+            )
 
         page = self.paginate_queryset(queryset)
 

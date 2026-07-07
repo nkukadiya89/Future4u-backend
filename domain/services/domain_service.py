@@ -220,12 +220,13 @@ def bulk_set_active(*, ids: list, user, is_active: bool) -> int:
     )
 
 
-def dropdown_domains():
-    return (
-        Domain.objects.filter(is_active=True, deleted=False)
-        .only("id", "domain_code", "domain_name", "parent_id")
-        .order_by("domain_name")
-    )
+def dropdown_domains(*, parent_id=None, root_only=False):
+    qs = Domain.objects.filter(is_active=True, deleted=False)
+    if root_only:
+        qs = qs.filter(parent__isnull=True)
+    elif parent_id is not None:
+        qs = qs.filter(parent_id=parent_id)
+    return qs.only("id", "domain_code", "domain_name", "parent_id").order_by("domain_name")
 
 
 def tree_domains():
