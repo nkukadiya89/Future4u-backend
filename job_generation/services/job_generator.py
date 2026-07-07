@@ -4,7 +4,6 @@ import logging
 from typing import Any
 
 from job_generation.config import ai_llm_enabled
-from job_generation.constants.job_generation_constants import JOB_GENERATION_MAX_TOKENS
 from job_generation.exceptions import (
     JobGenerationConfigurationError,
     JobGenerationValidationError,
@@ -34,7 +33,7 @@ class JobGenerator:
         ensure_ai_provider_configured()
 
         prompt = build_job_generation_prompt()
-        llm = get_llm_provider().get_chat_model(max_tokens=JOB_GENERATION_MAX_TOKENS)
+        llm = get_llm_provider().get_chat_model()
         parser = JsonResponseParser()
         last_error: JobGenerationValidationError | None = None
         validation_feedback = "None"

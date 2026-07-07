@@ -18,9 +18,10 @@ from django.shortcuts import render
 from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from internship_generation.config import ai_llm_enabled, internship_generation_enabled
 from internship_generation.constants.internship_generation_constants import (
-    ABOUT_INTERNSHIP_INPUT_MAX_LENGTH,
+    INTERNSHIP_OVERVIEW_INPUT_MAX_LENGTH,
     OPTIONAL_FIELD_MAX_LENGTH,
 )
+from internship_job.models import Internship
 from internship_generation.exceptions import (
     InternshipGenerationConfigurationError,
     InternshipGenerationValidationError,
@@ -61,10 +62,10 @@ def _provider_status() -> dict:
 
 
 class InternshipGenerationRunForm(forms.Form):
-    about_internship = forms.CharField(
+    internship_overview = forms.CharField(
         widget=forms.Textarea(attrs={"rows": 4}),
         min_length=10,
-        max_length=ABOUT_INTERNSHIP_INPUT_MAX_LENGTH,
+        max_length=INTERNSHIP_OVERVIEW_INPUT_MAX_LENGTH,
         help_text="Required. Brief internship overview for AI generation (10-2000 characters).",
     )
     department = forms.CharField(
@@ -82,10 +83,10 @@ class InternshipGenerationRunForm(forms.Form):
         max_length=OPTIONAL_FIELD_MAX_LENGTH,
         help_text="Optional. Internship duration.",
     )
-    mode = forms.CharField(
+    mode = forms.ChoiceField(
+        choices=(("", "---------"),) + Internship.MODE_CHOICE,
         required=False,
-        max_length=OPTIONAL_FIELD_MAX_LENGTH,
-        help_text="Optional. Work mode (e.g. Remote).",
+        help_text="Optional. Work mode.",
     )
     application_deadline = forms.DateField(
         required=False,
@@ -104,7 +105,7 @@ class InternshipGenerationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
         if request.method == "POST" and form.is_valid():
             generation_input = {
-                "about_internship": form.cleaned_data["about_internship"],
+                "internship_overview": form.cleaned_data.get("internship_overview", ""),
                 "department": form.cleaned_data.get("department", ""),
                 "stipend": form.cleaned_data.get("stipend", ""),
                 "duration": form.cleaned_data.get("duration", ""),

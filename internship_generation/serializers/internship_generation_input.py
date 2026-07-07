@@ -2,17 +2,18 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
+from internship_job.models import Internship
 from internship_generation.constants.internship_generation_constants import (
-    ABOUT_INTERNSHIP_INPUT_MAX_LENGTH,
-    ABOUT_INTERNSHIP_INPUT_MIN_LENGTH,
+    INTERNSHIP_OVERVIEW_INPUT_MAX_LENGTH,
+    INTERNSHIP_OVERVIEW_INPUT_MIN_LENGTH,
     OPTIONAL_FIELD_MAX_LENGTH,
 )
 
 
 class InternshipGenerationInputSerializer(serializers.Serializer):
-    about_internship = serializers.CharField(
-        min_length=ABOUT_INTERNSHIP_INPUT_MIN_LENGTH,
-        max_length=ABOUT_INTERNSHIP_INPUT_MAX_LENGTH,
+    internship_overview = serializers.CharField(
+        min_length=INTERNSHIP_OVERVIEW_INPUT_MIN_LENGTH,
+        max_length=INTERNSHIP_OVERVIEW_INPUT_MAX_LENGTH,
         trim_whitespace=True,
         help_text="Brief internship overview used as primary context for AI generation.",
     )
@@ -37,12 +38,11 @@ class InternshipGenerationInputSerializer(serializers.Serializer):
         trim_whitespace=True,
         help_text="Internship duration (e.g. 3 Months).",
     )
-    mode = serializers.CharField(
+    mode = serializers.ChoiceField(
+        choices=Internship.MODE_CHOICE,
         required=False,
         allow_blank=True,
-        max_length=OPTIONAL_FIELD_MAX_LENGTH,
-        trim_whitespace=True,
-        help_text="Work mode (e.g. Remote, On-site).",
+        help_text="Work mode (same values as Internship model).",
     )
     application_deadline = serializers.DateField(
         required=False,

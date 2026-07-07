@@ -40,7 +40,7 @@ class _SettingsBackedProvider(LLMProvider):
             getattr(settings, "INTERNSHIP_GENERATION_TEMPERATURE", 0.2)
         )
         token_limit = int(
-            max_tokens or getattr(settings, "INTERNSHIP_GENERATION_MAX_TOKENS", 3000)
+            max_tokens or settings.INTERNSHIP_GENERATION_MAX_TOKENS
         )
 
         return model_cls(

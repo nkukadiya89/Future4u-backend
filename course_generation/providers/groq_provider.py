@@ -3,7 +3,6 @@ from __future__ import annotations
 from django.conf import settings
 
 from course_generation.config import groq_api_key
-from course_generation.constants.course_generation_constants import COURSE_GENERATION_MAX_TOKENS
 from course_generation.exceptions import CourseGenerationConfigurationError
 from course_generation.providers.base import LLMProvider
 
@@ -36,7 +35,7 @@ class GroqProvider(LLMProvider):
                 or getattr(settings, "GROQ_TEMPERATURE", 0.2)
             ),
             "max_tokens": int(
-                max_tokens or getattr(settings, "COURSE_GENERATION_MAX_TOKENS", COURSE_GENERATION_MAX_TOKENS)
+                max_tokens or settings.COURSE_GENERATION_MAX_TOKENS
             ),
             "max_retries": 2,
             "api_key": groq_api_key(),

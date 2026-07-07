@@ -3,7 +3,6 @@ from __future__ import annotations
 from django.conf import settings
 
 from job_generation.config import groq_api_key
-from job_generation.constants.job_generation_constants import JOB_GENERATION_MAX_TOKENS
 from job_generation.exceptions import JobGenerationConfigurationError
 from job_generation.providers.base import LLMProvider
 
@@ -33,7 +32,7 @@ class GroqProvider(LLMProvider):
           "model": model_name,
           "temperature": float(getattr(settings, "GROQ_TEMPERATURE", 0.2)),
           "max_tokens": int(
-              max_tokens or getattr(settings, "GROQ_MAX_TOKENS", JOB_GENERATION_MAX_TOKENS)
+              max_tokens or settings.JOB_GENERATION_MAX_TOKENS
           ),
           "max_retries": 2,
           "api_key": groq_api_key(),

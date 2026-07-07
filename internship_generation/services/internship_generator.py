@@ -4,9 +4,6 @@ import logging
 from typing import Any
 
 from internship_generation.config import ai_llm_enabled
-from internship_generation.constants.internship_generation_constants import (
-    INTERNSHIP_GENERATION_MAX_TOKENS,
-)
 from internship_generation.exceptions import (
     InternshipGenerationConfigurationError,
     InternshipGenerationValidationError,
@@ -36,7 +33,7 @@ class InternshipGenerator:
         ensure_ai_provider_configured()
 
         prompt = build_internship_generation_prompt()
-        llm = get_llm_provider().get_chat_model(max_tokens=INTERNSHIP_GENERATION_MAX_TOKENS)
+        llm = get_llm_provider().get_chat_model()
         parser = JsonResponseParser()
         last_error: InternshipGenerationValidationError | None = None
         validation_feedback = "None"

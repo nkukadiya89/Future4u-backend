@@ -17,6 +17,8 @@ from course_generation.constants.course_generation_constants import (
     SKILLS_MIN,
     WHY_THIS_COURSE_MAX_WORDS,
     WHY_THIS_COURSE_MIN_WORDS,
+    WHY_THIS_COURSE_TARGET_MAX_WORDS,
+    WHY_THIS_COURSE_TARGET_MIN_WORDS,
 )
 
 OUTPUT_SHAPE = """{{
@@ -60,13 +62,14 @@ course_title
 - Poor: "Computer Course" | "Skill Development Program"
 
 course_overview
-- {OVERVIEW_TARGET_MIN_WORDS}-{OVERVIEW_TARGET_MAX_WORDS} words (target), {OVERVIEW_MIN_WORDS}-{OVERVIEW_MAX_WORDS} words (allowed range)
-- Write naturally in simple English — be direct and informative
-- Structure: what the course covers → who it is for → what learners will gain
-- Mention specific tools, technologies, or frameworks when provided in the input
-- Do NOT repeat course_content module titles or skills as bullet points
-- Avoid marketing buzzwords (no industry-leading, world-class, cutting-edge, transformative, revolutionary, comprehensive ecosystem)
-- Avoid generic phrases like "hands-on training", "real-world projects", "expert faculty" unless the input supports them
+- Target: {OVERVIEW_TARGET_MIN_WORDS}-{OVERVIEW_TARGET_MAX_WORDS} words. Hard maximum: {OVERVIEW_MAX_WORDS} words. Minimum: {OVERVIEW_MIN_WORDS} words.
+- Write ONE concise paragraph only — no bullet points, no line breaks, no second paragraph
+- Cover three things in that single paragraph: what the course teaches → key learning outcomes → who it is suitable for
+- Mention specific tools, technologies, or domains when provided in the input
+- Do NOT repeat course_content module titles or skills verbatim
+- Do NOT use marketing buzzwords (no industry-leading, world-class, cutting-edge, transformative, revolutionary, comprehensive ecosystem)
+- Keep language plain and mobile-friendly — short sentences, no jargon
+- REJECT AND REGENERATE if: more than {OVERVIEW_MAX_WORDS} words, more than one paragraph, repeats skills or content module titles, or contains marketing buzzwords
 
 skills
 - {SKILLS_MIN}-{SKILLS_MAX} short skill tags for a "Skills You Will Learn" pill UI
@@ -83,11 +86,14 @@ course_content
 - Progress from fundamentals to advanced where natural
 
 why_this_course
-- {WHY_THIS_COURSE_MIN_WORDS}-{WHY_THIS_COURSE_MAX_WORDS} words
-- Explain why someone should choose this specific course — career outcomes, practical skills gained, and real-world applicability
-- Make it compelling but honest: tie benefits back to the course content
-- Write like a course counselor who knows this particular course well
-- Avoid clichés: "unlock your potential", "transform your career", "take the next step" — instead describe actual outcomes
+- Target: {WHY_THIS_COURSE_TARGET_MIN_WORDS}-{WHY_THIS_COURSE_TARGET_MAX_WORDS} words. Hard maximum: {WHY_THIS_COURSE_MAX_WORDS} words. Minimum: {WHY_THIS_COURSE_MIN_WORDS} words.
+- Write ONE short paragraph only — no bullet points, no line breaks, no second paragraph
+- Explain the key benefit of this specific course and mention career or skill development outcomes
+- Tie benefits back to the actual course content — do not make generic statements
+- Do NOT repeat the course_overview, course_content module titles, or skills verbatim
+- Do NOT use marketing buzzwords (no unlock your potential, transform your career, take the next step)
+- Do NOT mention guaranteed jobs, guaranteed salaries, or guaranteed placements
+- REJECT AND REGENERATE if: more than {WHY_THIS_COURSE_MAX_WORDS} words, more than one paragraph, repeats overview or skills, contains marketing language, or makes job/salary guarantees
 
 certification_info
 - One short paragraph, {CERTIFICATION_INFO_MIN_WORDS}-{CERTIFICATION_INFO_MAX_WORDS} words
@@ -99,12 +105,17 @@ certification_info
 --- STRICT VALIDATION (output will be rejected if violated) ---
 - Invalid JSON, missing fields, or empty arrays
 - Duplicate skills or course_content items
-- course_overview that copies two or more course_content module titles verbatim
 - course_overview outside {OVERVIEW_MIN_WORDS}-{OVERVIEW_MAX_WORDS} words
+- course_overview with more than one paragraph
+- course_overview that copies two or more course_content module titles verbatim
+- course_overview containing marketing buzzwords
 - skills count outside {SKILLS_MIN}-{SKILLS_MAX}
 - any skill longer than {SKILLS_ITEM_MAX_WORDS} words or with parenthetical text
 - course_content count outside {COURSE_CONTENT_MIN}-{COURSE_CONTENT_MAX}
 - why_this_course outside {WHY_THIS_COURSE_MIN_WORDS}-{WHY_THIS_COURSE_MAX_WORDS} words
+- why_this_course with more than one paragraph
+- why_this_course that repeats the course_overview, skills, or course_content verbatim
+- why_this_course containing marketing language or job/salary guarantees
 - certification_info outside {CERTIFICATION_INFO_MIN_WORDS}-{CERTIFICATION_INFO_MAX_WORDS} words
 - Placeholder text (TBD, N/A, null, <placeholder>)
 - Broken text like ", ," or empty brackets

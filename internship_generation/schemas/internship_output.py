@@ -5,13 +5,13 @@ from typing import Any
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from internship_generation.constants.internship_generation_constants import (
+    ABOUT_INTERNSHIP_MAX_WORDS,
+    ABOUT_INTERNSHIP_MIN_WORDS,
     BANNED_MARKETING_PHRASES,
     BANNED_TITLE_PHRASES,
     DISALLOWED_PLACEHOLDERS,
     INTERNSHIP_TITLE_MAX_LENGTH,
     INTERNSHIP_TITLE_MIN_LENGTH,
-    OVERVIEW_MAX_WORDS,
-    OVERVIEW_MIN_WORDS,
     RESPONSIBILITIES_MAX,
     RESPONSIBILITIES_MIN,
     RESPONSIBILITY_ITEM_MAX_LENGTH,
@@ -67,7 +67,7 @@ class InternshipGenerationPayload(BaseModel):
         min_length=INTERNSHIP_TITLE_MIN_LENGTH,
         max_length=INTERNSHIP_TITLE_MAX_LENGTH,
     )
-    about_internship: str = Field(min_length=30, max_length=2000)
+    about_internship: str = Field(min_length=10, max_length=600)
     key_responsibilities: list[str] = Field(
         min_length=RESPONSIBILITIES_MIN,
         max_length=RESPONSIBILITIES_MAX,
@@ -87,7 +87,7 @@ class InternshipGenerationPayload(BaseModel):
     @model_validator(mode="after")
     def _normalize_and_validate(self) -> InternshipGenerationPayload:
         self.internship_title = clip(self.internship_title, INTERNSHIP_TITLE_MAX_LENGTH)
-        self.about_internship = clip(self.about_internship, 2000)
+        self.about_internship = clip(self.about_internship, 600)
 
         for field_name, max_len in (
             ("key_responsibilities", RESPONSIBILITY_ITEM_MAX_LENGTH),
@@ -117,11 +117,23 @@ class InternshipGenerationPayload(BaseModel):
         if len(self.skills) > SKILLS_MAX:
             raise ValueError(f"skills must have at most {SKILLS_MAX} items")
 
-        overview_wc = word_count(self.about_internship)
-        if overview_wc > OVERVIEW_MAX_WORDS:
-            raise ValueError(f"about_internship must be <= {OVERVIEW_MAX_WORDS} words")
-        if overview_wc < OVERVIEW_MIN_WORDS:
-            raise ValueError(f"about_internship must be at least {OVERVIEW_MIN_WORDS} words")
+        # --- about_internship rules ---
+        about_wc = word_count(self.about_internship)
+        if about_wc > ABOUT_INTERNSHIP_MAX_WORDS:
+            raise ValueError(
+                f"about_internship must be at most {ABOUT_INTERNSHIP_MAX_WORDS} words "
+                f"(got {about_wc})"
+            )
+        if about_wc < ABOUT_INTERNSHIP_MIN_WORDS:
+            raise ValueError(
+                f"about_internship must be at least {ABOUT_INTERNSHIP_MIN_WORDS} words "
+                f"(got {about_wc})"
+            )
+
+        # Must be a single paragraph (no blank lines / double newlines)
+        import re as _re
+        if _re.search(r"\n\s*\n", self.about_internship):
+            raise ValueError("about_internship must be a single paragraph (no blank lines)")
 
         title_lower = self.internship_title.casefold()
         for phrase in BANNED_TITLE_PHRASES:
@@ -144,12 +156,13 @@ class InternshipGenerationPayload(BaseModel):
             if has_broken_punctuation(item):
                 raise ValueError("list item contains broken punctuation")
 
-        overview_norm = normalize_text(self.about_internship)
+        # about_internship must not copy responsibilities or skills verbatim
+        about_norm = normalize_text(self.about_internship)
         for item in self.skills + self.key_responsibilities:
             item_norm = normalize_text(item)
-            if len(item_norm.split()) >= 3 and item_norm in overview_norm:
+            if len(item_norm.split()) >= 4 and item_norm in about_norm:
                 raise ValueError(
-                    "about_internship repeats content from skills or key_responsibilities"
+                    "about_internship copies verbatim content from skills or key_responsibilities"
                 )
 
         return self

@@ -4,7 +4,6 @@ import logging
 from typing import Any
 
 from course_generation.config import ai_llm_enabled
-from course_generation.constants.course_generation_constants import COURSE_GENERATION_MAX_TOKENS
 from course_generation.exceptions import (
     CourseGenerationConfigurationError,
     CourseGenerationValidationError,
@@ -34,7 +33,7 @@ class CourseGenerator:
         ensure_ai_provider_configured()
 
         prompt = build_course_generation_prompt()
-        llm = get_llm_provider().get_chat_model(max_tokens=COURSE_GENERATION_MAX_TOKENS)
+        llm = get_llm_provider().get_chat_model()
         parser = JsonResponseParser()
         last_error: CourseGenerationValidationError | None = None
         validation_feedback = ""

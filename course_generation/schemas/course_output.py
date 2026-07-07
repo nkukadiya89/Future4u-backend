@@ -5,6 +5,7 @@ from typing import Any
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from course_generation.constants.course_generation_constants import (
+    BANNED_JOB_PROMISE_PHRASES,
     BANNED_MARKETING_PHRASES,
     BANNED_TITLE_PHRASES,
     CERTIFICATION_INFO_MAX_WORDS,
@@ -135,11 +136,20 @@ class CourseGenerationPayload(BaseModel):
         if overview_wc < OVERVIEW_MIN_WORDS:
             raise ValueError(f"course_overview must be at least {OVERVIEW_MIN_WORDS} words")
 
+        if "\n\n" in self.course_overview or self.course_overview.count("\n") >= 2:
+            raise ValueError("course_overview must be a single paragraph with no line breaks")
+
         why_wc = word_count(self.why_this_course)
         if why_wc > WHY_THIS_COURSE_MAX_WORDS:
             raise ValueError(f"why_this_course must be <= {WHY_THIS_COURSE_MAX_WORDS} words")
         if why_wc < WHY_THIS_COURSE_MIN_WORDS:
             raise ValueError(f"why_this_course must be at least {WHY_THIS_COURSE_MIN_WORDS} words")
+
+        if "\n\n" in self.why_this_course or self.why_this_course.count("\n") >= 2:
+            raise ValueError("why_this_course must be a single paragraph with no line breaks")
+
+        if contains_banned_phrase(self.why_this_course, BANNED_JOB_PROMISE_PHRASES):
+            raise ValueError("why_this_course must not mention guaranteed jobs or salaries")
 
         cert_wc = word_count(self.certification_info)
         if cert_wc > CERTIFICATION_INFO_MAX_WORDS:

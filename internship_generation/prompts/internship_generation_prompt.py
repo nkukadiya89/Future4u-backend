@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from langchain_core.prompts import ChatPromptTemplate
 
+from internship_job.models import Internship
 from internship_generation.constants.internship_generation_constants import (
-    OVERVIEW_MAX_WORDS,
-    OVERVIEW_MIN_WORDS,
-    OVERVIEW_TARGET_MAX_WORDS,
-    OVERVIEW_TARGET_MIN_WORDS,
+    ABOUT_INTERNSHIP_MAX_WORDS,
+    ABOUT_INTERNSHIP_MIN_WORDS,
+    ABOUT_INTERNSHIP_TARGET_MAX_WORDS,
+    ABOUT_INTERNSHIP_TARGET_MIN_WORDS,
     RESPONSIBILITIES_MAX,
     RESPONSIBILITIES_MIN,
     SKILLS_MAX,
@@ -41,7 +42,6 @@ Every internship description should feel authentic and specific to the employer'
 Avoid:
 - Vague responsibilities like "assist the team" or "support daily operations"
 - Skills that don't connect to the responsibilities (every skill should be used in at least one responsibility)
-- Padding sentences in about_internship that add word count without substance
 - Generic phrases that could describe any internship at any company
 
 Be honest: only include details supported by the input. If the employer didn't mention a specific technology, don't invent it.
@@ -54,14 +54,46 @@ internship_title
 - Avoid vague titles ("Intern", "Trainee") and hype titles (no Best Internship, Rockstar Intern, Super Developer, Ninja Engineer)
 
 about_internship
-- {OVERVIEW_TARGET_MIN_WORDS}-{OVERVIEW_TARGET_MAX_WORDS} words (target), {OVERVIEW_MIN_WORDS}-{OVERVIEW_MAX_WORDS} words (allowed range)
-- Write naturally in simple English — professional and student friendly
-- Structure: what the intern will work on → what they will learn → who should apply
-- Be specific: mention actual tools, technologies, or domains from the employer's input
-- Do NOT repeat key_responsibilities items or skills verbatim
-- Avoid marketing buzzwords (no industry-leading, world-class, cutting-edge, transformative, revolutionary, dynamic team, fast-paced environment, best-in-class)
-- Only infer details reasonably supported by the employer overview — do not invent salary, benefits, remote work, office facilities, company culture, or technology not mentioned
-- Avoid generic lines like "this is a great opportunity to learn" without explaining what specifically the intern will learn
+PURPOSE: A concise, engaging overview that quickly explains what the internship offers and encourages eligible students to apply.
+
+LENGTH:
+- Minimum: {ABOUT_INTERNSHIP_MIN_WORDS} words
+- Maximum: {ABOUT_INTERNSHIP_MAX_WORDS} words (HARD LIMIT — output will be REJECTED if exceeded)
+- Ideal target: {ABOUT_INTERNSHIP_TARGET_MIN_WORDS}–{ABOUT_INTERNSHIP_TARGET_MAX_WORDS} words
+
+STRUCTURE:
+- Write EXACTLY ONE short paragraph — no blank lines, no line breaks between sentences
+- Follow this order:
+  1. Describe the internship role
+  2. Mention the primary technologies or work area
+  3. Explain what the intern will learn or contribute
+  4. End with who the internship is suitable for
+
+MUST INCLUDE (high level only, not verbatim from lists):
+- Internship role
+- Main responsibilities (briefly, not as a list)
+- Learning opportunity
+- Collaboration with the team
+- Suitable candidate profile
+
+WRITING STYLE:
+- Professional, natural, student-friendly, easy to read, human sounding
+- Simple English — avoid jargon or complex sentence structures
+
+DO NOT:
+- Repeat key_responsibilities items verbatim
+- Repeat skills items verbatim
+- List technologies one by one (e.g. "Python, Django, PostgreSQL, Git, Docker")
+- Mention salary, stipend, benefits, or company policies
+- Write more than one paragraph
+- Exceed {ABOUT_INTERNSHIP_MAX_WORDS} words
+- Use any of these banned phrases: industry-leading, world-class, cutting-edge, revolutionary, dynamic environment, fast-paced, best-in-class
+
+GOOD EXAMPLE ({ABOUT_INTERNSHIP_TARGET_MIN_WORDS}–{ABOUT_INTERNSHIP_TARGET_MAX_WORDS} words, one paragraph):
+"Start your software development career by working on real-world backend projects using Python and Django. This internship provides practical experience with API development, databases, debugging, and team collaboration, making it an excellent opportunity for students and recent graduates eager to strengthen their backend development skills."
+
+BAD EXAMPLE (too long, lists everything, reads like a job spec):
+"As a Software Development Intern you will build backend features for web applications using Python and Django, creating RESTful APIs that power the front-end experience. You will gain practical knowledge of database integration, write clean, maintainable code, use Git for version control, fix bugs, participate in code reviews, collaborate with teams, and work on multiple projects while learning industry best practices..."
 
 key_responsibilities
 - {RESPONSIBILITIES_MIN}-{RESPONSIBILITIES_MAX} short, action-oriented, practical responsibilities
@@ -77,15 +109,18 @@ skills
 - Prefer specific technologies/tools over broad categories ("Python" over "Programming", "Adobe Photoshop" over "Design")
 - No duplicates
 
---- STRICT VALIDATION (output will be rejected if violated) ---
+--- STRICT VALIDATION (output will be REJECTED if any rule is violated) ---
 - Invalid JSON, missing fields, or empty arrays
 - Duplicate key_responsibilities or skills
-- about_internship outside {OVERVIEW_MIN_WORDS}-{OVERVIEW_MAX_WORDS} words
+- about_internship word count outside {ABOUT_INTERNSHIP_MIN_WORDS}–{ABOUT_INTERNSHIP_MAX_WORDS} words
+- about_internship has more than one paragraph (blank line between sentences = instant rejection)
+- about_internship copies key_responsibilities or skills verbatim
 - key_responsibilities count outside {RESPONSIBILITIES_MIN}-{RESPONSIBILITIES_MAX}
 - skills count outside {SKILLS_MIN}-{SKILLS_MAX}
 - Placeholder text (TBD, N/A, null, <placeholder>)
 - Broken text like ", ," or empty brackets
 - Markdown or explanations outside JSON
+- Banned marketing phrases in about_internship
 - Generic responsibilities that could apply to any internship (lacks specificity)
 - Skills that do not map to any listed responsibility
 
@@ -94,7 +129,7 @@ Previous validation feedback (fix these issues): {{validation_feedback}}
 
 USER_PROMPT = """Generate AI fields for the Future4U Post Internship form using the employer-provided details below.
 
-about_internship: {about_internship}
+internship_overview (employer input): {internship_overview}
 department: {department}
 stipend: {stipend}
 duration: {duration}
@@ -112,6 +147,12 @@ def build_internship_generation_prompt() -> ChatPromptTemplate:
     )
 
 
+def _choice_display(choices: tuple[tuple[str, str], ...], value: object) -> str:
+    if not value:
+        return "Not provided"
+    return dict(choices).get(str(value), str(value))
+
+
 def format_prompt_inputs(*, generation_input: dict) -> dict[str, str]:
     deadline = generation_input.get("application_deadline")
     deadline_text = "Not provided"
@@ -119,12 +160,12 @@ def format_prompt_inputs(*, generation_input: dict) -> dict[str, str]:
         deadline_text = str(deadline)
 
     return {
-        "about_internship": str(generation_input.get("about_internship") or "").strip()
+        "internship_overview": str(generation_input.get("internship_overview") or "").strip()
         or "Not provided",
         "department": str(generation_input.get("department") or "").strip() or "Not provided",
         "stipend": str(generation_input.get("stipend") or "").strip() or "Not provided",
         "duration": str(generation_input.get("duration") or "").strip() or "Not provided",
-        "mode": str(generation_input.get("mode") or "").strip() or "Not provided",
+        "mode": _choice_display(Internship.MODE_CHOICE, generation_input.get("mode")),
         "application_deadline": deadline_text,
         "validation_feedback": str(generation_input.get("validation_feedback") or "None").strip(),
     }

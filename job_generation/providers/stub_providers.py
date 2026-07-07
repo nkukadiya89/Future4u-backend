@@ -38,7 +38,7 @@ class _SettingsBackedProvider(LLMProvider):
         model_name = getattr(settings, self.model_setting, "")
         temperature = float(getattr(settings, "JOB_GENERATION_TEMPERATURE", 0.2))
         token_limit = int(
-            max_tokens or getattr(settings, "JOB_GENERATION_MAX_TOKENS", 3000)
+            max_tokens or settings.JOB_GENERATION_MAX_TOKENS
         )
 
         return model_cls(

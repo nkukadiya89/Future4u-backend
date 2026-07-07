@@ -3,9 +3,6 @@ from __future__ import annotations
 from django.conf import settings
 
 from internship_generation.config import groq_api_key
-from internship_generation.constants.internship_generation_constants import (
-    INTERNSHIP_GENERATION_MAX_TOKENS,
-)
 from internship_generation.exceptions import InternshipGenerationConfigurationError
 from internship_generation.providers.base import LLMProvider
 
@@ -35,8 +32,7 @@ class GroqProvider(LLMProvider):
             "model": model_name,
             "temperature": float(getattr(settings, "GROQ_TEMPERATURE", 0.2)),
             "max_tokens": int(
-                max_tokens
-                or getattr(settings, "GROQ_MAX_TOKENS", INTERNSHIP_GENERATION_MAX_TOKENS)
+                max_tokens or settings.INTERNSHIP_GENERATION_MAX_TOKENS
             ),
             "max_retries": 2,
             "api_key": groq_api_key(),
