@@ -1,7 +1,6 @@
 import json
 
 from rest_framework import serializers
-
 from city.models import City
 from country.models import Country
 from education_level.models import EducationLevel
@@ -13,6 +12,7 @@ from user.models import User
 from user.services.registration_service import setup_web_user_password
 from user_profile.models import StudentProfile
 from django.db import transaction
+from datetime import datetime
 
 class AdminStudentSerializer(serializers.ModelSerializer):
     data = serializers.CharField(write_only=True, required=False)
@@ -223,7 +223,9 @@ class AdminStudentSerializer(serializers.ModelSerializer):
 
         if medium_sent:
             profile.medium = medium
-
+            
+        profile.updated_by = request.user
+        profile.updated_at = datetime.now()
         profile.save()
 
         if languages is not None:

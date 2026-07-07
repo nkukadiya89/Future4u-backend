@@ -131,6 +131,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         source = validated_data_inner.pop("source", None)
 
         user = User.objects.create(**validated_data_inner)
+        user.created_by = user
         is_web = is_web_source(source)
         if is_web:
             setup_web_user_password(user)
