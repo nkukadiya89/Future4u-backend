@@ -99,7 +99,7 @@ class StudentProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
     )
     search_fields = ("user__email", "user__first_name", "user__last_name")
     list_filter = ("medium",)
-    readonly_fields = ("user", "created_at", "updated_at")
+    readonly_fields = ("user", "updated_at")
     raw_id_fields = ("user", "education_level", "stream")
 
     autocomplete_fields = ("education_level", "stream")
@@ -157,7 +157,7 @@ class StudentProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin):
             "Social Links",
             {"fields": ("linkedin_url", "github_url", "portfolio")},
         ),
-        ("Timestamps", {"fields": ("created_at", "updated_at")}),
+        ("Timestamps", {"fields": ("updated_at",)}),
     )
 
 
@@ -262,7 +262,7 @@ class ProfessionalProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin
         "current_job_title",
     )
     list_filter = ("employment_type", "years_of_experience", "company_size")
-    readonly_fields = ("user", "created_at", "updated_at")
+    readonly_fields = ("user", "updated_at")
     raw_id_fields = ("user", "education_level", "stream", "current_industry_category", "current_industry")
 
     autocomplete_fields = ("education_level", "stream", "current_industry_category", "current_industry")
@@ -341,5 +341,5 @@ class ProfessionalProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin
             "Social Links",
             {"fields": ("linkedin_url", "github_url", "portfolio")},
         ),
-        ("Timestamps", {"fields": ("created_at", "updated_at")}),
+        ("Timestamps", {"fields": ("updated_at",)}),
     )

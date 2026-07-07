@@ -92,7 +92,7 @@ class StudentProfile(models.Model):
     github_url = models.CharField(max_length=200, null=True, blank=True)
     portfolio = models.CharField(max_length=200, null=True, blank=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -100,7 +100,7 @@ class StudentProfile(models.Model):
 
     class Meta:
         db_table = "student_profile"
-        ordering = ["-created_at"]
+        ordering = ["-id"]
         indexes = [
             models.Index(fields=["user"]),
             models.Index(fields=["education_level"]),
@@ -378,15 +378,16 @@ class ProfessionalProfile(models.Model):
     github_url = models.CharField(max_length=200, null=True, blank=True)
     portfolio = models.CharField(max_length=200, null=True, blank=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
+
 
     def __str__(self):
         return f"ProfessionalProfile<{self.user_id}>"
 
     class Meta:
         db_table = "professional_profile"
-        ordering = ["-created_at"]
+        ordering = ["-id"]
         indexes = [
             models.Index(fields=["user"]),
             models.Index(fields=["education_level"]),
@@ -567,10 +568,12 @@ class InstituteProfile(BaseModule):
     key_highlights = models.JSONField(default=list, blank=True)
     website = models.CharField(max_length=250, null=True, blank=True)
     institute_name = models.CharField(max_length=200, null=True, blank=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = "institute_profile"
-        ordering = ["-created_at"]
+        ordering = ["-id"]
 
 
 def _upload_organization_gallery_image(instance, image, upload_folder):
@@ -648,6 +651,8 @@ class SchoolCollegeProfile(BaseModule):
     board = models.CharField(max_length=200, null=True, blank=True)
     partnership_readiness = models.CharField(max_length=50, choices=READINESS, default="flexible_timeline")
     website = models.CharField(max_length=250, null=True, blank=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = "school_college_profile"
@@ -684,6 +689,8 @@ class CorporateProfile(BaseModule):
     years_in_business = models.PositiveIntegerField(null=True, blank=True)
     about_us = models.TextField(null=True, blank=True)
     perks_benefits = models.JSONField(default=list, blank=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = "corporate_profile"

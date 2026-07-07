@@ -623,7 +623,6 @@ class StudentProfileViewSet(ModelViewSet):
         "linkedin_url",
         "github_url",
         "portfolio",
-        "created_at",
         "updated_at",
     ]
     def get_queryset(self):
@@ -745,7 +744,10 @@ class StudentProfileViewSet(ModelViewSet):
                 {"success": False, "message": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        serializer.save()
+        profile = serializer.save()
+        profile.updated_by = request.user
+        profile.updated_at = timezone.now()
+        profile.save(update_fields=["updated_by", "updated_at"])
         try:
             cache.delete(recommendation_key(request.user.id))
         except Exception:
@@ -820,7 +822,10 @@ class ProfessionalProfileViewSet(ModelViewSet):
                 {"success": False, "message": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        serializer.save()
+        profile = serializer.save()
+        profile.updated_by = request.user
+        profile.updated_at = timezone.now()
+        profile.save(update_fields=["updated_by", "updated_at"])
         try:
             cache.delete(recommendation_key(request.user.id))
         except Exception:
@@ -974,7 +979,7 @@ class SchoolCollegeProfileViewSet(OrganizationProfileViewSet):
     ]
     ordering_fields = OrganizationProfileViewSet.ordering_fields+[
         "user",
-        "student_trained"
+        "student_trained",
         "placements",
         "success_rate",
         "about_us",

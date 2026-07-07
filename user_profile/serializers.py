@@ -7,6 +7,7 @@ from common.mixins.serializer_mixins import (
     ProfileLanguageSaveWithTimeMixin,
     ProfileUpdateTimestampMixin,
 )
+from user.serializers import UserQuickSerializer
 from user_profile.models import (
     BusinessSetting,
     ChildProfile,
@@ -103,8 +104,10 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
     phone = serializers.CharField(source="user.phone", read_only=True)
     email = serializers.CharField(source="user.email", read_only=True)
     profile_image = serializers.CharField(source="user.profile_image", read_only=True)
-    created_by = serializers.CharField(source="user.created_by", read_only=True)
-    updated_by = serializers.CharField(source="user.updated_by", read_only=True)
+    referral_code = serializers.CharField(source="user.referral_code", read_only=True)
+    created_by = UserQuickSerializer(source="user.created_by",read_only=True)
+    updated_by = UserQuickSerializer(read_only=True)
+    created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = serializers.CharField(source="user.deleted_by", read_only=True)
     
@@ -146,9 +149,10 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
             "portfolio",
             "language",
             "profile_image",
+            "referral_code",
             "created_by",
-            "created_at",
             "updated_by",
+            "created_at",
             "updated_at",
             "deleted_at",
             "deleted_by",
@@ -294,6 +298,12 @@ class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestamp
     current_industry_name = serializers.CharField(
         source="current_industry.domain_name", read_only=True, default=None
     )
+    referral_code = serializers.CharField(source="user.referral_code", read_only=True)
+    created_by = UserQuickSerializer(source="user.created_by",read_only=True)
+    updated_by = UserQuickSerializer(read_only=True)
+    created_at = serializers.CharField(source="user.created_at", read_only=True)
+    deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
+    deleted_by = serializers.CharField(source="user.deleted_by", read_only=True)
 
     class Meta:
         model = ProfessionalProfile
@@ -336,8 +346,13 @@ class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestamp
             "phone",
             "email",
             "profile_image",
+            "referral_code",
+            "created_by",
+            "updated_by",
             "created_at",
             "updated_at",
+            "deleted_at",
+            "deleted_by",
         ]
 
 
@@ -352,12 +367,6 @@ class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, seri
     last_name = serializers.CharField(source="user.last_name", required=False)
     phone = serializers.CharField(source="user.phone", required=False)
     profile_image = serializers.CharField(source="user.profile_image", required=False)
-
-
-
-
-
-
     highest_education_level = serializers.PrimaryKeyRelatedField(
         source="education_level",
         queryset=EducationLevel.objects.all(),
@@ -738,10 +747,12 @@ class InstituteProfileSerializer(BaseModelSerializer):
     address = serializers.CharField(source="user.address", read_only=True)
     country = serializers.CharField(source="user.country.name", read_only=True)
     status = serializers.CharField(source="user.status", read_only=True)
-    status = serializers.CharField(source="user.status", read_only=True)
     gallery_images = InstituteGallerySerializer(many=True, read_only=True)
-
-    created_by = serializers.CharField(source="user.created_by", read_only=True)
+    referral_code = serializers.CharField(source="user.referral_code", read_only=True)
+    created_by = UserQuickSerializer(source="user.created_by",read_only=True)
+    created_at = serializers.CharField(source="user.created_at", read_only=True)
+    deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
+    deleted_by = serializers.CharField(source="user.deleted_by", read_only=True)
 
     class Meta:
         model = InstituteProfile
@@ -768,6 +779,7 @@ class InstituteProfileSerializer(BaseModelSerializer):
             "website",
             "institute_name",
             "gallery_images",
+            "referral_code",
         ]
 
 class InstituteProfileUpSerializer(BaseModelSerializer):
@@ -829,8 +841,11 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
     gallery_images = SchoolCollegeGallerySerializer(many=True, read_only=True)
     education_name = serializers.ReadOnlyField(source="get_education_names")
     address = serializers.CharField(source="user.address", read_only=True)
-    created_by = serializers.CharField(source="user.created_by", read_only=True)
-
+    referral_code = serializers.CharField(source="user.referral_code", read_only=True)
+    created_by = UserQuickSerializer(source="user.created_by",read_only=True)
+    created_at = serializers.CharField(source="user.created_at", read_only=True)
+    deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
+    deleted_by = serializers.CharField(source="user.deleted_by", read_only=True)
 
     class Meta:
         model = SchoolCollegeProfile
@@ -924,7 +939,11 @@ class CorporateProfileSerializer(BaseModelSerializer):
     country = serializers.CharField(source="user.country.name", read_only=True)
     status = serializers.CharField(source="user.status", read_only=True)
     gallery_images = CorporateGallerySerializer(many=True, read_only=True)
-    created_by = serializers.CharField(source = "user.created_by", read_only=True)
+    referral_code = serializers.CharField(source="user.referral_code", read_only=True)
+    created_by = UserQuickSerializer(source="user.created_by",read_only=True)
+    created_at = serializers.CharField(source="user.created_at", read_only=True)
+    deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
+    deleted_by = serializers.CharField(source="user.deleted_by", read_only=True)
 
     class Meta:
         model = CorporateProfile

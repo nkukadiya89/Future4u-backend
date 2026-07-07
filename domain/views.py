@@ -148,21 +148,28 @@ class DomainViewSet(SuccessEnvelopeMixin, ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="dropdown")
     def dropdown(self, request, *args, **kwargs):
-        key = dropdown_key("domains")
-        try:
-            cached = cache.get(key)
-        except Exception:
-            cached = None
-        if cached is not None:
-            return Response({"success": True, "data": cached})
+        parent_id = request.query_params.get("parent_id") or None
+        root_only = str(request.query_params.get("root_only", "")).lower() in ("1", "true", "yes")
 
-        qs = domain_service.dropdown_domains()
+        # Only cache the unfiltered full list
+        if not parent_id and not root_only:
+            key = dropdown_key("domains")
+            try:
+                cached = cache.get(key)
+            except Exception:
+                cached = None
+            if cached is not None:
+                return Response({"success": True, "data": cached})
+
+        qs = domain_service.dropdown_domains(parent_id=parent_id, root_only=root_only)
         serializer = DomainDropdownSerializer(qs, many=True)
         data = serializer.data
-        try:
-            cache.set(key, data, 60 * 60)
-        except Exception:
-            pass
+
+        if not parent_id and not root_only:
+            try:
+                cache.set(key, data, 60 * 60)
+            except Exception:
+                pass
         return Response({"success": True, "data": data})
 
     @action(detail=False, methods=["get"], url_path="tree")
