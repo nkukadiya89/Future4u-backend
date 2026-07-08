@@ -101,6 +101,7 @@ class StudentBulkUpload:
             medium=profile_data.get("medium"),
             education_level=profile_data.get("education_level"),
             stream=profile_data.get("stream"),
+            referred_by = profile_data.get("referred_by"),
         )
 
         languages = profile_data.get("languages", [])

@@ -11,7 +11,7 @@ from state.models import State
 from stream.models import Stream
 from user.models import User
 from user.services.registration_service import setup_web_user_password
-from user_profile.models import StudentProfile
+from user_profile.models import StudentProfile,ProfessionalProfile
 from utils.auth import is_web_source, validate_password_strength
 
 
@@ -100,10 +100,35 @@ class RegisterSerializer(serializers.ModelSerializer):
                 f"Invalid user_type. Must be one of: {', '.join(valid_user_types)}"
             )
 
+        referred_by = None
+        if referral_code:
+            if user_type == User.Role.STUDENT:
+                referred_by = User.objects.filter(
+                    referral_code__iexact=referral_code,
+                    user_type__in=[
+                        User.Role.SCHOOL_COLLEGE,
+                        User.Role.INSTITUTE,
+                        User.Role.CORPORATE,
+                    ],
+                    deleted = False,
+                ).first()
+                if not referred_by:
+                    errors["referral_code"] = "Invalid referral code."
+
+            elif user_type == User.Role.PROFESSIONAL:
+                referred_by = User.objects.filter(
+                    referral_code__iexact=referral_code,
+                    user_type__in=[
+                        User.Role.CORPORATE,
+                    ],
+                    deleted=False,
+                ).first()
+                if not referred_by:
+                    errors["referral_code"] = "Invalid referral code."
         if errors:
             raise serializers.ValidationError(errors)
 
-        data["validated_data"] = {
+        validated_data = {
             "email": email,
             "first_name": first_name,
             "last_name": last_name or "",
@@ -113,11 +138,19 @@ class RegisterSerializer(serializers.ModelSerializer):
             "states": state,
             "city": city,
             "address": address or None,
-            "referral_code": referral_code,
             "password": password,
             "terms_accepted": terms_accepted,
             "source": source,
+            "referred_by": referred_by,
         }
+        if user_type in [
+            User.Role.SCHOOL_COLLEGE,
+            User.Role.INSTITUTE,
+            User.Role.CORPORATE,
+        ]:
+            validated_data["referral_code"] = referral_code
+        data["validated_data"] = validated_data
+
         data["profile_image_file"] = self.context["request"].FILES.get("profile_image")
         return data
 
@@ -129,6 +162,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         password = validated_data_inner.pop("password", None)
         terms_accepted = validated_data_inner.pop("terms_accepted")
         source = validated_data_inner.pop("source", None)
+        referred_by = validated_data_inner.pop("referred_by", None)
 
         user = User.objects.create(**validated_data_inner)
         user.created_by = user
@@ -140,11 +174,24 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         user.terms_accepted = terms_accepted
         if is_web:
-            user.save(update_fields=["terms_accepted"])
+            user.save(update_fields=["terms_accepted", "created_by"])
         else:
             user.save()
 
         if profile_image_file:
             user.upload_profile_image(profile_image_file)
+        
+        def update_profile_referral():
+            if user.user_type == User.Role.STUDENT:
+                profile = StudentProfile.objects.get(user=user)
+                profile.referred_by = referred_by
+                profile.save(update_fields=["referred_by"])
 
+            elif user.user_type == User.Role.PROFESSIONAL:
+                profile = ProfessionalProfile.objects.get(user=user)
+                profile.referred_by = referred_by
+                profile.save(update_fields=["referred_by"])
+        
+        if referred_by:
+            transaction.on_commit(update_profile_referral)
         return user

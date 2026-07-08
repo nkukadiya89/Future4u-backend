@@ -18,13 +18,14 @@ from user.models import User
 from user.permissions import IsAdminUser
 from user.services.bulk_user_upload import BulkUserUploadService
 from user.tasks import bulk_upload_user_task
-from user_profile.models import InstituteProfile, StudentProfile, SchoolCollegeProfile,CorporateProfile
+from user_profile.models import InstituteProfile, StudentProfile, SchoolCollegeProfile, CorporateProfile, ProfessionalProfile
 from rest_framework.viewsets import ModelViewSet
 from user_profile.serializers import StudentProfileSerializer
-from user_profile.serializers import SchoolCollegeProfileSerializer,InstituteProfileSerializer,CorporateProfileSerializer
+from user_profile.serializers import SchoolCollegeProfileSerializer, InstituteProfileSerializer, CorporateProfileSerializer, ProfessionalProfileSerializer
 from user.admin_school_colleges_serializers import AdminSchoolCollegesSerializer,AdminSchoolCollegeSortSerializer
 from user.admin_institute_serializers import AdminInstituteSerializer,AdminInstituteSortSerializer
 from user.admin_corporate_serializers import AdminCorporateSerializer,AdminCorporateSortSerializer
+from user.admin_working_professional_serializers import AdminWorkingProfessionalSerializer, AdminWorkingProfessionalSortSerializer
 
 class BaseAdminProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser]
@@ -535,3 +536,12 @@ class AdminCorporateViewSet(BaseAdminProfileViewSet):
     serializer_class = AdminCorporateSerializer
     detail_serializer_class = AdminCorporateSortSerializer
     archive_serializer_class = CorporateProfileSerializer
+
+
+class AdminWorkingProfessionalViewSet(BaseAdminProfileViewSet):
+    user_role = User.Role.PROFESSIONAL
+    role_name = "Working Professional"
+    profile_model = ProfessionalProfile
+    serializer_class = AdminWorkingProfessionalSerializer
+    detail_serializer_class = AdminWorkingProfessionalSortSerializer
+    archive_serializer_class = ProfessionalProfileSerializer

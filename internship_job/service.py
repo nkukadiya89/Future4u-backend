@@ -58,7 +58,7 @@ def match_internships(ai_skills, ai_education, user, internships_qs):
             }
         )
     results.sort(key=lambda x:x["score"], reverse=True)
-    return results[:50]
+    return results
 
 
 
@@ -117,4 +117,4 @@ def match_jobs(ai_skills, ai_education, user, jobs_qs):
             }
         )
     results.sort(key=lambda x:x["score"], reverse=True)
-    return results[:50]
+    return results

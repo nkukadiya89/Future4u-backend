@@ -15807,6 +15807,197 @@
       ]
     },
     {
+      "name": "Admin Working Professional Users",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional-profile/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "data", "value": "{\"email\": \"user@example.com\", \"first_name\": \"Ramesh\", \"last_name\": \"Shah\", \"phone\": \"9685741201\", \"country\": 1, \"state\": 1, \"city\": 1, \"address\": \"Noida\", \"years_of_experience\": \"0_1_years\", \"employment_type\": \"salaried_employee\", \"referral_code\": \"ABC\"}", "type": "text" },
+                { "key": "profile_image", "type": "file", "src": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/1/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/1/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "1"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "data", "value": "{\"years_of_experience\": \"1_3_years\", \"employment_type\": \"freelancer\"}", "type": "text" },
+                { "key": "profile_image", "type": "file", "src": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/1/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update_status (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/1/update-status/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "1", "update-status"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"status\": \"active\"}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk_archive (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/bulk-archive/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "bulk-archive"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [1, 2]}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk_restore (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/bulk-restore/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "bulk-restore"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [1, 2]}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "archive_list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/archive-list/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "archive-list"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk_upload (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/bulk-upload/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "bulk-upload"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "" },
+                { "key": "user_type", "value": "working_professional", "type": "text" }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Admin Corporate Users",
       "description": "Super Admin / staff endpoints for creating and managing corporate users. Requires Bearer {{access_token}}. Base path: /admin-corporate-users/\n\nList active corporate profiles with GET /api/corporate-profile/ (superuser token).\n\nActivate or deactivate users with PATCH {user_id}/update-status/ (status: active | inactive). Active users receive a password setup email when activated.\n\nSoft-delete (archive): DELETE single user or PATCH bulk-archive. Users must be inactive before archiving. Restore archived users with PATCH bulk-restore. List archived users with GET archive-list.",
       "item": [
