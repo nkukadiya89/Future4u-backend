@@ -77,4 +77,4 @@ def match_courses(ai_skills, ai_education, user, courses_qs):
         result.append({"course": course, "score": score})
 
     result.sort(key=lambda x: x["score"], reverse=True)
-    return result[:20]
+    return result

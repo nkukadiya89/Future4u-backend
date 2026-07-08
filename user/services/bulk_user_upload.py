@@ -11,6 +11,7 @@ from user.services.bulkupload_profiles.student_bulkupload import StudentBulkUplo
 from user.services.bulkupload_profiles.school_colleges_bulkupload import SchoolCollegeBulkUpload
 from user.services.bulkupload_profiles.institute_bulkupload import InstituteBulkUpload
 from user.services.bulkupload_profiles.corporate_bulkupload import CorporateBulkUpload
+from user.services.bulkupload_profiles.working_professional_bulkupload import WorkingProfessionalBulkUpload
 
 class BulkUserUploadService:
     REQUIRED_COLUMNS = [
@@ -38,6 +39,9 @@ class BulkUserUploadService:
         
         elif user_type == User.Role.CORPORATE:
             required_columns += CorporateBulkUpload.REQUIRED_COLUMNS
+
+        elif user_type == User.Role.PROFESSIONAL:
+            required_columns += WorkingProfessionalBulkUpload.REQUIRED_COLUMNS
 
         return required_columns
     
@@ -70,7 +74,11 @@ class BulkUserUploadService:
         elif user_type == User.Role.CORPORATE:
             profile_service = CorporateBulkUpload
             profile_masters = CorporateBulkUpload.preload()
-            
+
+        elif user_type == User.Role.PROFESSIONAL:
+            profile_service = WorkingProfessionalBulkUpload
+            profile_masters = WorkingProfessionalBulkUpload.preload()
+
         cls._validate_headers(df, required_columns)
 
         total_records = len(df)
@@ -258,6 +266,30 @@ class BulkUserUploadService:
                 if profile_service:
                     profile_data = profile_service.validate_row(row, profile_masters)
 
+                referral_code = str(row.get("Referral Code", "") or "").strip()
+                referred_by = None
+                if user_type in [User.Role.STUDENT, User.Role.PROFESSIONAL] and referral_code:
+                    referred_by = User.objects.filter(
+                        referral_code__iexact = referral_code,
+                        user_type__in = [
+                            User.Role.SCHOOL_COLLEGE,
+                            User.Role.INSTITUTE,
+                            User.Role.CORPORATE,
+                        ],
+                        deleted=False,
+                    ).first()
+                    if not referred_by:
+                        failed += 1
+                        errors.append(
+                            {
+                                "row": row_number,
+                                "email": email,
+                                "message": "Invalid referral code.",
+                            }
+                        )
+                        continue
+                if user_type in [User.Role.STUDENT, User.Role.PROFESSIONAL]:
+                    profile_data["referred_by"] = referred_by
                 with transaction.atomic():
                     user = User.objects.create(
                         first_name=str(row.get("First Name", "")).strip(),
@@ -266,7 +298,11 @@ class BulkUserUploadService:
                         email=email,
                         phone=phone,
                         user_type=user_type,
-                        referral_code=str(row.get("Referral Code", "")).strip(),
+                        referral_code = referral_code if user_type in [
+                            User.Role.SCHOOL_COLLEGE,
+                            User.Role.INSTITUTE,
+                            User.Role.CORPORATE,
+                        ] else None,
                         country=country,
                         states=state,
                         city=city,

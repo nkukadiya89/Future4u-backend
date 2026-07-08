@@ -1,3 +1,4 @@
+from activity_log.services import log_event
 from django.utils import timezone
 import os
 import tempfile
@@ -17,13 +18,14 @@ from user.models import User
 from user.permissions import IsAdminUser
 from user.services.bulk_user_upload import BulkUserUploadService
 from user.tasks import bulk_upload_user_task
-from user_profile.models import InstituteProfile, StudentProfile, SchoolCollegeProfile,CorporateProfile
+from user_profile.models import InstituteProfile, StudentProfile, SchoolCollegeProfile, CorporateProfile, ProfessionalProfile
 from rest_framework.viewsets import ModelViewSet
 from user_profile.serializers import StudentProfileSerializer
-from user_profile.serializers import SchoolCollegeProfileSerializer,InstituteProfileSerializer,CorporateProfileSerializer
+from user_profile.serializers import SchoolCollegeProfileSerializer, InstituteProfileSerializer, CorporateProfileSerializer, ProfessionalProfileSerializer
 from user.admin_school_colleges_serializers import AdminSchoolCollegesSerializer,AdminSchoolCollegeSortSerializer
 from user.admin_institute_serializers import AdminInstituteSerializer,AdminInstituteSortSerializer
 from user.admin_corporate_serializers import AdminCorporateSerializer,AdminCorporateSortSerializer
+from user.admin_working_professional_serializers import AdminWorkingProfessionalSerializer, AdminWorkingProfessionalSortSerializer
 
 class BaseAdminProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser]
@@ -82,6 +84,14 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
         if serializer.is_valid():
             user = serializer.save()
+            log_event(
+                event="user.created",
+                description=f"Admin {request.user.email} created {self.role_name} {user.email}",
+                user=request.user,
+                entity_type="user",
+                entity_id=user.id,
+                request=request,
+            )
             return Response(
                 {
                     "success": True,
@@ -121,6 +131,14 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
         if serializer.is_valid():
             user = serializer.save()
+            log_event(
+                event="user.updated",
+                description=f"Admin {request.user.email} updated {self.role_name} {user.email}",
+                user=request.user,
+                entity_type="user",
+                entity_id=user.id,
+                request=request,
+            )
             return Response(
                 {
                     "success": True,
@@ -172,6 +190,15 @@ class BaseAdminProfileViewSet(ModelViewSet):
         user.deleted_at = timezone.now()
         user.deleted_by = request.user
         user.save(update_fields=["deleted", "deleted_at", "deleted_by"])
+
+        log_event(
+            event="user.deleted",
+            description=f"Admin {request.user.email} deleted {self.role_name} {user.email}",
+            user=request.user,
+            entity_type="user",
+            entity_id=user.id,
+            request=request,
+        )
 
         return Response(
             {
@@ -233,6 +260,15 @@ class BaseAdminProfileViewSet(ModelViewSet):
         if status_value == "active":
             send_activation_password_setup_email(user)
 
+        log_event(
+            event="user.status_changed",
+            description=f"Admin {request.user.email} changed {self.role_name} {user.email} status to {status_value}",
+            user=request.user,
+            entity_type="user",
+            entity_id=user.id,
+            request=request,
+        )
+
         return Response(
             {
                 "success": True,
@@ -291,6 +327,16 @@ class BaseAdminProfileViewSet(ModelViewSet):
             deleted=True,
             deleted_at=timezone.now(),
             deleted_by=request.user,
+        )
+
+        log_event(
+            event="user.bulk_archive",
+            description=f"Admin {request.user.email} bulk archived {users.count()} {self.role_name}(s)",
+            user=request.user,
+            entity_type="user",
+            entity_id=None,
+            metadata={"user_ids": ids, "count": users.count()},
+            request=request,
         )
 
         return Response(
@@ -385,6 +431,16 @@ class BaseAdminProfileViewSet(ModelViewSet):
             updated_by=request.user,
         )
 
+        log_event(
+            event="user.bulk_restore",
+            description=f"Admin {request.user.email} bulk restored {users.count()} {self.role_name}(s)",
+            user=request.user,
+            entity_type="user",
+            entity_id=None,
+            metadata={"user_ids": ids, "count": users.count()},
+            request=request,
+        )
+
         return Response(
             {
                 "success": True,
@@ -417,6 +473,16 @@ class BaseAdminProfileViewSet(ModelViewSet):
                 tmp.name,
                 request.user.id,
                 user_type,
+            )
+
+            log_event(
+                event="user.bulk_upload",
+                description=f"Admin {request.user.email} started bulk upload for {user_type}: {uploaded_file.name}",
+                user=request.user,
+                entity_type="user",
+                entity_id=None,
+                metadata={"filename": uploaded_file.name, "user_type": user_type},
+                request=request,
             )
 
             return Response(
@@ -470,3 +536,12 @@ class AdminCorporateViewSet(BaseAdminProfileViewSet):
     serializer_class = AdminCorporateSerializer
     detail_serializer_class = AdminCorporateSortSerializer
     archive_serializer_class = CorporateProfileSerializer
+
+
+class AdminWorkingProfessionalViewSet(BaseAdminProfileViewSet):
+    user_role = User.Role.PROFESSIONAL
+    role_name = "Working Professional"
+    profile_model = ProfessionalProfile
+    serializer_class = AdminWorkingProfessionalSerializer
+    detail_serializer_class = AdminWorkingProfessionalSortSerializer
+    archive_serializer_class = ProfessionalProfileSerializer

@@ -265,7 +265,7 @@ class ProfessionalProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin
     readonly_fields = ("user", "updated_at")
     raw_id_fields = ("user", "education_level", "stream", "current_industry_category", "current_industry")
 
-    autocomplete_fields = ("education_level", "stream", "current_industry_category", "current_industry")
+    autocomplete_fields = ("education_level", "stream")
     filter_horizontal = ("language",)
     list_select_related = (
         "user",

@@ -1,6 +1,7 @@
 from datetime import timedelta
 import json
 
+from activity_log.services import log_event
 from utils.auth import is_web_source, validate_password_strength
 from django.contrib.auth import logout
 from django.utils import timezone
@@ -32,44 +33,52 @@ class AuthViewSet(viewsets.ViewSet):
     def register(self, request):
         serializer = RegisterSerializer(data=request.data, context={"request": request})
 
-        if serializer.is_valid():
-            user = serializer.save()
+        if not serializer.is_valid():
+            return Response(
+                {"success": False, "errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-            try:
-                json_data = json.loads(request.data.get("data", "{}"))
-                source = json_data.get("source")
-            except (json.JSONDecodeError, TypeError, AttributeError):
-                source = None
+        user = serializer.save()
 
-            if not user.is_active and not is_web_source(source):
-                send_registration_email(user)
+        try:
+            json_data = json.loads(request.data.get("data", "{}"))
+            source = json_data.get("source")
+        except (json.JSONDecodeError, TypeError, AttributeError):
+            source = None
 
-            response_data = {
-                "success": True,
-                "user_id": user.id,
-                "user_type": user.user_type,
-            }
-            if is_web_source(source):
-                response_data.update(
-                    {
-                        "message": (
-                            "Registration successful. "
-                            "A password setup link has been sent to your email."
-                        ),
-                        "must_change_password": True,
-                    }
-                )
-            else:
-                response_data["message"] = (
-                    "Registration successful. Please verify your email with the OTP sent."
-                )
+        if not user.is_active and not is_web_source(source):
+            send_registration_email(user)
 
-            return Response(response_data, status=status.HTTP_201_CREATED)
-
-        return Response(
-            {"success": False, "errors": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST,
+        log_event(
+            event="user.register",
+            description=f"User {user.email} registered as {user.user_type}",
+            user=user,
+            entity_type="user",
+            entity_id=user.id,
         )
+
+        response_data = {
+            "success": True,
+            "user_id": user.id,
+            "user_type": user.user_type,
+        }
+        if is_web_source(source):
+            response_data.update(
+                {
+                    "message": (
+                        "Registration successful. "
+                        "A password setup link has been sent to your email."
+                    ),
+                    "must_change_password": True,
+                }
+            )
+        else:
+            response_data["message"] = (
+                "Registration successful. Please verify your email with the OTP sent."
+            )
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
     @action(
         detail=False,
@@ -126,6 +135,13 @@ class AuthViewSet(viewsets.ViewSet):
                 "otp_created_at",
             ]
         )
+        log_event(
+            event="user.otp_verified",
+            description=f"User {user.email} verified their email",
+            user=user,
+            entity_type="user",
+            entity_id=user.id,
+        )
         return Response(
             {"success": True, "message": "Your email has been verified, and your account has been created successfully"},
             status=status.HTTP_200_OK,
@@ -181,6 +197,13 @@ class AuthViewSet(viewsets.ViewSet):
     def logout(self, request):
         try:
             logout(request)
+            log_event(
+                event="user.logout",
+                description=f"User {request.user.email} logged out",
+                user=request.user,
+                entity_type="user",
+                entity_id=request.user.id,
+            )
             return Response(
                 {"success": True, "message": "Logout successfully"},
                 status=status.HTTP_200_OK,
@@ -241,6 +264,14 @@ class AuthViewSet(viewsets.ViewSet):
                 "must_change_password",
                 "password_last_changed",
             ]
+        )
+
+        log_event(
+            event="user.password_changed",
+            description=f"User {user.email} changed their password",
+            user=user,
+            entity_type="user",
+            entity_id=user.id,
         )
 
         return Response(
@@ -363,6 +394,13 @@ class AuthViewSet(viewsets.ViewSet):
             update_fields.extend(["is_active", "status", "email_verified"])
 
         user.save(update_fields=update_fields)
+        log_event(
+            event="user.password_reset",
+            description=f"User {user.email} reset their password",
+            user=user,
+            entity_type="user",
+            entity_id=user.id,
+        )
         message = (
             "Password set successfully."
             if was_pending

@@ -58,6 +58,15 @@ class StudentProfile(models.Model):
             ("english", "English"),
             ("hindi", "Hindi"),
             ("gujarati", "Gujarati"),
+            ("marathi", "Marathi"),
+            ("tamil", "Tamil"),
+            ("telugu", "Telugu"),
+            ("kannada", "Kannada"),
+            ("bengali", "Bengali"),
+            ("punjabi", "Punjabi"),
+            ("odia", "Odia"),
+            ("malayalam", "Malayalam"),
+            ("urdu", "Urdu"),
         ],
         null=True,
         blank=True,
@@ -91,7 +100,7 @@ class StudentProfile(models.Model):
     linkedin_url = models.CharField(max_length=200, null=True, blank=True)
     github_url = models.CharField(max_length=200, null=True, blank=True)
     portfolio = models.CharField(max_length=200, null=True, blank=True)
-
+    referred_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="referred_students")
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
 
@@ -377,7 +386,7 @@ class ProfessionalProfile(models.Model):
     linkedin_url = models.CharField(max_length=200, null=True, blank=True)
     github_url = models.CharField(max_length=200, null=True, blank=True)
     portfolio = models.CharField(max_length=200, null=True, blank=True)
-
+    referred_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="referred_professionals")
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
 

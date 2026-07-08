@@ -9,6 +9,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from activity_log.services import log_event
 from company.models import Company
 from employee.models import Employee
 from user.models import User
@@ -186,6 +187,14 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         user.keep_me_logged_in = keep_me_logged
         user.last_login = now()
         user.save()
+        log_event(
+            event="user.login",
+            description=f"User {user.email} logged in",
+            user=user,
+            entity_type="user",
+            entity_id=user.id,
+        )
+
         data = {
             "success": True,
             "message": "Login Successful",
