@@ -1,22 +1,24 @@
 from __future__ import annotations
 
+from decimal import Decimal
+
 from rest_framework import serializers
 
 from city.models import City
 from internship_job.models import Job
 from job_generation.constants.job_generation_constants import (
-    JOB_SUMMARY_MAX_LENGTH,
-    JOB_SUMMARY_MIN_LENGTH,
+    JOB_OVERVIEW_MAX_LENGTH,
+    JOB_OVERVIEW_MIN_LENGTH,
     OPTIONAL_FIELD_MAX_LENGTH,
 )
 
 
 class JobGenerationInputSerializer(serializers.Serializer):
-    job_summary = serializers.CharField(
-        min_length=JOB_SUMMARY_MIN_LENGTH,
-        max_length=JOB_SUMMARY_MAX_LENGTH,
+    job_overview = serializers.CharField(
+        min_length=JOB_OVERVIEW_MIN_LENGTH,
+        max_length=JOB_OVERVIEW_MAX_LENGTH,
         trim_whitespace=True,
-        help_text="Brief role summary used as primary context for AI generation.",
+        help_text="Brief role overview used as primary context for AI generation.",
     )
     organization_name = serializers.CharField(
         min_length=2,
@@ -30,12 +32,23 @@ class JobGenerationInputSerializer(serializers.Serializer):
         allow_null=True,
         help_text="Job location city (user-provided).",
     )
-    salary_range = serializers.CharField(
+    salary_min = serializers.DecimalField(
         required=False,
-        allow_blank=True,
-        max_length=OPTIONAL_FIELD_MAX_LENGTH,
-        trim_whitespace=True,
-        help_text="Salary range (e.g. ₹6 - 10 LPA).",
+        allow_null=True,
+        default=None,
+        max_digits=10,
+        decimal_places=2,
+        min_value=Decimal("0"),
+        help_text="Minimum salary in INR (e.g. 400000).",
+    )
+    salary_max = serializers.DecimalField(
+        required=False,
+        allow_null=True,
+        default=None,
+        max_digits=10,
+        decimal_places=2,
+        min_value=Decimal("0"),
+        help_text="Maximum salary in INR (e.g. 600000).",
     )
     job_type = serializers.ChoiceField(
         required=False,
@@ -66,4 +79,13 @@ class JobGenerationInputSerializer(serializers.Serializer):
         for field_name in ("job_type", "experience_level", "mode"):
             if attrs.get(field_name) == "":
                 attrs.pop(field_name, None)
+
+        salary_min = attrs.get("salary_min")
+        salary_max = attrs.get("salary_max")
+        if salary_min is not None and salary_max is not None:
+            if salary_min > salary_max:
+                raise serializers.ValidationError(
+                    {"salary_min": "salary_min must be less than or equal to salary_max."}
+                )
+
         return attrs

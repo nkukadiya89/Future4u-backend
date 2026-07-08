@@ -20,7 +20,7 @@ from job_generation.config import ai_llm_enabled, job_generation_enabled
 from city.models import City
 from internship_job.models import Job
 from job_generation.constants.job_generation_constants import (
-    JOB_SUMMARY_MAX_LENGTH,
+    JOB_OVERVIEW_MAX_LENGTH,
     OPTIONAL_FIELD_MAX_LENGTH,
 )
 from job_generation.exceptions import (
@@ -63,11 +63,11 @@ def _provider_status() -> dict:
 
 
 class JobGenerationRunForm(forms.Form):
-    job_summary = forms.CharField(
+    job_overview = forms.CharField(
         widget=forms.Textarea(attrs={"rows": 4}),
         min_length=10,
-        max_length=JOB_SUMMARY_MAX_LENGTH,
-        help_text="Required. Brief role summary for AI generation (10–1000 characters).",
+        max_length=JOB_OVERVIEW_MAX_LENGTH,
+        help_text="Required. Brief role overview for AI generation (10–1000 characters).",
     )
     organization_name = forms.CharField(
         max_length=OPTIONAL_FIELD_MAX_LENGTH,
@@ -92,10 +92,19 @@ class JobGenerationRunForm(forms.Form):
         choices=(("", "---------"),) + Job.MODE_CHOICES,
         help_text="Optional. Work mode (same values as Job model).",
     )
-    salary_range = forms.CharField(
+    salary_min = forms.DecimalField(
         required=False,
-        max_length=OPTIONAL_FIELD_MAX_LENGTH,
-        help_text="Optional. Salary range hint (e.g. 'INR 4-6 LPA').",
+        min_value=0,
+        decimal_places=2,
+        max_digits=10,
+        help_text="Optional. Minimum salary in INR (e.g. 400000).",
+    )
+    salary_max = forms.DecimalField(
+        required=False,
+        min_value=0,
+        decimal_places=2,
+        max_digits=10,
+        help_text="Optional. Maximum salary in INR (e.g. 600000).",
     )
     application_deadline = forms.DateField(
         required=False,
@@ -118,13 +127,14 @@ class JobGenerationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             if city_id:
                 city = City.objects.filter(id=city_id, deleted=False).first()
             generation_input = {
-                "job_summary": form.cleaned_data["job_summary"],
+                "job_overview": form.cleaned_data["job_overview"],
                 "organization_name": form.cleaned_data["organization_name"],
                 "city": city,
                 "job_type": form.cleaned_data.get("job_type", ""),
                 "experience_level": form.cleaned_data.get("experience_level", ""),
                 "mode": form.cleaned_data.get("mode", ""),
-                "salary_range": form.cleaned_data.get("salary_range", ""),
+                "salary_min": form.cleaned_data.get("salary_min"),
+                "salary_max": form.cleaned_data.get("salary_max"),
                 "application_deadline": form.cleaned_data.get("application_deadline"),
             }
             try:

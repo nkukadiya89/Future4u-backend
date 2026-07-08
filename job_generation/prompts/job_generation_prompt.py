@@ -32,7 +32,7 @@ Return ONLY valid JSON matching this exact shape (no markdown, no extra text):
 {OUTPUT_SHAPE}
 
 The user has already filled these fields on the form — use them only as context, never generate them. Do NOT include them in your JSON output:
-- job_summary
+- job_overview
 - organization_name
 - city
 - salary_range
@@ -58,7 +58,7 @@ Be precise: name specific technologies, tools, and domains when the input suppor
 --- FIELD RULES ---
 
 name
-- Realistic, professional job title inferred from job_summary and experience_level
+- Realistic, professional job title inferred from job_overview and experience_level
 - Should match industry-standard naming (e.g. "Junior Python Developer", "Senior Data Analyst", "Marketing Manager")
 - Level prefix (Junior / Senior / Lead) must align with the provided experience_level
 - Avoid vague titles ("Developer", "Associate") and hype titles (no Rockstar, Ninja, Wizard, Guru)
@@ -81,12 +81,12 @@ responsibilities
 - One clear task per line — no commas joining multiple duties
 
 skills
-- 4-8 skills relevant to this specific role (infer from job_summary)
+- 4-8 skills relevant to this specific role (infer from job_overview)
 - Every skill should connect to at least one listed responsibility
 - Prefer specific technologies over broad categories ("React" over "Frontend Development", "AWS" over "Cloud Computing")
 
 education_tags
-- Array of {EDUCATION_TAGS_MIN}-{EDUCATION_TAGS_MAX} qualification labels you infer from the role and job_summary
+- Array of {EDUCATION_TAGS_MIN}-{EDUCATION_TAGS_MAX} qualification labels you infer from the role and job_overview
 - Use one tag when only one qualification fits; use multiple when the role accepts several paths
 - Generate realistic, specific labels for this role (e.g. "B.Tech in Computer Science", "BCA", "MBA in Marketing") — do not copy from a fixed template or use generic "Bachelor's Degree" without a field
 - No duplicates
@@ -97,7 +97,7 @@ why_this_match
 - First sentence: name 2-3 specific skills from the role that align with a hypothetical candidate's profile
 - Second sentence: brief fit statement about why this role suits someone with those skills
 - Make it sound personalized, not templated — vary the sentence structure
-- Align with the user's experience_level and job_summary when provided
+- Align with the user's experience_level and job_overview when provided
 
 --- TRUTHFULNESS ---
 - Only infer what is reasonable from the user-provided context
@@ -124,7 +124,7 @@ Previous validation feedback (fix these issues): {{validation_feedback}}
 
 USER_PROMPT = """Generate AI fields for the Future4U Add Job form using the user-provided details below.
 
-job_summary: {job_summary}
+job_overview: {job_overview}
 organization_name: {organization_name}
 city: {city}
 salary_range: {salary_range}
@@ -150,17 +150,37 @@ def _choice_display(choices: tuple[tuple[str, str], ...], value: object) -> str:
     return dict(choices).get(str(value), str(value))
 
 
+def _format_salary(generation_input: dict) -> str:
+    """Convert salary_min / salary_max (INR) to a readable string for the AI prompt."""
+    salary_min = generation_input.get("salary_min")
+    salary_max = generation_input.get("salary_max")
+
+    if salary_min is None and salary_max is None:
+        return "Not provided"
+
+    def to_lpa(amount) -> str:
+        lpa = float(amount) / 100_000
+        # Show as integer if it's a whole number, else 1 decimal place
+        return f"{lpa:.0f}" if lpa == int(lpa) else f"{lpa:.1f}"
+
+    if salary_min is not None and salary_max is not None:
+        return f"INR {to_lpa(salary_min)}-{to_lpa(salary_max)} LPA"
+    if salary_min is not None:
+        return f"INR {to_lpa(salary_min)} LPA (min)"
+    return f"INR {to_lpa(salary_max)} LPA (max)"
+
+
 def format_prompt_inputs(*, generation_input: dict) -> dict[str, str]:
     deadline = generation_input.get("application_deadline")
     deadline_text = str(deadline).strip() if deadline else "Not provided"
     city = generation_input.get("city")
     city_text = city.name if city is not None else "Not provided"
     return {
-        "job_summary": str(generation_input.get("job_summary") or "").strip() or "Not provided",
+        "job_overview": str(generation_input.get("job_overview") or "").strip() or "Not provided",
         "organization_name": str(generation_input.get("organization_name") or "").strip()
         or "Not provided",
         "city": city_text,
-        "salary_range": str(generation_input.get("salary_range") or "").strip() or "Not provided",
+        "salary_range": _format_salary(generation_input),
         "job_type": _choice_display(Job.JOB_TYPE_CHOICE, generation_input.get("job_type")),
         "experience_level": _choice_display(
             Job.EXPERIENCE_CHOICES, generation_input.get("experience_level")

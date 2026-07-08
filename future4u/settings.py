@@ -323,7 +323,7 @@ JOB_GENERATION_LLM_PROVIDER = config(
 ).strip().lower()
 JOB_GENERATION_MAX_TOKENS = config(
     "JOB_GENERATION_MAX_TOKENS",
-    default=3000,
+    default=1000,
     cast=int,
 )
 JOB_GENERATION_TEMPERATURE = config(
