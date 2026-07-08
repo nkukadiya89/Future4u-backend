@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
  
+from activity_log.services import log_event
 from assessment.models import ProfessionalAssessment
 from assessment.serializers import (
     ProfessionalAssessmentSerializer,
@@ -147,6 +148,14 @@ class ProfessionalAssessmentViewSet(viewsets.ModelViewSet):
         assessment = ProfessionalAssessment(user=request.user, is_completed=False)
         assessment.save()
         sync_professional_screen(assessment)
+        log_event(
+            event="assessment.created",
+            description=f"Professional {request.user.email} created assessment #{assessment.id}",
+            user=request.user,
+            entity_type="professional_assessment",
+            entity_id=assessment.id,
+            request=request,
+        )
         serializer = ProfessionalAssessmentSerializer(assessment)
         return Response(
             {
@@ -193,6 +202,14 @@ class ProfessionalAssessmentViewSet(viewsets.ModelViewSet):
             assessment.save(
                 update_fields=["is_completed", "current_screen", "updated_at", "updated_by"]
             )
+        log_event(
+            event="assessment.completed",
+            description=f"Professional {request.user.email} completed assessment #{assessment.id}",
+            user=request.user,
+            entity_type="professional_assessment",
+            entity_id=assessment.id,
+            request=request,
+        )
         return Response(
             {
                 "success": True,

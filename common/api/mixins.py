@@ -7,8 +7,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from utils.generate_ip_address import get_client_ip
-
 logger = logging.getLogger(__name__)
 
 
@@ -19,26 +17,29 @@ class ArchiveMixin(ModelViewSet):
     """
 
     def log_archive_action(self, request, instance=None, action=None, queryset=None):
-        from activity_log.models import ActivityLog
+        from activity_log.services import log_event
 
-        ip_address = get_client_ip(request)
-        queryset = self.get_queryset()
-        model_name = queryset.model.__name__.lower()
+        event = "master.deleted" if action == "ARCHIVE" else "master.restored"
         try:
-            if action == "ARCHIVE":
-                method_name = f"{model_name}_archive"
-            elif action == "RESTORE":
-                method_name = f"{model_name}_restore"
-            else:
-                return
-            if hasattr(ActivityLog.log, method_name):
-                log_method = getattr(ActivityLog.log, method_name)
-
-                if instance:
-                    log_method(instance, ip_address=ip_address, user=request.user)
-                elif queryset:
-                    for obj in queryset:
-                        log_method(obj, ip_address=ip_address, user=request.user)
+            if instance:
+                log_event(
+                    event=event,
+                    description=f"{instance.__class__.__name__} {action.lower()}d by {request.user.email}",
+                    user=request.user,
+                    entity_type=instance.__class__.__name__.lower(),
+                    entity_id=getattr(instance, "id", None),
+                    request=request,
+                )
+            elif queryset:
+                for obj in queryset:
+                    log_event(
+                        event=event,
+                        description=f"{obj.__class__.__name__} {action.lower()}d by {request.user.email}",
+                        user=request.user,
+                        entity_type=obj.__class__.__name__.lower(),
+                        entity_id=getattr(obj, "id", None),
+                        request=request,
+                    )
         except Exception:
             logger.exception("ActivityLog archive logging failed")
 

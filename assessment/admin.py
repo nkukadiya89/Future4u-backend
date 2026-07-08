@@ -1,5 +1,7 @@
 from django.contrib import admin
 
+from domain.models import Domain
+
 from assessment.models import (
     CareerDirection,
     CareerValue,
@@ -235,6 +237,17 @@ class ParentAssessmentAdmin(admin.ModelAdmin):
         "user_goals",
     )
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "domain_category":
+            kwargs["queryset"] = Domain.objects.filter(
+                parent__isnull=True, deleted=False
+            )
+        if db_field.name == "domain":
+            kwargs["queryset"] = Domain.objects.filter(
+                parent__isnull=False, deleted=False
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 @admin.register(StudentAssessment)
 class StudentAssessmentAdmin(admin.ModelAdmin):
@@ -264,6 +277,17 @@ class StudentAssessmentAdmin(admin.ModelAdmin):
         "domain",
     )
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "domain_category":
+            kwargs["queryset"] = Domain.objects.filter(
+                parent__isnull=True, deleted=False
+            )
+        if db_field.name == "domain":
+            kwargs["queryset"] = Domain.objects.filter(
+                parent__isnull=False, deleted=False
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 @admin.register(ProfessionalAssessment)
 class ProfessionalAssessmentAdmin(admin.ModelAdmin):
     list_display = (
@@ -292,4 +316,15 @@ class ProfessionalAssessmentAdmin(admin.ModelAdmin):
     )
 
     list_select_related = ("domain_category", "domain")
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "domain_category":
+            kwargs["queryset"] = Domain.objects.filter(
+                parent__isnull=True, deleted=False
+            )
+        if db_field.name == "domain":
+            kwargs["queryset"] = Domain.objects.filter(
+                parent__isnull=False, deleted=False
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 

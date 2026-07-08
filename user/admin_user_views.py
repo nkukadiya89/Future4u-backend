@@ -1,3 +1,4 @@
+from activity_log.services import log_event
 from django.utils import timezone
 import os
 import tempfile
@@ -82,6 +83,14 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
         if serializer.is_valid():
             user = serializer.save()
+            log_event(
+                event="user.created",
+                description=f"Admin {request.user.email} created {self.role_name} {user.email}",
+                user=request.user,
+                entity_type="user",
+                entity_id=user.id,
+                request=request,
+            )
             return Response(
                 {
                     "success": True,
@@ -121,6 +130,14 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
         if serializer.is_valid():
             user = serializer.save()
+            log_event(
+                event="user.updated",
+                description=f"Admin {request.user.email} updated {self.role_name} {user.email}",
+                user=request.user,
+                entity_type="user",
+                entity_id=user.id,
+                request=request,
+            )
             return Response(
                 {
                     "success": True,
@@ -172,6 +189,15 @@ class BaseAdminProfileViewSet(ModelViewSet):
         user.deleted_at = timezone.now()
         user.deleted_by = request.user
         user.save(update_fields=["deleted", "deleted_at", "deleted_by"])
+
+        log_event(
+            event="user.deleted",
+            description=f"Admin {request.user.email} deleted {self.role_name} {user.email}",
+            user=request.user,
+            entity_type="user",
+            entity_id=user.id,
+            request=request,
+        )
 
         return Response(
             {
@@ -233,6 +259,15 @@ class BaseAdminProfileViewSet(ModelViewSet):
         if status_value == "active":
             send_activation_password_setup_email(user)
 
+        log_event(
+            event="user.status_changed",
+            description=f"Admin {request.user.email} changed {self.role_name} {user.email} status to {status_value}",
+            user=request.user,
+            entity_type="user",
+            entity_id=user.id,
+            request=request,
+        )
+
         return Response(
             {
                 "success": True,
@@ -291,6 +326,16 @@ class BaseAdminProfileViewSet(ModelViewSet):
             deleted=True,
             deleted_at=timezone.now(),
             deleted_by=request.user,
+        )
+
+        log_event(
+            event="user.bulk_archive",
+            description=f"Admin {request.user.email} bulk archived {users.count()} {self.role_name}(s)",
+            user=request.user,
+            entity_type="user",
+            entity_id=None,
+            metadata={"user_ids": ids, "count": users.count()},
+            request=request,
         )
 
         return Response(
@@ -385,6 +430,16 @@ class BaseAdminProfileViewSet(ModelViewSet):
             updated_by=request.user,
         )
 
+        log_event(
+            event="user.bulk_restore",
+            description=f"Admin {request.user.email} bulk restored {users.count()} {self.role_name}(s)",
+            user=request.user,
+            entity_type="user",
+            entity_id=None,
+            metadata={"user_ids": ids, "count": users.count()},
+            request=request,
+        )
+
         return Response(
             {
                 "success": True,
@@ -417,6 +472,16 @@ class BaseAdminProfileViewSet(ModelViewSet):
                 tmp.name,
                 request.user.id,
                 user_type,
+            )
+
+            log_event(
+                event="user.bulk_upload",
+                description=f"Admin {request.user.email} started bulk upload for {user_type}: {uploaded_file.name}",
+                user=request.user,
+                entity_type="user",
+                entity_id=None,
+                metadata={"filename": uploaded_file.name, "user_type": user_type},
+                request=request,
             )
 
             return Response(

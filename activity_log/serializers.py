@@ -4,25 +4,23 @@ from activity_log.models import ActivityLog
 
 
 class ActivityLogSerializer(serializers.ModelSerializer):
-    changed_at = serializers.DateTimeField(format="%d-%m-%y %H:%M")
-    company_name = serializers.CharField(source="company.name", default=None)
-    employee_name = serializers.CharField(source="employee.first_name", default=None)
-    email = serializers.CharField(source="user.email")
-    phone = serializers.CharField(source="user.phone")
-    person_name = serializers.CharField(source="user.first_name")
+    user_email = serializers.CharField(source="user.email", default=None)
+    user_name = serializers.CharField(source="user.full_name", default=None)
+    user_type = serializers.CharField(source="user.user_type", default=None)
 
     class Meta:
         model = ActivityLog
         fields = [
             "id",
             "user",
-            "details",
-            "company_name",
-            "employee_name",
-            "event_type",
-            "email",
-            "phone",
-            "person_name",
-            "changed_at",
+            "user_email",
+            "user_name",
+            "user_type",
+            "event",
+            "description",
+            "entity_type",
+            "entity_id",
+            "metadata",
             "ip_address",
+            "created_at",
         ]

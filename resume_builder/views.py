@@ -26,6 +26,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.http import HttpResponse
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
+from activity_log.services import log_event
 from resume_builder.services import (
     build_student_resume_data,
     build_professional_resume_data,
@@ -210,6 +211,15 @@ class ResumeGenerateView(APIView):
             name = (user.full_name or user.email).replace(" ", "_")
         filename = f"{name}_resume.pdf"
         logger.info("Resume generated for user=%s template=%s", user.id, template)
+
+        log_event(
+            event="ai.resume_generated",
+            description=f"AI resume generated for user {user.email}, template={template}",
+            user=user,
+            entity_type="resume",
+            entity_id=user.id,
+            request=request,
+        )
 
         response = HttpResponse(pdf_bytes, content_type="application/pdf")
         response["Content-Disposition"] = f"attachment; filename={filename}"

@@ -17,7 +17,11 @@ class StudentBulkUpload:
     "post_graduation",
     }
 
-    VALID_MEDIUMS = ["english", "gujarati", "hindi"]
+    VALID_MEDIUMS = [
+        "english", "hindi", "gujarati", "marathi", "tamil",
+        "telugu", "kannada", "bengali", "punjabi", "odia",
+        "malayalam", "urdu",
+    ]
 
     @classmethod
     def preload(cls):
@@ -41,9 +45,9 @@ class StudentBulkUpload:
         medium = str(row.get("Medium", "")).strip().lower()
 
         if medium and medium not in cls.VALID_MEDIUMS:
-                    raise ValidationError(
-                        f"Invalid medium '{medium}'. Allowed: english, hindi, gujarati"
-                    )
+            raise ValidationError(
+                f"Invalid medium '{medium}'. Allowed: english, hindi, gujarati, marathi, tamil, telugu, kannada, bengali, punjabi, odia, malayalam, urdu"
+            )
         
         education_level = None
         education_level_code = str(row.get("Education Level", "")).strip().lower()
