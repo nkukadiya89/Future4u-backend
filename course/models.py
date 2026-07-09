@@ -31,6 +31,8 @@ class Courses(BaseModule):
     why_this_course = models.JSONField(default=list, blank=True)
     certification_info = models.TextField(null=True, blank=True)
     course_content = models.JSONField(default=list, blank=True)
+    course_price = models.CharField(max_length=250, null=True, blank=True)
+
     class Meta:
         db_table = "courses"
         ordering = ["-created_at"]

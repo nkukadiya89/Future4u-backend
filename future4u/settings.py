@@ -109,6 +109,10 @@ INSTALLED_APPS = [
     "assessment_career",
     "course",
     "internship_job",
+    "job_generation",
+    "course_generation",
+    "internship_generation",
+
 ]
 
 MIDDLEWARE = [
@@ -225,7 +229,12 @@ REST_FRAMEWORK = {
         "user_burst": "30/min",
         "user_sustained": "300/hour",
         "recommendation": "10/min",
+        "job_generation": "10/min",
+        "course_generation": "10/min",
+        "internship_generation": "10/min",
     },
+
+
 }
 
 # ── Logging ───────────────────────────────────────────────────────────────────
@@ -265,6 +274,22 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
+        "job_generation": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "course_generation": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "internship_generation": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+
     },
 }
 
@@ -287,12 +312,79 @@ AI_RECOMMENDATIONS_ENABLED = config(
 )
 AI_TRACING_ENABLED = config("AI_TRACING_ENABLED", default=False, cast=bool)
 
+JOB_GENERATION_ENABLED = config(
+    "JOB_GENERATION_ENABLED",
+    default=True,
+    cast=bool,
+)
+JOB_GENERATION_LLM_PROVIDER = config(
+    "JOB_GENERATION_LLM_PROVIDER",
+    default="groq",
+).strip().lower()
+JOB_GENERATION_MAX_TOKENS = config(
+    "JOB_GENERATION_MAX_TOKENS",
+    default=1000,
+    cast=int,
+)
+JOB_GENERATION_TEMPERATURE = config(
+    "JOB_GENERATION_TEMPERATURE",
+    default=0.2,
+    cast=float,
+)
+
+COURSE_GENERATION_ENABLED = config(
+    "COURSE_GENERATION_ENABLED",
+    default=True,
+    cast=bool,
+)
+COURSE_GENERATION_LLM_PROVIDER = config(
+    "COURSE_GENERATION_LLM_PROVIDER",
+    default="groq",
+).strip().lower()
+COURSE_GENERATION_MAX_TOKENS = config(
+    "COURSE_GENERATION_MAX_TOKENS",
+    default=3000,
+    cast=int,
+)
+COURSE_GENERATION_TEMPERATURE = config(
+    "COURSE_GENERATION_TEMPERATURE",
+    default=0.2,
+    cast=float,
+)
+
+INTERNSHIP_GENERATION_ENABLED = config(
+    "INTERNSHIP_GENERATION_ENABLED",
+    default=True,
+    cast=bool,
+)
+INTERNSHIP_GENERATION_LLM_PROVIDER = config(
+    "INTERNSHIP_GENERATION_LLM_PROVIDER",
+    default="groq",
+).strip().lower()
+INTERNSHIP_GENERATION_MAX_TOKENS = config(
+    "INTERNSHIP_GENERATION_MAX_TOKENS",
+    default=3000,
+    cast=int,
+)
+INTERNSHIP_GENERATION_TEMPERATURE = config(
+    "INTERNSHIP_GENERATION_TEMPERATURE",
+    default=0.2,
+    cast=float,
+)
+
+OPENAI_API_KEY = config("OPENAI_API_KEY", default="").strip()
+OPENAI_MODEL = config("OPENAI_MODEL", default="gpt-4o-mini").strip()
+GEMINI_API_KEY = config("GEMINI_API_KEY", default="").strip()
+GEMINI_MODEL = config("GEMINI_MODEL", default="gemini-1.5-flash").strip()
+
 # LangSmith only — private settings; never used in recommendation pipeline or API output.
 _LANGSMITH_TRACING_ENABLED = AI_TRACING_ENABLED or config(
     "LANGCHAIN_TRACING_V2",
     default=config("LANGSMITH_TRACING_V2", default=False),
     cast=bool,
 )
+# Public alias used by admin panels to display tracing status.
+LANGSMITH_TRACING_ENABLED = _LANGSMITH_TRACING_ENABLED
 _LANGSMITH_API_KEY = config(
     "LANGSMITH_API_KEY",
     default=config("LANGCHAIN_API_KEY", default=""),

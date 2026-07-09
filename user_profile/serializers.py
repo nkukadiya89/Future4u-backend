@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.utils.timezone import now
 from language_master.models import Language
 from education_level.models import EducationLevel
 from common.mixins.serializer_mixins import (
@@ -198,13 +197,6 @@ class StudentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serialize
             "portfolio",
         ]
 
-    def update(self, instance, validated_data):
-        user_data = validated_data.pop("user", {})
-        user = instance.user
-        for attr, value in user_data.items():
-            setattr(user, attr, value)
-        user.save()
-        return super().update(instance, validated_data)
 
 class BusinessSettingSerializer(serializers.ModelSerializer):
 
@@ -512,12 +504,6 @@ class ParentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin,
         source="user.city.name", read_only=True, default=None
     )
 
-    first_name =serializers.CharField(source="user.first_name", read_only=True)
-    last_name = serializers.CharField(source="user.last_name", read_only=True)
-    phone = serializers.CharField(source="user.phone", read_only=True)
-    email = serializers.CharField(source="user.email", read_only=True)
-    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
-
     class Meta:
         model = ParentProfile
         fields = [
@@ -597,27 +583,6 @@ class ParentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializer
 
         return attrs
 
-    def update(self, instance, validated_data):
-        language = validated_data.pop("language", None)
-        user_data = validated_data.pop("user", None)
-        user = instance.user
-        if user_data:
-            for attr, value in user_data.items():
-                setattr(user, attr, value)
-            user.save()
-        instance.updated_at = now()
-        instance = super().update(instance, validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
-
-    def create(self, validated_data):
-        language = validated_data.pop("language", None)
-        instance = super().create(validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
-
 
 class ChildProfileSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
@@ -683,7 +648,7 @@ class ChildProfileSerializer(serializers.ModelSerializer):
         ]
 
 
-class ChildProfileCreateSerializer(serializers.ModelSerializer):
+class ChildProfileCreateSerializer(ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer):
     language = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Language.objects.filter(is_active=True, deleted=False),
@@ -716,21 +681,6 @@ class ChildProfileCreateSerializer(serializers.ModelSerializer):
             "github_url",
             "portfolio",
         ]
-
-    def create(self, validated_data):
-        language = validated_data.pop("language", None)
-        instance = super().create(validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
-
-    def update(self, instance, validated_data):
-        language = validated_data.pop("language", None)
-        instance.updated_at = now()
-        instance = super().update(instance, validated_data)
-        if language is not None:
-            instance.language.set(language)
-        return instance
 
 
 class BusinessSettingInfoSerializer(serializers.ModelSerializer):

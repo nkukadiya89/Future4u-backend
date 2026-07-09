@@ -25,6 +25,7 @@ class CoursesSerializer(BaseModelSerializer):
             "why_this_course",
             "certification_info",
             "course_content",
+            "course_price",
         ]
     def get_provider_name(self, obj):
         if obj.provider:

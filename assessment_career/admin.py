@@ -35,9 +35,6 @@ class ChatMessageInline(ReadOnlyAdminMixin, admin.TabularInline):
     ordering = ("created_at", "id")
 
 
-# CareerRecommendation
-
-
 @admin.register(CareerRecommendation)
 class CareerRecommendationAdmin(admin.ModelAdmin):
     list_display = (

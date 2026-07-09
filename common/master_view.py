@@ -1,4 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
+
+from common.mixins.view_mixins import ListEnvelopeMixin
 from rest_framework.filters import OrderingFilter
 from utils.custom_filters import CustomSearchFilter
 from utils.generate_ip_address import get_client_ip
@@ -24,7 +26,7 @@ class CustomModelPermissions(DjangoModelPermissions):
         "DELETE": ["%(app_label)s.delete_%(model_name)s"],
     }
 
-class BaseModelViewSet(ModelViewSet):
+class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
     filter_backends = [CustomSearchFilter, OrderingFilter]
     pagination_class = Pagination
     permission_classes = [CustomModelPermissions]
@@ -57,24 +59,6 @@ class BaseModelViewSet(ModelViewSet):
         if self.action == "list" and self.list_serializer_class:
             return self.list_serializer_class
         return super().get_serializer_class()
-    
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-
-        no_pagination = request.query_params.get("no_pagination")
-        if no_pagination:
-            serializer = self.get_serializer(queryset, many=True)
-            return Response({"success": True, "data": serializer.data})
-
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
-
-        serializer = self.get_serializer(queryset, many=True)
-        return self.get_paginated_response({"success": True, "data": serializer.data})
 
     def get_queryset(self):
         queryset = super().get_queryset()
