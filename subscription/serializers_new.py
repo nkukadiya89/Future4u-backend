@@ -59,7 +59,10 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
             "core_features",
             "subscription_features",
             "subscription_feature",
+            "features",
+            "prices",
         ]
+        read_only_fields = ["features", "prices"]
 
     def create(self, validated_data):
         request = self.context.get("request")
@@ -139,16 +142,6 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
 
         return subscription
 
-    class Meta:
-        model = Subscription
-        fields = [
-            "id",
-            "package_name",
-            "description",
-            "is_active",
-            "features",
-            "prices",
-        ]
 
 
 class UserSubscriptionSerializer(serializers.ModelSerializer):
