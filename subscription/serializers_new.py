@@ -201,8 +201,15 @@ class SubscriptionAPISerializer(serializers.ModelSerializer):
                 obj.prices.filter(is_active=True, deleted=False).order_by("-price").first()
             )
             if not plan_price:
-                raise Exception("No active price available for subscription")
-            obj._pricing_cache = calculate_price(plan_price)
+                # No active price available: return a safe default pricing
+                obj._pricing_cache = {
+                    "price": None,
+                    "discount": 0,
+                    "final_price": None,
+                    "promo_code_applied": False,
+                }
+            else:
+                obj._pricing_cache = calculate_price(plan_price)
         return obj._pricing_cache
 
     def get_discounted_price(self, obj):
