@@ -61,7 +61,9 @@ class InternshipApplicationSerializer(BaseModelSerializer):
 
 
 class JobSerializer(BaseModelSerializer):
-    city_name = serializers.CharField(source="city.name", read_only=True)
+    city_name = serializers.CharField(source='city.name', read_only=True)
+    country_name = serializers.CharField(source='country.name', read_only=True)
+    state_name = serializers.CharField(source='state.name', read_only=True)
     provider_name = serializers.SerializerMethodField()
     education_tags_name = serializers.SerializerMethodField()
 
@@ -70,7 +72,8 @@ class JobSerializer(BaseModelSerializer):
         fields = BaseModelSerializer.Meta.fields + [
             "id",
             "name",
-            "organization_name",
+            "corporate",
+            "job_overview",
             "description",
             "responsibilities",
             "skills",
@@ -79,6 +82,10 @@ class JobSerializer(BaseModelSerializer):
             "experience_level",
             "job_type",
             "mode",
+            "country",
+            "country_name",
+            "state",
+            "state_name",
             "city",
             "city_name",
             "salary_min",

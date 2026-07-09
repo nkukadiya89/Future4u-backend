@@ -9,6 +9,7 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
@@ -1150,3 +1151,31 @@ class CorporateGalleryViewSet(OrganizationGalleryViewSet):
     profile_fk_field = "corporate"
     gallery_serializer_class = CorporateGallerySerializer
     profile_not_found_message = "Corporate profile not found"
+
+
+class CorporateDropdownView(APIView):
+    """
+    GET /api/companies/
+    Returns a lightweight list of all registered companies for frontend dropdown.
+    Response: [{"id": 1, "company_name": "Nivzen Technologies Pvt. Ltd."}, ...]
+    """
+
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        companies = CorporateProfile.objects.filter(
+            deleted=False,
+        ).exclude(
+            company_name__isnull=True,
+        ).exclude(
+            company_name__exact="",
+        ).values("id", "company_name").order_by("company_name")
+
+        return Response(
+            {
+                "success": True,
+                "data": list(companies),
+            },
+            status=status.HTTP_200_OK,
+        )

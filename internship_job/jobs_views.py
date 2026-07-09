@@ -12,9 +12,7 @@ from .service import match_jobs
 
 class JobViewSet(BaseModelViewSet):
     def get_queryset(self):
-        queryset = Job.objects.select_related("city", "provider").prefetch_related(
-            "education_tags"
-        )
+        queryset = Job.objects.select_related("city", "country", "state", "provider").prefetch_related("education_tags")
         user = self.request.user
         if user.is_superuser:
             return queryset
@@ -26,13 +24,14 @@ class JobViewSet(BaseModelViewSet):
             return queryset.filter(
                 provider=user,
             )
-        return queryset
-
+        # Students/parents: only see active jobs, exclude drafts
+        return queryset.filter(status="active")
+        
     serializer_class = JobSerializer
 
     search_fields = BaseModelViewSet.searching_fields + [
         "name",
-        "organization_name",
+        "corporate",
         "description",
         "skills",
         "responsibilities",
@@ -48,7 +47,7 @@ class JobViewSet(BaseModelViewSet):
     ]
     ordering_fields = BaseModelViewSet.ordering_fields + [
         "name",
-        "organization_name",
+        "corporate",
         "description",
         "education_tags",
         "experience_level",
@@ -114,6 +113,7 @@ class JobViewSet(BaseModelViewSet):
         city_id = request.query_params.get("city_id")
         search = request.query_params.get("search")
 
+        # Public listing: only active jobs, exclude drafts
         jobs_qs = self.get_queryset().filter(status="active", deleted=False)
 
         if mode:

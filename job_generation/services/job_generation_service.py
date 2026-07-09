@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from education_level.models import EducationLevel
 from job_generation.exceptions import JobGenerationAccessDeniedError
 from job_generation.schemas.job_output import JobGenerationPayload
 from job_generation.selectors.job_generation_access import can_user_generate_jobs
 from job_generation.services.job_generator import JobGenerator
 from job_generation.utils import resolve_education_tag_meta
+from user_profile.models import CorporateProfile
 
 
 class JobGenerationService:
@@ -18,21 +20,79 @@ class JobGenerationService:
                 "Job generation is only available for institute and corporate accounts"
             )
 
-        payload = JobGenerator.generate(generation_input=validated_input)
-        return _build_response(payload, validated_input)
+        # Fetch the CorporateProfile for company context
+        corporate_id = validated_input.get("corporate")
+        if isinstance(corporate_id, CorporateProfile):
+            company = corporate_id
+        else:
+            company = CorporateProfile.objects.filter(id=corporate_id, deleted=False).first()
+        if not company:
+            from job_generation.exceptions import JobGenerationValidationError
+            raise JobGenerationValidationError(
+                "CorporateProfile not found",
+                error="Invalid corporate ID",
+                details="The selected company does not exist.",
+            )
+
+        # Enrich generation input with company context
+        generation_input = {
+            **validated_input,
+            "company_name": company.company_name or "",
+            "company_website": company.website or "",
+            "company_about_us": company.about_us or "",
+        }
+
+        payload = JobGenerator.generate(generation_input=generation_input)
+        return _build_response(payload, validated_input, company)
+
 
 
 def _build_response(
-    payload: JobGenerationPayload, validated_input: dict[str, Any]
+    payload: JobGenerationPayload,
+    validated_input: dict[str, Any],
+    company: CorporateProfile | None = None,
 ) -> dict[str, Any]:
     data = payload.model_dump()
 
     # Enrich education_tags: list[str] → list[{name, type, level_key}]
-    data["education_tags"] = [
+    enriched_tags = [
         resolve_education_tag_meta(tag) for tag in data.get("education_tags", [])
     ]
 
-    data["organization_name"] = validated_input.get("organization_name", "")
+    # Resolve education tag metadata to actual EducationLevel DB records
+    level_codes = [t["level_key"] for t in enriched_tags if t.get("level_key")]
+    if level_codes:
+        levels = EducationLevel.objects.filter(level_code__in=level_codes)
+        level_map: dict[str, int] = {l.level_code: l.pk for l in levels}
+        resolved_pks = [
+            level_map[t["level_key"]]
+            for t in enriched_tags
+            if t.get("level_key") in level_map
+        ]
+    else:
+        resolved_pks = []
+
+    # Replace education_tags (AI-generated names) with resolved DB PKs
+    # so the JobSerializer can save the M2M relation correctly.
+    # Keep enriched metadata under education_tags_meta for frontend display.
+    data["education_tags"] = resolved_pks
+    data["education_tags_meta"] = enriched_tags
+
+    # Use the CorporateProfile FK ID and company name
+    if company:
+        data["corporate"] = company.pk
+        data["corporate_name"] = company.company_name or ""
+    else:
+        corporate = validated_input.get("corporate")
+        data["corporate"] = corporate.pk if hasattr(corporate, "pk") else corporate
+        data["corporate_name"] = ""
+    data["job_overview"] = validated_input.get("job_overview", "")
+    country = validated_input.get("country")
+    data["country"] = country.pk if country else None
+    data["country_name"] = country.name if country else ""
+    state = validated_input.get("state")
+    data["state"] = state.pk if state else None
+    data["state_name"] = state.name if state else ""
     city = validated_input.get("city")
     data["city"] = city.pk if city else None
     data["city_name"] = city.name if city else ""
@@ -52,3 +112,5 @@ def _build_response(
     deadline = validated_input.get("application_deadline")
     data["application_deadline"] = deadline.isoformat() if deadline else None
     return data
+
+
