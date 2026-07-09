@@ -18,7 +18,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/activity-log/",
+              "raw": "{{base_url}}/activity-log/?no_pagination=1&pagesize=10",
               "host": [
                 "{{base_url}}"
               ],
@@ -26,6 +26,26 @@
                 "activity-log"
               ],
               "query": [
+                {
+                  "key": "event",
+                  "value": "user.login"
+                },
+                {
+                  "key": "from_date",
+                  "value": "2026-07-01"
+                },
+                {
+                  "key": "to_date",
+                  "value": "2026-07-08"
+                },
+                {
+                  "key": "user_id",
+                  "value": "1"
+                },
+                {
+                  "key": "search",
+                  "value": "login"
+                },
                 {
                   "key": "no_pagination",
                   "value": "1"
@@ -40,57 +60,23 @@
           "response": []
         },
         {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/activity-log/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "activity-log"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"user\": 1, \"details\": \"string\", \"company_name\": \"string\", \"employee_name\": \"string\", \"event_type\": \"state:create\", \"email\": \"string\", \"phone\": \"string\", \"person_name\": \"string\", \"changed_at\": \"2026-01-01T00:00:00Z\", \"ip_address\": \"string\"}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "get_login_user_activity_log (GET)",
+          "name": "mine (GET)",
           "request": {
             "method": "GET",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
                 "key": "Authorization",
                 "value": "Bearer {{access_token}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/activity-log/get-activity-log/",
+              "raw": "{{base_url}}/activity-log/mine/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "activity-log",
-                "get-activity-log"
+                "mine"
               ]
             }
           },
@@ -100,95 +86,6 @@
           "name": "retrieve (GET)",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/activity-log/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "activity-log",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/activity-log/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "activity-log",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"user\": 1, \"details\": \"string\", \"company_name\": \"string\", \"employee_name\": \"string\", \"event_type\": \"state:create\", \"email\": \"string\", \"phone\": \"string\", \"person_name\": \"string\", \"changed_at\": \"2026-01-01T00:00:00Z\", \"ip_address\": \"string\"}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/activity-log/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "activity-log",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"user\": 1, \"details\": \"string\", \"company_name\": \"string\", \"employee_name\": \"string\", \"event_type\": \"state:create\", \"email\": \"string\", \"phone\": \"string\", \"person_name\": \"string\", \"changed_at\": \"2026-01-01T00:00:00Z\", \"ip_address\": \"string\"}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy (DELETE)",
-          "request": {
-            "method": "DELETE",
             "header": [
               {
                 "key": "Content-Type",
@@ -11224,7 +11121,7 @@
                 {
                   "key": "assessment_id",
                   "value": "{{assessment_id}}",
-                  "description": "Optional \u00e2\u20ac\u201d filter to one student assessment"
+                  "description": "Optional â€” filter to one student assessment"
                 },
                 {
                   "key": "ordering",
@@ -13721,7 +13618,7 @@
       "name": "Auth",
       "item": [
         {
-          "name": "register \u2014 Web (POST)",
+          "name": "register — Web (POST)",
           "request": {
             "method": "POST",
             "header": [],
@@ -13779,7 +13676,7 @@
           ]
         },
         {
-          "name": "register \u2014 Mobile (POST)",
+          "name": "register — Mobile (POST)",
           "request": {
             "method": "POST",
             "header": [],
@@ -13810,7 +13707,7 @@
                 }
               ]
             },
-            "description": "Mobile registration \u2014 no source field.\n\nRequires password + confirm_password. Sends OTP email. Account inactive until OTP verified.\n\nNext: verify-success, then get-token."
+            "description": "Mobile registration — no source field.\n\nRequires password + confirm_password. Sends OTP email. Account inactive until OTP verified.\n\nNext: verify-success, then get-token."
           },
           "response": [],
           "event": [
@@ -13864,7 +13761,7 @@
                 }
               }
             },
-            "description": "Mobile flow \u2014 verify OTP after register \u2014 Mobile.\n\nNo auth required. Set {{otp}} from the registration email.\n\nOn success: activates account (is_active=true), clears OTP.\n\nOTP expires after 1 day \u2014 use resend-otp if needed.\n\nNext step: get-token with the password chosen at registration."
+            "description": "Mobile flow — verify OTP after register — Mobile.\n\nNo auth required. Set {{otp}} from the registration email.\n\nOn success: activates account (is_active=true), clears OTP.\n\nOTP expires after 1 day — use resend-otp if needed.\n\nNext step: get-token with the password chosen at registration."
           },
           "response": [],
           "event": [
@@ -13914,7 +13811,7 @@
                 }
               }
             },
-            "description": "Mobile flow only \u2014 resend OTP while account is inactive (is_active=false)."
+            "description": "Mobile flow only — resend OTP while account is inactive (is_active=false)."
           },
           "response": []
         },
@@ -14164,7 +14061,7 @@
                 }
               }
             },
-            "description": "Change password for logged-in users (not for first-time web setup \u2014 use reset-password with email token instead)."
+            "description": "Change password for logged-in users (not for first-time web setup — use reset-password with email token instead)."
           },
           "response": [],
           "event": [
@@ -14245,7 +14142,7 @@
                 }
               }
             },
-            "description": "Set password using token from email link (web register, admin-student-users create, bulk upload, admin).\n\nFor pending users: activates account (pending \u2192 active) after success.\n\nToken comes from email URL: {APP_URL}reset-password/{token}\n\nnew_password must meet strength rules (8+ chars, uppercase, number, special char)."
+            "description": "Set password using token from email link (web register, admin-student-users create, bulk upload, admin).\n\nFor pending users: activates account (pending → active) after success.\n\nToken comes from email URL: {APP_URL}reset-password/{token}\n\nnew_password must meet strength rules (8+ chars, uppercase, number, special char)."
           },
           "response": []
         }
@@ -14444,7 +14341,7 @@
                 }
               ]
             },
-            "description": "Admin-only: create a student from the dashboard.\n\nPOST /admin-student-users/\n\nMultipart form-data: `data` (JSON string) + optional `profile_image`.\n\nRequired in `data`: email, first_name, country, state, city, terms_accepted\nOptional: last_name, phone, address, referral_code, education_level, stream, medium, language (array of ids)\n\nDo not send user_type \u2014 always creates a student.\n\nNo password in request. Password setup link is emailed immediately.\nUser stays pending until POST /auth/reset-password/.\n\n201 response: success, message, user_id, user_type, must_change_password, created_by, created_at\n400 response: success, errors"
+            "description": "Admin-only: create a student from the dashboard.\n\nPOST /admin-student-users/\n\nMultipart form-data: `data` (JSON string) + optional `profile_image`.\n\nRequired in `data`: email, first_name, country, state, city, terms_accepted\nOptional: last_name, phone, address, referral_code, education_level, stream, medium, language (array of ids)\n\nDo not send user_type — always creates a student.\n\nNo password in request. Password setup link is emailed immediately.\nUser stays pending until POST /auth/reset-password/.\n\n201 response: success, message, user_id, user_type, must_change_password, created_by, created_at\n400 response: success, errors"
           },
           "response": [],
           "event": [
@@ -14562,7 +14459,7 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"inactive\"\n}"
             },
-            "description": "Admin-only: activate or deactivate a student.\n\nPATCH /admin-student-users/{user_id}/update-status/\n\nSet {{user_id}} from create response or list students.\n\nBody: status (required) \u2014 \"active\" or \"inactive\".\n\nWhen status is set to active:\n- is_active is set to true\n- Password setup email is sent to the student\n\nWhen status is set to inactive:\n- is_active is set to false\n\nStudent must not be archived (deleted).\nAlready at the requested status returns 200 with success: false.\n\n200 response: success, message\n400 response: success, message (invalid status)\n404 response: success, message (not found)"
+            "description": "Admin-only: activate or deactivate a student.\n\nPATCH /admin-student-users/{user_id}/update-status/\n\nSet {{user_id}} from create response or list students.\n\nBody: status (required) — \"active\" or \"inactive\".\n\nWhen status is set to active:\n- is_active is set to true\n- Password setup email is sent to the student\n\nWhen status is set to inactive:\n- is_active is set to false\n\nStudent must not be archived (deleted).\nAlready at the requested status returns 200 with success: false.\n\n200 response: success, message\n400 response: success, message (invalid status)\n404 response: success, message (not found)"
           },
           "response": [],
           "event": [
@@ -15028,7 +14925,7 @@
                 }
               ]
             },
-            "description": "Admin-only: create a school/college user from the dashboard.\n\nPOST /admin-school-colleges-users/\n\nMultipart form-data: `data` (JSON string) + optional `profile_image`.\n\nRequired in `data`: email, first_name, country, state, city, terms_accepted\nOptional: last_name, phone, address, referral_code, education (array of education_level ids), institute_name, board, about_us, courses_offered, website\n\nDo not send user_type \u2014 always creates a school_college user.\n\nNo password in request. Password setup link is emailed immediately.\nUser stays pending until POST /auth/reset-password/.\n\n201 response: success, message, user_id, user_type, must_change_password, created_by, created_at\n400 response: success, errors"
+            "description": "Admin-only: create a school/college user from the dashboard.\n\nPOST /admin-school-colleges-users/\n\nMultipart form-data: `data` (JSON string) + optional `profile_image`.\n\nRequired in `data`: email, first_name, country, state, city, terms_accepted\nOptional: last_name, phone, address, referral_code, education (array of education_level ids), institute_name, board, about_us, courses_offered, website\n\nDo not send user_type — always creates a school_college user.\n\nNo password in request. Password setup link is emailed immediately.\nUser stays pending until POST /auth/reset-password/.\n\n201 response: success, message, user_id, user_type, must_change_password, created_by, created_at\n400 response: success, errors"
           },
           "response": [],
           "event": [
@@ -15147,7 +15044,7 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"inactive\"\n}"
             },
-            "description": "Admin-only: activate or deactivate a school/college user.\n\nPATCH /admin-school-colleges-users/{user_id}/update-status/\n\nSet {{user_id}} from create response or list users.\n\nBody: status (required) \u2014 \"active\" or \"inactive\".\n\nWhen status is set to active:\n- is_active is set to true\n- Password setup email is sent to the user\n\nWhen status is set to inactive:\n- is_active is set to false\n\nUser must not be archived (deleted).\nAlready at the requested status returns 200 with success: false.\n\n200 response: success, message\n400 response: success, message (invalid status)\n404 response: success, message (not found)"
+            "description": "Admin-only: activate or deactivate a school/college user.\n\nPATCH /admin-school-colleges-users/{user_id}/update-status/\n\nSet {{user_id}} from create response or list users.\n\nBody: status (required) — \"active\" or \"inactive\".\n\nWhen status is set to active:\n- is_active is set to true\n- Password setup email is sent to the user\n\nWhen status is set to inactive:\n- is_active is set to false\n\nUser must not be archived (deleted).\nAlready at the requested status returns 200 with success: false.\n\n200 response: success, message\n400 response: success, message (invalid status)\n404 response: success, message (not found)"
           },
           "response": [],
           "event": [
@@ -15613,7 +15510,7 @@
                 }
               ]
             },
-            "description": "Admin-only: create an institute user from the dashboard.\n\nPOST /admin-institute-users/\n\nMultipart form-data: `data` (JSON string) + optional `profile_image`.\n\nRequired in `data`: email, first_name, country, state, city, terms_accepted\nOptional: last_name, phone, address, referral_code, institute_name, student_trained, placements, about_us, courses_offered, website\n\nDo not send user_type \u2014 always creates an institute user.\n\nNo password in request. Password setup link is emailed immediately.\nUser stays pending until POST /auth/reset-password/.\n\n201 response: success, message, user_id, user_type, must_change_password, created_by, created_at\n400 response: success, errors"
+            "description": "Admin-only: create an institute user from the dashboard.\n\nPOST /admin-institute-users/\n\nMultipart form-data: `data` (JSON string) + optional `profile_image`.\n\nRequired in `data`: email, first_name, country, state, city, terms_accepted\nOptional: last_name, phone, address, referral_code, institute_name, student_trained, placements, about_us, courses_offered, website\n\nDo not send user_type — always creates an institute user.\n\nNo password in request. Password setup link is emailed immediately.\nUser stays pending until POST /auth/reset-password/.\n\n201 response: success, message, user_id, user_type, must_change_password, created_by, created_at\n400 response: success, errors"
           },
           "response": [],
           "event": [
@@ -15732,7 +15629,7 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"inactive\"\n}"
             },
-            "description": "Admin-only: activate or deactivate an institute user.\n\nPATCH /admin-institute-users/{user_id}/update-status/\n\nBody: status (required) \u2014 \"active\" or \"inactive\"."
+            "description": "Admin-only: activate or deactivate an institute user.\n\nPATCH /admin-institute-users/{user_id}/update-status/\n\nBody: status (required) — \"active\" or \"inactive\"."
           },
           "response": []
         },
@@ -15904,6 +15801,197 @@
               ]
             },
             "description": "Admin-only: bulk create institute users.\n\nPOST /admin-institute-users/bulk-upload/\n\nRequired CSV columns:\nfirst_name, last_name, about_me, email, phone, referral_code, country, state, city, institute_name\n\nOptional CSV columns: address, student_trained, placements, about_us, courses_offered, website"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin Working Professional Users",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/professional-profile/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "data", "value": "{\"email\": \"user@example.com\", \"first_name\": \"Ramesh\", \"last_name\": \"Shah\", \"phone\": \"9685741201\", \"country\": 1, \"state\": 1, \"city\": 1, \"address\": \"Noida\", \"years_of_experience\": \"0_1_years\", \"employment_type\": \"salaried_employee\", \"referral_code\": \"ABC\"}", "type": "text" },
+                { "key": "profile_image", "type": "file", "src": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/1/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/1/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "1"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "data", "value": "{\"years_of_experience\": \"1_3_years\", \"employment_type\": \"freelancer\"}", "type": "text" },
+                { "key": "profile_image", "type": "file", "src": "" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/1/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update_status (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/1/update-status/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "1", "update-status"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"status\": \"active\"}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk_archive (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/bulk-archive/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "bulk-archive"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [1, 2]}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk_restore (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/bulk-restore/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "bulk-restore"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [1, 2]}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "archive_list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/archive-list/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "archive-list"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk_upload (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-working-professional-users/bulk-upload/",
+              "host": ["{{base_url}}"],
+              "path": ["admin-working-professional-users", "bulk-upload"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "" },
+                { "key": "user_type", "value": "working_professional", "type": "text" }
+              ]
+            }
           },
           "response": []
         }
@@ -18619,7 +18707,7 @@
                 }
               ]
             },
-            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- job (optional, stripped server-side)\n- resume (optional file) \u00e2\u20ac\u201d uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / job / status are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
+            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- job (optional, stripped server-side)\n- resume (optional file) â€” uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / job / status are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
           },
           "response": []
         },
@@ -19028,7 +19116,7 @@
                 }
               ]
             },
-            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- internship (optional)\n- resume (optional file) \u00e2\u20ac\u201d uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / selected / rejected are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
+            "description": "Update application (applicant only). Same handler as PATCH.\n\nMultipart fields:\n- internship (optional)\n- resume (optional file) â€” uploaded via upload_resume()\n\nRules:\n- Only applicant can update (403)\n- Only when status is applied (400)\n- applicant / selected / rejected are stripped from body\n\nProvider status changes: use update-status.\n\nResponse: { success, message: \"Application updated successfully\", data }"
           },
           "response": []
         },

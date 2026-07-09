@@ -74,17 +74,23 @@ class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
         return queryset
 
     def log_action(self, request, instance, action):
-        from activity_log.models import ActivityLog
+        from activity_log.services import log_event
 
-        ip_address = get_client_ip(request)
-        model_name = instance.__class__.__name__.lower()
-
-        method_name = f"{model_name}_{action.lower()}"
-
-        if hasattr(ActivityLog.log, method_name):
-            getattr(ActivityLog.log, method_name)(
-                instance, ip_address=ip_address, user=request.user
-            )
+        model_name = instance.__class__.__name__
+        event_map = {
+            "CREATE": "master.created",
+            "UPDATE": "master.updated",
+            "ARCHIVE": "master.deleted",
+        }
+        event = event_map.get(action.upper(), f"master.{action.lower()}")
+        log_event(
+            event=event,
+            description=f"{model_name} {action.lower()}d by {request.user.email}",
+            user=request.user,
+            entity_type=model_name.lower(),
+            entity_id=getattr(instance, "id", None),
+            request=request,
+        )
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

@@ -29,6 +29,7 @@ from assessment.serializers import (
 )
 from common.api.mixins import ArchiveMixin
 from common.master_view import BaseModelViewSet
+from activity_log.services import log_event
 from domain.models import Domain
 from utils.pagination import Pagination
 
@@ -300,6 +301,14 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
         assessment._request_user = request.user
         assessment.save()
         sync_current_screen(assessment, request.user)
+        log_event(
+            event="assessment.created",
+            description=f"Student {request.user.email} created assessment #{assessment.id}",
+            user=request.user,
+            entity_type="student_assessment",
+            entity_id=assessment.id,
+            request=request,
+        )
         serializer = StudentAssessmentCreateSerializer(assessment)
         return Response(
             {
@@ -363,6 +372,14 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
                     "updated_by",
                 ]
             )
+        log_event(
+            event="assessment.completed",
+            description=f"Student {request.user.email} completed assessment #{assessment.id}",
+            user=request.user,
+            entity_type="student_assessment",
+            entity_id=assessment.id,
+            request=request,
+        )
         return Response(
             {
                 "success": True,

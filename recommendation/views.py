@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from activity_log.services import log_event
 from recommendation.engine.dispatch import (
     resolve_chat_service,
     resolve_recommendation_service,
@@ -42,6 +43,14 @@ class RecommendationAPIView(APIView):
             data = result.service.generate(
                 assessment_id=assessment_id,
                 user=request.user,
+            )
+            log_event(
+                event="ai.recommendation_generated",
+                description=f"AI recommendation generated for user {request.user.email}, assessment #{assessment_id}",
+                user=request.user,
+                entity_type="recommendation",
+                entity_id=assessment_id,
+                request=request,
             )
             return Response({
                 "success": True,
@@ -149,6 +158,14 @@ class RecommendationChatAPIView(APIView):
                 assessment_id=assessment_id,
                 suggestion_id=request.data.get("suggestion_id"),
                 question=request.data.get("message"),
+            )
+            log_event(
+                event="ai.chat_message",
+                description=f"AI chat message from user {request.user.email}, assessment #{assessment_id}",
+                user=request.user,
+                entity_type="recommendation_chat",
+                entity_id=assessment_id,
+                request=request,
             )
             return Response({
                 "success": True,

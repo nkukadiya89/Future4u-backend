@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from activity_log.services import log_event
 from user_profile.models import ChildProfile
 
 from assessment.models import ParentAssessment
@@ -192,6 +193,14 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
         assessment._request_user = request.user
         assessment.save()
         sync_parent_screen(assessment)
+        log_event(
+            event="assessment.created",
+            description=f"Parent {request.user.email} created assessment #{assessment.id} for child #{child_id}",
+            user=request.user,
+            entity_type="parent_assessment",
+            entity_id=assessment.id,
+            request=request,
+        )
         serializer = ParentAssessmentSerializer(assessment, context=self.get_serializer_context())
         return Response(
             {
@@ -358,6 +367,14 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
                     "updated_by",
                 ]
             )
+        log_event(
+            event="assessment.completed",
+            description=f"Parent {request.user.email} completed assessment #{assessment.id}",
+            user=request.user,
+            entity_type="parent_assessment",
+            entity_id=assessment.id,
+            request=request,
+        )
         return Response(
             {
                 "success": True,

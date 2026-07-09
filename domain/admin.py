@@ -67,6 +67,13 @@ class DomainAdmin(AuditSaveModelMixin, MasterImportAdminURLMixin, BaseAdmin):
     ordering = ("-created_at",)
     raw_id_fields = ("parent", "created_by", "updated_by")
     readonly_fields = ("created_by", "created_at", "updated_by", "updated_at")
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "parent":
+            kwargs["queryset"] = Domain.objects.filter(
+                parent__isnull=True, deleted=False
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
     actions = (
         "activate_selected",
         "deactivate_selected",

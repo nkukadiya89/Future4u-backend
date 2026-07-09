@@ -78,7 +78,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15, null=True, blank=True, unique=True)
     is_active = models.BooleanField(default=False)
     status = models.CharField(choices=STATUS_CHOICES, default="pending", max_length=25)
-    user_type = models.CharField(max_length=20, choices=Role.choices)
+    user_type = models.CharField(max_length=30, choices=Role.choices)
     email_verified = models.BooleanField(default=False)
     password_last_changed = models.DateTimeField(null=True, blank=True)
     keep_me_logged_in = models.BooleanField(default=False)
