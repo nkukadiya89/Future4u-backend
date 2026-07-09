@@ -20,6 +20,7 @@ from django.urls import path, include
 from user.user_auth import CustomTokenObtainPairView
 from future4u.routers import future4u_router
 from recommendation.views import RecommendationAPIView, RecommendationChatAPIView
+from user_profile.views import CorporateDropdownView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -38,6 +39,11 @@ urlpatterns = [
     path("", include("subscription.urls")),
     path("api/v1/", include("subscription.urls")),
     path("", include("resume_builder.urls")),
+    path(
+        "api/companies/",
+        CorporateDropdownView.as_view(),
+        name="api-company-list",
+    ),
     path("", include("job_generation.urls")),
     path("", include("course_generation.urls")),
     path("", include("internship_generation.urls")),
