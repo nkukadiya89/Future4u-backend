@@ -95,6 +95,7 @@ class CourseGenerationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         form = CourseGenerationRunForm(request.POST or None)
         result = None
+        diagnostics = None
         error = None
 
         if request.method == "POST" and form.is_valid():
@@ -106,6 +107,11 @@ class CourseGenerationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                 "duration": form.cleaned_data.get("duration", ""),
             }
             try:
+                diagnostics = {
+                    "requested_by": getattr(request.user, "email", ""),
+                    "provider": _provider_status(),
+                    "input": generation_input,
+                }
                 payload = CourseGenerator.generate(generation_input=generation_input)
                 result = _build_response(payload, generation_input)
             except CourseGenerationConfigurationError as exc:
@@ -120,6 +126,7 @@ class CourseGenerationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             "title": "AI Course Generation",
             "form": form,
             "provider": _provider_status(),
+            "diagnostics_pretty": _pretty_json(diagnostics) if diagnostics else None,
             "result_pretty": _pretty_json(result) if result else None,
             "error": error,
             "opts": self.model._meta,

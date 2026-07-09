@@ -237,6 +237,7 @@ class AdminWorkingProfessionalSortSerializer(serializers.ModelSerializer):
     city = serializers.IntegerField(source="user.city.id", default=None)
     city_name = serializers.CharField(source="user.city.name")
     address = serializers.CharField(source="user.address")
+    referral_code = serializers.CharField(source="referred_by.referral_code")
 
     class Meta:
         model = ProfessionalProfile
@@ -254,6 +255,7 @@ class AdminWorkingProfessionalSortSerializer(serializers.ModelSerializer):
             "city",
             "city_name",
             "address",
+            "referral_code",
             "years_of_experience",
             "employment_type",
         ]

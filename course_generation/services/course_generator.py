@@ -36,7 +36,7 @@ class CourseGenerator:
         llm = get_llm_provider().get_chat_model()
         parser = JsonResponseParser()
         last_error: CourseGenerationValidationError | None = None
-        validation_feedback = ""
+        validation_feedback = "None"
 
         for attempt in range(_MAX_GENERATION_ATTEMPTS):
             try:

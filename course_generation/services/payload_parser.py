@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import ValidationError
-
 from course_generation.schemas.course_output import CourseGenerationPayload
 
 

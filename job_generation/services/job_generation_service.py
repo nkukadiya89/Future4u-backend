@@ -45,10 +45,3 @@ def _build_response(
     data["application_deadline"] = deadline.isoformat() if deadline else None
     return data
 
-
-
-# Kept for admin panel compatibility during testing.
-def _apply_user_overrides(
-    payload: JobGenerationPayload, validated_input: dict[str, Any]
-) -> dict[str, Any]:
-    return _build_response(payload, validated_input)

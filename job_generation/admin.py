@@ -29,7 +29,7 @@ from job_generation.exceptions import (
 )
 from job_generation.models import JobGenerationPanel
 from job_generation.providers.factory import get_llm_provider
-from job_generation.services.job_generation_service import _apply_user_overrides
+from job_generation.services.job_generation_service import _build_response
 from job_generation.services.job_generator import JobGenerator
 
 
@@ -106,6 +106,17 @@ class JobGenerationRunForm(forms.Form):
         max_digits=10,
         help_text="Optional. Maximum salary in INR (e.g. 600000).",
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        salary_min = cleaned_data.get("salary_min")
+        salary_max = cleaned_data.get("salary_max")
+        if salary_min is not None and salary_max is not None:
+            if salary_min > salary_max:
+                raise forms.ValidationError(
+                    {"salary_max": "salary_max must be greater than or equal to salary_min."}
+                )
+        return cleaned_data
     application_deadline = forms.DateField(
         required=False,
         input_formats=["%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y"],
@@ -144,7 +155,7 @@ class JobGenerationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                     "input": generation_input,
                 }
                 payload = JobGenerator.generate(generation_input=generation_input)
-                result = _apply_user_overrides(payload, generation_input)
+                result = _build_response(payload, generation_input)
             except JobGenerationConfigurationError as exc:
                 error = f"AI not configured: {exc}"
             except JobGenerationValidationError as exc:
