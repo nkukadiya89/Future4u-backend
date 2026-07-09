@@ -31,12 +31,19 @@ def assign_basic_subscription(sender, instance, created, **kwargs):
             return
 
         # create only if user doesn't already have an active subscription for this plan
+        # pick default active PlanPrice for the Basic plan
+        plan_price = (
+            basic.prices.filter(is_active=True, deleted=False).order_by("-price").first()
+        )
+        if not plan_price:
+            return
+
         UserSubscription.objects.get_or_create(
             user=instance,
-            subscription=basic,
+            plan_price=plan_price,
             defaults={
                 "start_date": now().date(),
-                "end_date": now().date() + timedelta(days=basic.duration_days),
+                "end_date": now().date() + timedelta(days=plan_price.duration_days),
                 "is_active": True,
             },
         )

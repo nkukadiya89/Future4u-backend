@@ -1014,8 +1014,6 @@ class Command(BaseCommand):
             subscription, created = Subscription.objects.get_or_create(
                 package_name=data["package_name"],
                 defaults={
-                    "price": data["plan_price"],
-                    "duration_days": data["duration_days"],
                     "description": data["description"],
                     "is_active": data["status"],
                     "created_by": created_by_user,
@@ -1025,6 +1023,19 @@ class Command(BaseCommand):
 
             if created:
                 self.stdout.write(f"Created subscription: {subscription.package_name}")
+
+                # seed a default PlanPrice (assume yearly prices in initial data)
+                from subscription.models import PlanPrice
+
+                PlanPrice.objects.create(
+                    plan=subscription,
+                    period="yearly",
+                    price=int(data["plan_price"]),
+                    duration_days=int(data["duration_days"]),
+                    is_active=True,
+                    created_by=created_by_user,
+                    created_at=now(),
+                )
 
                 for feature in data["core_features"]:
                     SubscriptionFeature.objects.create(
