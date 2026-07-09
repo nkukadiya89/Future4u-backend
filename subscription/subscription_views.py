@@ -14,29 +14,31 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from subscription.serializers_new import (
-    PaymentSubscriptionSerializer,
-    SubscriptionAPISerializer,
-    SubscriptionInvoiceSerializer,
-    SubscriptionSerializer,
-    UserSubscriptionSerializer,
-)
+from subscription.models import FeatureUsage, SubscriptionFeature
+from subscription.serializers_new import (PaymentSubscriptionSerializer,
+                                          SubscriptionAPISerializer,
+                                          SubscriptionCreateSerializer,
+                                          SubscriptionInvoiceSerializer,
+                                          SubscriptionSerializer,
+                                          UserSubscriptionSerializer)
 from subscription.services.pricing import calculate_price
 
-from .models import (
-    PaymentSubscription,
-    PromoCode,
-    Subscription,
-    SubscriptionInvoice,
-    UserSubscription,
-    PlanPrice,
-)
-from subscription.models import SubscriptionFeature, FeatureUsage
+from .models import (PaymentSubscription, PlanPrice, PromoCode, Subscription,
+                     SubscriptionInvoice, UserSubscription)
 
 
 class SubscriptionViewSet(ModelViewSet):
     queryset = Subscription.objects.filter(is_active=True)
     serializer_class = SubscriptionAPISerializer
+
+    def get_serializer_class(self):
+        # Use a writable serializer for create/update operations coming from admin/frontend
+        if self.action in ("create", "update", "partial_update"):
+            return SubscriptionCreateSerializer
+        # list/detail/read use API serializer
+        if self.action in ("retrieve", "list"):
+            return SubscriptionAPISerializer
+        return super().get_serializer_class()
 
 
 class UserSubscriptionViewSet(ModelViewSet):

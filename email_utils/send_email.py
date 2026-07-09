@@ -12,6 +12,9 @@ from django.shortcuts import HttpResponse
 from django.template.loader import render_to_string
 
 from utils.email_logger import log_email_failed, log_email_sent
+import logging
+
+logger = logging.getLogger(__name__)
 
 WEB_PASSWORD_SETUP_TOKEN_DAYS = 1
 
@@ -51,6 +54,15 @@ def pr_decode_token(token):
         return {"error": "Token signature has expired"}
     except jwt.InvalidTokenError:
         return {"error": "Invalid token"}
+
+
+def _get_app_url():
+    app_url = config(
+        "APP_URL",
+        default=getattr(settings, "FRONTEND_URL", "https://app.future4u.ai"),
+    ).rstrip("/")
+    logger.info("App URL: %s", app_url)
+    return app_url
 
 
 def _build_email_context(template, data):
