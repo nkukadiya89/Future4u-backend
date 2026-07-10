@@ -82,11 +82,15 @@ class Migration(migrations.Migration):
         # Add indexes
         migrations.AddIndex(
             model_name="activitylog",
-            index=models.Index(fields=["event", "created_at"], name="actlog_event_created_idx"),
+            index=models.Index(
+                fields=["event", "created_at"], name="actlog_event_created_idx"
+            ),
         ),
         migrations.AddIndex(
             model_name="activitylog",
-            index=models.Index(fields=["user", "created_at"], name="actlog_user_created_idx"),
+            index=models.Index(
+                fields=["user", "created_at"], name="actlog_user_created_idx"
+            ),
         ),
         # Update ordering
         migrations.AlterModelOptions(

@@ -10,6 +10,7 @@ from user.serializers import UserQuickSerializer
 from utils.datetime_formatter import format_datetime
 from common.serializers import BaseModelSerializer
 
+
 class AuditFieldsMixin:
     def format_audit_datetime(self, value):
         return format_datetime(value)

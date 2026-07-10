@@ -20,7 +20,9 @@ from recommendation.exceptions import (
 )
 from recommendation.pipeline.recommendation_pipeline import RecommendationPipeline
 from recommendation.profiles.parent import prompts as parent_prompts
-from recommendation.profiles.parent.context_builder import ParentAssessmentContextBuilder
+from recommendation.profiles.parent.context_builder import (
+    ParentAssessmentContextBuilder,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -70,12 +72,19 @@ class ParentRecommendationService:
             return (
                 ParentAssessment.objects.filter(deleted=False)
                 .select_related(
-                    "user", "domain_category", "domain",
-                    "child__education_level", "child__stream",
+                    "user",
+                    "domain_category",
+                    "domain",
+                    "child__education_level",
+                    "child__stream",
                 )
                 .prefetch_related(
-                    "career_direction", "career_values", "concerns",
-                    "parent_career_expectations", "limitations", "user_goals",
+                    "career_direction",
+                    "career_values",
+                    "concerns",
+                    "parent_career_expectations",
+                    "limitations",
+                    "user_goals",
                 )
                 .get(id=assessment_id)
             )

@@ -1,4 +1,5 @@
 """Shared CSV/Excel import parsing for master data services."""
+
 from __future__ import annotations
 
 import csv

@@ -9,9 +9,7 @@ from common.mixins.serializer_mixins import (
 )
 
 
-class CitySerializer(
-    DateFieldsMixin, UserNameMixin, serializers.ModelSerializer
-):
+class CitySerializer(DateFieldsMixin, UserNameMixin, serializers.ModelSerializer):
     country_name = serializers.CharField(source="country.name", read_only=True)
     state_name = serializers.CharField(source="state.name", read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)

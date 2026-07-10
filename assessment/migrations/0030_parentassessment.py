@@ -8,38 +8,132 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0029_remove_text_answer_and_text_question_type'),
-        ('education_level', '0005_alter_educationlevel_updated_at'),
-        ('stream', '0007_sync_latest_stream_catalog'),
+        ("assessment", "0029_remove_text_answer_and_text_question_type"),
+        ("education_level", "0005_alter_educationlevel_updated_at"),
+        ("stream", "0007_sync_latest_stream_catalog"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ParentAssessment',
+            name="ParentAssessment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('updated_at', models.DateTimeField(blank=True, db_index=True, null=True)),
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
-                ('deleted', models.BooleanField(default=False)),
-                ('first_name', models.CharField(max_length=100)),
-                ('last_name', models.CharField(max_length=100)),
-                ('date_of_birth', models.DateField()),
-                ('academic_performance', models.CharField(choices=[('average', 'Average'), ('good', 'Good'), ('excellent', 'Excellent')], max_length=20)),
-                ('current_screen', models.CharField(choices=[('add_child', 'Add Child'), ('complete', 'Complete')], default='add_child', max_length=32)),
-                ('is_completed', models.BooleanField(default=False)),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL)),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('education_level', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='parent_assessments', to='education_level.educationlevel')),
-                ('stream', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='parent_assessments', to='stream.stream')),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='parent_assessments', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                (
+                    "updated_at",
+                    models.DateTimeField(blank=True, db_index=True, null=True),
+                ),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
+                ("deleted", models.BooleanField(default=False)),
+                ("first_name", models.CharField(max_length=100)),
+                ("last_name", models.CharField(max_length=100)),
+                ("date_of_birth", models.DateField()),
+                (
+                    "academic_performance",
+                    models.CharField(
+                        choices=[
+                            ("average", "Average"),
+                            ("good", "Good"),
+                            ("excellent", "Excellent"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "current_screen",
+                    models.CharField(
+                        choices=[("add_child", "Add Child"), ("complete", "Complete")],
+                        default="add_child",
+                        max_length=32,
+                    ),
+                ),
+                ("is_completed", models.BooleanField(default=False)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "education_level",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="parent_assessments",
+                        to="education_level.educationlevel",
+                    ),
+                ),
+                (
+                    "stream",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="parent_assessments",
+                        to="stream.stream",
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_updated",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="parent_assessments",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'parent_assessment',
-                'ordering': ['-created_at'],
-                'indexes': [models.Index(fields=['user'], name='parent_asse_user_id_697261_idx'), models.Index(fields=['education_level'], name='parent_asse_educati_4e3281_idx'), models.Index(fields=['stream'], name='parent_asse_stream__c34feb_idx'), models.Index(fields=['current_screen'], name='parent_asse_current_dc6cd3_idx')],
+                "db_table": "parent_assessment",
+                "ordering": ["-created_at"],
+                "indexes": [
+                    models.Index(
+                        fields=["user"], name="parent_asse_user_id_697261_idx"
+                    ),
+                    models.Index(
+                        fields=["education_level"],
+                        name="parent_asse_educati_4e3281_idx",
+                    ),
+                    models.Index(
+                        fields=["stream"], name="parent_asse_stream__c34feb_idx"
+                    ),
+                    models.Index(
+                        fields=["current_screen"], name="parent_asse_current_dc6cd3_idx"
+                    ),
+                ],
             },
         ),
     ]

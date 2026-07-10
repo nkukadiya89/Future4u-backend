@@ -7,15 +7,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0032_parentassessment_dob_optional'),
-        ('education_level', '0005_alter_educationlevel_updated_at'),
-        ('stream', '0007_sync_latest_stream_catalog'),
+        ("assessment", "0032_parentassessment_dob_optional"),
+        ("education_level", "0005_alter_educationlevel_updated_at"),
+        ("stream", "0007_sync_latest_stream_catalog"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddConstraint(
-            model_name='parentassessment',
-            constraint=models.UniqueConstraint(condition=models.Q(('deleted', False)), fields=('user', 'first_name', 'last_name', 'date_of_birth'), name='assessment_parentassessment_active_child_unique'),
+            model_name="parentassessment",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("deleted", False)),
+                fields=("user", "first_name", "last_name", "date_of_birth"),
+                name="assessment_parentassessment_active_child_unique",
+            ),
         ),
     ]

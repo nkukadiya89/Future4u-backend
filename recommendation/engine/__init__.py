@@ -6,7 +6,10 @@ from recommendation.engine.recommendation_service import (
     save_recommendation,
     serialize_recommendation,
 )
-from recommendation.engine.chat_service import BaseAIChatService, CAREER_SCOPE_REFUSAL_PREFIX
+from recommendation.engine.chat_service import (
+    BaseAIChatService,
+    CAREER_SCOPE_REFUSAL_PREFIX,
+)
 
 __all__ = [
     "AI_RECOMMENDATION_DISCLAIMER",

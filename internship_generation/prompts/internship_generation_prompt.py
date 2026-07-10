@@ -160,12 +160,18 @@ def format_prompt_inputs(*, generation_input: dict) -> dict[str, str]:
         deadline_text = str(deadline)
 
     return {
-        "internship_overview": str(generation_input.get("internship_overview") or "").strip()
+        "internship_overview": str(
+            generation_input.get("internship_overview") or ""
+        ).strip()
         or "Not provided",
-        "department": str(generation_input.get("department") or "").strip() or "Not provided",
+        "department": str(generation_input.get("department") or "").strip()
+        or "Not provided",
         "stipend": str(generation_input.get("stipend") or "").strip() or "Not provided",
-        "duration": str(generation_input.get("duration") or "").strip() or "Not provided",
+        "duration": str(generation_input.get("duration") or "").strip()
+        or "Not provided",
         "mode": _choice_display(Internship.MODE_CHOICE, generation_input.get("mode")),
         "application_deadline": deadline_text,
-        "validation_feedback": str(generation_input.get("validation_feedback") or "None").strip(),
+        "validation_feedback": str(
+            generation_input.get("validation_feedback") or "None"
+        ).strip(),
     }

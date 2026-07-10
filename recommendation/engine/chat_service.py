@@ -31,12 +31,7 @@ CAREER_SCOPE_REFUSAL_PREFIX = (
 
 
 class BaseAIChatService:
-   
 
-
-
-
-   
     def __init__(
         self,
         *,
@@ -59,7 +54,8 @@ class BaseAIChatService:
 
     def context(self, *, user, assessment_id: int, suggestion_id: int | str) -> dict:
         suggestion = self._get_suggestion(
-            user=user, assessment_id=assessment_id,
+            user=user,
+            assessment_id=assessment_id,
             suggestion_id=parse_suggestion_id(suggestion_id),
         )
         session = self._get_existing_chat_session(suggestion)
@@ -68,15 +64,20 @@ class BaseAIChatService:
             "messages": serialize_messages(session),
         }
 
-    def ask(self, *, user, assessment_id: int, suggestion_id: int | str, question: str) -> dict:
+    def ask(
+        self, *, user, assessment_id: int, suggestion_id: int | str, question: str
+    ) -> dict:
         question = (question or "").strip()
         if not question:
             raise ValueError("Message is required")
         if len(question) > MAX_QUESTION_LENGTH:
-            raise ValueError(f"Message must be {MAX_QUESTION_LENGTH} characters or less")
+            raise ValueError(
+                f"Message must be {MAX_QUESTION_LENGTH} characters or less"
+            )
 
         suggestion = self._get_suggestion(
-            user=user, assessment_id=assessment_id,
+            user=user,
+            assessment_id=assessment_id,
             suggestion_id=parse_suggestion_id(suggestion_id),
         )
         session = self._get_chat_session(suggestion)
@@ -90,7 +91,9 @@ class BaseAIChatService:
             }
 
         answer = self._ask_llm(
-            suggestion=suggestion, question=question, summary=session.summary,
+            suggestion=suggestion,
+            question=question,
+            summary=session.summary,
         )
         self._save_chat_turn(session=session, question=question, answer=answer)
 
@@ -114,9 +117,9 @@ class BaseAIChatService:
             )
 
         assessment_queryset = base_queryset.filter(
-            Q(recommendation__student_assessment_id=assessment_id) |
-            Q(recommendation__parent_assessment_id=assessment_id) |
-            Q(recommendation__professional_assessment_id=assessment_id)
+            Q(recommendation__student_assessment_id=assessment_id)
+            | Q(recommendation__parent_assessment_id=assessment_id)
+            | Q(recommendation__professional_assessment_id=assessment_id)
         )
         suggestion = (
             assessment_queryset.filter(id=suggestion_id)
@@ -133,11 +136,13 @@ class BaseAIChatService:
     def _ask_llm(self, *, suggestion, question: str, summary: str) -> str:
         try:
             chain = build_ai_chat_prompt() | get_chat_model(max_tokens=CHAT_MAX_TOKENS)
-            response = chain.invoke({
-                "career_context": self._build_career_context(suggestion),
-                "conversation_summary": format_summary(summary),
-                "question": question,
-            })
+            response = chain.invoke(
+                {
+                    "career_context": self._build_career_context(suggestion),
+                    "conversation_summary": format_summary(summary),
+                    "question": question,
+                }
+            )
         except AIConfigurationError:
             raise
         except Exception as exc:
@@ -150,7 +155,10 @@ class BaseAIChatService:
         return answer
 
     def _chat_context(self, suggestion, session=None) -> dict:
-        from recommendation.engine.recommendation_service import AI_RECOMMENDATION_DISCLAIMER
+        from recommendation.engine.recommendation_service import (
+            AI_RECOMMENDATION_DISCLAIMER,
+        )
+
         ctx = {
             "career_name": suggestion.career_name,
             "suggestion_id": suggestion.id,
@@ -178,16 +186,19 @@ class BaseAIChatService:
         rec = suggestion.recommendation
         if rec.profile_type == "parent" and rec.parent_assessment_id:
             from assessment.models import ParentAssessment
-            child_id = ParentAssessment.objects.filter(
-                id=rec.parent_assessment_id
-            ).values_list("child_id", flat=True).first()
+
+            child_id = (
+                ParentAssessment.objects.filter(id=rec.parent_assessment_id)
+                .values_list("child_id", flat=True)
+                .first()
+            )
             if child_id:
-                self._chat_session_model.objects.filter(id=session.id).update(child_id=child_id)
+                self._chat_session_model.objects.filter(id=session.id).update(
+                    child_id=child_id
+                )
 
     def _get_existing_chat_session(self, suggestion):
-        return self._chat_session_model.objects.filter(
-            suggestion=suggestion
-        ).first()
+        return self._chat_session_model.objects.filter(suggestion=suggestion).first()
 
     def _find_reused_answer(self, *, session, question: str) -> str:
         normalized = " ".join(str(question or "").strip().casefold().split())
@@ -201,7 +212,8 @@ class BaseAIChatService:
             if (
                 user_msg.role == self._chat_message_model.ROLE_USER
                 and assistant_msg.role == self._chat_message_model.ROLE_ASSISTANT
-                and " ".join(str(user_msg.content or "").strip().casefold().split()) == normalized
+                and " ".join(str(user_msg.content or "").strip().casefold().split())
+                == normalized
             ):
                 return assistant_msg.content
         return ""
@@ -209,11 +221,17 @@ class BaseAIChatService:
     def _save_chat_turn(self, *, session, question: str, answer: str) -> None:
         with transaction.atomic():
             self._chat_message_model.objects.create(
-                session=session, role=self._chat_message_model.ROLE_USER, content=question,
+                session=session,
+                role=self._chat_message_model.ROLE_USER,
+                content=question,
             )
             self._chat_message_model.objects.create(
-                session=session, role=self._chat_message_model.ROLE_ASSISTANT, content=answer,
+                session=session,
+                role=self._chat_message_model.ROLE_ASSISTANT,
+                content=answer,
             )
             if not str(answer or "").strip().startswith(CAREER_SCOPE_REFUSAL_PREFIX):
-                session.summary = update_summary(current=session.summary, question=question, answer=answer)
+                session.summary = update_summary(
+                    current=session.summary, question=question, answer=answer
+                )
             session.save(update_fields=["summary", "updated_at"])

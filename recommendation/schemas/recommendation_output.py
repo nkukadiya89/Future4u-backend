@@ -55,6 +55,7 @@ _RISK_LEVEL_ALIASES: dict[str, RiskLevel] = {
     "very high": "High",
 }
 
+
 def normalize_risk_level(value: object) -> RiskLevel | None:
     if value is None:
         return None
@@ -311,7 +312,9 @@ class CareerRoadmap(BaseModel):
 
 class EducationLevel(BaseModel):
     type: str = Field(min_length=1, max_length=100, description="Display label.")
-    level_key: EducationLevelKey = Field(description="Standardized education level key.")
+    level_key: EducationLevelKey = Field(
+        description="Standardized education level key."
+    )
     name: str = Field(min_length=1, max_length=255, description="Degree/course name.")
 
     @field_validator("type", "name", mode="before")
@@ -379,7 +382,9 @@ class JobSecurityFactor(BaseModel):
     def clip_demand_trend(cls, value: object) -> object:
         text = str(value).strip()
         if not text:
-            raise ValueError("job_security.market_demand_growth is required from AI output")
+            raise ValueError(
+                "job_security.market_demand_growth is required from AI output"
+            )
         return _clip(text, 100)
 
 
@@ -592,13 +597,14 @@ class AIRecommendationPayload(BaseModel):
         missing = [title for title in EASY_DECISION_TITLES if title not in titles]
         if missing:
             raise ValueError(
-                "easy_decision_making missing required titles: "
-                + ", ".join(missing)
+                "easy_decision_making missing required titles: " + ", ".join(missing)
             )
         return value[:EASY_DECISION_COUNT]
 
     @model_validator(mode="after")
-    def require_easy_decision_careers_from_top_suggestions(self) -> AIRecommendationPayload:
+    def require_easy_decision_careers_from_top_suggestions(
+        self,
+    ) -> AIRecommendationPayload:
         for card in self.easy_decision_making:
             if card.career_index >= len(self.top_suggestions):
                 raise ValueError(

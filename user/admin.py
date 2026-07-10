@@ -71,7 +71,6 @@ class UserAdminAddForm(forms.ModelForm):
         self.fields["states"].required = True
         self.fields["city"].required = True
 
-
     def clean_username(self):
         username = self.cleaned_data.get("username")
         if not username:
@@ -102,7 +101,14 @@ class UserAdmin(BaseUserAdmin):
         "is_staff",
         "must_change_password",
     )
-    list_filter = ("is_active", "is_staff", "user_type", "status", "must_change_password", "deleted")
+    list_filter = (
+        "is_active",
+        "is_staff",
+        "user_type",
+        "status",
+        "must_change_password",
+        "deleted",
+    )
     search_fields = ("email", "first_name", "last_name")
     ordering = ("-id",)
     readonly_fields = (

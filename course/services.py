@@ -43,9 +43,7 @@ def match_courses(ai_skills, ai_education, user, courses_qs):
             if not (next_level_match or course.course_type == "certification"):
                 continue
 
-        skill_matches = [
-            s for s in ai_skills if is_match(s, course.skills)
-        ]
+        skill_matches = [s for s in ai_skills if is_match(s, course.skills)]
 
         if not skill_matches:
             continue

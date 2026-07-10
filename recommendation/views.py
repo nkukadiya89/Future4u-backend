@@ -39,7 +39,9 @@ class RecommendationAPIView(APIView):
     def get(self, request, assessment_id, *args, **kwargs):
         try:
             profile_type = request.query_params.get("profile_type")
-            result = resolve_recommendation_service(assessment_id, profile_type=profile_type)
+            result = resolve_recommendation_service(
+                assessment_id, profile_type=profile_type
+            )
             data = result.service.generate(
                 assessment_id=assessment_id,
                 user=request.user,
@@ -52,11 +54,14 @@ class RecommendationAPIView(APIView):
                 entity_id=assessment_id,
                 request=request,
             )
-            return Response({
-                "success": True,
-                "profile_type": result.profile_type,
-                "data": data,
-            }, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "success": True,
+                    "profile_type": result.profile_type,
+                    "data": data,
+                },
+                status=status.HTTP_200_OK,
+            )
         except (TypeError, ValueError) as exc:
             return Response(
                 {"success": False, "message": str(exc)},
@@ -85,13 +90,19 @@ class RecommendationAPIView(APIView):
         except AIConfigurationError as exc:
             logger.error("AI configuration error: %s", exc)
             return Response(
-                {"success": False, "message": "AI recommendations are temporarily unavailable"},
+                {
+                    "success": False,
+                    "message": "AI recommendations are temporarily unavailable",
+                },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         except AIGenerationError as exc:
             logger.exception("AI generation failed")
             return Response(
-                {"success": False, "message": "Unable to generate recommendations right now. Please try again."},
+                {
+                    "success": False,
+                    "message": "Unable to generate recommendations right now. Please try again.",
+                },
                 status=status.HTTP_502_BAD_GATEWAY,
             )
         except Exception as exc:
@@ -123,11 +134,14 @@ class RecommendationChatAPIView(APIView):
                 assessment_id=assessment_id,
                 suggestion_id=request.query_params.get("suggestion_id"),
             )
-            return Response({
-                "success": True,
-                "profile_type": result.profile_type,
-                "data": data,
-            }, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "success": True,
+                    "profile_type": result.profile_type,
+                    "data": data,
+                },
+                status=status.HTTP_200_OK,
+            )
         except (TypeError, ValueError) as exc:
             return Response(
                 {"success": False, "message": str(exc)},
@@ -167,11 +181,14 @@ class RecommendationChatAPIView(APIView):
                 entity_id=assessment_id,
                 request=request,
             )
-            return Response({
-                "success": True,
-                "profile_type": result.profile_type,
-                "data": data,
-            }, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "success": True,
+                    "profile_type": result.profile_type,
+                    "data": data,
+                },
+                status=status.HTTP_200_OK,
+            )
         except (TypeError, ValueError) as exc:
             return Response(
                 {"success": False, "message": str(exc)},
@@ -201,7 +218,10 @@ class RecommendationChatAPIView(APIView):
         except AIGenerationError as exc:
             logger.exception("AI chat failed")
             return Response(
-                {"success": False, "message": "Unable to answer right now. Please try again."},
+                {
+                    "success": False,
+                    "message": "Unable to answer right now. Please try again.",
+                },
                 status=status.HTTP_502_BAD_GATEWAY,
             )
         except Exception as exc:

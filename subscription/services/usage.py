@@ -44,7 +44,10 @@ def consume_feature(user, feature_code, quantity=1):
 
     with transaction.atomic():
         usage, _ = FeatureUsage.objects.select_for_update().get_or_create(
-            user=user, feature_code=feature_code, plan_price=plan_price, defaults={"used": 0}
+            user=user,
+            feature_code=feature_code,
+            plan_price=plan_price,
+            defaults={"used": 0},
         )
 
         if usage.used + quantity > limit:

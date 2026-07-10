@@ -74,6 +74,7 @@ class DomainAdmin(AuditSaveModelMixin, MasterImportAdminURLMixin, BaseAdmin):
                 parent__isnull=True, deleted=False
             )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     actions = (
         "activate_selected",
         "deactivate_selected",

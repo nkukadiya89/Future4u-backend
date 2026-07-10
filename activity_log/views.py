@@ -24,7 +24,10 @@ class ActivityLogViewSet(ReadOnlyModelViewSet):
         user = self.request.user
         qs = ActivityLog.objects.select_related("user")
 
-        if not user.is_superuser and not getattr(user, "user_type", None) == "super_admin":
+        if (
+            not user.is_superuser
+            and not getattr(user, "user_type", None) == "super_admin"
+        ):
             qs = qs.filter(user=user)
 
         event = self.request.query_params.get("event")
@@ -40,7 +43,9 @@ class ActivityLogViewSet(ReadOnlyModelViewSet):
             qs = qs.filter(created_at__date__lte=to_date)
 
         user_id = self.request.query_params.get("user_id")
-        if user_id and (user.is_superuser or getattr(user, "user_type", None) == "super_admin"):
+        if user_id and (
+            user.is_superuser or getattr(user, "user_type", None) == "super_admin"
+        ):
             qs = qs.filter(user_id=user_id)
 
         return qs
@@ -54,7 +59,9 @@ class ActivityLogViewSet(ReadOnlyModelViewSet):
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.serializer_class(queryset, many=True)
         return Response({"success": True, "data": serializer.data})
 
@@ -69,6 +76,8 @@ class ActivityLogViewSet(ReadOnlyModelViewSet):
         page = self.paginate_queryset(qs)
         if page is not None:
             serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.serializer_class(qs, many=True)
         return Response({"success": True, "data": serializer.data})

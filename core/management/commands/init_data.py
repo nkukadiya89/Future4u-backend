@@ -593,7 +593,6 @@ class Command(BaseCommand):
             for name in names:
                 model.objects.get_or_create(name__iexact=name, defaults={"name": name})
 
-
     # State Upload CSV
     def load_state(self, admin_user=None):
         self.stdout.write("Loading State...")

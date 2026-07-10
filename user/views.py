@@ -660,6 +660,7 @@ class RoleFamilyViewSet(RetrieveSuccessEnvelopeMixin, ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+
 class UserListViewSet(ModelViewSet):
     queryset = (
         User.objects.filter(deleted=False)

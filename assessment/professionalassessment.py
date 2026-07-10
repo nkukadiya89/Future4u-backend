@@ -1,4 +1,3 @@
-
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -6,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
- 
+
 from activity_log.services import log_event
 from assessment.models import ProfessionalAssessment
 from assessment.serializers import (
@@ -31,7 +30,7 @@ def get_professional_profile(user):
 def calculate_professional_screen(assessment):
     if assessment.is_completed:
         return ProfessionalAssessment.Screen.COMPLETE
- 
+
     if not assessment.career_intention:
         return ProfessionalAssessment.Screen.CAREER_INTENTION
     if not assessment.guidance_reasons.exists():
@@ -52,18 +51,18 @@ def calculate_professional_screen(assessment):
         return ProfessionalAssessment.Screen.TIMELINE
     if not assessment.platform_goals.exists():
         return ProfessionalAssessment.Screen.PLATFORM_GOALS
- 
+
     return ProfessionalAssessment.Screen.COMPLETE
- 
- 
+
+
 def sync_professional_screen(assessment):
     next_screen = calculate_professional_screen(assessment)
     if assessment.current_screen != next_screen:
         assessment.current_screen = next_screen
         assessment.save(update_fields=["current_screen"])
     return assessment
- 
- 
+
+
 def assessment_status_payload(assessment, user):
     profile = get_professional_profile(user)
     education_level = profile.education_level if profile else None
@@ -89,29 +88,33 @@ def assessment_status_payload(assessment, user):
             "career_intention": assessment.career_intention,
             "education_level": education_level.level_code if education_level else None,
             "stream": stream.stream_code if stream else None,
-            "domain_category": str(assessment.domain_category_id) if assessment.domain_category_id else None,
+            "domain_category": (
+                str(assessment.domain_category_id)
+                if assessment.domain_category_id
+                else None
+            ),
             "domain": str(assessment.domain_id) if assessment.domain_id else None,
         },
     }
- 
- 
+
+
 class ProfessionalAssessmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     pagination_class = Pagination
     serializer_class = ProfessionalAssessmentSerializer
- 
+
     def get_queryset(self):
         return ProfessionalAssessment.objects.filter(
             user=self.request.user,
             deleted=False,
         )
- 
+
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
             return ProfessionalAssessmentWriteSerializer
         return ProfessionalAssessmentSerializer
- 
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -120,13 +123,13 @@ class ProfessionalAssessmentViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(queryset, many=True)
             return Response({"success": True, "data": serializer.data})
         if page is not None:
-             serializer = self.get_serializer(page, many=True)
-             return self.get_paginated_response(
-            {"success": True, "data": serializer.data}
-        )
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.get_serializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
- 
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         force_new = request.data.get("force_new") is True
@@ -144,7 +147,7 @@ class ProfessionalAssessmentViewSet(viewsets.ModelViewSet):
                     },
                     status=status.HTTP_200_OK,
                 )
- 
+
         assessment = ProfessionalAssessment(user=request.user, is_completed=False)
         assessment.save()
         sync_professional_screen(assessment)
@@ -166,7 +169,7 @@ class ProfessionalAssessmentViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_201_CREATED,
         )
- 
+
     @transaction.atomic
     def partial_update(self, request, *args, **kwargs):
         assessment = self.get_object()
@@ -185,12 +188,12 @@ class ProfessionalAssessmentViewSet(viewsets.ModelViewSet):
             {"success": True, "data": serializer.data},
             status=status.HTTP_200_OK,
         )
- 
+
     @action(detail=False, methods=["get"], url_path="status")
     def assessment_status(self, request):
         assessment = self.get_queryset().order_by("-created_at").first()
         return Response(assessment_status_payload(assessment, request.user))
- 
+
     @action(detail=True, methods=["post"])
     def complete(self, request, pk=None):
         assessment = self.get_object()
@@ -200,7 +203,12 @@ class ProfessionalAssessmentViewSet(viewsets.ModelViewSet):
             assessment.updated_by = request.user
             assessment.updated_at = timezone.now()
             assessment.save(
-                update_fields=["is_completed", "current_screen", "updated_at", "updated_by"]
+                update_fields=[
+                    "is_completed",
+                    "current_screen",
+                    "updated_at",
+                    "updated_by",
+                ]
             )
         log_event(
             event="assessment.completed",

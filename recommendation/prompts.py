@@ -81,10 +81,12 @@ def build_prompt(system_text: str, user_prompt_template: str) -> ChatPromptTempl
         "__MODE_INSTRUCTIONS__",
         "{mode_instructions}",
     )
-    return ChatPromptTemplate.from_messages([
-        ("system", system_message),
-        ("human", user_prompt_template),
-    ])
+    return ChatPromptTemplate.from_messages(
+        [
+            ("system", system_message),
+            ("human", user_prompt_template),
+        ]
+    )
 
 
 def format_inputs(

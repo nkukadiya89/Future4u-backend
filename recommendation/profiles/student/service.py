@@ -73,7 +73,8 @@ class StudentRecommendationService:
     @staticmethod
     def _load_assessment(assessment_id: int) -> StudentAssessment:
         response_qs = UserResponse.objects.select_related(
-            "question", "selected_option",
+            "question",
+            "selected_option",
         ).prefetch_related(
             Prefetch(
                 "question__options",
@@ -84,12 +85,19 @@ class StudentRecommendationService:
             return (
                 StudentAssessment.objects.filter(deleted=False)
                 .select_related(
-                    "user", "domain", "domain_category",
-                    "created_by", "updated_by", "deleted_by",
+                    "user",
+                    "domain",
+                    "domain_category",
+                    "created_by",
+                    "updated_by",
+                    "deleted_by",
                 )
                 .prefetch_related(
                     Prefetch("responses", queryset=response_qs),
-                    "career_direction", "career_values", "concerns", "user_goals",
+                    "career_direction",
+                    "career_values",
+                    "concerns",
+                    "user_goals",
                 )
                 .get(id=assessment_id)
             )

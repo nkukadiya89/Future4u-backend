@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment_career', '0010_alter_careerrecommendation_profile_type'),
+        ("assessment_career", "0010_alter_careerrecommendation_profile_type"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='careersuggestion',
-            name='career_factors',
+            model_name="careersuggestion",
+            name="career_factors",
             field=models.JSONField(blank=True, default=dict),
         ),
     ]

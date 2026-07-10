@@ -42,7 +42,12 @@ def _get_profile(user, child_id=None):
     Return (profile, resume_type) for the logged-in user.
     Supports student, working_professional, and parent (via child_id).
     """
-    from user_profile.models import StudentProfile, ProfessionalProfile, ChildProfile, ParentProfile
+    from user_profile.models import (
+        StudentProfile,
+        ProfessionalProfile,
+        ChildProfile,
+        ParentProfile,
+    )
 
     role = getattr(user, "user_type", None)
 

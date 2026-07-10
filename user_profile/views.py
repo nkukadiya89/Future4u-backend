@@ -13,7 +13,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
 from common.master_view import BaseModelViewSet
-from utils.throttles import (PerUserBurstRateThrottle)  
+from utils.throttles import PerUserBurstRateThrottle
 
 from activity_log.models import ActivityLog
 from common.mixins.view_mixins import ListEnvelopeMixin
@@ -71,10 +71,14 @@ class ChildProfileViewSet(ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_queryset(self):
-        return ChildProfile.objects.filter(
-            parent_profile__user=self.request.user,
-            deleted=False,
-        ).select_related("education_level", "stream").prefetch_related("language")
+        return (
+            ChildProfile.objects.filter(
+                parent_profile__user=self.request.user,
+                deleted=False,
+            )
+            .select_related("education_level", "stream")
+            .prefetch_related("language")
+        )
 
     def get_serializer_class(self):
         if self.action in ("create", "partial_update", "update"):
@@ -90,7 +94,9 @@ class ChildProfileViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         serializer = self.get_serializer(queryset, many=True)
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
@@ -126,7 +132,10 @@ class ChildProfileViewSet(ModelViewSet):
         parent_profile = ParentProfile.objects.filter(user=request.user).first()
         if not parent_profile:
             return Response(
-                {"success": False, "message": "Parent profile not found. Please set up your profile first."},
+                {
+                    "success": False,
+                    "message": "Parent profile not found. Please set up your profile first.",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -625,11 +634,12 @@ class StudentProfileViewSet(ModelViewSet):
         "portfolio",
         "updated_at",
     ]
+
     def get_queryset(self):
         return StudentProfile.objects.filter(user__deleted=False).select_related(
             "user__country", "user__states", "user__city", "education_level", "stream"
         )
-    
+
     def get_profile_object(self, request):
         queryset = self.get_queryset()
         if request.user.is_superuser:
@@ -637,7 +647,6 @@ class StudentProfileViewSet(ModelViewSet):
             if user_id:
                 return queryset.filter(user_id=user_id).first()
         return queryset.filter(user=request.user).first()
-    
 
     def list(self, request, *args, **kwargs):
         if request.user.is_superuser:
@@ -649,19 +658,19 @@ class StudentProfileViewSet(ModelViewSet):
             city_id = request.query_params.get("city")
             state_id = request.query_params.get("state")
             country_id = request.query_params.get("country")
-            
+
             if status_filter:
                 queryset = queryset.filter(user__status=status_filter)
-            
+
             if city_id:
                 queryset = queryset.filter(user__city_id=city_id)
-            
+
             if state_id:
-                queryset = queryset.filter(user__states_id = state_id)
-            
+                queryset = queryset.filter(user__states_id=state_id)
+
             if country_id:
                 queryset = queryset.filter(user__country_id=country_id)
-            
+
             queryset = self.filter_queryset(queryset)
 
             if user_id:
@@ -675,10 +684,7 @@ class StudentProfileViewSet(ModelViewSet):
 
                 serializer = StudentProfileSerializer(profile)
                 return Response(
-                    {
-                        "success": True,
-                        "data": serializer.data
-                    },
+                    {"success": True, "data": serializer.data},
                     status=status.HTTP_200_OK,
                 )
             if no_pagination:
@@ -720,7 +726,7 @@ class StudentProfileViewSet(ModelViewSet):
             {"success": True, "data": serializer.data},
             status=status.HTTP_200_OK,
         )
-    
+
     def partial_update(self, request, *args, **kwargs):
         profile = self.get_profile_object(request)
         if not profile:
@@ -815,16 +821,19 @@ class ProfessionalProfileViewSet(ModelViewSet):
         qs = ProfessionalProfile.objects.select_related(
             "user__country", "user__states", "user__city", "education_level", "stream"
         ).prefetch_related("language")
-        if self.request.user.is_superuser or self.request.user.user_type == self.request.user.Role.SUPER_ADMIN:
+        if (
+            self.request.user.is_superuser
+            or self.request.user.user_type == self.request.user.Role.SUPER_ADMIN
+        ):
             return qs.filter(user__deleted=False)
         return qs.filter(user=self.request.user)
-    
+
     def get_profile_object(self, request):
         queryset = self.get_queryset()
         if request.user.is_superuser:
-             user_id = request.query_params.get("user_id")
-             if user_id:
-                 return queryset.filter(user_id=user_id).first()
+            user_id = request.query_params.get("user_id")
+            if user_id:
+                return queryset.filter(user_id=user_id).first()
         return queryset.filter(user=request.user).first()
 
     def list(self, request, *args, **kwargs):
@@ -837,19 +846,19 @@ class ProfessionalProfileViewSet(ModelViewSet):
             city_id = request.query_params.get("city")
             state_id = request.query_params.get("state")
             country_id = request.query_params.get("country")
-            
+
             if status_filter:
                 queryset = queryset.filter(user__status=status_filter)
-            
+
             if city_id:
                 queryset = queryset.filter(user__city_id=city_id)
-            
+
             if state_id:
-                queryset = queryset.filter(user__states_id = state_id)
-            
+                queryset = queryset.filter(user__states_id=state_id)
+
             if country_id:
                 queryset = queryset.filter(user__country_id=country_id)
-            
+
             queryset = self.filter_queryset(queryset)
 
             if user_id:
@@ -863,10 +872,7 @@ class ProfessionalProfileViewSet(ModelViewSet):
 
                 serializer = ProfessionalProfileSerializer(profile)
                 return Response(
-                    {
-                        "success": True,
-                        "data": serializer.data
-                    },
+                    {"success": True, "data": serializer.data},
                     status=status.HTTP_200_OK,
                 )
             if no_pagination:
@@ -908,7 +914,7 @@ class ProfessionalProfileViewSet(ModelViewSet):
             {"success": True, "data": serializer.data},
             status=status.HTTP_200_OK,
         )
-    
+
     def partial_update(self, request, *args, **kwargs):
         profile = self.get_profile_object(request)
         if not profile:
@@ -1033,6 +1039,7 @@ class ParentProfileViewSet(ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+
 class InstituteProfileViewSet(OrganizationProfileViewSet):
     profile_model = InstituteProfile
     read_serializer_class = InstituteProfileSerializer
@@ -1049,7 +1056,7 @@ class InstituteProfileViewSet(OrganizationProfileViewSet):
         "website",
         "institute_name",
     ]
-    ordering_fields = OrganizationProfileViewSet.ordering_fields+[
+    ordering_fields = OrganizationProfileViewSet.ordering_fields + [
         "student_trained",
         "placements",
         "success_rate",
@@ -1073,7 +1080,7 @@ class SchoolCollegeProfileViewSet(OrganizationProfileViewSet):
     profile_model = SchoolCollegeProfile
     read_serializer_class = SchoolCollegeProfileSerializer
     update_serializer_class = SchoolCollegeProfileUpSerializer
-    filter_backends = [SearchFilter,OrderingFilter]
+    filter_backends = [SearchFilter, OrderingFilter]
 
     search_fields = OrganizationProfileViewSet.search_fields + [
         "student_trained",
@@ -1088,7 +1095,7 @@ class SchoolCollegeProfileViewSet(OrganizationProfileViewSet):
         "partnership_readiness",
         "website",
     ]
-    ordering_fields = OrganizationProfileViewSet.ordering_fields+[
+    ordering_fields = OrganizationProfileViewSet.ordering_fields + [
         "user",
         "student_trained",
         "placements",
@@ -1102,6 +1109,7 @@ class SchoolCollegeProfileViewSet(OrganizationProfileViewSet):
         "website",
     ]
 
+
 class SchoolCollegeGalleryViewSet(OrganizationGalleryViewSet):
     profile_model = SchoolCollegeProfile
     gallery_model = SchoolCollegeGallery
@@ -1109,12 +1117,13 @@ class SchoolCollegeGalleryViewSet(OrganizationGalleryViewSet):
     gallery_serializer_class = SchoolCollegeGallerySerializer
     profile_not_found_message = "School / college profile not found"
 
+
 class CorporateProfileViewSet(OrganizationProfileViewSet):
     profile_model = CorporateProfile
     read_serializer_class = CorporateProfileSerializer
     update_serializer_class = CorporateProfileUpSerializer
 
-    search_fields = OrganizationProfileViewSet.search_fields +[
+    search_fields = OrganizationProfileViewSet.search_fields + [
         "website",
         "company_name",
         "open_job",
@@ -1124,7 +1133,7 @@ class CorporateProfileViewSet(OrganizationProfileViewSet):
         "perks_benefits",
     ]
 
-    ordering_fields = OrganizationProfileViewSet.ordering_fields+[
+    ordering_fields = OrganizationProfileViewSet.ordering_fields + [
         "website",
         "company_name",
         "open_job",

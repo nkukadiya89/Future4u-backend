@@ -98,10 +98,7 @@ def sync_latest_stream_catalog(apps, schema_editor):
     if not Stream.objects.exists():
         return
 
-    levels = {
-        level.level_code.lower(): level
-        for level in EducationLevel.objects.all()
-    }
+    levels = {level.level_code.lower(): level for level in EducationLevel.objects.all()}
 
     # Free globally unique sequence values before assigning the new catalog.
     for offset, stream in enumerate(Stream.objects.order_by("pk"), start=1):

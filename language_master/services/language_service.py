@@ -278,7 +278,5 @@ def sample_csv_http_response():
 
     data = sample_csv_bytes()
     resp = HttpResponse(data, content_type="text/csv; charset=utf-8")
-    resp["Content-Disposition"] = (
-        'attachment; filename="language_master_sample.csv"'
-    )
+    resp["Content-Disposition"] = 'attachment; filename="language_master_sample.csv"'
     return resp

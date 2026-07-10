@@ -7,7 +7,7 @@ from user_profile.models import ChildProfile
 
 
 class ParentAssessmentContextBuilder:
-    
+
     @classmethod
     def build_llm_input(cls, assessment: ParentAssessment) -> dict[str, Any]:
         data = cls._assessment_data(assessment)
@@ -20,19 +20,32 @@ class ParentAssessmentContextBuilder:
             "career_direction": data.get("career_direction_name") or [],
             "parent_support": data.get("parent_support"),
             "concerns": data.get("concerns_name") or [],
-            "parent_career_expectations": data.get("parent_career_expectations_name") or [],
+            "parent_career_expectations": data.get("parent_career_expectations_name")
+            or [],
             "limitations": data.get("limitations_name") or [],
             "career_familiarity": data.get("career_familiarity"),
             "decision_style": data.get("decision_style"),
             "career_values": data.get("career_values_name") or [],
             "user_goals": data.get("user_goals_name") or [],
-            "child": {
-                "first_name": child.first_name if child else None,
-                "last_name": child.last_name if child else None,
-                "education_level": child.education_level.display_name if child and child.education_level else None,
-                "stream": child.stream.stream_name if child and child.stream else None,
-                "academic_performance": child.academic_performance if child else None,
-            } if child else None,
+            "child": (
+                {
+                    "first_name": child.first_name if child else None,
+                    "last_name": child.last_name if child else None,
+                    "education_level": (
+                        child.education_level.display_name
+                        if child and child.education_level
+                        else None
+                    ),
+                    "stream": (
+                        child.stream.stream_name if child and child.stream else None
+                    ),
+                    "academic_performance": (
+                        child.academic_performance if child else None
+                    ),
+                }
+                if child
+                else None
+            ),
         }
 
     @classmethod
@@ -60,7 +73,9 @@ class ParentAssessmentContextBuilder:
                 else []
             ),
             "parent_career_expectations_name": (
-                list(assessment.parent_career_expectations.values_list("name", flat=True))
+                list(
+                    assessment.parent_career_expectations.values_list("name", flat=True)
+                )
                 if assessment.pk
                 else []
             ),

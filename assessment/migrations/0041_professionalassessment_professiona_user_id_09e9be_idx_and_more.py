@@ -7,18 +7,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0040_professionalassessment_career_values_and_more'),
-        ('domain', '0020_remove_retired_content_types'),
+        ("assessment", "0040_professionalassessment_career_values_and_more"),
+        ("domain", "0020_remove_retired_content_types"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddIndex(
-            model_name='professionalassessment',
-            index=models.Index(fields=['user'], name='professiona_user_id_09e9be_idx'),
+            model_name="professionalassessment",
+            index=models.Index(fields=["user"], name="professiona_user_id_09e9be_idx"),
         ),
         migrations.AddIndex(
-            model_name='professionalassessment',
-            index=models.Index(fields=['current_screen'], name='professiona_current_8bd719_idx'),
+            model_name="professionalassessment",
+            index=models.Index(
+                fields=["current_screen"], name="professiona_current_8bd719_idx"
+            ),
         ),
     ]

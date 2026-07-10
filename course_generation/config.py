@@ -12,7 +12,9 @@ def course_generation_enabled() -> bool:
 
 
 def course_generation_llm_provider() -> str:
-    return str(getattr(settings, "COURSE_GENERATION_LLM_PROVIDER", "groq")).strip().lower()
+    return (
+        str(getattr(settings, "COURSE_GENERATION_LLM_PROVIDER", "groq")).strip().lower()
+    )
 
 
 def ai_llm_enabled() -> bool:

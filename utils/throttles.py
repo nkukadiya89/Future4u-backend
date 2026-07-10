@@ -47,4 +47,3 @@ class CourseGenerationRateThrottle(PerUserBurstRateThrottle):
 class InternshipGenerationRateThrottle(PerUserBurstRateThrottle):
     scope = "internship_generation"
     rate = "10/min"
-

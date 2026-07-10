@@ -12,7 +12,9 @@ from .service import match_jobs
 
 class JobViewSet(BaseModelViewSet):
     def get_queryset(self):
-        queryset = Job.objects.select_related("city", "provider").prefetch_related("education_tags")
+        queryset = Job.objects.select_related("city", "provider").prefetch_related(
+            "education_tags"
+        )
         user = self.request.user
         if user.is_superuser:
             return queryset
@@ -25,7 +27,7 @@ class JobViewSet(BaseModelViewSet):
                 provider=user,
             )
         return queryset
-        
+
     serializer_class = JobSerializer
 
     search_fields = BaseModelViewSet.searching_fields + [
@@ -44,7 +46,7 @@ class JobViewSet(BaseModelViewSet):
         "provider__full_name",
         "why_this_match",
     ]
-    ordering_fields = BaseModelViewSet.ordering_fields+[
+    ordering_fields = BaseModelViewSet.ordering_fields + [
         "name",
         "organization_name",
         "description",
@@ -70,8 +72,8 @@ class JobViewSet(BaseModelViewSet):
             )
             return Response(
                 {
-                    "success":True,
-                    "data":serializer.data,
+                    "success": True,
+                    "data": serializer.data,
                 },
                 status=status.HTTP_201_CREATED,
             )
@@ -82,7 +84,7 @@ class JobViewSet(BaseModelViewSet):
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
-        
+
     @action(methods=["patch"], detail=True, url_path="restore")
     def restore(self, request, pk=None):
         instance = self.get_object()
@@ -104,11 +106,10 @@ class JobViewSet(BaseModelViewSet):
             {"success": True, "message": "Job restored successfully"},
             status=status.HTTP_200_OK,
         )
-    
 
     @action(detail=False, methods=["get"], url_path="job-recommended")
     def job_recommended(self, request):
-        
+
         mode = request.query_params.get("mode")
         city_id = request.query_params.get("city_id")
         search = request.query_params.get("search")
@@ -117,15 +118,13 @@ class JobViewSet(BaseModelViewSet):
 
         if mode:
             jobs_qs = jobs_qs.filter(mode=mode)
-            
+
         if city_id:
             jobs_qs = jobs_qs.filter(city_id=city_id)
-        
+
         if search:
-            jobs_qs = jobs_qs.filter(
-                name__icontains=search
-            )
-        
+            jobs_qs = jobs_qs.filter(name__icontains=search)
+
         if request.user.user_type in [
             "student",
             "parent",
@@ -147,13 +146,11 @@ class JobViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
-            career = (
-                CareerSuggestion.objects.get(
-                    id=career_id,
-                    recommendation__user = request.user,
-                    deleted=False,
-                    recommendation__deleted=False
-                )
+            career = CareerSuggestion.objects.get(
+                id=career_id,
+                recommendation__user=request.user,
+                deleted=False,
+                recommendation__deleted=False,
             )
         except CareerSuggestion.DoesNotExist:
             return Response(
@@ -166,7 +163,7 @@ class JobViewSet(BaseModelViewSet):
         jobs = match_jobs(
             ai_skills=career.required_skills or [],
             ai_education=career.required_education or {},
-            user = request.user,
+            user=request.user,
             jobs_qs=jobs_qs,
         )
 
@@ -183,14 +180,14 @@ class JobViewSet(BaseModelViewSet):
             )
         return Response(
             {
-                "success" : True,
+                "success": True,
                 "count": len(data),
-                "message":"Recommended Jobs",
+                "message": "Recommended Jobs",
                 "data": data,
             },
             status=status.HTTP_200_OK,
         )
-        
+
 
 class JobApplicationViewSet(BaseModelViewSet):
 
@@ -236,17 +233,14 @@ class JobApplicationViewSet(BaseModelViewSet):
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
-        
+
         if JobApplication.objects.filter(
             applicant=request.user,
             job=job,
             deleted=False,
         ).exists():
             return Response(
-                {
-                    "success": False,
-                    "message": "You have already applied for this job"
-                },
+                {"success": False, "message": "You have already applied for this job"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         application = JobApplication.objects.create(
@@ -269,8 +263,7 @@ class JobApplicationViewSet(BaseModelViewSet):
             },
             status=status.HTTP_201_CREATED,
         )
-    
-    
+
     @transaction.atomic()
     def update(self, request, *args, **kwargs):
         application = self.get_object()
@@ -278,7 +271,7 @@ class JobApplicationViewSet(BaseModelViewSet):
         if application.applicant != request.user:
             return Response(
                 {
-                    "success":False,
+                    "success": False,
                     "message": "You are not allowed to update this application",
                 },
                 status=status.HTTP_403_FORBIDDEN,
@@ -291,21 +284,18 @@ class JobApplicationViewSet(BaseModelViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         resume_file = request.FILES.get("resume")
         if resume_file:
             application.upload_resume(resume_file)
-        
+
         data = request.data.dict()
         data.pop("resume", None)
         data.pop("applicant", None)
         data.pop("job", None)
         data.pop("status", None)
 
-        serializer = self.get_serializer(
-            application, data=data,
-            partial=True
-        )
+        serializer = self.get_serializer(application, data=data, partial=True)
 
         serializer.is_valid(raise_exception=True)
         serializer.save(
@@ -344,7 +334,7 @@ class JobApplicationViewSet(BaseModelViewSet):
             job__provider=request.user,
             deleted=False,
         ).select_related("job", "applicant")
-        
+
         job_id = request.query_params.get("job_id")
 
         if not job_id:
@@ -360,12 +350,12 @@ class JobApplicationViewSet(BaseModelViewSet):
         return Response(
             {
                 "success": True,
-                "count" : inquiries.count(),
+                "count": inquiries.count(),
                 "data": serializer.data,
             },
             status=status.HTTP_200_OK,
         )
-    
+
     @action(detail=True, methods=["patch"], url_path="update-status")
     def update_status(self, request, pk=None):
         application = self.get_object()
@@ -373,8 +363,8 @@ class JobApplicationViewSet(BaseModelViewSet):
         if application.job.provider != request.user:
             return Response(
                 {
-                    "success":False,
-                    "message":"You are not allowed to update this job application status",
+                    "success": False,
+                    "message": "You are not allowed to update this job application status",
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )
@@ -387,7 +377,9 @@ class JobApplicationViewSet(BaseModelViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        valid_statuses = {choice[0] for choice in JobApplication.APPLICATION_STATUS_CHOICE}
+        valid_statuses = {
+            choice[0] for choice in JobApplication.APPLICATION_STATUS_CHOICE
+        }
         if application_status not in valid_statuses:
             return Response(
                 {
@@ -409,5 +401,3 @@ class JobApplicationViewSet(BaseModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
-    
-    

@@ -85,7 +85,9 @@ class JobGenerationInputSerializer(serializers.Serializer):
         if salary_min is not None and salary_max is not None:
             if salary_min > salary_max:
                 raise serializers.ValidationError(
-                    {"salary_min": "salary_min must be less than or equal to salary_max."}
+                    {
+                        "salary_min": "salary_min must be less than or equal to salary_max."
+                    }
                 )
 
         return attrs

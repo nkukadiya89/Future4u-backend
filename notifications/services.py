@@ -12,14 +12,26 @@ class NotificationService:
     """Service layer for user notifications."""
 
     @staticmethod
-    def create_notification(user: Any, notification_type: str, title: str, message: str, metadata: Dict[str, Any] | None = None) -> Notification:
+    def create_notification(
+        user: Any,
+        notification_type: str,
+        title: str,
+        message: str,
+        metadata: Dict[str, Any] | None = None,
+    ) -> Notification:
         metadata = metadata or {}
         return Notification.objects.create(
-            user=user, notification_type=notification_type, title=title, message=message, metadata=metadata
+            user=user,
+            notification_type=notification_type,
+            title=title,
+            message=message,
+            metadata=metadata,
         )
 
     @staticmethod
-    def bulk_create_notifications(items: Iterable[Dict[str, Any]]) -> List[Notification]:
+    def bulk_create_notifications(
+        items: Iterable[Dict[str, Any]],
+    ) -> List[Notification]:
         """Bulk create notification dictionaries.
 
         items: iterable of dicts with keys (user, notification_type, title, message, metadata)
@@ -39,7 +51,9 @@ class NotificationService:
     @staticmethod
     def mark_all_read(user: Any) -> int:
         with transaction.atomic():
-            updated = Notification.objects.filter(user=user, is_read=False).update(is_read=True)
+            updated = Notification.objects.filter(user=user, is_read=False).update(
+                is_read=True
+            )
         return updated
 
     @staticmethod

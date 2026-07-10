@@ -9,7 +9,6 @@ from .models import (
 )
 
 
-
 class CareerSuggestionInline(admin.TabularInline):
     model = CareerSuggestion
     extra = 0
@@ -210,8 +209,12 @@ class CareerSuggestionAdmin(admin.ModelAdmin):
 @admin.register(ChatSession)
 class ChatSessionAdmin(admin.ModelAdmin):
     list_display = (
-        "id", "suggestion", "child_link", "message_count",
-        "updated_at", "created_at",
+        "id",
+        "suggestion",
+        "child_link",
+        "message_count",
+        "updated_at",
+        "created_at",
     )
     list_select_related = ("child", "suggestion")
     search_fields = (

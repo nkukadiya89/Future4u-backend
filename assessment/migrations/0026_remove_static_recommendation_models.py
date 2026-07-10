@@ -6,62 +6,65 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0025_alter_careerdirection_table_alter_careervalue_table_and_more'),
+        (
+            "assessment",
+            "0025_alter_careerdirection_table_alter_careervalue_table_and_more",
+        ),
     ]
 
     operations = [
         # OptionCareerMapping + AssessmentCareerRecommendation removed — referenced deleted career.Career
         migrations.AlterUniqueTogether(
-            name='assessmentdomainscore',
+            name="assessmentdomainscore",
             unique_together=None,
         ),
         migrations.RemoveIndex(
-            model_name='assessmentdomainscore',
-            name='assessment__assessm_c256a9_idx',
+            model_name="assessmentdomainscore",
+            name="assessment__assessm_c256a9_idx",
         ),
         migrations.AlterUniqueTogether(
-            name='assessmentskillscore',
+            name="assessmentskillscore",
             unique_together=None,
         ),
         migrations.RemoveIndex(
-            model_name='assessmentskillscore',
-            name='assessment__assessm_21e698_idx',
+            model_name="assessmentskillscore",
+            name="assessment__assessm_21e698_idx",
         ),
         migrations.AlterUniqueTogether(
-            name='optionskillmapping',
+            name="optionskillmapping",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='optionskillmapping',
-            name='option',
+            model_name="optionskillmapping",
+            name="option",
         ),
         migrations.RemoveField(
-            model_name='optionskillmapping',
-            name='skill',
+            model_name="optionskillmapping",
+            name="skill",
         ),
         migrations.RemoveField(
-            model_name='assessmentdomainscore',
-            name='assessment',
+            model_name="assessmentdomainscore",
+            name="assessment",
         ),
         migrations.RemoveField(
-            model_name='assessmentdomainscore',
-            name='domain',
+            model_name="assessmentdomainscore",
+            name="domain",
         ),
         migrations.RemoveField(
-            model_name='assessmentskillscore',
-            name='assessment',
+            model_name="assessmentskillscore",
+            name="assessment",
         ),
         migrations.RemoveField(
-            model_name='assessmentskillscore',
-            name='skill',
+            model_name="assessmentskillscore",
+            name="skill",
         ),
         migrations.DeleteModel(
-            name='OptionSkillMapping',
+            name="OptionSkillMapping",
         ),
         migrations.DeleteModel(
-            name='AssessmentDomainScore',
+            name="AssessmentDomainScore",
         ),
         migrations.DeleteModel(
-            name='AssessmentSkillScore',
+            name="AssessmentSkillScore",
         ),
     ]

@@ -127,7 +127,7 @@ class AuthViewSet(viewsets.ViewSet):
         user.otp = None
         user.otp_created_at = None
         user.save(
-            update_fields = [
+            update_fields=[
                 "is_active",
                 "status",
                 "email_verified",
@@ -143,7 +143,10 @@ class AuthViewSet(viewsets.ViewSet):
             entity_id=user.id,
         )
         return Response(
-            {"success": True, "message": "Your email has been verified, and your account has been created successfully"},
+            {
+                "success": True,
+                "message": "Your email has been verified, and your account has been created successfully",
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -190,7 +193,10 @@ class AuthViewSet(viewsets.ViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @action(detail=False,methods=["post"],url_path="logout",
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="logout",
         permission_classes=[IsAuthenticated],
         authentication_classes=[JWTAuthentication],
     )
@@ -214,7 +220,10 @@ class AuthViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    @action(detail=False,methods=["post"],url_path="change-password",
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="change-password",
         permission_classes=[IsAuthenticated],
         authentication_classes=[JWTAuthentication],
     )
@@ -371,7 +380,7 @@ class AuthViewSet(viewsets.ViewSet):
             )
 
         try:
-            user = User.objects.get(email=email) 
+            user = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response(
                 {"success": False, "error": "User not found"},

@@ -79,9 +79,13 @@ class JobGenerationPayload(BaseModel):
 
     name: str = Field(min_length=3, max_length=200)
     description: str = Field(min_length=30, max_length=500)
-    responsibilities: list[str] = Field(min_length=RESPONSIBILITIES_COUNT, max_length=RESPONSIBILITIES_COUNT)
+    responsibilities: list[str] = Field(
+        min_length=RESPONSIBILITIES_COUNT, max_length=RESPONSIBILITIES_COUNT
+    )
     skills: list[str] = Field(min_length=4, max_length=8)
-    education_tags: list[str] = Field(min_length=EDUCATION_TAGS_MIN, max_length=EDUCATION_TAGS_MAX)
+    education_tags: list[str] = Field(
+        min_length=EDUCATION_TAGS_MIN, max_length=EDUCATION_TAGS_MAX
+    )
     why_this_match: str = Field(min_length=20, max_length=300)
 
     @field_validator("responsibilities", "skills", "education_tags", mode="before")
@@ -106,19 +110,27 @@ class JobGenerationPayload(BaseModel):
         self.why_this_match = clip(self.why_this_match, 300)
 
         for field_name in ("responsibilities", "skills"):
-            items = [clip(item, 200) for item in getattr(self, field_name) if item.strip()]
+            items = [
+                clip(item, 200) for item in getattr(self, field_name) if item.strip()
+            ]
             deduped = deduplicate(items)
             if len(deduped) != len(items):
                 raise ValueError(f"{field_name} contains duplicate entries")
             setattr(self, field_name, deduped)
 
         if len(self.education_tags) < EDUCATION_TAGS_MIN:
-            raise ValueError(f"education_tags must have at least {EDUCATION_TAGS_MIN} item")
+            raise ValueError(
+                f"education_tags must have at least {EDUCATION_TAGS_MIN} item"
+            )
         if len(self.education_tags) > EDUCATION_TAGS_MAX:
-            raise ValueError(f"education_tags must have at most {EDUCATION_TAGS_MAX} items")
+            raise ValueError(
+                f"education_tags must have at most {EDUCATION_TAGS_MAX} items"
+            )
 
         if len(self.responsibilities) != RESPONSIBILITIES_COUNT:
-            raise ValueError(f"responsibilities must have exactly {RESPONSIBILITIES_COUNT} items")
+            raise ValueError(
+                f"responsibilities must have exactly {RESPONSIBILITIES_COUNT} items"
+            )
         for index, item in enumerate(self.responsibilities, start=1):
             item_wc = word_count(item)
             if item_wc < RESPONSIBILITY_ITEM_MIN_WORDS:
@@ -142,7 +154,9 @@ class JobGenerationPayload(BaseModel):
         if desc_wc > DESCRIPTION_MAX_WORDS:
             raise ValueError(f"description must be <= {DESCRIPTION_MAX_WORDS} words")
         if desc_wc < DESCRIPTION_MIN_WORDS:
-            raise ValueError(f"description must be at least {DESCRIPTION_MIN_WORDS} words")
+            raise ValueError(
+                f"description must be at least {DESCRIPTION_MIN_WORDS} words"
+            )
 
         desc_sentence_count = len(sentences(self.description))
         if desc_sentence_count != DESCRIPTION_SENTENCE_COUNT:
@@ -152,9 +166,13 @@ class JobGenerationPayload(BaseModel):
 
         why_wc = word_count(self.why_this_match)
         if why_wc > WHY_THIS_MATCH_MAX_WORDS:
-            raise ValueError(f"why_this_match must be <= {WHY_THIS_MATCH_MAX_WORDS} words")
+            raise ValueError(
+                f"why_this_match must be <= {WHY_THIS_MATCH_MAX_WORDS} words"
+            )
         if why_wc < WHY_THIS_MATCH_MIN_WORDS:
-            raise ValueError(f"why_this_match must be at least {WHY_THIS_MATCH_MIN_WORDS} words")
+            raise ValueError(
+                f"why_this_match must be at least {WHY_THIS_MATCH_MIN_WORDS} words"
+            )
 
         why_sentence_count = len(sentences(self.why_this_match))
         if why_sentence_count != WHY_THIS_MATCH_SENTENCE_COUNT:
