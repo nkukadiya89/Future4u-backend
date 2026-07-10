@@ -21,7 +21,7 @@ def assign_basic_subscription(sender, instance, created, **kwargs):
     try:
         basic = (
             Subscription.objects.filter(
-                package_name__iexact="Basic", is_active=True, deleted=False
+                package_name__iexact="Free", is_active=True, deleted=False
             )
             .order_by("-id")
             .first()

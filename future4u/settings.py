@@ -114,7 +114,7 @@ INSTALLED_APPS = [
     "job_generation",
     "course_generation",
     "internship_generation",
-
+    "token_override",
 ]
 
 MIDDLEWARE = [

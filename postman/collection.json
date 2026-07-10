@@ -14149,6 +14149,60 @@
       ]
     },
     {
+      "name": "subscription",
+      "item": [
+        {
+          "name": "list_plans (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "my_subscription (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/company-subscriptions/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "company-subscriptions",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Admin Users",
       "description": "Super Admin / staff endpoints for creating and managing student users. Requires Bearer {{access_token}}. Base path: /admin-student-users/\n\nList active students with GET /api/student-profile/ (superuser token).\n\nActivate or deactivate students with PATCH {user_id}/update-status/ (status: active | inactive). Active students receive a password setup email when activated.\n\nSoft-delete (archive): DELETE single student or PATCH bulk-archive. Students must be inactive before archiving. Restore archived students with PATCH bulk-restore. List archived students with GET archive-list.",
       "item": [
@@ -19380,6 +19434,111 @@
               ]
             },
             "description": "Returns the resume data as JSON for frontend preview or debugging. Does not call AI or generate a PDF."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "token-overrides",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/token-overrides/?no_pagination=1&pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "token-overrides"
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/token-overrides/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "token-overrides"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"user\": 1, \"entity_type\": \"school_college\", \"entity_user_id\": 1, \"extra_monthly_tokens\": 5000, \"is_active\": true}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/token-overrides/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "token-overrides",
+                "1"
+              ]
+            }
           },
           "response": []
         }
