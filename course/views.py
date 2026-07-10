@@ -12,7 +12,7 @@ from .serializers import CourseInquirySerializer, CoursesSerializer
 
 class CoursesViewSet(BaseModelViewSet):
     def get_queryset(self):
-        queryset = Courses.objects.select_related("city", "provider")
+        queryset = Courses.objects.select_related("country", "state", "city", "provider")
         user = self.request.user
         if user.is_superuser:
             return queryset
@@ -21,10 +21,9 @@ class CoursesViewSet(BaseModelViewSet):
             "school_college",
             "corporate",
         ]:
-            return queryset.filter(
-                provider=user,
-            )
-        return queryset
+            return queryset.filter(provider=user)
+        # Students/parents: only see active courses, exclude drafts and closed
+        return queryset.filter(status="active")
 
     serializer_class = CoursesSerializer
 
@@ -36,8 +35,11 @@ class CoursesViewSet(BaseModelViewSet):
         "mode",
         "duration",
         "city__name",
+        "country__name",
+        "state__name",
         "course_content",
         "course_overview",
+        "course_description",
         "certification_info",
     ]
     ordering_fields = BaseModelViewSet.ordering_fields + [

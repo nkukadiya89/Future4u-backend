@@ -46,13 +46,8 @@ class Internship(BaseModule):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     certificate_provided = models.BooleanField(default=True)
-    provider = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="internships",
-    )
+    provider = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="internships")
+    application_deadline = models.DateField(null=True, blank=True, help_text="Application deadline date")
 
     class Meta:
         db_table = "internship"
@@ -185,6 +180,7 @@ class Job(BaseModule):
     )
     why_this_match = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=100, choices=JOB_STATUS_CHOICE, default="draft")
+    application_deadline = models.DateField(null=True, blank=True, help_text="Application deadline date")
 
     class Meta:
         db_table = "jobs"

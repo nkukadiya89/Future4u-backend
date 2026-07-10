@@ -28,6 +28,7 @@ class InternshipSerializer(BaseModelSerializer):
             "certificate_provided",
             "provider",
             "provider_name",
+            "application_deadline",
         ]
 
     def get_provider_name(self, obj):
@@ -94,6 +95,7 @@ class JobSerializer(BaseModelSerializer):
             "provider_name",
             "why_this_match",
             "status",
+            "application_deadline",
         ]
 
     def get_provider_name(self, obj):
