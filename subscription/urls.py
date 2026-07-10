@@ -13,7 +13,6 @@ from subscription.subscription_views import (
 
 router = DefaultRouter()
 router.register(r"subscriptions", SubscriptionViewSet, basename="subscriptions")
-router.register(r"subscription", SubscriptionViewSet, basename="subscription")
 router.register(
     r"company-subscriptions", UserSubscriptionViewSet, basename="company-subscriptions"
 )

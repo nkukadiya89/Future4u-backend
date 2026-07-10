@@ -18,12 +18,10 @@ from django.shortcuts import render
 from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from job_generation.config import ai_llm_enabled, job_generation_enabled
 from city.models import City
-from country.models import Country
-from state.models import State
 from internship_job.models import Job
 from job_generation.constants.job_generation_constants import (
     JOB_OVERVIEW_MAX_LENGTH,
-    JOB_TITLE_MAX_LENGTH,
+    OPTIONAL_FIELD_MAX_LENGTH,
 )
 from job_generation.exceptions import (
     JobGenerationConfigurationError,
@@ -33,7 +31,6 @@ from job_generation.models import JobGenerationPanel
 from job_generation.providers.factory import get_llm_provider
 from job_generation.services.job_generation_service import _build_response
 from job_generation.services.job_generator import JobGenerator
-from user_profile.models import CorporateProfile
 
 
 def _pretty_json(value) -> str:
@@ -66,40 +63,19 @@ def _provider_status() -> dict:
 
 
 class JobGenerationRunForm(forms.Form):
-    job_title = forms.CharField(
-        required=False,
-        max_length=JOB_TITLE_MAX_LENGTH,
-        help_text="Optional. Desired job title hint for AI generation (e.g. 'Senior Data Analyst').",
-    )
     job_overview = forms.CharField(
         widget=forms.Textarea(attrs={"rows": 4}),
         min_length=10,
         max_length=JOB_OVERVIEW_MAX_LENGTH,
         help_text="Required. Brief role overview for AI generation (10–1000 characters).",
     )
-    corporate = forms.ModelChoiceField(
-        queryset=CorporateProfile.objects.filter(deleted=False),
-        required=True,
-        empty_label="Select a company",
-        help_text="Select the company posting this job.",
+    organization_name = forms.CharField(
+        max_length=OPTIONAL_FIELD_MAX_LENGTH,
+        help_text="Required. Company or organization name (user-provided).",
     )
-    country = forms.ModelChoiceField(
+    city = forms.IntegerField(
         required=False,
-        queryset=Country.objects.filter(deleted=False),
-        empty_label="Select a country",
-        help_text="Optional. Select the job location country.",
-    )
-    state = forms.ModelChoiceField(
-        required=False,
-        queryset=State.objects.filter(deleted=False),
-        empty_label="Select a state",
-        help_text="Optional. Select the job location state.",
-    )
-    city = forms.ModelChoiceField(
-        required=False,
-        queryset=City.objects.filter(deleted=False).select_related("country", "state"),
-        empty_label="Select a city",
-        help_text="Optional. Select the job location city.",
+        help_text="Optional. City ID from the city master list.",
     )
     job_type = forms.ChoiceField(
         required=False,
@@ -157,21 +133,13 @@ class JobGenerationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         error = None
 
         if request.method == "POST" and form.is_valid():
-            corporate_profile = form.cleaned_data.get("corporate")
-            country = form.cleaned_data.get("country")
-            state = form.cleaned_data.get("state")
-            city = form.cleaned_data.get("city")
-
-            # Build the generation input with model instances for _build_response
+            city = None
+            city_id = form.cleaned_data.get("city")
+            if city_id:
+                city = City.objects.filter(id=city_id, deleted=False).first()
             generation_input = {
-                "job_title": form.cleaned_data.get("job_title", ""),
                 "job_overview": form.cleaned_data["job_overview"],
-                "corporate": corporate_profile.pk if corporate_profile else None,
-                "company_name": corporate_profile.company_name if corporate_profile else "",
-                "company_website": corporate_profile.website if corporate_profile else "",
-                "company_about_us": corporate_profile.about_us if corporate_profile else "",
-                "country": country,
-                "state": state,
+                "organization_name": form.cleaned_data["organization_name"],
                 "city": city,
                 "job_type": form.cleaned_data.get("job_type", ""),
                 "experience_level": form.cleaned_data.get("experience_level", ""),
@@ -180,19 +148,14 @@ class JobGenerationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                 "salary_max": form.cleaned_data.get("salary_max"),
                 "application_deadline": form.cleaned_data.get("application_deadline"),
             }
-
-            # Diagnostics uses only primitive values to avoid ORM conflicts
-            diagnostics = {
-                "requested_by": getattr(request.user, "email", ""),
-                "provider": _provider_status(),
-                "input": {
-                    k: getattr(v, "pk", v) if hasattr(v, "_meta") else v
-                    for k, v in generation_input.items()
-                },
-            }
             try:
+                diagnostics = {
+                    "requested_by": getattr(request.user, "email", ""),
+                    "provider": _provider_status(),
+                    "input": generation_input,
+                }
                 payload = JobGenerator.generate(generation_input=generation_input)
-                result = _build_response(payload, generation_input, company=corporate_profile)
+                result = _build_response(payload, generation_input)
             except JobGenerationConfigurationError as exc:
                 error = f"AI not configured: {exc}"
             except JobGenerationValidationError as exc:

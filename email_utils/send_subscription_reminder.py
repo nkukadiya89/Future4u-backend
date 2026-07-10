@@ -61,14 +61,11 @@ def send_subscription_reminder_email(
 
         # Add subscription details if available
         if subscription_item:
-            plan = getattr(subscription_item, "plan_price", None)
-            plan_name = getattr(getattr(plan, "plan", None), "package_name", None)
-            amount = getattr(subscription_item, "plan_total", None) or getattr(plan, "price", None)
             context.update(
                 {
-                    "subscription_package": plan_name,
+                    "subscription_package": subscription_item.subscription.package_name,
                     "end_date": subscription_item.end_date,
-                    "subscription_amount": amount,
+                    "subscription_amount": subscription_item.plan_total,
                 }
             )
 

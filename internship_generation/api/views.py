@@ -20,7 +20,6 @@ from internship_generation.services.internship_generation_service import (
     InternshipGenerationService,
 )
 from utils.throttles import InternshipGenerationRateThrottle
-from utils.token_check import check_and_deduct_token
 
 logger = logging.getLogger(__name__)
 
@@ -41,15 +40,6 @@ class InternshipGenerationAPIView(APIView):
             return Response(
                 {"success": False, "message": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Check token availability before AI call
-        try:
-            check_and_deduct_token(request.user, "internship_gen")
-        except Exception as exc:
-            return Response(
-                {"success": False, "message": str(exc)},
-                status=status.HTTP_402_PAYMENT_REQUIRED,
             )
 
         try:

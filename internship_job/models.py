@@ -1,12 +1,9 @@
 from django.db import models
 from common.models import BaseModule
 from city.models import City
-from country.models import Country
-from state.models import State
 from django.conf import settings
 from education_level.models import EducationLevel
 from user.models import User
-from user_profile.models import CorporateProfile
 import os
 
 from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
@@ -121,14 +118,12 @@ class Job(BaseModule):
     )
 
     JOB_STATUS_CHOICE = (
-        ("draft", "Draft"),
         ("active", "Active"),
         ("closed", "Closed"),
     )
 
     name = models.CharField(max_length=250, null=True, blank=True)
-    corporate = models.ForeignKey(CorporateProfile,on_delete=models.CASCADE,related_name="jobs",null=True,blank=True)
-    job_overview = models.TextField(null=True, blank=True)
+    organization_name = models.CharField(max_length=200, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     responsibilities = models.JSONField(default=list, blank=True)
     skills = models.JSONField(default=list, blank=True)
@@ -136,14 +131,12 @@ class Job(BaseModule):
     experience_level = models.CharField(max_length=100, choices=EXPERIENCE_CHOICES, default="fresher")
     job_type = models.CharField(max_length=100, choices=JOB_TYPE_CHOICE, default="full_time")
     mode = models.CharField(max_length=100, choices=MODE_CHOICES, default="onsite")
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True, blank=True)
-    state = models.ForeignKey(State, on_delete=models.CASCADE, null=True, blank=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True)
     salary_min = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     salary_max = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     provider = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="jobs")
     why_this_match = models.TextField(null=True, blank=True)
-    status = models.CharField(max_length=100, choices=JOB_STATUS_CHOICE, default="draft")
+    status = models.CharField(max_length=100, choices=JOB_STATUS_CHOICE, default="active")
 
     class Meta:
         db_table = "jobs"

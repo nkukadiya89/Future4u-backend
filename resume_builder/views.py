@@ -27,7 +27,6 @@ from django.http import HttpResponse
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from activity_log.services import log_event
-from utils.token_check import check_and_deduct_token
 from resume_builder.services import (
     build_student_resume_data,
     build_professional_resume_data,
@@ -163,15 +162,6 @@ class ResumeGenerateView(APIView):
             finally:
                 tmp.close()
             resume_data["personal_info"]["photo"] = tmp_photo_path
-
-        # Check token availability before AI call
-        try:
-            check_and_deduct_token(request.user, "resume_enhance")
-        except Exception as exc:
-            return Response(
-                {"success": False, "message": str(exc)},
-                status=status.HTTP_402_PAYMENT_REQUIRED,
-            )
 
         try:
             pdf_bytes = generate_resume_pdf(resume_data)
