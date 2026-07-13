@@ -5,46 +5,26 @@ from decimal import Decimal
 from rest_framework import serializers
 
 from city.models import City
-from country.models import Country
-from state.models import State
 from internship_job.models import Job
-from user_profile.models import CorporateProfile
 from job_generation.constants.job_generation_constants import (
     JOB_OVERVIEW_MAX_LENGTH,
     JOB_OVERVIEW_MIN_LENGTH,
-    JOB_TITLE_MAX_LENGTH,
+    OPTIONAL_FIELD_MAX_LENGTH,
 )
 
 
 class JobGenerationInputSerializer(serializers.Serializer):
-    job_title = serializers.CharField(
-        required=False,
-        allow_blank=True,
-        max_length=JOB_TITLE_MAX_LENGTH,
-        trim_whitespace=True,
-        help_text="Optional. Desired job title hint for AI generation (e.g. 'Senior Data Analyst').",
-    )
     job_overview = serializers.CharField(
         min_length=JOB_OVERVIEW_MIN_LENGTH,
         max_length=JOB_OVERVIEW_MAX_LENGTH,
         trim_whitespace=True,
         help_text="Brief role overview used as primary context for AI generation.",
     )
-    corporate = serializers.PrimaryKeyRelatedField(
-        queryset=CorporateProfile.objects.filter(deleted=False),
-        help_text="CorporateProfile ID of the company posting this job.",
-    )
-    country = serializers.PrimaryKeyRelatedField(
-        required=False,
-        allow_null=True,
-        queryset=Country.objects.filter(deleted=False),
-        help_text="Optional. Job location country.",
-    )
-    state = serializers.PrimaryKeyRelatedField(
-        required=False,
-        allow_null=True,
-        queryset=State.objects.filter(deleted=False),
-        help_text="Optional. Job location state.",
+    organization_name = serializers.CharField(
+        min_length=2,
+        max_length=OPTIONAL_FIELD_MAX_LENGTH,
+        trim_whitespace=True,
+        help_text="Company or organization name (user-provided).",
     )
     city = serializers.PrimaryKeyRelatedField(
         queryset=City.objects.filter(deleted=False),

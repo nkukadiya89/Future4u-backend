@@ -20,7 +20,6 @@ from recommendation.exceptions import (
     AssessmentNotReadyError,
 )
 from utils.throttles import AIChatRateThrottle, RecommendationRateThrottle
-from utils.token_check import check_and_deduct_token
 
 logger = logging.getLogger(__name__)
 
@@ -38,15 +37,6 @@ class RecommendationAPIView(APIView):
     throttle_classes = [RecommendationRateThrottle]
 
     def get(self, request, assessment_id, *args, **kwargs):
-        # Check token availability before AI call
-        try:
-            check_and_deduct_token(request.user, "ai_recommendation")
-        except Exception as exc:
-            return Response(
-                {"success": False, "message": str(exc)},
-                status=status.HTTP_402_PAYMENT_REQUIRED,
-            )
-
         try:
             profile_type = request.query_params.get("profile_type")
             result = resolve_recommendation_service(
@@ -174,15 +164,6 @@ class RecommendationChatAPIView(APIView):
             )
 
     def post(self, request, assessment_id, *args, **kwargs):
-        # Check token availability before AI call
-        try:
-            check_and_deduct_token(request.user, "ai_chat")
-        except Exception as exc:
-            return Response(
-                {"success": False, "message": str(exc)},
-                status=status.HTTP_402_PAYMENT_REQUIRED,
-            )
-
         try:
             profile_type = request.query_params.get("profile_type")
             result = resolve_chat_service(assessment_id, profile_type=profile_type)

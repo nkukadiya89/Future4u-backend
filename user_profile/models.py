@@ -725,9 +725,6 @@ class CorporateProfile(BaseModule):
     )
     updated_at = models.DateTimeField(null=True, blank=True)
 
-    def __str__(self):
-        return self.company_name or f"CorporateProfile<{self.id}>"
-
     class Meta:
         db_table = "corporate_profile"
         ordering = ["-created_at"]

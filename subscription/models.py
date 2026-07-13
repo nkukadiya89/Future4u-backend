@@ -8,9 +8,9 @@ from user.models import User
 
 class Subscription(models.Model):
     package_name = models.CharField(max_length=100)
-    # Logical subscription plan. Pricing moved to PlanPrice model to support
-    # multiple billing periods (monthly/yearly) per plan.
-    # legacy price/duration moved to `PlanPrice`.
+    # price = models.FloatField()
+    price = models.IntegerField(db_column="subscription_price")
+    duration_days = models.IntegerField()
     description = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
 
@@ -45,61 +45,7 @@ class Subscription(models.Model):
         ordering = ["-created_at"]
 
 
-class SubscriptionPlan(Subscription):
-    """Backward-compatible logical plan.
-
-    `Subscription` previously held pricing fields; we keep that model name
-    but introduce `SubscriptionPlan` as explicit alias/extension for clarity.
-    """
-
-    class Meta:
-        proxy = True
-
-
-class PlanPrice(models.Model):
-    PERIOD_CHOICES = (("monthly", "Monthly"), ("yearly", "Yearly"))
-
-    plan = models.ForeignKey(
-        Subscription, on_delete=models.CASCADE, related_name="prices"
-    )
-    period = models.CharField(max_length=10, choices=PERIOD_CHOICES)
-    price = models.IntegerField()
-    duration_days = models.IntegerField()
-    is_active = models.BooleanField(default=True)
-
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="planprice_created",
-    )
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="planprice_updated",
-    )
-    deleted = models.BooleanField(default=False)
-    deleted_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="planprice_deleted",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-    deleted_at = models.DateTimeField(null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.plan.package_name} - {self.period} - {self.price}"
-
-    class Meta:
-        ordering = ["-created_at"]
-
-
 class SubscriptionFeature(models.Model):
-    # Feature belongs to a logical Subscription (plan). Pricing is on PlanPrice.
     subscription = models.ForeignKey(
         Subscription, on_delete=models.CASCADE, related_name="features"
     )
@@ -149,11 +95,7 @@ class SubscriptionFeature(models.Model):
 
 class UserSubscription(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    # Link to the specific priced offer the user purchased (periodic price)
-    # e.g. monthly or yearly PlanPrice
-    plan_price = models.ForeignKey(
-        "PlanPrice", on_delete=models.CASCADE, null=True, blank=True
-    )
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
 
     start_date = models.DateField()
     end_date = models.DateField()
@@ -185,56 +127,7 @@ class UserSubscription(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        # UserSubscription is linked to a user and a subscription
-        plan_name = None
-        if self.plan_price and self.plan_price.plan:
-            plan_name = self.plan_price.plan.package_name
-        return f"{getattr(self.user, 'first_name', '') or getattr(self.user, 'email', '')} - {plan_name or ''}"
-
-    def can_consume(self, feature_code, quantity=1):
-        """Return True if the user can consume `quantity` of `feature_code` under this subscription."""
-        from subscription.models import FeatureUsage, SubscriptionFeature
-
-        if not self.is_active:
-            return False
-
-        # Features are defined at the plan level (Subscription.plan)
-        plan = getattr(self.plan_price, "plan", None)
-        if not plan:
-            return False
-
-        feature = SubscriptionFeature.objects.filter(
-            subscription=plan,
-            feature_code=feature_code,
-            is_enabled=True,
-            deleted=False,
-        ).first()
-
-        if not feature:
-            return False
-
-        if feature.is_unlimited:
-            return True
-
-        limit = int(feature.value or 0)
-        usage = FeatureUsage.objects.filter(
-            user=self.user, feature_code=feature_code, plan_price=self.plan_price
-        ).first()
-        used = usage.used if usage else 0
-
-        return (used + quantity) <= limit
-
-    def consume(self, feature_code, quantity=1):
-        """Consume `quantity` of `feature_code` for the user using atomic service.
-
-        Raises Exception if limit exceeded or no active subscription.
-        """
-        from subscription.services.usage import consume_feature
-
-        if not self.is_active:
-            raise Exception("Subscription not active")
-
-        return consume_feature(self.user, feature_code, quantity)
+        return f"{self.company.name} - {self.subscription.package_name}"
 
     class Meta:
         ordering = ["-start_date"]
@@ -246,10 +139,7 @@ class FeatureUsage(models.Model):
 
     used = models.IntegerField(default=0)
 
-    # Track usage against a specific purchase price/period (PlanPrice)
-    plan_price = models.ForeignKey(
-        "PlanPrice", on_delete=models.CASCADE, null=True, blank=True
-    )
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
 
     last_used_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
@@ -277,10 +167,19 @@ class FeatureUsage(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{getattr(self.user, 'first_name', '') or getattr(self.user, 'email', '')} - {self.feature_code} - {self.used}"
+        return f"{self.user.first_name} - {self.feature_code} - {self.used}"
 
     class Meta:
         ordering = ["-last_used_at"]
+
+
+# Getting active Subscription for a company:
+
+# UserSubscription.objects.filter(
+#     company=company,
+#     is_active=True,
+#     end_date__gte=today
+# ).exists()
 
 
 class PaymentSubscription(models.Model):
@@ -291,11 +190,7 @@ class PaymentSubscription(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    # Reference the exact priced offer bought (PlanPrice). Keep price snapshots
-    # (amount, final_amount) for immutable history.
-    plan_price = models.ForeignKey(
-        "PlanPrice", on_delete=models.SET_NULL, null=True, blank=True
-    )
+    subscription = models.ForeignKey(Subscription, on_delete=models.SET_NULL, null=True)
 
     # pricing snapshot (IMPORTANT for history)
     amount = models.FloatField()  # original price
@@ -343,10 +238,7 @@ class PaymentSubscription(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        plan_name = None
-        if self.plan_price and self.plan_price.plan:
-            plan_name = self.plan_price.plan.package_name
-        return f"{plan_name or 'Subscription'} - {self.final_amount} - {self.status}"
+        return f"{self.user.first_name} - {self.final_amount} - {self.status}"
 
     class Meta:
         ordering = ["-created_at"]
@@ -364,9 +256,7 @@ class SubscriptionInvoice(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    subscription = models.ForeignKey(
-        "PlanPrice", on_delete=models.SET_NULL, null=True, blank=True
-    )
+    subscription = models.ForeignKey(Subscription, on_delete=models.SET_NULL, null=True)
 
     amount = models.FloatField()
     gst_rate = models.FloatField(default=18)

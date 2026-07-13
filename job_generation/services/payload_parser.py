@@ -17,6 +17,9 @@ def parse_ai_payload(payload: Any) -> JobGenerationPayload:
 
 def _normalize_payload(data: dict[str, Any]) -> dict[str, Any]:
     aliases = {
+        "title": "name",
+        "jobTitle": "name",
+        "job_title": "name",
         "jobDescription": "description",
         "job_description": "description",
         "keyResponsibilities": "responsibilities",
