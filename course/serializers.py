@@ -92,23 +92,19 @@ class CoursesSerializer(BaseModelSerializer):
         return None
 
     def validate(self, attrs):
-        if not attrs.get("name"):
-            raise serializers.ValidationError(
-                {"name": "Course name or course_title is required."}
-            )
+            if self.instance:
+                # PATCH request
+                name = attrs.get("name", self.instance.name)
+            else:
+                # POST request
+                name = attrs.get("name")
 
-        provider_type = attrs.get("provider_type")
-        course_provider = attrs.get("course_provider")
-        if course_provider and provider_type:
-            if course_provider.user_type != provider_type:
-                raise serializers.ValidationError(
-                    {
-                        "course_provider": (
-                            f"Selected user does not belong to the '{provider_type}' type."
-                        )
-                    }
-                )
-        return attrs
+            if not name:
+                raise serializers.ValidationError({
+                      "name": "Course name is required."
+                })
+
+            return attrs
 
 
 class CourseInquirySerializer(BaseModelSerializer):
