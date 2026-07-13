@@ -14,7 +14,7 @@ from assessment.models import (
     UserResponse,
     GuidanceReason,
     WorkConstraint,
-    ProfessionalAssessment
+    ProfessionalAssessment,
 )
 
 from common.serializers import BaseModelSerializer
@@ -137,8 +137,12 @@ class StudentAssessmentSerializer(BaseModelSerializer):
         required=False,
         allow_null=True,
     )
-    domain_category_name = serializers.CharField(source="domain_category.domain_name", read_only=True, default=None)
-    domain_name = serializers.CharField(source="domain.domain_name", read_only=True, default=None)
+    domain_category_name = serializers.CharField(
+        source="domain_category.domain_name", read_only=True, default=None
+    )
+    domain_name = serializers.CharField(
+        source="domain.domain_name", read_only=True, default=None
+    )
     career_direction_name = serializers.SerializerMethodField()
     concerns_name = serializers.SerializerMethodField()
     career_values_name = serializers.SerializerMethodField()
@@ -194,9 +198,10 @@ class StudentAssessmentSerializer(BaseModelSerializer):
             )
 
         return attrs
+
     def get_career_direction_name(self, obj):
-        return list(obj.career_direction.values_list('name', flat=True))
-    
+        return list(obj.career_direction.values_list("name", flat=True))
+
     def get_concerns_name(self, obj):
         return list(obj.concerns.values_list("name", flat=True))
 
@@ -205,6 +210,7 @@ class StudentAssessmentSerializer(BaseModelSerializer):
 
     def get_user_goals_name(self, obj):
         return list(obj.user_goals.values_list("name", flat=True))
+
 
 class StudentAssessmentCreateSerializer(BaseModelSerializer):
     class Meta:
@@ -332,7 +338,8 @@ class ParentAssessmentSerializer(BaseModelSerializer):
         if obj.child_id:
             return str(obj.child) if obj.child else None
         return None
-    
+
+
 class ParentAssessmentWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = ParentAssessment
@@ -377,7 +384,7 @@ class ParentAssessmentWriteSerializer(serializers.ModelSerializer):
             )
 
         return attrs
-  
+
 
 class NextQuestionSerializer(serializers.ModelSerializer):
     options = OptionSerializer(many=True, read_only=True)
@@ -407,26 +414,29 @@ class AssessmentResponseSerializer(serializers.Serializer):
         return super().to_internal_value(data)
 
 
-
 class ConcernSerializer(BaseModelSerializer):
     class Meta:
         model = Concern
         fields = BaseModelSerializer.Meta.fields + ["name"]
+
 
 class CareerValueSerializer(BaseModelSerializer):
     class Meta:
         model = CareerValue
         fields = BaseModelSerializer.Meta.fields + ["name"]
 
+
 class UserGoalSerializer(BaseModelSerializer):
     class Meta:
         model = UserGoal
         fields = BaseModelSerializer.Meta.fields + ["name"]
 
+
 class CareerDirectionSerializer(BaseModelSerializer):
     class Meta:
         model = CareerDirection
         fields = BaseModelSerializer.Meta.fields + ["name"]
+
 
 class ProfessionalAssessmentSerializer(serializers.ModelSerializer):
     user = serializers.IntegerField(source="user.id", read_only=True)
@@ -440,11 +450,13 @@ class ProfessionalAssessmentSerializer(serializers.ModelSerializer):
         source="get_preferred_structure_display", read_only=True
     )
     guidance_reasons = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=True,
+        many=True,
+        read_only=True,
     )
     guidance_reason_names = serializers.SerializerMethodField()
     work_constraints = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=True,
+        many=True,
+        read_only=True,
     )
     work_constraint_names = serializers.SerializerMethodField()
     domain_category_name = serializers.CharField(
@@ -465,35 +477,49 @@ class ProfessionalAssessmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfessionalAssessment
         fields = [
-            "id", "user", "current_screen", "is_completed",
-            "career_intention", "career_intention_display",
-            "guidance_reasons", "guidance_reason_names",
-            "work_constraints", "work_constraint_names",
-            "preferred_environment", "preferred_environment_display",
-            "preferred_structure", "preferred_structure_display",
-            "domain_category", "domain_category_name",
-            "domain", "domain_name",
-            "career_values", "career_value_names",
-            "platform_goals", "platform_goal_names",
-            "timeline", "timeline_display",
-            "salary_expectation", "salary_expectation_display",
-            "created_at", "updated_at",
+            "id",
+            "user",
+            "current_screen",
+            "is_completed",
+            "career_intention",
+            "career_intention_display",
+            "guidance_reasons",
+            "guidance_reason_names",
+            "work_constraints",
+            "work_constraint_names",
+            "preferred_environment",
+            "preferred_environment_display",
+            "preferred_structure",
+            "preferred_structure_display",
+            "domain_category",
+            "domain_category_name",
+            "domain",
+            "domain_name",
+            "career_values",
+            "career_value_names",
+            "platform_goals",
+            "platform_goal_names",
+            "timeline",
+            "timeline_display",
+            "salary_expectation",
+            "salary_expectation_display",
+            "created_at",
+            "updated_at",
         ]
- 
+
     def get_guidance_reason_names(self, obj):
         return list(obj.guidance_reasons.values_list("name", flat=True))
- 
+
     def get_work_constraint_names(self, obj):
         return list(obj.work_constraints.values_list("name", flat=True))
-    
+
     def get_career_value_names(self, obj):
         return list(obj.career_values.values_list("name", flat=True))
-    
+
     def get_platform_goal_names(self, obj):
-         return list(obj.platform_goals.values_list("name", flat=True))
-    
- 
- 
+        return list(obj.platform_goals.values_list("name", flat=True))
+
+
 class ProfessionalAssessmentWriteSerializer(serializers.ModelSerializer):
     guidance_reasons = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -508,12 +534,14 @@ class ProfessionalAssessmentWriteSerializer(serializers.ModelSerializer):
 
     domain_category = serializers.PrimaryKeyRelatedField(
         queryset=Domain.objects.filter(is_active=True, deleted=False),
-        required=False, allow_null=True
+        required=False,
+        allow_null=True,
     )
 
     domain = serializers.PrimaryKeyRelatedField(
         queryset=Domain.objects.filter(is_active=True, deleted=False),
-        required=False, allow_null=True
+        required=False,
+        allow_null=True,
     )
 
     career_values = serializers.PrimaryKeyRelatedField(
@@ -546,7 +574,9 @@ class ProfessionalAssessmentWriteSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         instance = getattr(self, "instance", None)
-        category = attrs.get("domain_category", getattr(instance, "domain_category", None))
+        category = attrs.get(
+            "domain_category", getattr(instance, "domain_category", None)
+        )
         domain = attrs.get("domain", getattr(instance, "domain", None))
 
         if category and getattr(category, "parent_id", None) is not None:
@@ -555,9 +585,7 @@ class ProfessionalAssessmentWriteSerializer(serializers.ModelSerializer):
             )
 
         if domain and getattr(domain, "parent_id", None) is None:
-            raise serializers.ValidationError(
-                {"domain": "Must be a child domain"}
-            )
+            raise serializers.ValidationError({"domain": "Must be a child domain"})
 
         if category and domain and getattr(domain, "parent_id", None) != category.id:
             raise serializers.ValidationError(

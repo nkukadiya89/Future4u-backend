@@ -16,9 +16,7 @@ class GroqProvider(LLMProvider):
 
     def get_chat_model(self, *, max_tokens: int | None = None):
         if not self.is_configured():
-            raise CourseGenerationConfigurationError(
-                "GROQ_API_KEY is not configured"
-            )
+            raise CourseGenerationConfigurationError("GROQ_API_KEY is not configured")
 
         try:
             from langchain_groq import ChatGroq
@@ -34,9 +32,7 @@ class GroqProvider(LLMProvider):
                 getattr(settings, "COURSE_GENERATION_TEMPERATURE", None)
                 or getattr(settings, "GROQ_TEMPERATURE", 0.2)
             ),
-            "max_tokens": int(
-                max_tokens or settings.COURSE_GENERATION_MAX_TOKENS
-            ),
+            "max_tokens": int(max_tokens or settings.COURSE_GENERATION_MAX_TOKENS),
             "max_retries": 2,
             "api_key": groq_api_key(),
         }

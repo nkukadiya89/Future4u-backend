@@ -31,9 +31,7 @@ class GroqProvider(LLMProvider):
         kwargs = {
             "model": model_name,
             "temperature": float(getattr(settings, "GROQ_TEMPERATURE", 0.2)),
-            "max_tokens": int(
-                max_tokens or settings.INTERNSHIP_GENERATION_MAX_TOKENS
-            ),
+            "max_tokens": int(max_tokens or settings.INTERNSHIP_GENERATION_MAX_TOKENS),
             "max_retries": 2,
             "api_key": groq_api_key(),
         }

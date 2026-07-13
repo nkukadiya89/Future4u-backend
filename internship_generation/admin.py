@@ -118,7 +118,9 @@ class InternshipGenerationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                     "provider": _provider_status(),
                     "input": generation_input,
                 }
-                payload = InternshipGenerator.generate(generation_input=generation_input)
+                payload = InternshipGenerator.generate(
+                    generation_input=generation_input
+                )
                 result = _build_response(payload, generation_input)
             except InternshipGenerationConfigurationError as exc:
                 error = f"AI not configured: {exc}"

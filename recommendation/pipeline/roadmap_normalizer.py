@@ -58,7 +58,9 @@ def _title_from_step(description: str) -> str:
     return title[:60].rstrip(".,;:") or "Next focus"
 
 
-def normalize_career_roadmap(roadmap: dict[str, Any]) -> dict[str, list[dict[str, str]]]:
+def normalize_career_roadmap(
+    roadmap: dict[str, Any],
+) -> dict[str, list[dict[str, str]]]:
     """Ensure four 3-month phases; accept legacy 18-month keys from older AI output."""
     if all(roadmap.get(key) for key in CAREER_ROADMAP_PHASE_KEYS):
         return {
@@ -80,9 +82,7 @@ def normalize_career_roadmap(roadmap: dict[str, Any]) -> dict[str, list[dict[str
             if dedupe_key in seen:
                 continue
             seen.add(dedupe_key)
-            ordered.append(
-                _task(title or _title_from_step(description), description)
-            )
+            ordered.append(_task(title or _title_from_step(description), description))
 
     while len(ordered) < 4 and ordered:
         ordered.append(ordered[-1])
@@ -93,7 +93,4 @@ def normalize_career_roadmap(roadmap: dict[str, Any]) -> dict[str, list[dict[str
         # catches it and retries the LLM call naturally.
         return {key: [] for key in CAREER_ROADMAP_PHASE_KEYS}
 
-    return {
-        CAREER_ROADMAP_PHASE_KEYS[index]: [ordered[index]]
-        for index in range(4)
-    }
+    return {CAREER_ROADMAP_PHASE_KEYS[index]: [ordered[index]] for index in range(4)}

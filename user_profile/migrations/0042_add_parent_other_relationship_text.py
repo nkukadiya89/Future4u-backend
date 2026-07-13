@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user_profile', '0041_remove_internshipprofile_deleted_by_and_more'),
+        ("user_profile", "0041_remove_internshipprofile_deleted_by_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='parentprofile',
-            name='other_relationship_text',
-            field=models.CharField(blank=True, help_text="Custom relationship text when 'other' is selected", max_length=100, null=True),
+            model_name="parentprofile",
+            name="other_relationship_text",
+            field=models.CharField(
+                blank=True,
+                help_text="Custom relationship text when 'other' is selected",
+                max_length=100,
+                null=True,
+            ),
         ),
     ]

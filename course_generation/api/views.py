@@ -13,7 +13,9 @@ from course_generation.exceptions import (
     CourseGenerationConfigurationError,
     CourseGenerationValidationError,
 )
-from course_generation.serializers.course_generation_input import CourseGenerationInputSerializer
+from course_generation.serializers.course_generation_input import (
+    CourseGenerationInputSerializer,
+)
 from course_generation.services.course_generation_service import CourseGenerationService
 from utils.throttles import CourseGenerationRateThrottle
 from utils.token_check import check_and_deduct_token

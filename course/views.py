@@ -48,6 +48,7 @@ class CoursesViewSet(BaseModelViewSet):
         "city",
         "duration",
     ]
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -69,7 +70,7 @@ class CoursesViewSet(BaseModelViewSet):
             {"success": False, "message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    
+
     @action(methods=["patch"], detail=True, url_path="restore")
     def restore(self, request, pk=None):
         instance = self.get_object()
@@ -91,7 +92,7 @@ class CoursesViewSet(BaseModelViewSet):
             {"success": True, "message": "Course restored successfully"},
             status=status.HTTP_200_OK,
         )
-    
+
     @action(detail=False, methods=["get"], url_path="recommended")
     def recommended_courses(self, request):
         mode = request.query_params.get("mode")
@@ -137,7 +138,7 @@ class CoursesViewSet(BaseModelViewSet):
 
         ai_skills = career.required_skills or []
         ai_education = career.required_education or {}
-        
+
         courses = match_courses(
             ai_skills=ai_skills,
             ai_education=ai_education,
@@ -174,10 +175,7 @@ class CourseInquiryViewSet(BaseModelViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             course = serializer.validated_data.get("course")
-            if CourseInquiry.objects.filter(
-                user=request.user,
-                course=course
-            ).exists():
+            if CourseInquiry.objects.filter(user=request.user, course=course).exists():
                 return Response(
                     {
                         "success": False,
@@ -204,9 +202,9 @@ class CourseInquiryViewSet(BaseModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="my-inquiries")
     def my_inquiries(self, request):
-        inquiries = CourseInquiry.objects.filter(
-            user=request.user
-        ).select_related("course")
+        inquiries = CourseInquiry.objects.filter(user=request.user).select_related(
+            "course"
+        )
 
         serializer = self.get_serializer(inquiries, many=True)
         return Response(
@@ -219,9 +217,7 @@ class CourseInquiryViewSet(BaseModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="received-inquiries")
     def received_inquiries(self, request):
-        inquiries = CourseInquiry.objects.filter(
-            course__provider=request.user
-        )
+        inquiries = CourseInquiry.objects.filter(course__provider=request.user)
 
         course_id = request.query_params.get("course_id")
         if not course_id:
@@ -240,7 +236,7 @@ class CourseInquiryViewSet(BaseModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
-     
+
     @action(detail=True, methods=["patch"], url_path="update-status")
     def update_status(self, request, pk=None):
         inquiries = self.get_object()
@@ -252,7 +248,7 @@ class CourseInquiryViewSet(BaseModelViewSet):
                     "message": "You are not allowed to update this course inquirie status",
                 },
                 status=status.HTTP_403_FORBIDDEN,
-            )    
+            )
         inquiries_status = request.data.get("status")
         if not inquiries_status:
             return Response(
@@ -272,4 +268,3 @@ class CourseInquiryViewSet(BaseModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
-

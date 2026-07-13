@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from recommendation.clients.groq_client import get_groq_api_key_optional, get_groq_chat_model
+from recommendation.clients.groq_client import (
+    get_groq_api_key_optional,
+    get_groq_chat_model,
+)
 from recommendation.exceptions import AIConfigurationError
 
 

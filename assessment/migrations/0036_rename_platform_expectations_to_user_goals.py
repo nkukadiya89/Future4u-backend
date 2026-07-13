@@ -6,18 +6,34 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0035_parentassessment_career_direction_and_more'),
+        ("assessment", "0035_parentassessment_career_direction_and_more"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='parentassessment',
-            old_name='platform_expectations',
-            new_name='user_goals',
+            model_name="parentassessment",
+            old_name="platform_expectations",
+            new_name="user_goals",
         ),
         migrations.AlterField(
-            model_name='parentassessment',
-            name='current_screen',
-            field=models.CharField(choices=[('domain_category', 'Domain Category'), ('career_direction', 'Career Direction'), ('parent_support', 'Parent Support'), ('concerns', 'Concerns'), ('parent_career_expectations', 'Parent Career Expectations'), ('limitations', 'Limitations'), ('career_familiarity', 'Career Familiarity'), ('decision_style', 'Decision Style'), ('career_values', 'Career Values'), ('user_goals', 'User Goals'), ('complete', 'Complete')], default='domain_category', max_length=50),
+            model_name="parentassessment",
+            name="current_screen",
+            field=models.CharField(
+                choices=[
+                    ("domain_category", "Domain Category"),
+                    ("career_direction", "Career Direction"),
+                    ("parent_support", "Parent Support"),
+                    ("concerns", "Concerns"),
+                    ("parent_career_expectations", "Parent Career Expectations"),
+                    ("limitations", "Limitations"),
+                    ("career_familiarity", "Career Familiarity"),
+                    ("decision_style", "Decision Style"),
+                    ("career_values", "Career Values"),
+                    ("user_goals", "User Goals"),
+                    ("complete", "Complete"),
+                ],
+                default="domain_category",
+                max_length=50,
+            ),
         ),
     ]

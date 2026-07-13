@@ -11,7 +11,7 @@ from state.models import State
 from stream.models import Stream
 from user.models import User
 from user.services.registration_service import setup_web_user_password
-from user_profile.models import StudentProfile,ProfessionalProfile
+from user_profile.models import StudentProfile, ProfessionalProfile
 from utils.auth import is_web_source, validate_password_strength
 
 
@@ -110,7 +110,7 @@ class RegisterSerializer(serializers.ModelSerializer):
                         User.Role.INSTITUTE,
                         User.Role.CORPORATE,
                     ],
-                    deleted = False,
+                    deleted=False,
                 ).first()
                 if not referred_by:
                     errors["referral_code"] = "Invalid referral code."
@@ -180,7 +180,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         if profile_image_file:
             user.upload_profile_image(profile_image_file)
-        
+
         def update_profile_referral():
             if user.user_type == User.Role.STUDENT:
                 profile = StudentProfile.objects.get(user=user)
@@ -191,7 +191,7 @@ class RegisterSerializer(serializers.ModelSerializer):
                 profile = ProfessionalProfile.objects.get(user=user)
                 profile.referred_by = referred_by
                 profile.save(update_fields=["referred_by"])
-        
+
         if referred_by:
             transaction.on_commit(update_profile_referral)
         return user

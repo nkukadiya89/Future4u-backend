@@ -58,9 +58,9 @@ def serialize_messages(session) -> list[dict[str, Any]]:
     """Return the most recent N messages in chronological order."""
     if not session:
         return []
-    messages = session.messages.filter(deleted=False).order_by(
-        "-created_at", "-id"
-    )[:MESSAGES_RETURN_LIMIT]
+    messages = session.messages.filter(deleted=False).order_by("-created_at", "-id")[
+        :MESSAGES_RETURN_LIMIT
+    ]
     return [
         {
             "role": message.role,

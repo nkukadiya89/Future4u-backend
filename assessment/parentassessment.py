@@ -84,11 +84,7 @@ def assessment_status_payload(assessment):
                 if assessment.domain_category_id
                 else None
             ),
-            "domain": (
-                str(assessment.domain_id)
-                if assessment.domain_id
-                else None
-            ),
+            "domain": (str(assessment.domain_id) if assessment.domain_id else None),
         },
     }
 
@@ -169,12 +165,16 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
 
         force_new = request.data.get("force_new") is True
         if not force_new:
-            assessment = self.get_queryset().filter(
-                is_completed=False, child_id=child_id
-            ).first()
+            assessment = (
+                self.get_queryset()
+                .filter(is_completed=False, child_id=child_id)
+                .first()
+            )
             if assessment:
                 sync_parent_screen(assessment)
-                serializer = ParentAssessmentSerializer(assessment, context=self.get_serializer_context())
+                serializer = ParentAssessmentSerializer(
+                    assessment, context=self.get_serializer_context()
+                )
                 return Response(
                     {
                         "success": True,
@@ -201,7 +201,9 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
             entity_id=assessment.id,
             request=request,
         )
-        serializer = ParentAssessmentSerializer(assessment, context=self.get_serializer_context())
+        serializer = ParentAssessmentSerializer(
+            assessment, context=self.get_serializer_context()
+        )
         return Response(
             {
                 "success": True,
@@ -245,7 +247,9 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
             )
 
         assessment = self.perform_update(serializer)
-        serializer = ParentAssessmentSerializer(assessment, context=self.get_serializer_context())
+        serializer = ParentAssessmentSerializer(
+            assessment, context=self.get_serializer_context()
+        )
         return Response(
             {"success": True, "data": serializer.data},
             status=status.HTTP_200_OK,
@@ -272,10 +276,14 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
         total_screens = len(screen_order) - 1  # Exclude COMPLETE from total
 
         # Fetch ALL assessments in a single query (avoid N+1)
-        all_assessments = ParentAssessment.objects.filter(
-            user=request.user,
-            deleted=False,
-        ).select_related("domain_category").order_by("-created_at")
+        all_assessments = (
+            ParentAssessment.objects.filter(
+                user=request.user,
+                deleted=False,
+            )
+            .select_related("domain_category")
+            .order_by("-created_at")
+        )
 
         # Group by child_id in Python
         assessments_by_child = defaultdict(list)
@@ -292,7 +300,10 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
             assessment_list = []
             for assessment in assessments:
                 # Calculate progress
-                if assessment.is_completed or assessment.current_screen == ParentAssessment.Screen.COMPLETE:
+                if (
+                    assessment.is_completed
+                    or assessment.current_screen == ParentAssessment.Screen.COMPLETE
+                ):
                     progress = 100
                 else:
                     current_index = 0
@@ -302,43 +313,57 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
                             break
                     progress = min(int((current_index / total_screens) * 100), 99)
 
-                assessment_list.append({
-                    "id": assessment.id,
-                    "domain_category_name": assessment.domain_category.domain_name if assessment.domain_category_id else None,
-                    "current_screen": assessment.current_screen,
-                    "progress_percentage": progress,
-                    "is_completed": assessment.is_completed,
-                    "created_at": assessment.created_at,
-                })
+                assessment_list.append(
+                    {
+                        "id": assessment.id,
+                        "domain_category_name": (
+                            assessment.domain_category.domain_name
+                            if assessment.domain_category_id
+                            else None
+                        ),
+                        "current_screen": assessment.current_screen,
+                        "progress_percentage": progress,
+                        "is_completed": assessment.is_completed,
+                        "created_at": assessment.created_at,
+                    }
+                )
 
                 total_assessments += 1
                 if assessment.is_completed:
                     completed_count += 1
 
-            children_data.append({
-                "child_id": child.id,
-                "full_name": str(child),
-                "first_name": child.first_name,
-                "last_name": child.last_name,
-                "profile_image": child.profile_image,
-                "education_level": child.education_level_id,
-                "education_level_name": child.education_level.display_name if child.education_level else None,
-                "stream": child.stream_id,
-                "stream_name": child.stream.stream_name if child.stream else None,
-                "assessments": assessment_list,
-            })
+            children_data.append(
+                {
+                    "child_id": child.id,
+                    "full_name": str(child),
+                    "first_name": child.first_name,
+                    "last_name": child.last_name,
+                    "profile_image": child.profile_image,
+                    "education_level": child.education_level_id,
+                    "education_level_name": (
+                        child.education_level.display_name
+                        if child.education_level
+                        else None
+                    ),
+                    "stream": child.stream_id,
+                    "stream_name": child.stream.stream_name if child.stream else None,
+                    "assessments": assessment_list,
+                }
+            )
 
-        return Response({
-            "success": True,
-            "data": {
-                "children": children_data,
-                "totals": {
-                    "total_assessments": total_assessments,
-                    "completed": completed_count,
-                    "in_progress": total_assessments - completed_count,
+        return Response(
+            {
+                "success": True,
+                "data": {
+                    "children": children_data,
+                    "totals": {
+                        "total_assessments": total_assessments,
+                        "completed": completed_count,
+                        "in_progress": total_assessments - completed_count,
+                    },
                 },
-            },
-        })
+            }
+        )
 
     @action(detail=False, methods=["get"], url_path="status")
     def assessment_status(self, request):

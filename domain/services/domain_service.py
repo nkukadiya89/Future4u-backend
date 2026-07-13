@@ -226,7 +226,9 @@ def dropdown_domains(*, parent_id=None, root_only=False):
         qs = qs.filter(parent__isnull=True)
     elif parent_id is not None:
         qs = qs.filter(parent_id=parent_id)
-    return qs.only("id", "domain_code", "domain_name", "parent_id").order_by("domain_name")
+    return qs.only("id", "domain_code", "domain_name", "parent_id").order_by(
+        "domain_name"
+    )
 
 
 def tree_domains():

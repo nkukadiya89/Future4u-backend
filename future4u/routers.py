@@ -18,6 +18,7 @@ from user_profile.routers import user_profile_router
 
 from assessment_career.routers import assessment_career_router
 from course.routers import courses_router
+
 # from subscription.routers import subscription_router
 
 try:

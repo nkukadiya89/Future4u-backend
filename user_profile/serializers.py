@@ -23,6 +23,7 @@ from user_profile.models import (
 from common.serializers import BaseModelSerializer
 from .models import InstituteProfile, SchoolCollegeProfile, CorporateProfile
 
+
 def validate_json_choices(value, valid_set, field_name):
     if not isinstance(value, list):
         raise serializers.ValidationError({field_name: "Must be a list."})
@@ -50,7 +51,9 @@ class UserProfileSerializer(ProfileLanguageMixin, serializers.ModelSerializer):
         ]
 
 
-class UserProfileUpsertSerializer(ProfileLanguageSaveMixin, serializers.ModelSerializer):
+class UserProfileUpsertSerializer(
+    ProfileLanguageSaveMixin, serializers.ModelSerializer
+):
     """Base profile upsert serializer for Super Admin"""
 
     language = serializers.PrimaryKeyRelatedField(
@@ -66,7 +69,9 @@ class UserProfileUpsertSerializer(ProfileLanguageSaveMixin, serializers.ModelSer
         ]
 
 
-class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
+class StudentProfileSerializer(
+    ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer
+):
     status = serializers.CharField(source="user.status", read_only=True)
     role = serializers.CharField(source="user.user_type", read_only=True)
     education_level_code = serializers.CharField(
@@ -99,19 +104,24 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
     city_name = serializers.CharField(
         source="user.city.name", read_only=True, default=None
     )
-    first_name =serializers.CharField(source="user.first_name", read_only=True)
+    first_name = serializers.CharField(source="user.first_name", read_only=True)
     last_name = serializers.CharField(source="user.last_name", read_only=True)
     phone = serializers.CharField(source="user.phone", read_only=True)
     email = serializers.CharField(source="user.email", read_only=True)
     profile_image = serializers.CharField(source="user.profile_image", read_only=True)
-    referral_code = serializers.CharField(source="referred_by.referral_code", read_only=True, allow_null=True, default=None)
+    referral_code = serializers.CharField(
+        source="referred_by.referral_code",
+        read_only=True,
+        allow_null=True,
+        default=None,
+    )
     referred_by = UserQuickSerializer(read_only=True)
-    created_by = UserQuickSerializer(source="user.created_by",read_only=True)
+    created_by = UserQuickSerializer(source="user.created_by", read_only=True)
     updated_by = UserQuickSerializer(read_only=True)
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
-    
+
     class Meta:
         model = StudentProfile
         fields = [
@@ -160,7 +170,10 @@ class StudentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin
             "deleted_by",
         ]
 
-class StudentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer):
+
+class StudentProfileUpsertSerializer(
+    ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer
+):
     language = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Language.objects.filter(is_active=True, deleted=False),
@@ -255,7 +268,9 @@ class BusinessSettingSerializer(serializers.ModelSerializer):
         return instance
 
 
-class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
+class ProfessionalProfileSerializer(
+    ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer
+):
     """Working Professional-specific profile serializer matching StudentProfile pattern"""
 
     role = serializers.CharField(source="user.user_type", read_only=True)
@@ -278,7 +293,7 @@ class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestamp
         source="user.city.name", read_only=True, default=None
     )
 
-    first_name =serializers.CharField(source="user.first_name", read_only=True)
+    first_name = serializers.CharField(source="user.first_name", read_only=True)
     last_name = serializers.CharField(source="user.last_name", read_only=True)
     phone = serializers.CharField(source="user.phone", read_only=True)
     email = serializers.CharField(source="user.email", read_only=True)
@@ -300,9 +315,14 @@ class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestamp
     current_industry_name = serializers.CharField(
         source="current_industry.domain_name", read_only=True, default=None
     )
-    referral_code = serializers.CharField(source="referred_by.referral_code", read_only=True, allow_null=True, default=None)
+    referral_code = serializers.CharField(
+        source="referred_by.referral_code",
+        read_only=True,
+        allow_null=True,
+        default=None,
+    )
     referred_by = UserQuickSerializer(read_only=True)
-    created_by = UserQuickSerializer(source="user.created_by",read_only=True)
+    created_by = UserQuickSerializer(source="user.created_by", read_only=True)
     updated_by = UserQuickSerializer(read_only=True)
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
@@ -360,7 +380,9 @@ class ProfessionalProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestamp
         ]
 
 
-class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer):
+class ProfessionalProfileUpsertSerializer(
+    ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer
+):
     language = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Language.objects.filter(is_active=True, deleted=False),
@@ -444,8 +466,13 @@ class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, seri
         instance = getattr(self, "instance", None)
 
         # Domain hierarchy validation
-        category = attrs.get("current_industry_category", getattr(instance, "current_industry_category", None))
-        industry = attrs.get("current_industry", getattr(instance, "current_industry", None))
+        category = attrs.get(
+            "current_industry_category",
+            getattr(instance, "current_industry_category", None),
+        )
+        industry = attrs.get(
+            "current_industry", getattr(instance, "current_industry", None)
+        )
 
         if category and getattr(category, "parent_id", None) is not None:
             raise serializers.ValidationError(
@@ -465,23 +492,36 @@ class ProfessionalProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, seri
 
         # employment_type_other_text: clear if not OTHER, require if OTHER
         # Matches ParentProfileUpsertSerializer's pattern for other_relationship_text
-        employment_type = attrs.get("employment_type", getattr(instance, "employment_type", None))
+        employment_type = attrs.get(
+            "employment_type", getattr(instance, "employment_type", None)
+        )
         other_text = attrs.get(
             "employment_type_other_text",
             getattr(instance, "employment_type_other_text", ""),
         )
 
-        if employment_type == ProfessionalProfile.EmploymentType.OTHER and not (other_text or "").strip():
+        if (
+            employment_type == ProfessionalProfile.EmploymentType.OTHER
+            and not (other_text or "").strip()
+        ):
             raise serializers.ValidationError(
-                {"employment_type_other_text": "This field is required when employment type is Other."}
+                {
+                    "employment_type_other_text": "This field is required when employment type is Other."
+                }
             )
 
-        if employment_type and employment_type != ProfessionalProfile.EmploymentType.OTHER:
+        if (
+            employment_type
+            and employment_type != ProfessionalProfile.EmploymentType.OTHER
+        ):
             attrs["employment_type_other_text"] = None
 
         return attrs
 
-class ParentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer):
+
+class ParentProfileSerializer(
+    ProfileLanguageMixin, ProfileUpdateTimestampMixin, serializers.ModelSerializer
+):
     """Parent-specific profile serializer"""
 
     role = serializers.CharField(source="user.user_type", read_only=True)
@@ -529,7 +569,9 @@ class ParentProfileSerializer(ProfileLanguageMixin, ProfileUpdateTimestampMixin,
         ]
 
 
-class ParentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer):
+class ParentProfileUpsertSerializer(
+    ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer
+):
     language = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Language.objects.filter(is_active=True, deleted=False),
@@ -567,9 +609,10 @@ class ParentProfileUpsertSerializer(ProfileLanguageSaveWithTimeMixin, serializer
                 {"relationship": "This field is required."}
             )
 
-        if relationship == ParentProfile.Relationship.OTHER and not (
-            other_text or ""
-        ).strip():
+        if (
+            relationship == ParentProfile.Relationship.OTHER
+            and not (other_text or "").strip()
+        ):
             raise serializers.ValidationError(
                 {
                     "other_relationship_text": (
@@ -648,7 +691,9 @@ class ChildProfileSerializer(serializers.ModelSerializer):
         ]
 
 
-class ChildProfileCreateSerializer(ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer):
+class ChildProfileCreateSerializer(
+    ProfileLanguageSaveWithTimeMixin, serializers.ModelSerializer
+):
     language = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Language.objects.filter(is_active=True, deleted=False),
@@ -733,11 +778,12 @@ class ProfileSerializer(serializers.ModelSerializer):
 class InstituteGallerySerializer(BaseModelSerializer):
     class Meta:
         model = InstituteGallery
-        fields = BaseModelSerializer.Meta.fields +[
+        fields = BaseModelSerializer.Meta.fields + [
             "id",
             "institute",
             "image",
         ]
+
 
 class InstituteProfileSerializer(BaseModelSerializer):
     first_name = serializers.CharField(source="user.first_name", read_only=True)
@@ -753,14 +799,14 @@ class InstituteProfileSerializer(BaseModelSerializer):
     status = serializers.CharField(source="user.status", read_only=True)
     gallery_images = InstituteGallerySerializer(many=True, read_only=True)
     referral_code = serializers.CharField(source="user.referral_code", read_only=True)
-    created_by = UserQuickSerializer(source="user.created_by",read_only=True)
+    created_by = UserQuickSerializer(source="user.created_by", read_only=True)
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
 
     class Meta:
         model = InstituteProfile
-        fields = BaseModelSerializer.Meta.fields +[
+        fields = BaseModelSerializer.Meta.fields + [
             "id",
             "user",
             "student_trained",
@@ -786,12 +832,13 @@ class InstituteProfileSerializer(BaseModelSerializer):
             "referral_code",
         ]
 
+
 class InstituteProfileUpSerializer(BaseModelSerializer):
     address = serializers.CharField(required=False, allow_null=True, allow_blank=True)
 
     class Meta:
         model = InstituteProfile
-        fields = BaseModelSerializer.Meta.fields +[
+        fields = BaseModelSerializer.Meta.fields + [
             "id",
             "user",
             "student_trained",
@@ -846,10 +893,10 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
     education_name = serializers.ReadOnlyField(source="get_education_names")
     address = serializers.CharField(source="user.address", read_only=True)
     referral_code = serializers.CharField(source="user.referral_code", read_only=True)
-    created_by = UserQuickSerializer(source="user.created_by",read_only=True)
+    created_by = UserQuickSerializer(source="user.created_by", read_only=True)
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
-    deleted_by =UserQuickSerializer(source="user.deleted_by", read_only=True)
+    deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
 
     class Meta:
         model = SchoolCollegeProfile
@@ -882,6 +929,7 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
             "referral_code",
             "gallery_images",
         ]
+
 
 class SchoolCollegeProfileUpSerializer(BaseModelSerializer):
     address = serializers.CharField(required=False, allow_null=True, allow_blank=True)
@@ -945,7 +993,7 @@ class CorporateProfileSerializer(BaseModelSerializer):
     status = serializers.CharField(source="user.status", read_only=True)
     gallery_images = CorporateGallerySerializer(many=True, read_only=True)
     referral_code = serializers.CharField(source="user.referral_code", read_only=True)
-    created_by = UserQuickSerializer(source="user.created_by",read_only=True)
+    created_by = UserQuickSerializer(source="user.created_by", read_only=True)
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)

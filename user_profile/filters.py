@@ -16,6 +16,7 @@ class ProfileFilter(django_filters.FilterSet):
         model = Profile
         fields = ["title", "city", "country", "user"]
 
+
 class ParentProfileFilter(django_filters.FilterSet):
     relationship = django_filters.CharFilter(lookup_expr="icontains")
     other_relationship_text = django_filters.CharFilter(lookup_expr="icontains")

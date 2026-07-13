@@ -6,53 +6,57 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0033_parentassessment_unique_active_child_per_parent'),
+        ("assessment", "0033_parentassessment_unique_active_child_per_parent"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='parentassessment',
-            name='assessment_parentassessment_active_child_unique',
+            model_name="parentassessment",
+            name="assessment_parentassessment_active_child_unique",
         ),
         migrations.RemoveIndex(
-            model_name='parentassessment',
-            name='parent_asse_educati_4e3281_idx',
+            model_name="parentassessment",
+            name="parent_asse_educati_4e3281_idx",
         ),
         migrations.RemoveIndex(
-            model_name='parentassessment',
-            name='parent_asse_stream__c34feb_idx',
+            model_name="parentassessment",
+            name="parent_asse_stream__c34feb_idx",
         ),
         migrations.AlterField(
-            model_name='parentassessment',
-            name='current_screen',
-            field=models.CharField(choices=[('pending', 'Pending'), ('complete', 'Complete')], default='pending', max_length=32),
+            model_name="parentassessment",
+            name="current_screen",
+            field=models.CharField(
+                choices=[("pending", "Pending"), ("complete", "Complete")],
+                default="pending",
+                max_length=32,
+            ),
         ),
         migrations.RemoveField(
-            model_name='parentassessment',
-            name='academic_performance',
+            model_name="parentassessment",
+            name="academic_performance",
         ),
         migrations.RemoveField(
-            model_name='parentassessment',
-            name='date_of_birth',
+            model_name="parentassessment",
+            name="date_of_birth",
         ),
         migrations.RemoveField(
-            model_name='parentassessment',
-            name='education_level',
+            model_name="parentassessment",
+            name="education_level",
         ),
         migrations.RemoveField(
-            model_name='parentassessment',
-            name='first_name',
+            model_name="parentassessment",
+            name="first_name",
         ),
         migrations.RemoveField(
-            model_name='parentassessment',
-            name='last_name',
+            model_name="parentassessment",
+            name="last_name",
         ),
         migrations.RemoveField(
-            model_name='parentassessment',
-            name='profile_image',
+            model_name="parentassessment",
+            name="profile_image",
         ),
         migrations.RemoveField(
-            model_name='parentassessment',
-            name='stream',
+            model_name="parentassessment",
+            name="stream",
         ),
     ]

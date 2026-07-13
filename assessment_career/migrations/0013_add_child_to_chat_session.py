@@ -7,14 +7,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment_career', '0012_convert_career_factors_list_to_dict'),
-        ('user_profile', '0049_studentprofile_and_childprofile_updates'),
+        ("assessment_career", "0012_convert_career_factors_list_to_dict"),
+        ("user_profile", "0049_studentprofile_and_childprofile_updates"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='chatsession',
-            name='child',
-            field=models.ForeignKey(blank=True, help_text='The child this chat session is about (for parent profile chats).', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='chat_sessions', to='user_profile.childprofile'),
+            model_name="chatsession",
+            name="child",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="The child this chat session is about (for parent profile chats).",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="chat_sessions",
+                to="user_profile.childprofile",
+            ),
         ),
     ]

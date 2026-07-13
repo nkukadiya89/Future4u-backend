@@ -132,13 +132,18 @@ class InternshipGenerationPayload(BaseModel):
 
         # Must be a single paragraph (no blank lines / double newlines)
         import re as _re
+
         if _re.search(r"\n\s*\n", self.about_internship):
-            raise ValueError("about_internship must be a single paragraph (no blank lines)")
+            raise ValueError(
+                "about_internship must be a single paragraph (no blank lines)"
+            )
 
         title_lower = self.internship_title.casefold()
         for phrase in BANNED_TITLE_PHRASES:
             if phrase in title_lower:
-                raise ValueError("internship_title contains disallowed marketing language")
+                raise ValueError(
+                    "internship_title contains disallowed marketing language"
+                )
 
         if contains_placeholder(self.internship_title, DISALLOWED_PLACEHOLDERS):
             raise ValueError("internship_title contains placeholder text")

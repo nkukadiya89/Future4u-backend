@@ -12,7 +12,10 @@ from job_generation.prompts.job_generation_prompt import (
     build_job_generation_prompt,
     format_prompt_inputs,
 )
-from job_generation.providers.factory import ensure_ai_provider_configured, get_llm_provider
+from job_generation.providers.factory import (
+    ensure_ai_provider_configured,
+    get_llm_provider,
+)
 from job_generation.schemas.job_output import JobGenerationPayload
 from job_generation.services.json_response_parser import JsonResponseParser
 
@@ -41,7 +44,10 @@ class JobGenerator:
         for attempt in range(_MAX_GENERATION_ATTEMPTS):
             try:
                 inputs = format_prompt_inputs(
-                    generation_input={**generation_input, "validation_feedback": validation_feedback}
+                    generation_input={
+                        **generation_input,
+                        "validation_feedback": validation_feedback,
+                    }
                 )
                 return cls._invoke_once(
                     prompt=prompt,
@@ -52,7 +58,10 @@ class JobGenerator:
             except JobGenerationValidationError as exc:
                 last_error = exc
                 validation_feedback = _clip_feedback(exc.details)
-                if not _is_retryable_generation_error(exc) or attempt == _MAX_GENERATION_ATTEMPTS - 1:
+                if (
+                    not _is_retryable_generation_error(exc)
+                    or attempt == _MAX_GENERATION_ATTEMPTS - 1
+                ):
                     raise
                 logger.warning(
                     "Retrying job generation after %s (attempt %s/%s)",
@@ -88,7 +97,9 @@ class JobGenerator:
                 details=_format_llm_error(exc),
             ) from exc
 
-        parse_result = parser.parse_and_validate(raw_text, model_class=JobGenerationPayload)
+        parse_result = parser.parse_and_validate(
+            raw_text, model_class=JobGenerationPayload
+        )
         if parse_result.success and parse_result.validated_model is not None:
             return parse_result.validated_model  # type: ignore[return-value]
 

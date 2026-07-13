@@ -5,6 +5,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.timezone import now
 
+
 # Create your models here.
 class FinancialYearModel(models.Model):
     fid = models.AutoField(primary_key=True)
@@ -115,4 +116,3 @@ class BaseModule(models.Model):
 Archive API mixin lives in `common.api.mixins` (used by viewsets).
 Do not duplicate ViewSet mixins in this models module.
 """
-

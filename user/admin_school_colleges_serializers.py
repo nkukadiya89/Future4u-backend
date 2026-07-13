@@ -10,6 +10,8 @@ from user.models import User
 from user.services.registration_service import setup_web_user_password
 from user_profile.models import SchoolCollegeProfile
 from datetime import datetime
+
+
 class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
     data = serializers.CharField(write_only=True, required=False)
     profile_image = serializers.ImageField(required=False, write_only=True)
@@ -24,8 +26,8 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
         try:
             json_data = json.loads(raw_data)
         except json.JSONDecodeError:
-            raise serializers.ValidationError({"data":"Invalid JSON format"})
-        
+            raise serializers.ValidationError({"data": "Invalid JSON format"})
+
         errors = {}
 
         is_update = self.instance is not None
@@ -60,15 +62,21 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
                 errors["state"] = "This field is required."
             if not city_id:
                 errors["city"] = "This field is required."
-        
-        if email and User.objects.filter(email=email, deleted=False).exclude(
-            id=getattr(self.instance, "id", None)
-        ).exists():
+
+        if (
+            email
+            and User.objects.filter(email=email, deleted=False)
+            .exclude(id=getattr(self.instance, "id", None))
+            .exists()
+        ):
             errors["email"] = "An account with this email already exists"
 
-        if phone and User.objects.filter(phone=phone, deleted=False).exclude(
-            id=getattr(self.instance, "id", None)
-        ).exists():
+        if (
+            phone
+            and User.objects.filter(phone=phone, deleted=False)
+            .exclude(id=getattr(self.instance, "id", None))
+            .exists()
+        ):
             errors["phone"] = "An account with this phone number already exists"
 
         country = None
@@ -76,14 +84,13 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
             country = Country.objects.filter(id=country_id).first()
             if not country:
                 errors["country"] = "Invalid country id"
-        
+
         state = None
         if state_id is not None:
             state = State.objects.filter(id=state_id).first()
             if not state:
                 errors["state"] = "Invalid state id"
 
-        
         city = None
         if city_id is not None:
             city = City.objects.filter(id=city_id).first()
@@ -98,14 +105,14 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
                 educations = EducationLevel.objects.filter(
                     id__in=education_ids,
                     is_active=True,
-                ) 
+                )
                 if len(education_ids) != educations.count():
                     errors["education"] = "Invalid education ids"
         if courses_offered is not None and not isinstance(courses_offered, list):
             errors["courses_offered"] = "Courses offered must be a list"
         if errors:
             raise serializers.ValidationError(errors)
-        
+
         validated = {}
 
         if email is not None:
@@ -158,8 +165,8 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
         website = data.pop("website", None)
         user = User.objects.create(
             **data,
-            user_type = User.Role.SCHOOL_COLLEGE,
-            created_by = request.user,
+            user_type=User.Role.SCHOOL_COLLEGE,
+            created_by=request.user,
             terms_accepted=True,
         )
 
@@ -180,6 +187,7 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
         if educations:
             profile.education.set(educations)
         return user
+
     @transaction.atomic
     def update(self, instance, validated_data):
         request = self.context["request"]
@@ -202,7 +210,7 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
 
         for attr, value in data.items():
             setattr(instance, attr, value)
-        
+
         instance.save(user=request.user)
 
         if profile_image_file:
@@ -212,45 +220,43 @@ class AdminSchoolCollegesSerializer(serializers.ModelSerializer):
             profile = instance.school_college_profile
         except SchoolCollegeProfile.DoesNotExist:
             raise serializers.ValidationError(
-                {
-                    "school_college_profile":"School College Profile not found"
-                }
+                {"school_college_profile": "School College Profile not found"}
             )
-        
+
         if institute_name_sent:
             profile.institute_name = institute_name
 
         if board_sent:
             profile.board = board
-        
+
         if about_us_sent:
             profile.about_us = about_us
 
         if courses_offered_sent:
             profile.courses_offered = courses_offered
-        
+
         if website_sent:
             profile.website = website
 
         profile.updated_by = request.user
         profile.updated_at = datetime.now()
         profile.save()
-        
+
         if educations is not None:
             profile.education.set(educations)
-        
+
         email_changed = old_email.lower() != instance.email.lower()
 
         if email_changed:
             send_email_change_notification(
                 old_email=old_email,
                 new_email=instance.email,
-                user = instance,
+                user=instance,
             )
             setup_web_user_password(instance)
         return instance
 
- 
+
 class AdminSchoolCollegeSortSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
@@ -265,7 +271,7 @@ class AdminSchoolCollegeSortSerializer(serializers.ModelSerializer):
     referral_code = serializers.CharField(source="user.referral_code")
     address = serializers.CharField(source="user.address")
     education_name = serializers.ReadOnlyField(source="get_education_names")
-    
+
     class Meta:
         model = SchoolCollegeProfile
         fields = [

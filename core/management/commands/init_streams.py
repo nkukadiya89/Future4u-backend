@@ -50,7 +50,11 @@ class Command(BaseCommand):
             for row in rows
             if (row.get("stream_code") or "").strip()
         }
-        existing = list(Stream.objects.filter(deleted=False).order_by("sequence_order", "stream_code"))
+        existing = list(
+            Stream.objects.filter(deleted=False).order_by(
+                "sequence_order", "stream_code"
+            )
+        )
         for index, stream in enumerate(existing, start=1):
             stream.sequence_order = 999000 + index
             stream.updated_by = user

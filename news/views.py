@@ -10,8 +10,7 @@ from rest_framework.response import Response
 
 from .models import News
 from .permissions import IsAdminUser, IsAuthorOrAdmin
-from .serializers import (NewsDetailSerializer, NewsListSerializer,
-                          NewsSerializer)
+from .serializers import NewsDetailSerializer, NewsListSerializer, NewsSerializer
 from .services import NewsService
 
 

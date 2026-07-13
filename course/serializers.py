@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Courses, CourseInquiry
 from common.serializers import BaseModelSerializer
 
+
 class CoursesSerializer(BaseModelSerializer):
 
     provider_name = serializers.SerializerMethodField()
@@ -9,7 +10,7 @@ class CoursesSerializer(BaseModelSerializer):
 
     class Meta:
         model = Courses
-        fields = BaseModelSerializer.Meta.fields+[
+        fields = BaseModelSerializer.Meta.fields + [
             "id",
             "name",
             "course_type",
@@ -27,18 +28,20 @@ class CoursesSerializer(BaseModelSerializer):
             "course_content",
             "course_price",
         ]
+
     def get_provider_name(self, obj):
         if obj.provider:
             return obj.provider.full_name
         return None
-    
+
 
 class CourseInquirySerializer(BaseModelSerializer):
     course_name = serializers.CharField(source="course.name", read_only=True)
     user_name = serializers.CharField(source="user.full_name", read_only=True)
+
     class Meta:
         model = CourseInquiry
-        fields = BaseModelSerializer.Meta.fields+[
+        fields = BaseModelSerializer.Meta.fields + [
             "id",
             "course",
             "course_name",

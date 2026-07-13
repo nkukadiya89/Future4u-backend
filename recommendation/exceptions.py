@@ -24,4 +24,5 @@ class AIGenerationError(AIRecommendationError):
 
 class AmbiguousAssessmentError(AIRecommendationError):
     """Raised when an assessment ID exists in multiple tables and auto-detect cannot disambiguate."""
+
     pass

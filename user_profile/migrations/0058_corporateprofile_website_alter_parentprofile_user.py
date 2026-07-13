@@ -8,15 +8,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user_profile', '0057_merge_20260630_1709'),
+        ("user_profile", "0057_merge_20260630_1709"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='parentprofile',
-            name='user',
-            field=models.OneToOneField(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='parent_profile', to=settings.AUTH_USER_MODEL),
+            model_name="parentprofile",
+            name="user",
+            field=models.OneToOneField(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="parent_profile",
+                to=settings.AUTH_USER_MODEL,
+            ),
             preserve_default=False,
         ),
     ]

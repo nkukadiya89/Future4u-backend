@@ -6,7 +6,10 @@ from assessment_career.models import (
     CareerRecommendation,
     CareerSuggestion,
 )
-from recommendation.engine.chat_service import BaseAIChatService, CAREER_SCOPE_REFUSAL_PREFIX
+from recommendation.engine.chat_service import (
+    BaseAIChatService,
+    CAREER_SCOPE_REFUSAL_PREFIX,
+)
 from recommendation.engine.chat_helpers import (
     as_list,
     format_education,

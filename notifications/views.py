@@ -13,7 +13,12 @@ from .serializers import NotificationListSerializer, NotificationSerializer
 from .services import NotificationService
 
 
-class NotificationViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class NotificationViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
     """ViewSet for user notifications."""
 
     serializer_class = NotificationSerializer
@@ -21,7 +26,9 @@ class NotificationViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixi
 
     def get_queryset(self):
         # Always filter by the requesting user
-        return Notification.objects.filter(user=self.request.user).order_by("is_read", "-created_at")
+        return Notification.objects.filter(user=self.request.user).order_by(
+            "is_read", "-created_at"
+        )
 
     def get_serializer_class(self) -> Any:
         if self.action == "list":

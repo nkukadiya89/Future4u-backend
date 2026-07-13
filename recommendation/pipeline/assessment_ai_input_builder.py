@@ -88,21 +88,14 @@ def build_ai_input(data: dict[str, Any]) -> dict[str, Any]:
         responses = []
 
     domain = (
-        data.get("domain")
-        or data.get("domain_name")
-        or data.get("domain_code")
-        or ""
+        data.get("domain") or data.get("domain_name") or data.get("domain_code") or ""
     )
     domain_category = (
-        data.get("domain_category")
-        or data.get("domain_category_name")
-        or ""
+        data.get("domain_category") or data.get("domain_category_name") or ""
     )
 
     return {
-        "education_level": (
-            str(data.get("education_level") or "").strip() or None
-        ),
+        "education_level": (str(data.get("education_level") or "").strip() or None),
         "stream": str(data.get("stream") or "").strip() or None,
         "domain": str(domain).strip() if domain else None,
         "domain_code": str(data.get("domain_code") or "").strip() or None,

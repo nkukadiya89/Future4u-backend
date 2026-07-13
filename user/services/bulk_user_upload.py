@@ -8,10 +8,15 @@ from city.models import City
 from user.models import User
 from user.services.registration_service import setup_web_user_password
 from user.services.bulkupload_profiles.student_bulkupload import StudentBulkUpload
-from user.services.bulkupload_profiles.school_colleges_bulkupload import SchoolCollegeBulkUpload
+from user.services.bulkupload_profiles.school_colleges_bulkupload import (
+    SchoolCollegeBulkUpload,
+)
 from user.services.bulkupload_profiles.institute_bulkupload import InstituteBulkUpload
 from user.services.bulkupload_profiles.corporate_bulkupload import CorporateBulkUpload
-from user.services.bulkupload_profiles.working_professional_bulkupload import WorkingProfessionalBulkUpload
+from user.services.bulkupload_profiles.working_professional_bulkupload import (
+    WorkingProfessionalBulkUpload,
+)
+
 
 class BulkUserUploadService:
     REQUIRED_COLUMNS = [
@@ -24,6 +29,7 @@ class BulkUserUploadService:
         "State",
         "City",
     ]
+
     @classmethod
     def get_required_columns(cls, user_type):
         required_columns = cls.REQUIRED_COLUMNS.copy()
@@ -36,7 +42,7 @@ class BulkUserUploadService:
 
         elif user_type == User.Role.INSTITUTE:
             required_columns += InstituteBulkUpload.REQUIRED_COLUMNS
-        
+
         elif user_type == User.Role.CORPORATE:
             required_columns += CorporateBulkUpload.REQUIRED_COLUMNS
 
@@ -44,7 +50,7 @@ class BulkUserUploadService:
             required_columns += WorkingProfessionalBulkUpload.REQUIRED_COLUMNS
 
         return required_columns
-    
+
     @classmethod
     def process(cls, file, request_user, user_type):
         df = cls._read_file(file)
@@ -66,11 +72,11 @@ class BulkUserUploadService:
         elif user_type == User.Role.SCHOOL_COLLEGE:
             profile_service = SchoolCollegeBulkUpload
             profile_masters = SchoolCollegeBulkUpload.preload()
-        
+
         elif user_type == User.Role.INSTITUTE:
             profile_service = InstituteBulkUpload
             profile_masters = InstituteBulkUpload.preload()
-            
+
         elif user_type == User.Role.CORPORATE:
             profile_service = CorporateBulkUpload
             profile_masters = CorporateBulkUpload.preload()
@@ -91,21 +97,19 @@ class BulkUserUploadService:
         seen_emails = set()
         seen_phones = set()
 
-        countries = {
-            c.name.strip().lower(): c for c in Country.objects.all()
-        }
+        countries = {c.name.strip().lower(): c for c in Country.objects.all()}
         states = {
             (s.country_id, s.name.strip().lower()): s for s in State.objects.all()
         }
-        cities = {
-            (c.state_id, c.name.strip().lower()): c for c in City.objects.all()
-        }
+        cities = {(c.state_id, c.name.strip().lower()): c for c in City.objects.all()}
         all_state_names = {name for (_, name) in states.keys()}
         all_city_names = {name for (_, name) in cities.keys()}
 
         existing_emails = {
             email.lower()
-            for email in User.objects.filter(deleted=False).values_list("email", flat=True)
+            for email in User.objects.filter(deleted=False).values_list(
+                "email", flat=True
+            )
             if email
         }
         existing_phones = set(
@@ -268,10 +272,13 @@ class BulkUserUploadService:
 
                 referral_code = str(row.get("Referral Code", "") or "").strip()
                 referred_by = None
-                if user_type in [User.Role.STUDENT, User.Role.PROFESSIONAL] and referral_code:
+                if (
+                    user_type in [User.Role.STUDENT, User.Role.PROFESSIONAL]
+                    and referral_code
+                ):
                     referred_by = User.objects.filter(
-                        referral_code__iexact = referral_code,
-                        user_type__in = [
+                        referral_code__iexact=referral_code,
+                        user_type__in=[
                             User.Role.SCHOOL_COLLEGE,
                             User.Role.INSTITUTE,
                             User.Role.CORPORATE,
@@ -298,11 +305,16 @@ class BulkUserUploadService:
                         email=email,
                         phone=phone,
                         user_type=user_type,
-                        referral_code = referral_code if user_type in [
-                            User.Role.SCHOOL_COLLEGE,
-                            User.Role.INSTITUTE,
-                            User.Role.CORPORATE,
-                        ] else None,
+                        referral_code=(
+                            referral_code
+                            if user_type
+                            in [
+                                User.Role.SCHOOL_COLLEGE,
+                                User.Role.INSTITUTE,
+                                User.Role.CORPORATE,
+                            ]
+                            else None
+                        ),
                         country=country,
                         states=state,
                         city=city,
@@ -337,10 +349,11 @@ class BulkUserUploadService:
             "skipped": skipped,
             "errors": errors,
         }
+
     @classmethod
     def process_file_path(cls, file_path, request_user, user_type):
         with open(file_path, "rb") as file:
-            return cls.process(file, request_user,user_type)
+            return cls.process(file, request_user, user_type)
 
     @classmethod
     def _read_file(cls, file):
@@ -363,13 +376,10 @@ class BulkUserUploadService:
         uploaded_columns = [col.strip() for col in df.columns]
 
         missing_columns = [
-            column
-            for column in required_columns
-            if column not in uploaded_columns
+            column for column in required_columns if column not in uploaded_columns
         ]
 
         if missing_columns:
             raise ValidationError(
                 f"Missing required columns: {', '.join(missing_columns)}"
             )
-

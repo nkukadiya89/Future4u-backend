@@ -50,5 +50,3 @@ class CareerSuggestionSerializer(BaseModelSerializer):
             "career_roadmap",
             "display_order",
         ]
-
-

@@ -28,7 +28,13 @@ _TOP_SUGGESTION_KEYS: tuple[str, ...] = (
     "career_recommendations",
 )
 
-_NESTED_PAYLOAD_KEYS: tuple[str, ...] = ("data", "result", "response", "output", "payload")
+_NESTED_PAYLOAD_KEYS: tuple[str, ...] = (
+    "data",
+    "result",
+    "response",
+    "output",
+    "payload",
+)
 
 
 def coerce_string_list(value: Any) -> list[str]:
@@ -51,7 +57,12 @@ def coerce_string_list(value: Any) -> list[str]:
                 continue
             if isinstance(item, dict):
                 text = (
-                    str(item.get("text") or item.get("reason") or item.get("label") or "")
+                    str(
+                        item.get("text")
+                        or item.get("reason")
+                        or item.get("label")
+                        or ""
+                    )
                 ).strip()
             else:
                 text = str(item).strip()
@@ -90,12 +101,15 @@ def normalize_job_security(value: Any) -> dict[str, Any] | None:
         return None
     data = dict(value)
     level = normalize_risk_level(data.get("level") or data.get("security"))
-    market = str(
-        data.get("market_demand_growth")
-        or data.get("demand_trend")
-        or data.get("demand")
-        or ""
-    ).strip() or None
+    market = (
+        str(
+            data.get("market_demand_growth")
+            or data.get("demand_trend")
+            or data.get("demand")
+            or ""
+        ).strip()
+        or None
+    )
     return {"level": level, "market_demand_growth": market}
 
 
@@ -112,7 +126,9 @@ def normalize_learning_curve(value: Any) -> dict[str, Any] | None:
         return None
     data = dict(value)
     level = normalize_learning_curve_level(data.get("level") or data.get("curve"))
-    description = str(data.get("description") or data.get("detail") or "").strip() or None
+    description = (
+        str(data.get("description") or data.get("detail") or "").strip() or None
+    )
     return {"level": level, "description": description}
 
 
@@ -177,7 +193,9 @@ def normalize_career_factors(value: Any) -> dict[str, Any] | None:
         data["risk_level"] = normalize_risk_level(data.get("risk_level"))
     if "skill_match" in data:
         data["skill_match"] = coerce_int(data.get("skill_match"))
-    growth_raw = data.get("growth_potential") or _pick_first_key(data, _GROWTH_POTENTIAL_KEYS)
+    growth_raw = data.get("growth_potential") or _pick_first_key(
+        data, _GROWTH_POTENTIAL_KEYS
+    )
     if growth_raw is not None:
         growth_level = normalize_growth_potential(growth_raw)
         if growth_level is not None:
@@ -269,7 +287,9 @@ def normalize_required_education(value: Any) -> dict[str, Any] | None:
 
     def _infer_level_from_name(name: str) -> tuple[str, str]:
         n = name.casefold()
-        if any(k in n for k in ("mba", "m.tech", "mtech", "mca", "m.sc", "msc", "master")):
+        if any(
+            k in n for k in ("mba", "m.tech", "mtech", "mca", "m.sc", "msc", "master")
+        ):
             return ("Postgraduate", "post_graduation")
         if any(k in n for k in ("b.tech", "btech", "bca", "b.sc", "bsc", "bachelor")):
             return ("Undergraduate", "graduation")
@@ -288,9 +308,14 @@ def normalize_required_education(value: Any) -> dict[str, Any] | None:
                 continue
             type_label = _normalize_type_label(item.get("type") or item.get("label"))
             level_key = _normalize_level_key(
-                item.get("level_key") or item.get("levelKey") or item.get("key") or item.get("level")
+                item.get("level_key")
+                or item.get("levelKey")
+                or item.get("key")
+                or item.get("level")
             )
-            name = str(item.get("name") or item.get("degree") or item.get("course") or "").strip()
+            name = str(
+                item.get("name") or item.get("degree") or item.get("course") or ""
+            ).strip()
             if not type_label or not level_key or not name:
                 continue
             cleaned.append({"type": type_label, "level_key": level_key, "name": name})
