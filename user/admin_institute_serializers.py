@@ -60,14 +60,20 @@ class AdminInstituteSerializer(serializers.ModelSerializer):
             if not city_id:
                 errors["city"] = "This field is required."
 
-        if email and User.objects.filter(email=email, deleted=False).exclude(
-            id=getattr(self.instance, "id", None)
-        ).exists():
+        if (
+            email
+            and User.objects.filter(email=email, deleted=False)
+            .exclude(id=getattr(self.instance, "id", None))
+            .exists()
+        ):
             errors["email"] = "An account with this email already exists"
 
-        if phone and User.objects.filter(phone=phone, deleted=False).exclude(
-            id=getattr(self.instance, "id", None)
-        ).exists():
+        if (
+            phone
+            and User.objects.filter(phone=phone, deleted=False)
+            .exclude(id=getattr(self.instance, "id", None))
+            .exists()
+        ):
             errors["phone"] = "An account with this phone number already exists"
 
         country = None
@@ -247,7 +253,8 @@ class AdminInstituteSerializer(serializers.ModelSerializer):
             setup_web_user_password(instance)
 
         return instance
-    
+
+
 class AdminInstituteSortSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
@@ -261,7 +268,7 @@ class AdminInstituteSortSerializer(serializers.ModelSerializer):
     city_name = serializers.CharField(source="user.city.name")
     referral_code = serializers.CharField(source="user.referral_code")
     address = serializers.CharField(source="user.address")
-    
+
     class Meta:
         model = InstituteProfile
         fields = [

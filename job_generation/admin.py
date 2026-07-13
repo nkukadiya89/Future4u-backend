@@ -138,9 +138,12 @@ class JobGenerationRunForm(forms.Form):
         if salary_min is not None and salary_max is not None:
             if salary_min > salary_max:
                 raise forms.ValidationError(
-                    {"salary_max": "salary_max must be greater than or equal to salary_min."}
+                    {
+                        "salary_max": "salary_max must be greater than or equal to salary_min."
+                    }
                 )
         return cleaned_data
+
     application_deadline = forms.DateField(
         required=False,
         input_formats=["%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y"],

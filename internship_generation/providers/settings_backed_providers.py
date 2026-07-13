@@ -32,16 +32,14 @@ class _SettingsBackedProvider(LLMProvider):
             module = __import__(module_name, fromlist=[class_name])
             model_cls = getattr(module, class_name)
         except ImportError as exc:
-            raise InternshipGenerationConfigurationError(self.import_error_message) from exc
+            raise InternshipGenerationConfigurationError(
+                self.import_error_message
+            ) from exc
 
         api_key = getattr(settings, self.api_key_setting, "")
         model_name = getattr(settings, self.model_setting, "")
-        temperature = float(
-            getattr(settings, "INTERNSHIP_GENERATION_TEMPERATURE", 0.2)
-        )
-        token_limit = int(
-            max_tokens or settings.INTERNSHIP_GENERATION_MAX_TOKENS
-        )
+        temperature = float(getattr(settings, "INTERNSHIP_GENERATION_TEMPERATURE", 0.2))
+        token_limit = int(max_tokens or settings.INTERNSHIP_GENERATION_MAX_TOKENS)
 
         return model_cls(
             model=model_name,

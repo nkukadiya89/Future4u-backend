@@ -33,9 +33,13 @@ class DispatchResult:
     profile_type: str
 
 
-
 def _models():
-    from assessment.models import ParentAssessment, ProfessionalAssessment, StudentAssessment
+    from assessment.models import (
+        ParentAssessment,
+        ProfessionalAssessment,
+        StudentAssessment,
+    )
+
     return {
         "student": StudentAssessment,
         "parent": ParentAssessment,
@@ -45,8 +49,11 @@ def _models():
 
 def _recommendation_services():
     from recommendation.profiles.parent.service import ParentRecommendationService
-    from recommendation.profiles.professional.service import ProfessionalRecommendationService
+    from recommendation.profiles.professional.service import (
+        ProfessionalRecommendationService,
+    )
     from recommendation.profiles.student.service import StudentRecommendationService
+
     return {
         "student": StudentRecommendationService,
         "parent": ParentRecommendationService,
@@ -56,8 +63,11 @@ def _recommendation_services():
 
 def _chat_services():
     from recommendation.profiles.parent.chat_service import ParentChatService
-    from recommendation.profiles.professional.chat_service import ProfessionalChatService
+    from recommendation.profiles.professional.chat_service import (
+        ProfessionalChatService,
+    )
     from recommendation.profiles.student.chat_service import StudentChatService
+
     return {
         "student": StudentChatService,
         "parent": ParentChatService,
@@ -90,9 +100,11 @@ def resolve_recommendation_service(
     if profile_type:
         profile_type = _validate(profile_type)
         models = _models()
-        if not models[profile_type].objects.filter(
-            id=assessment_id, deleted=False
-        ).exists():
+        if (
+            not models[profile_type]
+            .objects.filter(id=assessment_id, deleted=False)
+            .exists()
+        ):
             raise AssessmentNotFoundError("Assessment not found")
         svc = _recommendation_services()
         return DispatchResult(service=svc[profile_type](), profile_type=profile_type)
@@ -112,9 +124,11 @@ def resolve_chat_service(
     if profile_type:
         profile_type = _validate(profile_type)
         models = _models()
-        if not models[profile_type].objects.filter(
-            id=assessment_id, deleted=False
-        ).exists():
+        if (
+            not models[profile_type]
+            .objects.filter(id=assessment_id, deleted=False)
+            .exists()
+        ):
             raise AssessmentNotFoundError("Assessment not found")
         svc = _chat_services()
         return DispatchResult(service=svc[profile_type], profile_type=profile_type)

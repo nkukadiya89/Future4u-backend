@@ -60,7 +60,7 @@ Return ONLY valid JSON using this shape:
 """
 
 NORMAL_MODE_INSTRUCTIONS = (
-    'Normal career mode: use career/job-readiness roadmap tasks and India INR salary.'
+    "Normal career mode: use career/job-readiness roadmap tasks and India INR salary."
 )
 
 

@@ -14,7 +14,10 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from activity_log.models import ActivityLog
-from common.mixins.view_mixins import CreatePasswordEmailMixin, MethodNotAllowedListMixin
+from common.mixins.view_mixins import (
+    CreatePasswordEmailMixin,
+    MethodNotAllowedListMixin,
+)
 from company.models import Company, CompanyPhoto, Enquiry
 from company.serializers import (
     CompanyArchiveListSerializer,

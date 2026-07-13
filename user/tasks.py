@@ -41,7 +41,7 @@ def send_password_setup_link_task(name, email, token):
 
 
 @shared_task
-def bulk_upload_user_task(file_path, admin_id,user_type):
+def bulk_upload_user_task(file_path, admin_id, user_type):
     try:
         admin_user = User.objects.get(id=admin_id)
         result = BulkUserUploadService.process_file_path(

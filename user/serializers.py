@@ -1,11 +1,16 @@
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
 
-from common.mixins.serializer_mixins import DeletedFieldsMixin, OtpEmailValidationMixin, UserNameMixin
+from common.mixins.serializer_mixins import (
+    DeletedFieldsMixin,
+    OtpEmailValidationMixin,
+    UserNameMixin,
+)
 
 from user.models import ContentTypeModel, CustomGroup, RoleFamily, User
 from user.user_auth import get_user_groups, get_user_permissions
 from utils.datetime_formatter import format_datetime
+
 
 class CustomGroupSerializers(serializers.ModelSerializer):
     sequence = serializers.IntegerField(source="sequence", read_only=True)
@@ -142,7 +147,7 @@ class UserDetailsSerializer(serializers.ModelSerializer):
             "country",
             "states",
             "city",
-            "address"
+            "address",
         ]
         extra_kwargs = {
             "email": {"read_only": True},
@@ -194,7 +199,9 @@ class UserQuickSerializer(serializers.ModelSerializer):
         return obj.get_full_name()
 
 
-class UserListSerializer(DeletedFieldsMixin, UserNameMixin, serializers.ModelSerializer):
+class UserListSerializer(
+    DeletedFieldsMixin, UserNameMixin, serializers.ModelSerializer
+):
     country_name = serializers.SerializerMethodField(read_only=True)
     state_name = serializers.SerializerMethodField(read_only=True)
     city_name = serializers.SerializerMethodField(read_only=True)
@@ -271,7 +278,7 @@ class UserListSerializer(DeletedFieldsMixin, UserNameMixin, serializers.ModelSer
 
     def get_password_last_changed(self, obj):
         return format_datetime(getattr(obj, "password_last_changed", None))
-    
+
     def get_created_at(self, obj):
         return format_datetime(getattr(obj, "created_at", None))
 

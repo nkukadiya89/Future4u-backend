@@ -46,7 +46,9 @@ class JsonParseValidateResult:
 class JsonResponseParser:
     """Extract, parse, and validate raw LLM text responses as JSON objects."""
 
-    def parse_and_validate(self, raw: str, *, model_class: type[T]) -> JsonParseValidateResult:
+    def parse_and_validate(
+        self, raw: str, *, model_class: type[T]
+    ) -> JsonParseValidateResult:
         raw_text = str(raw or "")
         cleaned = self._strip_markdown_fences(raw_text)
         cleaned = self._strip_leading_trailing_text(cleaned)
@@ -192,8 +194,12 @@ def format_validation_errors(exc: Exception) -> str:
     if isinstance(exc, ValidationError):
         items: list[str] = []
         for err in exc.errors()[:8]:
-            loc = ".".join(str(part) for part in (err.get("loc") or []) if part is not None)
-            msg = _clean_validation_message(str(err.get("msg") or "validation error").strip())
+            loc = ".".join(
+                str(part) for part in (err.get("loc") or []) if part is not None
+            )
+            msg = _clean_validation_message(
+                str(err.get("msg") or "validation error").strip()
+            )
             if loc:
                 items.append(f"{loc}: {msg}")
             else:

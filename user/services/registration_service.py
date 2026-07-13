@@ -1,6 +1,10 @@
 from django.utils import timezone
 
-from email_utils.send_email import WEB_PASSWORD_SETUP_TOKEN_DAYS, generate_token, send_mail
+from email_utils.send_email import (
+    WEB_PASSWORD_SETUP_TOKEN_DAYS,
+    generate_token,
+    send_mail,
+)
 from utils.generate_otp import generate_otp
 
 

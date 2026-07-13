@@ -6,4 +6,3 @@ courses_router.register(r"course", CoursesViewSet, basename="courses_router")
 courses_router.register(
     r"course-inquiry", CourseInquiryViewSet, basename="course_inquiry"
 )
-

@@ -6,13 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course', '0001_initial'),
+        ("course", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='courses',
-            name='course_type',
-            field=models.CharField(choices=[('degree', 'Degree'), ('certification', 'Certification'), ('training', 'Training')], max_length=20),
+            model_name="courses",
+            name="course_type",
+            field=models.CharField(
+                choices=[
+                    ("degree", "Degree"),
+                    ("certification", "Certification"),
+                    ("training", "Training"),
+                ],
+                max_length=20,
+            ),
         ),
     ]

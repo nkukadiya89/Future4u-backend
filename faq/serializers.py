@@ -9,9 +9,7 @@ from common.mixins.serializer_mixins import (
 from faq.models import FAQ
 
 
-class FAQSerializers(
-    DateFieldsMixin, UserNameMixin, serializers.ModelSerializer
-):
+class FAQSerializers(DateFieldsMixin, UserNameMixin, serializers.ModelSerializer):
     created_by_name = serializers.SerializerMethodField()
     updated_by_name = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()

@@ -37,9 +37,7 @@ class _SettingsBackedProvider(LLMProvider):
         api_key = getattr(settings, self.api_key_setting, "")
         model_name = getattr(settings, self.model_setting, "")
         temperature = float(getattr(settings, "COURSE_GENERATION_TEMPERATURE", 0.2))
-        token_limit = int(
-            max_tokens or settings.COURSE_GENERATION_MAX_TOKENS
-        )
+        token_limit = int(max_tokens or settings.COURSE_GENERATION_MAX_TOKENS)
 
         return model_cls(
             model=model_name,

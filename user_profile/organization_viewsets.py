@@ -33,7 +33,7 @@ class OrganizationProfileViewSet(BaseModelViewSet):
         "user__status",
         "user__user_type",
     ]
-    ordering_fields = BaseModelViewSet.ordering_fields +[
+    ordering_fields = BaseModelViewSet.ordering_fields + [
         "country",
         "state",
         "city",
@@ -47,23 +47,26 @@ class OrganizationProfileViewSet(BaseModelViewSet):
     ]
 
     def get_queryset(self):
-        return self.profile_model.objects.filter(
-            user__deleted=False,
-        ).select_related("user", "user__city", "user__states","user__country").prefetch_related(
-            "gallery_images"
-        ).annotate(
-            country = F("user__country__name"),
-            state=F("user__states__name"),
-            city=F("user__city__name"),
-            address=F("user__address"),
-            first_name=F("user__first_name"),
-            last_name=F("user__last_name"),
-            phone=F("user__phone"),
-            email=F("user__email"),
-            status=F("user__status"),
-            user_type=F("user__user_type"),
+        return (
+            self.profile_model.objects.filter(
+                user__deleted=False,
+            )
+            .select_related("user", "user__city", "user__states", "user__country")
+            .prefetch_related("gallery_images")
+            .annotate(
+                country=F("user__country__name"),
+                state=F("user__states__name"),
+                city=F("user__city__name"),
+                address=F("user__address"),
+                first_name=F("user__first_name"),
+                last_name=F("user__last_name"),
+                phone=F("user__phone"),
+                email=F("user__email"),
+                status=F("user__status"),
+                user_type=F("user__user_type"),
+            )
         )
-        
+
     def get_profile_object(self, request):
         queryset = self.get_queryset()
         if request.user.is_superuser:
@@ -71,7 +74,7 @@ class OrganizationProfileViewSet(BaseModelViewSet):
             if user_id:
                 return queryset.filter(user_id=user_id).first()
         return queryset.filter(user=request.user).first()
-    
+
     def list(self, request, *args, **kwargs):
         if request.user.is_superuser:
             user_id = request.query_params.get("user_id")
@@ -85,16 +88,16 @@ class OrganizationProfileViewSet(BaseModelViewSet):
 
             if status_filter:
                 queryset = queryset.filter(user__status=status_filter)
-            
+
             if city_id:
                 queryset = queryset.filter(user__city_id=city_id)
-            
+
             if state_id:
                 queryset = queryset.filter(user__states_id=state_id)
-            
+
             if country_id:
                 queryset = queryset.filter(user__country_id=country_id)
-            
+
             queryset = self.filter_queryset(queryset)
 
             if user_id:
@@ -108,10 +111,7 @@ class OrganizationProfileViewSet(BaseModelViewSet):
 
                 serializer = self.read_serializer_class(profile)
                 return Response(
-                    {
-                        "success": True,
-                        "data": serializer.data
-                    },
+                    {"success": True, "data": serializer.data},
                     status=status.HTTP_200_OK,
                 )
             if no_pagination:
@@ -124,7 +124,7 @@ class OrganizationProfileViewSet(BaseModelViewSet):
                     },
                     status=status.HTTP_200_OK,
                 )
-            
+
             page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = self.read_serializer_class(page, many=True)
@@ -153,7 +153,7 @@ class OrganizationProfileViewSet(BaseModelViewSet):
             {"success": True, "data": serializer.data},
             status=status.HTTP_200_OK,
         )
-    
+
     @transaction.atomic()
     def partial_update(self, request, *args, **kwargs):
         profile = self.get_profile_object().first()

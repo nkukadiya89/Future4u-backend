@@ -15,24 +15,38 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from subscription.models import FeatureUsage, SubscriptionFeature
-from subscription.serializers_new import (PaymentSubscriptionSerializer,
-                                          SubscriptionAPISerializer,
-                                          SubscriptionInvoiceSerializer,
-                                          SubscriptionSerializer,
-                                          UserSubscriptionSerializer)
+from subscription.serializers_new import (
+    PaymentSubscriptionSerializer,
+    SubscriptionAPISerializer,
+    SubscriptionInvoiceSerializer,
+    SubscriptionSerializer,
+    UserSubscriptionSerializer,
+)
 from subscription.services.pricing import calculate_price
 
-from .models import (PaymentSubscription, PlanPrice, PromoCode, Subscription,
-                     SubscriptionInvoice, UserSubscription)
+from .models import (
+    PaymentSubscription,
+    PlanPrice,
+    PromoCode,
+    Subscription,
+    SubscriptionInvoice,
+    UserSubscription,
+)
 
 
 class SubscriptionViewSet(ModelViewSet):
     queryset = Subscription.objects.filter(is_active=True)
     serializer_class = SubscriptionAPISerializer
-    http_method_names = ["get", "head", "options"]
 
     def get_serializer_class(self):
-        return SubscriptionAPISerializer
+        if self.action in ("create", "update", "partial_update"):
+            from subscription.serializers_new import SubscriptionCreateSerializer
+
+            return SubscriptionCreateSerializer
+        if self.action in ("list", "retrieve"):
+            return SubscriptionAPISerializer
+
+        return super().get_serializer_class()
 
 
 class UserSubscriptionViewSet(ModelViewSet):
@@ -88,7 +102,11 @@ class UserSubscriptionViewSet(ModelViewSet):
                 "start_date": user_sub.start_date,
                 "end_date": user_sub.end_date,
                 "features": {
-                    feature_code: {"allowed": allowed, "used": used, "remaining": remaining}
+                    feature_code: {
+                        "allowed": allowed,
+                        "used": used,
+                        "remaining": remaining,
+                    }
                 },
             }
         )
@@ -123,7 +141,9 @@ class PaymentSubscriptionViewSet(ModelViewSet):
         # activate or renew subscription using plan_price
         plan_price = payment.plan_price
         if not plan_price:
-            return Response({"detail": "No plan price associated with payment"}, status=400)
+            return Response(
+                {"detail": "No plan price associated with payment"}, status=400
+            )
 
         duration = plan_price.duration_days
 
@@ -145,9 +165,6 @@ class PaymentSubscriptionViewSet(ModelViewSet):
             user_sub.is_active = True
             user_sub.save()
 
-        # Reset feature usage so user gets fresh tokens for new billing period
-        FeatureUsage.objects.filter(user=payment.user).update(used=0)
-
         return Response({"detail": "Payment successful"})
 
     @action(detail=False, methods=["post"], url_path="create-order")
@@ -167,21 +184,34 @@ class PaymentSubscriptionViewSet(ModelViewSet):
         # Resolve plan_price
         plan_price = None
         if plan_price_id:
-            plan_price = PlanPrice.objects.filter(id=plan_price_id, deleted=False).first()
+            plan_price = PlanPrice.objects.filter(
+                id=plan_price_id, deleted=False
+            ).first()
             if not plan_price:
-                return Response({"success": False, "message": "Invalid plan_price_id"}, status=400)
+                return Response(
+                    {"success": False, "message": "Invalid plan_price_id"}, status=400
+                )
         elif subscription_id:
-            subscription = Subscription.objects.filter(id=subscription_id, deleted=False).first()
+            subscription = Subscription.objects.filter(
+                id=subscription_id, deleted=False
+            ).first()
             if not subscription:
-                return Response({"success": False, "message": "Invalid subscription"}, status=400)
+                return Response(
+                    {"success": False, "message": "Invalid subscription"}, status=400
+                )
             # pick default active price
             plan_price = (
-                PlanPrice.objects.filter(plan=subscription, is_active=True, deleted=False)
+                PlanPrice.objects.filter(
+                    plan=subscription, is_active=True, deleted=False
+                )
                 .order_by("-price")
                 .first()
             )
             if not plan_price:
-                return Response({"success": False, "message": "No active prices for subscription"}, status=400)
+                return Response(
+                    {"success": False, "message": "No active prices for subscription"},
+                    status=400,
+                )
 
         try:
             pricing = calculate_price(plan_price, promocode)
@@ -350,7 +380,5 @@ def razorpay_webhook(request):
             user_sub.is_active = True
             user_sub.save()
 
-        # Reset feature usage so user gets fresh tokens for new billing period
-        FeatureUsage.objects.filter(user=payment.user).update(used=0)
-
+    return HttpResponse(status=200)
     return HttpResponse(status=200)

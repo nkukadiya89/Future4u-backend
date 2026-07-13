@@ -100,13 +100,16 @@ def normalize_study_abroad_payload(payload):
         for level in suggestion.required_education.levels:
             level.name = normalize_study_abroad_text(level.name)
         suggestion.career_factors.salary.average = (
-            normalize_study_abroad_salary_average(suggestion.career_factors.salary.average)
+            normalize_study_abroad_salary_average(
+                suggestion.career_factors.salary.average
+            )
         )
         roadmap = suggestion.career_roadmap
         for phase_name in STUDY_ABROAD_ROADMAP_PHASES:
             for task in getattr(roadmap, phase_name):
                 task.task_description = normalize_study_abroad_task_description(
-                    phase_name, task.task_description,
+                    phase_name,
+                    task.task_description,
                 )
     return payload
 
@@ -131,20 +134,31 @@ def public_career_factors(factors: Any) -> Any:
 def _assessment_filter_kwargs(assessment):
     """Return the correct filter kwargs for the unified CareerRecommendation model."""
     from assessment.models import ProfessionalAssessment, StudentAssessment
+
     if isinstance(assessment, StudentAssessment):
         return {"student_assessment": assessment, "profile_type": "student"}
     if isinstance(assessment, ProfessionalAssessment):
-        return {"professional_assessment": assessment, "profile_type": "working_professional"}
+        return {
+            "professional_assessment": assessment,
+            "profile_type": "working_professional",
+        }
     return {"parent_assessment": assessment, "profile_type": "parent"}
 
 
 def load_recommendation_and_check_cycle(
-    *, assessment, recommendation_model, cycle_days: int = RECOMMENDATION_CYCLE_DAYS,
+    *,
+    assessment,
+    recommendation_model,
+    cycle_days: int = RECOMMENDATION_CYCLE_DAYS,
 ):
     """Return (recommendation, is_within_cycle)."""
-    recommendation = recommendation_model.objects.filter(
-        **_assessment_filter_kwargs(assessment), deleted=False
-    ).prefetch_related("suggestions").first()
+    recommendation = (
+        recommendation_model.objects.filter(
+            **_assessment_filter_kwargs(assessment), deleted=False
+        )
+        .prefetch_related("suggestions")
+        .first()
+    )
 
     if recommendation and recommendation.last_recommended_at:
         next_allowed = recommendation.last_recommended_at + timedelta(days=cycle_days)
@@ -155,10 +169,16 @@ def load_recommendation_and_check_cycle(
 
 @transaction.atomic
 def save_recommendation(
-    *, assessment, user, payload, recommendation_model, suggestion_model, existing=None,
+    *,
+    assessment,
+    user,
+    payload,
+    recommendation_model,
+    suggestion_model,
+    existing=None,
 ):
     """Generic save/update for recommendations of any profile type.
-    
+
     The `payload` must have `.model_dump()`, `.top_suggestions` (iterable).
     Each suggestion must have .career_name, .match_percentage, .ai_insight,
     .why_this_career, .required_skills, .required_education, .career_factors, .career_roadmap.
@@ -173,8 +193,11 @@ def save_recommendation(
         existing._request_user = user
         existing.save(
             update_fields=[
-                "raw_ai_response", "easy_decision_making",
-                "last_recommended_at", "updated_at", "updated_by",
+                "raw_ai_response",
+                "easy_decision_making",
+                "last_recommended_at",
+                "updated_at",
+                "updated_by",
             ]
         )
         recommendation = existing
@@ -197,11 +220,11 @@ def save_recommendation(
     for order, suggestion in enumerate(payload.top_suggestions, start=1):
         edu = (
             suggestion.required_education.model_dump()
-            if suggestion.required_education else {}
+            if suggestion.required_education
+            else {}
         )
         factors = (
-            suggestion.career_factors.model_dump()
-            if suggestion.career_factors else {}
+            suggestion.career_factors.model_dump() if suggestion.career_factors else {}
         )
         roadmap = suggestion.career_roadmap.model_dump()
 
@@ -219,10 +242,17 @@ def save_recommendation(
             s._request_user = user
             s.save(
                 update_fields=[
-                    "career_name", "match_percentage", "ai_insight",
-                    "why_this_career", "required_skills", "required_education",
-                    "career_factors", "career_roadmap", "display_order",
-                    "updated_at", "updated_by",
+                    "career_name",
+                    "match_percentage",
+                    "ai_insight",
+                    "why_this_career",
+                    "required_skills",
+                    "required_education",
+                    "career_factors",
+                    "career_roadmap",
+                    "display_order",
+                    "updated_at",
+                    "updated_by",
                 ]
             )
         else:
@@ -241,7 +271,7 @@ def save_recommendation(
             s._request_user = user
             s.save()
 
-    for stale in existing_suggestions[len(payload.top_suggestions):]:
+    for stale in existing_suggestions[len(payload.top_suggestions) :]:
         stale.soft_delete(user=user)
 
     return recommendation
@@ -249,29 +279,32 @@ def save_recommendation(
 
 def serialize_recommendation(recommendation):
     """Generic serialization for any recommendation type.
-    
+
     Assumes recommendation.suggestions (filtered, ordered by display_order)
     with fields: id, career_name, match_percentage, ai_insight, why_this_career,
     required_skills, required_education, career_factors, career_roadmap, display_order.
     """
     suggestions = []
     for s in recommendation.suggestions.filter(deleted=False).order_by("display_order"):
-        suggestions.append({
-            "id": s.id,
-            "recommendation": s.recommendation_id,
-            "career_name": s.career_name,
-            "match_percentage": s.match_percentage,
-            "ai_insight": s.ai_insight,
-            "why_this_career": s.why_this_career,
-            "required_skills": s.required_skills,
-            "required_education": (
-                {"levels": (s.required_education or {}).get("levels", [])}
-                if s.required_education else {"levels": []}
-            ),
-            "career_factors": public_career_factors(s.career_factors),
-            "career_roadmap": s.career_roadmap,
-            "display_order": s.display_order,
-        })
+        suggestions.append(
+            {
+                "id": s.id,
+                "recommendation": s.recommendation_id,
+                "career_name": s.career_name,
+                "match_percentage": s.match_percentage,
+                "ai_insight": s.ai_insight,
+                "why_this_career": s.why_this_career,
+                "required_skills": s.required_skills,
+                "required_education": (
+                    {"levels": (s.required_education or {}).get("levels", [])}
+                    if s.required_education
+                    else {"levels": []}
+                ),
+                "career_factors": public_career_factors(s.career_factors),
+                "career_roadmap": s.career_roadmap,
+                "display_order": s.display_order,
+            }
+        )
 
     return {
         "ai_disclaimer": AI_RECOMMENDATION_DISCLAIMER,
@@ -279,6 +312,7 @@ def serialize_recommendation(recommendation):
         "easy_decision_making": recommendation.easy_decision_making,
         "last_recommended_at": (
             recommendation.last_recommended_at.isoformat()
-            if recommendation.last_recommended_at else None
+            if recommendation.last_recommended_at
+            else None
         ),
     }

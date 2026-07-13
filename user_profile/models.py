@@ -12,7 +12,6 @@ from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
 from django.core.exceptions import ValidationError
 
 
-
 class UserProfile(models.Model):
     """Base profile for Super Admin with language preference"""
 
@@ -100,8 +99,16 @@ class StudentProfile(models.Model):
     linkedin_url = models.CharField(max_length=200, null=True, blank=True)
     github_url = models.CharField(max_length=200, null=True, blank=True)
     portfolio = models.CharField(max_length=200, null=True, blank=True)
-    referred_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="referred_students")
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    referred_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="referred_students",
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
     updated_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -271,26 +278,22 @@ class ProfessionalProfile(models.Model):
         help_text="Current employment status",
     )
 
-    employment_type_other_text = models.CharField(
-        max_length=150,
-        null=True,
-        blank=True
-    )
+    employment_type_other_text = models.CharField(max_length=150, null=True, blank=True)
 
     current_industry_category = models.ForeignKey(
-         "domain.Domain",
-         on_delete=models.SET_NULL,
-         null=True,
-         blank=True,
-         related_name="current_industry_category_profiles",
+        "domain.Domain",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="current_industry_category_profiles",
     )
 
     current_industry = models.ForeignKey(
         "domain.Domain",
-         on_delete=models.SET_NULL,
-         null=True,
-         blank=True,
-         related_name="current_industry_profiles",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="current_industry_profiles",
     )
 
     class CompanySize(models.TextChoices):
@@ -300,19 +303,14 @@ class ProfessionalProfile(models.Model):
         LARGE = "large_1000_plus", "Large (1000+)"
 
     company_size = models.CharField(
-        max_length=30,
-        choices=CompanySize.choices,
-        null=True,
-        blank=True
+        max_length=30, choices=CompanySize.choices, null=True, blank=True
     )
- 
+
     class ExperienceRange(models.TextChoices):
         ZERO_TO_ONE = "0_1_years", "0–1 years"
         ONE_TO_THREE = "1_3_years", "1–3 years"
         THREE_TO_FIVE = "3_5_years", "3–5 years"
         FIVE_PLUS = "5_plus_years", "5+ years"
-    
-    
 
     years_of_experience = models.CharField(
         max_length=20,
@@ -331,45 +329,42 @@ class ProfessionalProfile(models.Model):
     )
 
     stream = models.ForeignKey(
-    "stream.Stream",
-    on_delete=models.SET_NULL,
-    null=True,
-    blank=True,
-    related_name="professional_profiles",
+        "stream.Stream",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="professional_profiles",
     )
 
     def clean(self):
-       super().clean()
+        super().clean()
 
-       if self.employment_type != self.EmploymentType.OTHER:
-           self.employment_type_other_text = None
+        if self.employment_type != self.EmploymentType.OTHER:
+            self.employment_type_other_text = None
 
-       if (
-           self.employment_type == self.EmploymentType.OTHER
-           and not self.employment_type_other_text
-    ):
-           raise ValidationError({
-             "employment_type_other_text": "Please specify the employment type."
-    })
+        if (
+            self.employment_type == self.EmploymentType.OTHER
+            and not self.employment_type_other_text
+        ):
+            raise ValidationError(
+                {"employment_type_other_text": "Please specify the employment type."}
+            )
 
-       category = self.current_industry_category
-       industry = self.current_industry
+        category = self.current_industry_category
+        industry = self.current_industry
 
-       if category and category.parent_id is not None:
-           raise ValidationError({
-                "current_industry_category": "Must be a parent domain"
-           })
+        if category and category.parent_id is not None:
+            raise ValidationError(
+                {"current_industry_category": "Must be a parent domain"}
+            )
 
-       if industry and industry.parent_id is None:
-           raise ValidationError({
-                "current_industry": "Must be a child domain"
-           })
+        if industry and industry.parent_id is None:
+            raise ValidationError({"current_industry": "Must be a child domain"})
 
-       if category and industry and industry.parent_id != category.id:
-           raise ValidationError({
-                "current_industry": "Must belong to selected category"
-           })
-       
+        if category and industry and industry.parent_id != category.id:
+            raise ValidationError(
+                {"current_industry": "Must belong to selected category"}
+            )
 
     current_job_title = models.CharField(max_length=150, null=True, blank=True)
 
@@ -386,10 +381,17 @@ class ProfessionalProfile(models.Model):
     linkedin_url = models.CharField(max_length=200, null=True, blank=True)
     github_url = models.CharField(max_length=200, null=True, blank=True)
     portfolio = models.CharField(max_length=200, null=True, blank=True)
-    referred_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="referred_professionals")
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    referred_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="referred_professionals",
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
     updated_at = models.DateTimeField(null=True, blank=True)
-
 
     def __str__(self):
         return f"ProfessionalProfile<{self.user_id}>"
@@ -568,16 +570,24 @@ class ChildProfile(models.Model):
 
 
 class InstituteProfile(BaseModule):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="institute_profile")
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="institute_profile",
+    )
     student_trained = models.PositiveIntegerField(null=True, blank=True)
     placements = models.PositiveIntegerField(null=True, blank=True)
-    success_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    success_rate = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True
+    )
     about_us = models.TextField(null=True, blank=True)
     courses_offered = models.JSONField(default=list, blank=True)
     key_highlights = models.JSONField(default=list, blank=True)
     website = models.CharField(max_length=250, null=True, blank=True)
     institute_name = models.CharField(max_length=200, null=True, blank=True)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
     updated_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -619,7 +629,9 @@ def _upload_organization_gallery_image(instance, image, upload_folder):
 
 
 class InstituteGallery(BaseModule):
-    institute = models.ForeignKey(InstituteProfile, on_delete=models.CASCADE, related_name="gallery_images")
+    institute = models.ForeignKey(
+        InstituteProfile, on_delete=models.CASCADE, related_name="gallery_images"
+    )
     image = models.CharField(max_length=350, null=True, blank=True)
 
     class Meta:
@@ -633,10 +645,10 @@ class InstituteGallery(BaseModule):
 class SchoolCollegeProfile(BaseModule):
 
     TOTAL_STUDENT = (
-        ("under_500","Under 500"),
-        ("500_1000","500-1000"),
-        ("1000_3000","1000-3000"),
-        ("above_3000","3000+"),
+        ("under_500", "Under 500"),
+        ("500_1000", "500-1000"),
+        ("1000_3000", "1000-3000"),
+        ("above_3000", "3000+"),
     )
     READINESS = (
         ("immediately", "Immediately"),
@@ -651,16 +663,26 @@ class SchoolCollegeProfile(BaseModule):
     )
     student_trained = models.PositiveIntegerField(null=True, blank=True)
     placements = models.PositiveIntegerField(null=True, blank=True)
-    success_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    success_rate = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True
+    )
     about_us = models.TextField(null=True, blank=True)
     courses_offered = models.JSONField(default=list, blank=True)
-    education  = models.ManyToManyField(EducationLevel, blank=True, related_name="school_college_profiles")
+    education = models.ManyToManyField(
+        EducationLevel, blank=True, related_name="school_college_profiles"
+    )
     institute_name = models.CharField(max_length=200, null=True, blank=True)
-    total_student = models.CharField(max_length=50, choices=TOTAL_STUDENT, default="under_500")
+    total_student = models.CharField(
+        max_length=50, choices=TOTAL_STUDENT, default="under_500"
+    )
     board = models.CharField(max_length=200, null=True, blank=True)
-    partnership_readiness = models.CharField(max_length=50, choices=READINESS, default="flexible_timeline")
+    partnership_readiness = models.CharField(
+        max_length=50, choices=READINESS, default="flexible_timeline"
+    )
     website = models.CharField(max_length=250, null=True, blank=True)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
     updated_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -698,7 +720,9 @@ class CorporateProfile(BaseModule):
     years_in_business = models.PositiveIntegerField(null=True, blank=True)
     about_us = models.TextField(null=True, blank=True)
     perks_benefits = models.JSONField(default=list, blank=True)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
     updated_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):

@@ -25,7 +25,11 @@ class Notification(models.Model):
 
     class Meta:
         ordering = ["is_read", "-created_at"]
-        indexes = [models.Index(fields=["user"]), models.Index(fields=["is_read"]), models.Index(fields=["created_at"])]
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["is_read"]),
+            models.Index(fields=["created_at"]),
+        ]
 
     def mark_read(self) -> None:
         if not self.is_read:

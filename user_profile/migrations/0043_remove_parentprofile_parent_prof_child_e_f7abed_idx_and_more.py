@@ -6,33 +6,33 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user_profile', '0042_add_parent_other_relationship_text'),
+        ("user_profile", "0042_add_parent_other_relationship_text"),
     ]
 
     operations = [
         migrations.RemoveIndex(
-            model_name='parentprofile',
-            name='parent_prof_child_e_f7abed_idx',
+            model_name="parentprofile",
+            name="parent_prof_child_e_f7abed_idx",
         ),
         migrations.RemoveIndex(
-            model_name='parentprofile',
-            name='parent_prof_stream__ccb9a9_idx',
+            model_name="parentprofile",
+            name="parent_prof_stream__ccb9a9_idx",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='academic_performance',
+            model_name="parentprofile",
+            name="academic_performance",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='child_education_level',
+            model_name="parentprofile",
+            name="child_education_level",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='child_name',
+            model_name="parentprofile",
+            name="child_name",
         ),
         migrations.RemoveField(
-            model_name='parentprofile',
-            name='stream',
+            model_name="parentprofile",
+            name="stream",
         ),
         migrations.RunSQL(
             sql="ALTER TABLE parent_profile DROP COLUMN IF EXISTS child_interests;",

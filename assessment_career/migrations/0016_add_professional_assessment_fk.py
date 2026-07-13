@@ -7,14 +7,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0041_professionalassessment_professiona_user_id_09e9be_idx_and_more'),
-        ('assessment_career', '0015_reorder_chat_session_columns'),
+        (
+            "assessment",
+            "0041_professionalassessment_professiona_user_id_09e9be_idx_and_more",
+        ),
+        ("assessment_career", "0015_reorder_chat_session_columns"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='careerrecommendation',
-            name='professional_assessment',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='career_recommendation', to='assessment.professionalassessment'),
+            model_name="careerrecommendation",
+            name="professional_assessment",
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="career_recommendation",
+                to="assessment.professionalassessment",
+            ),
         ),
     ]

@@ -47,7 +47,9 @@ class RecommendationGenerator:
         raise last_error or AIGenerationError("AI recommendation failed")
 
     @classmethod
-    def _invoke_once(cls, *, prompt, inputs: dict[str, Any], llm) -> AIRecommendationPayload:
+    def _invoke_once(
+        cls, *, prompt, inputs: dict[str, Any], llm
+    ) -> AIRecommendationPayload:
         """Exactly one provider invocation."""
         try:
             structured_llm = llm.with_structured_output(

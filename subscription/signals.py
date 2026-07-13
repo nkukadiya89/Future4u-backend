@@ -21,7 +21,7 @@ def assign_basic_subscription(sender, instance, created, **kwargs):
     try:
         basic = (
             Subscription.objects.filter(
-                package_name__iexact="Free", is_active=True, deleted=False
+                package_name__iexact="Basic", is_active=True, deleted=False
             )
             .order_by("-id")
             .first()
@@ -33,7 +33,9 @@ def assign_basic_subscription(sender, instance, created, **kwargs):
         # create only if user doesn't already have an active subscription for this plan
         # pick default active PlanPrice for the Basic plan
         plan_price = (
-            basic.prices.filter(is_active=True, deleted=False).order_by("-price").first()
+            basic.prices.filter(is_active=True, deleted=False)
+            .order_by("-price")
+            .first()
         )
         if not plan_price:
             return

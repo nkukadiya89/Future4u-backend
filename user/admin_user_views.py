@@ -13,19 +13,47 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404
 from email_utils.send_email import send_activation_password_setup_email
-from user.admin_user_serializers import AdminStudentSerializer,AdminStudentSortSerializer, BulkUserUploadSerializer
+from user.admin_user_serializers import (
+    AdminStudentSerializer,
+    AdminStudentSortSerializer,
+    BulkUserUploadSerializer,
+)
 from user.models import User
 from user.permissions import IsAdminUser
 from user.services.bulk_user_upload import BulkUserUploadService
 from user.tasks import bulk_upload_user_task
-from user_profile.models import InstituteProfile, StudentProfile, SchoolCollegeProfile, CorporateProfile, ProfessionalProfile
+from user_profile.models import (
+    InstituteProfile,
+    StudentProfile,
+    SchoolCollegeProfile,
+    CorporateProfile,
+    ProfessionalProfile,
+)
 from rest_framework.viewsets import ModelViewSet
 from user_profile.serializers import StudentProfileSerializer
-from user_profile.serializers import SchoolCollegeProfileSerializer, InstituteProfileSerializer, CorporateProfileSerializer, ProfessionalProfileSerializer
-from user.admin_school_colleges_serializers import AdminSchoolCollegesSerializer,AdminSchoolCollegeSortSerializer
-from user.admin_institute_serializers import AdminInstituteSerializer,AdminInstituteSortSerializer
-from user.admin_corporate_serializers import AdminCorporateSerializer,AdminCorporateSortSerializer
-from user.admin_working_professional_serializers import AdminWorkingProfessionalSerializer, AdminWorkingProfessionalSortSerializer
+from user_profile.serializers import (
+    SchoolCollegeProfileSerializer,
+    InstituteProfileSerializer,
+    CorporateProfileSerializer,
+    ProfessionalProfileSerializer,
+)
+from user.admin_school_colleges_serializers import (
+    AdminSchoolCollegesSerializer,
+    AdminSchoolCollegeSortSerializer,
+)
+from user.admin_institute_serializers import (
+    AdminInstituteSerializer,
+    AdminInstituteSortSerializer,
+)
+from user.admin_corporate_serializers import (
+    AdminCorporateSerializer,
+    AdminCorporateSortSerializer,
+)
+from user.admin_working_professional_serializers import (
+    AdminWorkingProfessionalSerializer,
+    AdminWorkingProfessionalSortSerializer,
+)
+
 
 class BaseAdminProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser]
@@ -71,10 +99,12 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
         serializer = self.detail_serializer_class(profile)
 
-        return Response({
-            "success": True,
-            "data": serializer.data,
-        })
+        return Response(
+            {
+                "success": True,
+                "data": serializer.data,
+            }
+        )
 
     def create(self, request):
         serializer = self.serializer_class(
@@ -276,7 +306,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
-    
+
     @action(detail=False, methods=["patch"], url_path="bulk-archive")
     @transaction.atomic
     def bulk_archive(self, request, *args, **kwargs):
@@ -349,19 +379,22 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="archive-list")
     def archive_list(self, request, *args, **kwargs):
-        queryset = self.profile_model.objects.select_related("user").filter(
-            user__user_type=self.user_role,
-            user__deleted=True,
-        ).order_by("-user__deleted_at")
-
+        queryset = (
+            self.profile_model.objects.select_related("user")
+            .filter(
+                user__user_type=self.user_role,
+                user__deleted=True,
+            )
+            .order_by("-user__deleted_at")
+        )
 
         search = request.query_params.get("search", "").strip()
         if search:
             queryset = queryset.filter(
-                Q(user__first_name__icontains=search) |
-                Q(user__last_name__icontains=search) |
-                Q(user__email__icontains=search) |
-                Q(user__phone__icontains=search)
+                Q(user__first_name__icontains=search)
+                | Q(user__last_name__icontains=search)
+                | Q(user__email__icontains=search)
+                | Q(user__phone__icontains=search)
             )
 
         page = self.paginate_queryset(queryset)
@@ -384,7 +417,6 @@ class BaseAdminProfileViewSet(ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
-
 
     @action(detail=False, methods=["patch"], url_path="bulk-restore")
     @transaction.atomic
@@ -448,6 +480,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
     @action(detail=False, methods=["post"], url_path="bulk-upload")
     def bulk_upload_users(self, request):
         serializer = BulkUserUploadSerializer(data=request.data)
@@ -457,7 +490,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
             df = BulkUserUploadService._read_file(uploaded_file)
             user_type = serializer.validated_data.get("user_type", self.user_role)
-            
+
             required_columns = BulkUserUploadService.get_required_columns(user_type)
             BulkUserUploadService._validate_headers(df, required_columns)
 
@@ -497,12 +530,12 @@ class BaseAdminProfileViewSet(ModelViewSet):
             )
         except ValidationError as e:
             return Response(
-            {
-                "success": False,
-                "message": "".join(e.message) if hasattr(e, "message") else str(e),
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+                {
+                    "success": False,
+                    "message": "".join(e.message) if hasattr(e, "message") else str(e),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class AdminStudentViewSet(BaseAdminProfileViewSet):
@@ -513,6 +546,7 @@ class AdminStudentViewSet(BaseAdminProfileViewSet):
     detail_serializer_class = AdminStudentSortSerializer
     archive_serializer_class = StudentProfileSerializer
 
+
 class AdminSchoolCollegeViewSet(BaseAdminProfileViewSet):
     user_role = User.Role.SCHOOL_COLLEGE
     role_name = "School College"
@@ -521,6 +555,7 @@ class AdminSchoolCollegeViewSet(BaseAdminProfileViewSet):
     detail_serializer_class = AdminSchoolCollegeSortSerializer
     archive_serializer_class = SchoolCollegeProfileSerializer
 
+
 class AdminInstituteViewSet(BaseAdminProfileViewSet):
     user_role = User.Role.INSTITUTE
     role_name = "Institute"
@@ -528,6 +563,7 @@ class AdminInstituteViewSet(BaseAdminProfileViewSet):
     serializer_class = AdminInstituteSerializer
     detail_serializer_class = AdminInstituteSortSerializer
     archive_serializer_class = InstituteProfileSerializer
+
 
 class AdminCorporateViewSet(BaseAdminProfileViewSet):
     user_role = User.Role.CORPORATE

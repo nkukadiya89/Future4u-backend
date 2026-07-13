@@ -7,14 +7,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0036_rename_platform_expectations_to_user_goals'),
-        ('user_profile', '0048_alter_corporateprofile_fields'),
+        ("assessment", "0036_rename_platform_expectations_to_user_goals"),
+        ("user_profile", "0048_alter_corporateprofile_fields"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='parentassessment',
-            name='child',
-            field=models.ForeignKey(blank=True, help_text='The child this assessment is about.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='parent_assessments', to='user_profile.childprofile'),
+            model_name="parentassessment",
+            name="child",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="The child this assessment is about.",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="parent_assessments",
+                to="user_profile.childprofile",
+            ),
         ),
     ]

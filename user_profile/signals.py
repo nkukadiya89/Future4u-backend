@@ -50,7 +50,9 @@ def create_user_profiles(sender, instance, created, **kwargs):
 
         elif instance.user_type == User.Role.INSTITUTE:
             transaction.on_commit(
-                lambda user=instance: _create_organization_profile(InstituteProfile, user)
+                lambda user=instance: _create_organization_profile(
+                    InstituteProfile, user
+                )
             )
 
         elif instance.user_type == User.Role.SCHOOL_COLLEGE:
@@ -62,5 +64,7 @@ def create_user_profiles(sender, instance, created, **kwargs):
 
         elif instance.user_type == User.Role.CORPORATE:
             transaction.on_commit(
-                lambda user=instance: _create_organization_profile(CorporateProfile, user)
+                lambda user=instance: _create_organization_profile(
+                    CorporateProfile, user
+                )
             )

@@ -59,14 +59,20 @@ class AdminCorporateSerializer(serializers.ModelSerializer):
             if not city_id:
                 errors["city"] = "This field is required."
 
-        if email and User.objects.filter(email=email, deleted=False).exclude(
-            id=getattr(self.instance, "id", None)
-        ).exists():
+        if (
+            email
+            and User.objects.filter(email=email, deleted=False)
+            .exclude(id=getattr(self.instance, "id", None))
+            .exists()
+        ):
             errors["email"] = "An account with this email already exists"
 
-        if phone and User.objects.filter(phone=phone, deleted=False).exclude(
-            id=getattr(self.instance, "id", None)
-        ).exists():
+        if (
+            phone
+            and User.objects.filter(phone=phone, deleted=False)
+            .exclude(id=getattr(self.instance, "id", None))
+            .exists()
+        ):
             errors["phone"] = "An account with this phone number already exists"
 
         country = None
@@ -87,14 +93,24 @@ class AdminCorporateSerializer(serializers.ModelSerializer):
             if not city:
                 errors["city"] = "Invalid city id"
 
-        if open_job is not None and open_job != "" and (not isinstance(open_job, int) or open_job < 0):
+        if (
+            open_job is not None
+            and open_job != ""
+            and (not isinstance(open_job, int) or open_job < 0)
+        ):
             errors["open_job"] = "Open job must be a positive integer"
 
-        if employees is not None and employees != "" and (not isinstance(employees, int) or employees < 0):
+        if (
+            employees is not None
+            and employees != ""
+            and (not isinstance(employees, int) or employees < 0)
+        ):
             errors["employees"] = "Employees must be a positive integer"
 
-        if years_in_business is not None and years_in_business != "" and (
-            not isinstance(years_in_business, int) or years_in_business < 0
+        if (
+            years_in_business is not None
+            and years_in_business != ""
+            and (not isinstance(years_in_business, int) or years_in_business < 0)
         ):
             errors["years_in_business"] = "Years in business must be a positive integer"
 
@@ -247,7 +263,8 @@ class AdminCorporateSerializer(serializers.ModelSerializer):
             setup_web_user_password(instance)
 
         return instance
-    
+
+
 class AdminCorporateSortSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")

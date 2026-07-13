@@ -4,7 +4,10 @@ from course_generation.config import course_generation_llm_provider
 from course_generation.exceptions import CourseGenerationConfigurationError
 from course_generation.providers.base import LLMProvider
 from course_generation.providers.groq_provider import GroqProvider
-from course_generation.providers.settings_backed_providers import GeminiProvider, OpenAIProvider
+from course_generation.providers.settings_backed_providers import (
+    GeminiProvider,
+    OpenAIProvider,
+)
 
 _PROVIDER_REGISTRY: dict[str, type[LLMProvider]] = {
     "groq": GroqProvider,

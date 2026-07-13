@@ -110,9 +110,7 @@ def get_question_pool(assessment, user, dimension=None):
         "id",
     )
     if dimension:
-        ids = list(
-            ordered_pool.values_list("id", flat=True)[:QUESTIONS_PER_DIMENSION]
-        )
+        ids = list(ordered_pool.values_list("id", flat=True)[:QUESTIONS_PER_DIMENSION])
         return Question.objects.filter(id__in=ids).order_by("sequence_order", "id")
 
     ids = []
@@ -438,9 +436,7 @@ class NextQuestionViewSet(viewsets.GenericViewSet):
         # Get questions for current dimension
         current_dimension = dimension_map.get(current_screen)
         if not current_dimension:
-            is_assessment_complete = (
-                current_screen == StudentAssessment.Screen.COMPLETE
-            )
+            is_assessment_complete = current_screen == StudentAssessment.Screen.COMPLETE
             return Response(
                 {
                     "success": True,
@@ -559,9 +555,11 @@ class AssessmentResponseViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        question = get_question_pool(
-            assessment, request.user, current_dimension
-        ).filter(id=question_id).first()
+        question = (
+            get_question_pool(assessment, request.user, current_dimension)
+            .filter(id=question_id)
+            .first()
+        )
         if not question:
             return Response(
                 {

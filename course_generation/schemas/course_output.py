@@ -70,10 +70,14 @@ def coerce_string_list(value: Any) -> list[str]:
 class CourseGenerationPayload(BaseModel):
     """AI-generated fields only (Add Course form)."""
 
-    course_title: str = Field(min_length=COURSE_TITLE_MIN_LENGTH, max_length=COURSE_TITLE_MAX_LENGTH)
+    course_title: str = Field(
+        min_length=COURSE_TITLE_MIN_LENGTH, max_length=COURSE_TITLE_MAX_LENGTH
+    )
     course_overview: str = Field(min_length=30, max_length=2000)
     skills: list[str] = Field(min_length=SKILLS_MIN, max_length=SKILLS_MAX)
-    course_content: list[str] = Field(min_length=COURSE_CONTENT_MIN, max_length=COURSE_CONTENT_MAX)
+    course_content: list[str] = Field(
+        min_length=COURSE_CONTENT_MIN, max_length=COURSE_CONTENT_MAX
+    )
     why_this_course: str = Field(min_length=20, max_length=600)
     certification_info: str = Field(min_length=10, max_length=400)
 
@@ -116,40 +120,60 @@ class CourseGenerationPayload(BaseModel):
             raise ValueError(f"skills must have at most {SKILLS_MAX} items")
 
         if len(self.course_content) < COURSE_CONTENT_MIN:
-            raise ValueError(f"course_content must have at least {COURSE_CONTENT_MIN} items")
+            raise ValueError(
+                f"course_content must have at least {COURSE_CONTENT_MIN} items"
+            )
         if len(self.course_content) > COURSE_CONTENT_MAX:
-            raise ValueError(f"course_content must have at most {COURSE_CONTENT_MAX} items")
+            raise ValueError(
+                f"course_content must have at most {COURSE_CONTENT_MAX} items"
+            )
 
         for index, item in enumerate(self.skills, start=1):
             if word_count(item) > SKILLS_ITEM_MAX_WORDS:
                 raise ValueError(f"skills item {index} must be a short skill tag")
             if "(" in item or ")" in item:
-                raise ValueError(f"skills item {index} must not include parenthetical text")
+                raise ValueError(
+                    f"skills item {index} must not include parenthetical text"
+                )
 
         for index, item in enumerate(self.course_content, start=1):
             if word_count(item) > 12:
-                raise ValueError(f"course_content item {index} must be a short module title")
+                raise ValueError(
+                    f"course_content item {index} must be a short module title"
+                )
 
         overview_wc = word_count(self.course_overview)
         if overview_wc > OVERVIEW_MAX_WORDS:
             raise ValueError(f"course_overview must be <= {OVERVIEW_MAX_WORDS} words")
         if overview_wc < OVERVIEW_MIN_WORDS:
-            raise ValueError(f"course_overview must be at least {OVERVIEW_MIN_WORDS} words")
+            raise ValueError(
+                f"course_overview must be at least {OVERVIEW_MIN_WORDS} words"
+            )
 
         if "\n\n" in self.course_overview or self.course_overview.count("\n") >= 2:
-            raise ValueError("course_overview must be a single paragraph with no line breaks")
+            raise ValueError(
+                "course_overview must be a single paragraph with no line breaks"
+            )
 
         why_wc = word_count(self.why_this_course)
         if why_wc > WHY_THIS_COURSE_MAX_WORDS:
-            raise ValueError(f"why_this_course must be <= {WHY_THIS_COURSE_MAX_WORDS} words")
+            raise ValueError(
+                f"why_this_course must be <= {WHY_THIS_COURSE_MAX_WORDS} words"
+            )
         if why_wc < WHY_THIS_COURSE_MIN_WORDS:
-            raise ValueError(f"why_this_course must be at least {WHY_THIS_COURSE_MIN_WORDS} words")
+            raise ValueError(
+                f"why_this_course must be at least {WHY_THIS_COURSE_MIN_WORDS} words"
+            )
 
         if "\n\n" in self.why_this_course or self.why_this_course.count("\n") >= 2:
-            raise ValueError("why_this_course must be a single paragraph with no line breaks")
+            raise ValueError(
+                "why_this_course must be a single paragraph with no line breaks"
+            )
 
         if contains_banned_phrase(self.why_this_course, BANNED_JOB_PROMISE_PHRASES):
-            raise ValueError("why_this_course must not mention guaranteed jobs or salaries")
+            raise ValueError(
+                "why_this_course must not mention guaranteed jobs or salaries"
+            )
 
         cert_wc = word_count(self.certification_info)
         if cert_wc > CERTIFICATION_INFO_MAX_WORDS:
@@ -176,12 +200,23 @@ class CourseGenerationPayload(BaseModel):
             if has_broken_punctuation(text):
                 raise ValueError("generated text contains broken punctuation")
             if contains_banned_phrase(text, BANNED_MARKETING_PHRASES):
-                raise ValueError("generated text contains disallowed marketing language")
+                raise ValueError(
+                    "generated text contains disallowed marketing language"
+                )
 
-        if contains_invented_cert_provider(self.certification_info, INVENTED_CERT_PROVIDERS):
-            raise ValueError("certification_info must not name external certificate providers")
+        if contains_invented_cert_provider(
+            self.certification_info, INVENTED_CERT_PROVIDERS
+        ):
+            raise ValueError(
+                "certification_info must not name external certificate providers"
+            )
 
-        if count_overview_repeated_items(self.course_overview, self.course_content) >= 2:
-            raise ValueError("course_overview repeats content from skills or course_content")
+        if (
+            count_overview_repeated_items(self.course_overview, self.course_content)
+            >= 2
+        ):
+            raise ValueError(
+                "course_overview repeats content from skills or course_content"
+            )
 
         return self
