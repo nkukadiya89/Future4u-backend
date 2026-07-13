@@ -14149,6 +14149,60 @@
       ]
     },
     {
+      "name": "subscription",
+      "item": [
+        {
+          "name": "list_plans (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "my_subscription (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/company-subscriptions/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "company-subscriptions",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Admin Users",
       "description": "Super Admin / staff endpoints for creating and managing student users. Requires Bearer {{access_token}}. Base path: /admin-student-users/\n\nList active students with GET /api/student-profile/ (superuser token).\n\nActivate or deactivate students with PATCH {user_id}/update-status/ (status: active | inactive). Active students receive a password setup email when activated.\n\nSoft-delete (archive): DELETE single student or PATCH bulk-archive. Students must be inactive before archiving. Restore archived students with PATCH bulk-restore. List archived students with GET archive-list.",
       "item": [
@@ -15814,12 +15868,19 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/api/professional-profile/",
-              "host": ["{{base_url}}"],
-              "path": ["admin-working-professional-users"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-working-professional-users"
+              ]
             }
           },
           "response": []
@@ -15829,18 +15890,33 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/admin-working-professional-users/",
-              "host": ["{{base_url}}"],
-              "path": ["admin-working-professional-users"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-working-professional-users"
+              ]
             },
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "data", "value": "{\"email\": \"user@example.com\", \"first_name\": \"Ramesh\", \"last_name\": \"Shah\", \"phone\": \"9685741201\", \"country\": 1, \"state\": 1, \"city\": 1, \"address\": \"Noida\", \"years_of_experience\": \"0_1_years\", \"employment_type\": \"salaried_employee\", \"referral_code\": \"ABC\"}", "type": "text" },
-                { "key": "profile_image", "type": "file", "src": "" }
+                {
+                  "key": "data",
+                  "value": "{\"email\": \"user@example.com\", \"first_name\": \"Ramesh\", \"last_name\": \"Shah\", \"phone\": \"9685741201\", \"country\": 1, \"state\": 1, \"city\": 1, \"address\": \"Noida\", \"years_of_experience\": \"0_1_years\", \"employment_type\": \"salaried_employee\", \"referral_code\": \"ABC\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": ""
+                }
               ]
             }
           },
@@ -15851,12 +15927,20 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/admin-working-professional-users/1/",
-              "host": ["{{base_url}}"],
-              "path": ["admin-working-professional-users", "1"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-working-professional-users",
+                "1"
+              ]
             }
           },
           "response": []
@@ -15866,18 +15950,34 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/admin-working-professional-users/1/",
-              "host": ["{{base_url}}"],
-              "path": ["admin-working-professional-users", "1"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-working-professional-users",
+                "1"
+              ]
             },
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "data", "value": "{\"years_of_experience\": \"1_3_years\", \"employment_type\": \"freelancer\"}", "type": "text" },
-                { "key": "profile_image", "type": "file", "src": "" }
+                {
+                  "key": "data",
+                  "value": "{\"years_of_experience\": \"1_3_years\", \"employment_type\": \"freelancer\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": ""
+                }
               ]
             }
           },
@@ -15888,12 +15988,20 @@
           "request": {
             "method": "DELETE",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/admin-working-professional-users/1/",
-              "host": ["{{base_url}}"],
-              "path": ["admin-working-professional-users", "1"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-working-professional-users",
+                "1"
+              ]
             }
           },
           "response": []
@@ -15903,13 +16011,25 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/admin-working-professional-users/1/update-status/",
-              "host": ["{{base_url}}"],
-              "path": ["admin-working-professional-users", "1", "update-status"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-working-professional-users",
+                "1",
+                "update-status"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -15923,13 +16043,24 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/admin-working-professional-users/bulk-archive/",
-              "host": ["{{base_url}}"],
-              "path": ["admin-working-professional-users", "bulk-archive"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-working-professional-users",
+                "bulk-archive"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -15943,13 +16074,24 @@
           "request": {
             "method": "PATCH",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/admin-working-professional-users/bulk-restore/",
-              "host": ["{{base_url}}"],
-              "path": ["admin-working-professional-users", "bulk-restore"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-working-professional-users",
+                "bulk-restore"
+              ]
             },
             "body": {
               "mode": "raw",
@@ -15963,12 +16105,20 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/admin-working-professional-users/archive-list/",
-              "host": ["{{base_url}}"],
-              "path": ["admin-working-professional-users", "archive-list"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-working-professional-users",
+                "archive-list"
+              ]
             }
           },
           "response": []
@@ -15978,18 +16128,34 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/admin-working-professional-users/bulk-upload/",
-              "host": ["{{base_url}}"],
-              "path": ["admin-working-professional-users", "bulk-upload"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-working-professional-users",
+                "bulk-upload"
+              ]
             },
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "file", "type": "file", "src": "" },
-                { "key": "user_type", "value": "working_professional", "type": "text" }
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "user_type",
+                  "value": "working_professional",
+                  "type": "text"
+                }
               ]
             }
           },
@@ -19270,6 +19436,247 @@
             "description": "Returns the resume data as JSON for frontend preview or debugging. Does not call AI or generate a PDF."
           },
           "response": []
+        }
+      ]
+    },
+    {
+      "name": "token-overrides",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/token-overrides/?no_pagination=1&pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "token-overrides"
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/token-overrides/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "token-overrides"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"user\": 1, \"entity_type\": \"school_college\", \"entity_user_id\": 1, \"extra_monthly_tokens\": 5000, \"is_active\": true}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "destroy (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/token-overrides/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "token-overrides",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "ai-job-generation",
+      "item": [
+        {
+          "name": "generate (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"job_title\": \"Senior Python Developer\",\n    \"job_overview\": \"Looking for an experienced Python developer to build and maintain backend microservices\",\n    \"corporate\": 2,\n    \"country\": 1,\n    \"state\": 1,\n    \"city\": 4,\n    \"salary_min\": \"800000\",\n    \"salary_max\": \"1200000\",\n    \"job_type\": \"full_time\",\n    \"experience_level\": \"3_5\",\n    \"mode\": \"hybrid\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ai-job-generation/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-job-generation"
+              ]
+            }
+          }
+        },
+        {
+          "name": "generate-and-save (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"job_title\": \"Junior Data Analyst\",\n    \"job_overview\": \"Looking for a fresher data analyst to work on data visualization and reporting\",\n    \"corporate\": 2,\n    \"country\": 1,\n    \"state\": 1,\n    \"city\": 4,\n    \"salary_min\": \"300000\",\n    \"salary_max\": \"500000\",\n    \"job_type\": \"full_time\",\n    \"experience_level\": \"fresher\",\n    \"mode\": \"onsite\",\n    \"save_mode\": \"publish\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ai-job-generation/save/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-job-generation",
+                "save"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ai-course-generation",
+      "item": [
+        {
+          "name": "generate (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"course_overview\": \"A comprehensive full-stack web development course covering React, Node.js, and PostgreSQL\",\n    \"course_price\": \"25000\",\n    \"course_type\": \"paid\",\n    \"mode\": \"online\",\n    \"duration\": \"12 Weeks\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ai-course-generation/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-course-generation"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ai-internship-generation",
+      "item": [
+        {
+          "name": "generate (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"internship_overview\": \"Looking for a motivated intern to join our marketing team and assist with social media, content creation, and campaign analysis\",\n    \"department\": \"Marketing\",\n    \"stipend\": \"5000\",\n    \"duration\": \"3 Months\",\n    \"mode\": \"online\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ai-internship-generation/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-internship-generation"
+              ]
+            }
+          }
         }
       ]
     }

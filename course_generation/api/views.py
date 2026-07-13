@@ -18,6 +18,7 @@ from course_generation.serializers.course_generation_input import (
 )
 from course_generation.services.course_generation_service import CourseGenerationService
 from utils.throttles import CourseGenerationRateThrottle
+from utils.token_check import check_and_deduct_token
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,15 @@ class CourseGenerationAPIView(APIView):
             return Response(
                 {"success": False, "message": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Check token availability before AI call
+        try:
+            check_and_deduct_token(request.user, "course_gen")
+        except Exception as exc:
+            return Response(
+                {"success": False, "message": str(exc)},
+                status=status.HTTP_402_PAYMENT_REQUIRED,
             )
 
         try:
