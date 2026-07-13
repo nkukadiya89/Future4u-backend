@@ -1,15 +1,14 @@
-from .models import Internship, InternshipApplication, Job, JobApplication
+from .models import Internship,InternshipApplication,Job, JobApplication
 from rest_framework import serializers
 from common.serializers import BaseModelSerializer
 
-
 class InternshipSerializer(BaseModelSerializer):
-    city_name = serializers.CharField(source="city.name", read_only=True)
+    city_name = serializers.CharField(source='city.name', read_only=True)
     provider_name = serializers.SerializerMethodField()
-
+    
     class Meta:
         model = Internship
-        fields = BaseModelSerializer.Meta.fields + [
+        fields= BaseModelSerializer.Meta.fields+[
             "id",
             "name",
             "city",
@@ -30,17 +29,16 @@ class InternshipSerializer(BaseModelSerializer):
             "provider_name",
             "application_deadline",
         ]
-
     def get_provider_name(self, obj):
         if obj.provider:
             return obj.provider.full_name
         return None
 
-
 class InternshipApplicationSerializer(BaseModelSerializer):
-    applicant_name = serializers.CharField(source="applicant.full_name", read_only=True)
-    applicant_type = serializers.CharField(source="applicant.user_type", read_only=True)
-    internship_name = serializers.CharField(source="internship.name", read_only=True)
+    applicant_name = serializers.CharField(source='applicant.full_name', read_only=True)
+    applicant_type = serializers.CharField(source = 'applicant.user_type', read_only=True)
+    internship_name = serializers.CharField(source='internship.name', read_only=True)
+
 
     class Meta:
         model = InternshipApplication
@@ -59,7 +57,6 @@ class InternshipApplicationSerializer(BaseModelSerializer):
             "applicant",
             "applied_at",
         ]
-
 
 class JobSerializer(BaseModelSerializer):
     city_name = serializers.CharField(source='city.name', read_only=True)
@@ -97,15 +94,14 @@ class JobSerializer(BaseModelSerializer):
             "status",
             "application_deadline",
         ]
-
     def get_provider_name(self, obj):
         if obj.provider:
             return obj.provider.full_name
         return None
 
     def get_education_tags_name(self, obj):
-        return list(obj.education_tags.values_list("level_code", flat=True))
-
+        return list(obj.education_tags.values_list('level_code', flat=True))
+    
 
 class JobApplicationSerializer(BaseModelSerializer):
     applicant_name = serializers.CharField(source="applicant.full_name", read_only=True)

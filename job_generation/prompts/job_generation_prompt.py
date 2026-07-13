@@ -220,15 +220,11 @@ def format_prompt_inputs(*, generation_input: dict) -> dict[str, str]:
         "company_about_us": str(generation_input.get("company_about_us") or "").strip() or "Not provided",
         "city": city_text,
         "salary_range": _format_salary(generation_input),
-        "job_type": _choice_display(
-            Job.JOB_TYPE_CHOICE, generation_input.get("job_type")
-        ),
+        "job_type": _choice_display(Job.JOB_TYPE_CHOICE, generation_input.get("job_type")),
         "experience_level": _choice_display(
             Job.EXPERIENCE_CHOICES, generation_input.get("experience_level")
         ),
         "mode": _choice_display(Job.MODE_CHOICES, generation_input.get("mode")),
         "application_deadline": deadline_text,
-        "validation_feedback": str(
-            generation_input.get("validation_feedback") or "None"
-        ).strip(),
+        "validation_feedback": str(generation_input.get("validation_feedback") or "None").strip(),
     }

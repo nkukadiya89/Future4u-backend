@@ -211,11 +211,6 @@ class PaymentSubscriptionSerializer(serializers.ModelSerializer):
         read_only_fields = ["status", "razorpay_payment_id", "payment_date"]
 
 
-from rest_framework import serializers
-
-from subscription.models import Subscription
-from subscription.services.pricing import calculate_price
-
 
 class SubscriptionAPISerializer(serializers.ModelSerializer):
     discounted_price = serializers.SerializerMethodField()
