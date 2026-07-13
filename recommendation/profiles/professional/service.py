@@ -16,11 +16,13 @@ from recommendation.exceptions import (
 )
 from recommendation.pipeline.recommendation_pipeline import RecommendationPipeline
 from recommendation.profiles.professional import prompts as professional_prompts
-from recommendation.profiles.professional.context_builder import ProfessionalAssessmentContextBuilder
+from recommendation.profiles.professional.context_builder import (
+    ProfessionalAssessmentContextBuilder,
+)
 
 
 class ProfessionalRecommendationService:
-    
+
     def generate(self, *, assessment_id: int, user) -> dict:
         assessment = self._load_assessment(assessment_id)
         if assessment.user_id != user.id:
@@ -35,7 +37,9 @@ class ProfessionalRecommendationService:
         if within_cycle:
             return serialize_recommendation(recommendation)
 
-        structured_input = ProfessionalAssessmentContextBuilder.build_llm_input(assessment)
+        structured_input = ProfessionalAssessmentContextBuilder.build_llm_input(
+            assessment
+        )
 
         payload = RecommendationPipeline.run(
             structured_assessment=structured_input,
@@ -61,11 +65,15 @@ class ProfessionalRecommendationService:
             return (
                 ProfessionalAssessment.objects.filter(deleted=False)
                 .select_related(
-                    "user", "domain_category", "domain",
+                    "user",
+                    "domain_category",
+                    "domain",
                 )
                 .prefetch_related(
-                    "guidance_reasons", "work_constraints",
-                    "career_values", "platform_goals",
+                    "guidance_reasons",
+                    "work_constraints",
+                    "career_values",
+                    "platform_goals",
                 )
                 .get(id=assessment_id)
             )

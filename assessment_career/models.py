@@ -55,7 +55,11 @@ class CareerRecommendation(BaseModule):
 
     @property
     def assessment(self):
-        return self.student_assessment or self.parent_assessment or self.professional_assessment
+        return (
+            self.student_assessment
+            or self.parent_assessment
+            or self.professional_assessment
+        )
 
 
 class CareerSuggestion(BaseModule):

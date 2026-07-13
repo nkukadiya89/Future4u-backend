@@ -29,17 +29,10 @@ from .models import (PaymentSubscription, PlanPrice, PromoCode, Subscription,
 class SubscriptionViewSet(ModelViewSet):
     queryset = Subscription.objects.filter(is_active=True)
     serializer_class = SubscriptionAPISerializer
+    http_method_names = ["get", "head", "options"]
 
     def get_serializer_class(self):
-        if self.action in ("create", "update", "partial_update"):
-            from subscription.serializers_new import \
-                SubscriptionCreateSerializer
-
-            return SubscriptionCreateSerializer
-        if self.action in ("list", "retrieve"):
-            return SubscriptionAPISerializer
-
-        return super().get_serializer_class()
+        return SubscriptionAPISerializer
 
 
 class UserSubscriptionViewSet(ModelViewSet):
@@ -151,6 +144,9 @@ class PaymentSubscriptionViewSet(ModelViewSet):
             )
             user_sub.is_active = True
             user_sub.save()
+
+        # Reset feature usage so user gets fresh tokens for new billing period
+        FeatureUsage.objects.filter(user=payment.user).update(used=0)
 
         return Response({"detail": "Payment successful"})
 
@@ -354,5 +350,7 @@ def razorpay_webhook(request):
             user_sub.is_active = True
             user_sub.save()
 
-    return HttpResponse(status=200)
+        # Reset feature usage so user gets fresh tokens for new billing period
+        FeatureUsage.objects.filter(user=payment.user).update(used=0)
+
     return HttpResponse(status=200)

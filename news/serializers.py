@@ -44,7 +44,9 @@ class NewsListSerializer(serializers.ModelSerializer):
     def get_image_url(self, obj: News) -> Optional[str]:
         request = self.context.get("request")
         if obj.image:
-            return request.build_absolute_uri(obj.image.url) if request else obj.image.url
+            return (
+                request.build_absolute_uri(obj.image.url) if request else obj.image.url
+            )
         return None
 
 
@@ -69,7 +71,9 @@ class NewsDetailSerializer(serializers.ModelSerializer):
     def get_image_url(self, obj: News) -> Optional[str]:
         request = self.context.get("request")
         if obj.image:
-            return request.build_absolute_uri(obj.image.url) if request else obj.image.url
+            return (
+                request.build_absolute_uri(obj.image.url) if request else obj.image.url
+            )
         return None
 
     def get_highlights(self, obj: News) -> Optional[Dict[str, Any]]:

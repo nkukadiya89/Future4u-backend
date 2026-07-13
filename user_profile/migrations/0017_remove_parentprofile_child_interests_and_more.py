@@ -67,13 +67,21 @@ class Migration(migrations.Migration):
                         ),
                         (
                             "resume",
-                            models.FileField(blank=True, null=True, upload_to="resumes/"),
+                            models.FileField(
+                                blank=True, null=True, upload_to="resumes/"
+                            ),
                         ),
                         ("portfolio_link", models.URLField(blank=True, null=True)),
                         ("github_link", models.URLField(blank=True, null=True)),
                         ("why_internship", models.TextField(blank=True, null=True)),
-                        ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
-                        ("updated_at", models.DateTimeField(default=django.utils.timezone.now)),
+                        (
+                            "created_at",
+                            models.DateTimeField(default=django.utils.timezone.now),
+                        ),
+                        (
+                            "updated_at",
+                            models.DateTimeField(default=django.utils.timezone.now),
+                        ),
                         ("deleted", models.BooleanField(default=False)),
                         ("deleted_at", models.DateTimeField(blank=True, null=True)),
                         (
@@ -86,7 +94,10 @@ class Migration(migrations.Migration):
                                 to=settings.AUTH_USER_MODEL,
                             ),
                         ),
-                        ("domains", models.ManyToManyField(blank=True, to="domain.domain")),
+                        (
+                            "domains",
+                            models.ManyToManyField(blank=True, to="domain.domain"),
+                        ),
                         (
                             "profile",
                             models.OneToOneField(
@@ -139,8 +150,14 @@ class Migration(migrations.Migration):
                             ),
                         ),
                         ("applied_at", models.DateTimeField(auto_now_add=True)),
-                        ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
-                        ("updated_at", models.DateTimeField(default=django.utils.timezone.now)),
+                        (
+                            "created_at",
+                            models.DateTimeField(default=django.utils.timezone.now),
+                        ),
+                        (
+                            "updated_at",
+                            models.DateTimeField(default=django.utils.timezone.now),
+                        ),
                         ("deleted", models.BooleanField(default=False)),
                         ("deleted_at", models.DateTimeField(blank=True, null=True)),
                         (
@@ -205,9 +222,18 @@ class Migration(migrations.Migration):
                                 max_length=20,
                             ),
                         ),
-                        ("years_of_experience", models.FloatField(blank=True, null=True)),
-                        ("created_at", models.DateTimeField(default=django.utils.timezone.now)),
-                        ("updated_at", models.DateTimeField(default=django.utils.timezone.now)),
+                        (
+                            "years_of_experience",
+                            models.FloatField(blank=True, null=True),
+                        ),
+                        (
+                            "created_at",
+                            models.DateTimeField(default=django.utils.timezone.now),
+                        ),
+                        (
+                            "updated_at",
+                            models.DateTimeField(default=django.utils.timezone.now),
+                        ),
                         ("deleted", models.BooleanField(default=False)),
                         ("deleted_at", models.DateTimeField(blank=True, null=True)),
                         (
@@ -231,7 +257,8 @@ class Migration(migrations.Migration):
                         (
                             "skill",
                             models.ForeignKey(
-                                on_delete=django.db.models.deletion.CASCADE, to="skill.skill"
+                                on_delete=django.db.models.deletion.CASCADE,
+                                to="skill.skill",
                             ),
                         ),
                         (

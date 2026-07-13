@@ -9,9 +9,7 @@ from common.mixins.serializer_mixins import (
 from country.models import Country
 
 
-class CountrySerializers(
-    DateFieldsMixin, UserNameMixin, serializers.ModelSerializer
-):
+class CountrySerializers(DateFieldsMixin, UserNameMixin, serializers.ModelSerializer):
     created_by_name = serializers.SerializerMethodField(read_only=True)
     updated_by_name = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)

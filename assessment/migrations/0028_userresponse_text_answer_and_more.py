@@ -7,23 +7,44 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0027_squash_old_static_recommendation_models'),
+        ("assessment", "0027_squash_old_static_recommendation_models"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userresponse',
-            name='text_answer',
-            field=models.TextField(blank=True, default='', help_text='Free-text answer for TEXT type questions.'),
+            model_name="userresponse",
+            name="text_answer",
+            field=models.TextField(
+                blank=True,
+                default="",
+                help_text="Free-text answer for TEXT type questions.",
+            ),
         ),
         migrations.AlterField(
-            model_name='question',
-            name='question_type',
-            field=models.CharField(choices=[('scale', 'Scale (1-5 agreement)'), ('mcq', 'Multiple Choice (pick one)'), ('yesno', 'Yes / No'), ('text', 'Free text (write your answer)')], default='scale', help_text='Controls how options are presented to the user.', max_length=10),
+            model_name="question",
+            name="question_type",
+            field=models.CharField(
+                choices=[
+                    ("scale", "Scale (1-5 agreement)"),
+                    ("mcq", "Multiple Choice (pick one)"),
+                    ("yesno", "Yes / No"),
+                    ("text", "Free text (write your answer)"),
+                ],
+                default="scale",
+                help_text="Controls how options are presented to the user.",
+                max_length=10,
+            ),
         ),
         migrations.AlterField(
-            model_name='userresponse',
-            name='selected_option',
-            field=models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='responses', to='assessment.option'),
+            model_name="userresponse",
+            name="selected_option",
+            field=models.ForeignKey(
+                blank=True,
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="responses",
+                to="assessment.option",
+            ),
         ),
     ]

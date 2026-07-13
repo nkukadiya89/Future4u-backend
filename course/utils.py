@@ -8,24 +8,29 @@ SYMBOL_MAP = {
     ".net": "dotnet",
 }
 
+
 def normalize_text(text):
     if not text:
         return ""
     text = text.lower().strip()
     for symbol, replacement in SYMBOL_MAP.items():
         text = text.replace(symbol, replacement)
-    text = re.sub(r'[/,|&]', ' ', text)
-    text = re.sub(r'[^a-z0-9\s]', '', text)
+    text = re.sub(r"[/,|&]", " ", text)
+    text = re.sub(r"[^a-z0-9\s]", "", text)
     return text.strip()
+
 
 def normalize_list(data):
     return [normalize_text(i) for i in data if i]
 
+
 def clean(text):
-    return re.sub(r'\s+', '', text)
+    return re.sub(r"\s+", "", text)
+
 
 def split_skills(text):
-    return [s.strip() for s in re.split(r'[/,|&]', text) if s.strip()]
+    return [s.strip() for s in re.split(r"[/,|&]", text) if s.strip()]
+
 
 def is_match(ai_value, course_values):
     ai_parts = split_skills(ai_value)
@@ -65,22 +70,16 @@ def is_match(ai_value, course_values):
                         return True
     return False
 
+
 def get_next_levels(user_edu):
     mapping = {
         "secondary": ["higher_secondary", "diploma", "iti"],
-
         "higher_secondary": ["graduation", "diploma"],
-        
         "iti": ["diploma", "graduation"],
-
         "diploma": ["graduation"],
-
         "graduation": ["post_graduation", "professional"],
-
         "post_graduation": ["doctorate", "professional"],
-
         "doctorate": [],
-
         "professional": [],
     }
     return mapping.get(user_edu, [])

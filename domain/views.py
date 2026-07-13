@@ -149,7 +149,11 @@ class DomainViewSet(SuccessEnvelopeMixin, ModelViewSet):
     @action(detail=False, methods=["get"], url_path="dropdown")
     def dropdown(self, request, *args, **kwargs):
         parent_id = request.query_params.get("parent_id") or None
-        root_only = str(request.query_params.get("root_only", "")).lower() in ("1", "true", "yes")
+        root_only = str(request.query_params.get("root_only", "")).lower() in (
+            "1",
+            "true",
+            "yes",
+        )
 
         # Only cache the unfiltered full list
         if not parent_id and not root_only:

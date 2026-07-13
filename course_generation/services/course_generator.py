@@ -12,7 +12,10 @@ from course_generation.prompts.course_generation_prompt import (
     build_course_generation_prompt,
     format_prompt_inputs,
 )
-from course_generation.providers.factory import ensure_ai_provider_configured, get_llm_provider
+from course_generation.providers.factory import (
+    ensure_ai_provider_configured,
+    get_llm_provider,
+)
 from course_generation.schemas.course_output import CourseGenerationPayload
 from course_generation.services.json_response_parser import JsonResponseParser
 
@@ -41,7 +44,10 @@ class CourseGenerator:
         for attempt in range(_MAX_GENERATION_ATTEMPTS):
             try:
                 inputs = format_prompt_inputs(
-                    generation_input={**generation_input, "validation_feedback": validation_feedback}
+                    generation_input={
+                        **generation_input,
+                        "validation_feedback": validation_feedback,
+                    }
                 )
                 return cls._invoke_once(
                     prompt=prompt,
@@ -52,7 +58,10 @@ class CourseGenerator:
             except CourseGenerationValidationError as exc:
                 last_error = exc
                 validation_feedback = _clip_feedback(exc.details)
-                if not _is_retryable_generation_error(exc) or attempt == _MAX_GENERATION_ATTEMPTS - 1:
+                if (
+                    not _is_retryable_generation_error(exc)
+                    or attempt == _MAX_GENERATION_ATTEMPTS - 1
+                ):
                     raise
                 logger.warning(
                     "Retrying course generation after %s (attempt %s/%s)",
@@ -88,7 +97,9 @@ class CourseGenerator:
                 details=_format_llm_error(exc),
             ) from exc
 
-        parse_result = parser.parse_and_validate(raw_text, model_class=CourseGenerationPayload)
+        parse_result = parser.parse_and_validate(
+            raw_text, model_class=CourseGenerationPayload
+        )
         if parse_result.success and parse_result.validated_model is not None:
             return parse_result.validated_model  # type: ignore[return-value]
 

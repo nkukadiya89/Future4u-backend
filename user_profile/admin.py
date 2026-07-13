@@ -221,9 +221,24 @@ class ChildProfileAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("Parent", {"fields": ("parent_profile",)}),
-        ("Child", {"fields": ("first_name", "last_name", "profile_image", "date_of_birth", "phone", "email")}),
+        (
+            "Child",
+            {
+                "fields": (
+                    "first_name",
+                    "last_name",
+                    "profile_image",
+                    "date_of_birth",
+                    "phone",
+                    "email",
+                )
+            },
+        ),
         ("Language", {"fields": ("language",)}),
-        ("Education", {"fields": ("education_level", "stream", "academic_performance")}),
+        (
+            "Education",
+            {"fields": ("education_level", "stream", "academic_performance")},
+        ),
         ("Career Direction", {"fields": ("career_direction",)}),
         ("Education Details", {"fields": ("education",)}),
         ("Skills", {"fields": ("skills",)}),
@@ -263,7 +278,13 @@ class ProfessionalProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin
     )
     list_filter = ("employment_type", "years_of_experience", "company_size")
     readonly_fields = ("user", "updated_at")
-    raw_id_fields = ("user", "education_level", "stream", "current_industry_category", "current_industry")
+    raw_id_fields = (
+        "user",
+        "education_level",
+        "stream",
+        "current_industry_category",
+        "current_industry",
+    )
 
     autocomplete_fields = ("education_level", "stream")
     filter_horizontal = ("language",)
@@ -276,18 +297,18 @@ class ProfessionalProfileAdmin(ProfileReadonlyFieldsAdminMixin, admin.ModelAdmin
     )
 
     def save_model(self, request, obj, form, change):
-         obj.full_clean()
-         super().save_model(request, obj, form, change)
+        obj.full_clean()
+        super().save_model(request, obj, form, change)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-         if db_field.name == "current_industry_category":
-             kwargs["queryset"] = Domain.objects.filter(parent__isnull=True)
+        if db_field.name == "current_industry_category":
+            kwargs["queryset"] = Domain.objects.filter(parent__isnull=True)
 
-         if db_field.name == "current_industry":
-             kwargs["queryset"] = Domain.objects.filter(parent__isnull=False)
+        if db_field.name == "current_industry":
+            kwargs["queryset"] = Domain.objects.filter(parent__isnull=False)
 
-         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-    
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     fieldsets = (
         ("Identity", {"fields": ("user",)}),
         ("Language", {"fields": ("language",)}),

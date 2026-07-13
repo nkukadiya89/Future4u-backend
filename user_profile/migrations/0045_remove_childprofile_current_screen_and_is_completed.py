@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user_profile', '0044_add_childprofile_model'),
+        ("user_profile", "0044_add_childprofile_model"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='childprofile',
-            name='current_screen',
+            model_name="childprofile",
+            name="current_screen",
         ),
         migrations.RemoveField(
-            model_name='childprofile',
-            name='is_completed',
+            model_name="childprofile",
+            name="is_completed",
         ),
     ]

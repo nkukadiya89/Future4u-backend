@@ -8,6 +8,7 @@ class _NoOpLogger:
     Legacy ERP views still call ActivityLog.log.xxx_create(...) etc.
     This silently accepts any method call without doing anything.
     """
+
     def __getattr__(self, name):
         return lambda *args, **kwargs: None
 

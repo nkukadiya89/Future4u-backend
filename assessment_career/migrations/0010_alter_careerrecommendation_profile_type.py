@@ -6,13 +6,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment_career', '0009_remove_careerrecommendationchatsession_created_by_and_more'),
+        (
+            "assessment_career",
+            "0009_remove_careerrecommendationchatsession_created_by_and_more",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='careerrecommendation',
-            name='profile_type',
-            field=models.CharField(choices=[('student', 'Student'), ('parent', 'Parent'), ('working_professional', 'Working Professional')], default='student', max_length=30),
+            model_name="careerrecommendation",
+            name="profile_type",
+            field=models.CharField(
+                choices=[
+                    ("student", "Student"),
+                    ("parent", "Parent"),
+                    ("working_professional", "Working Professional"),
+                ],
+                default="student",
+                max_length=30,
+            ),
         ),
     ]

@@ -53,14 +53,20 @@ class AdminWorkingProfessionalSerializer(serializers.ModelSerializer):
             if not city_id:
                 errors["city"] = "This field is required."
 
-        if email and User.objects.filter(email=email, deleted=False).exclude(
-            id=getattr(self.instance, "id", None)
-        ).exists():
+        if (
+            email
+            and User.objects.filter(email=email, deleted=False)
+            .exclude(id=getattr(self.instance, "id", None))
+            .exists()
+        ):
             errors["email"] = "An account with this email already exists"
 
-        if phone and User.objects.filter(phone=phone, deleted=False).exclude(
-            id=getattr(self.instance, "id", None)
-        ).exists():
+        if (
+            phone
+            and User.objects.filter(phone=phone, deleted=False)
+            .exclude(id=getattr(self.instance, "id", None))
+            .exists()
+        ):
             errors["phone"] = "An account with this phone number already exists"
 
         country = None
@@ -84,7 +90,9 @@ class AdminWorkingProfessionalSerializer(serializers.ModelSerializer):
         if years_of_experience is not None:
             valid_choices = [
                 choice[0]
-                for choice in ProfessionalProfile._meta.get_field("years_of_experience").choices
+                for choice in ProfessionalProfile._meta.get_field(
+                    "years_of_experience"
+                ).choices
             ]
             if years_of_experience not in valid_choices:
                 errors["years_of_experience"] = "Invalid years_of_experience value"
@@ -92,7 +100,9 @@ class AdminWorkingProfessionalSerializer(serializers.ModelSerializer):
         if employment_type is not None:
             valid_choices = [
                 choice[0]
-                for choice in ProfessionalProfile._meta.get_field("employment_type").choices
+                for choice in ProfessionalProfile._meta.get_field(
+                    "employment_type"
+                ).choices
             ]
             if employment_type not in valid_choices:
                 errors["employment_type"] = "Invalid employment_type value"

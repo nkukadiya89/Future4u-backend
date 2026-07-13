@@ -18,7 +18,6 @@ from recommendation.engine.chat_helpers import (
 )
 
 
-
 def _format_career_factors(value: Any) -> str:
     if not isinstance(value, dict):
         return compact_text(value, 350) if value else "Not specified"
@@ -40,10 +39,22 @@ def _format_career_factors(value: Any) -> str:
         learning_text = str(learning_curve.get("level") or "").strip()
     parts = [
         f"salary {salary_text}" if salary_text else "",
-        f"growth {value.get('growth_potential')}" if value.get("growth_potential") else "",
-        f"work-life {value.get('work_life_balance')}" if value.get("work_life_balance") else "",
+        (
+            f"growth {value.get('growth_potential')}"
+            if value.get("growth_potential")
+            else ""
+        ),
+        (
+            f"work-life {value.get('work_life_balance')}"
+            if value.get("work_life_balance")
+            else ""
+        ),
         f"job security {job_text}" if job_text else "",
-        f"skill match {value.get('skill_match')}%" if value.get("skill_match") is not None else "",
+        (
+            f"skill match {value.get('skill_match')}%"
+            if value.get("skill_match") is not None
+            else ""
+        ),
         f"learning curve {learning_text}" if learning_text else "",
         f"risk {value.get('risk_level')}" if value.get("risk_level") else "",
     ]

@@ -15,13 +15,11 @@ class Migration(migrations.Migration):
             name="deleted",
             field=models.BooleanField(default=False),
         ),
-
         migrations.AddField(
             model_name="user",
             name="deleted_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
-
         migrations.AddField(
             model_name="user",
             name="deleted_by",
@@ -33,13 +31,11 @@ class Migration(migrations.Migration):
                 to=settings.AUTH_USER_MODEL,
             ),
         ),
-
         migrations.AddField(
             model_name="user",
             name="updated_at",
             field=models.DateTimeField(blank=True, null=True, db_index=True),
         ),
-
         migrations.AddField(
             model_name="user",
             name="updated_by",

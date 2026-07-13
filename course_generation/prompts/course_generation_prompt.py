@@ -159,5 +159,7 @@ def format_prompt_inputs(*, generation_input: dict) -> dict[str, str]:
         ),
         "mode": _choice_display(Courses.MODE_CHOICE, generation_input.get("mode")),
         "duration": str(generation_input.get("duration") or "").strip(),
-        "validation_feedback": str(generation_input.get("validation_feedback") or "").strip(),
+        "validation_feedback": str(
+            generation_input.get("validation_feedback") or ""
+        ).strip(),
     }

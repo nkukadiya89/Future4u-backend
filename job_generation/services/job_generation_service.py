@@ -1,3 +1,5 @@
+
+
 from __future__ import annotations
 
 from typing import Any
@@ -75,6 +77,27 @@ def _build_response(
     # Replace education_tags (AI-generated names) with resolved DB PKs
     # so the JobSerializer can save the M2M relation correctly.
     # Keep enriched metadata under education_tags_meta for frontend display.
+    # Resolve education tag metadata to actual EducationLevel DB records.
+    # Multiple AI tags can share the same level_key (e.g. "BCA" and "B.Tech"
+    # both map to "graduation") — keep all of them in education_tags_meta for
+    # display, but deduplicate the resolved PKs so the DB M2M gets only one ID
+    # per level_key.
+    level_codes = [t["level_key"] for t in enriched_tags if t.get("level_key")]
+    if level_codes:
+        levels = EducationLevel.objects.filter(level_code__in=set(level_codes))
+        level_map: dict[str, int] = {l.level_code: l.pk for l in levels}
+        seen_pks: set[int] = set()
+        resolved_pks = []
+        for t in enriched_tags:
+            pk = level_map.get(t.get("level_key", ""))
+            if pk is not None and pk not in seen_pks:
+                seen_pks.add(pk)
+                resolved_pks.append(pk)
+    else:
+        resolved_pks = []
+
+    # education_tags      → unique PKs only (used when saving to DB via POST /job/)
+    # education_tags_meta → all AI-generated names/types/keys (used for display)
     data["education_tags"] = resolved_pks
     data["education_tags_meta"] = enriched_tags
 

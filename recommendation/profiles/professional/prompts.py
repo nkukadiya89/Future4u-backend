@@ -6,9 +6,7 @@ from langchain_core.prompts import ChatPromptTemplate
 
 from recommendation.prompts import build_prompt, format_inputs
 
-PROFESSIONAL_MODE_INSTRUCTIONS = (
-    "Normal career mode for working professionals: use career-change/upskill roadmap tasks and India INR salary."
-)
+PROFESSIONAL_MODE_INSTRUCTIONS = "Normal career mode for working professionals: use career-change/upskill roadmap tasks and India INR salary."
 
 SYSTEM_PROMPT = """You are Future4U's career recommendation engine for working professionals.
 
@@ -82,9 +80,9 @@ def build_recommendation_prompt() -> ChatPromptTemplate:
     return build_prompt(SYSTEM_PROMPT, USER_PROMPT)
 
 
-def format_prompt_inputs(
-    *, professional_assessment: dict[str, Any]
-) -> dict[str, str]:
+def format_prompt_inputs(*, professional_assessment: dict[str, Any]) -> dict[str, str]:
     return format_inputs(
-        "professional_assessment", professional_assessment, PROFESSIONAL_MODE_INSTRUCTIONS
+        "professional_assessment",
+        professional_assessment,
+        PROFESSIONAL_MODE_INSTRUCTIONS,
     )

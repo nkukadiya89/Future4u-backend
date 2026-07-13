@@ -92,7 +92,7 @@ def _build_email_context(template, data):
         context["temporary_password"] = data["temporary_password"]
         context["login_url"] = app_url + "login"
         context["email"] = data["email"]
-    
+
     elif template == "bulk-upload-summary.html":
         context["total_records"] = data["total_records"]
         context["inserted"] = data["inserted"]
@@ -239,7 +239,9 @@ def send_mail_batch(jobs):
                 template,
                 data,
                 logo_bytes=logo_bytes,
-                checked_bytes=checked_bytes if template == "register-success.html" else None,
+                checked_bytes=(
+                    checked_bytes if template == "register-success.html" else None
+                ),
             )
             try:
                 mail_server.sendmail(admin_email, msg["To"], msg.as_string())
@@ -254,6 +256,7 @@ def send_mail_batch(jobs):
                 )
     finally:
         mail_server.quit()
+
 
 def send_admin_summary_email(admin_user, result):
     batch_id = str(uuid.uuid4())[:8]
@@ -271,6 +274,7 @@ def send_admin_summary_email(admin_user, result):
         },
     )
 
+
 def send_email_change_notification(old_email, new_email, user):
     send_mail(
         "Your Future4U Email Address Was Updated",
@@ -282,6 +286,7 @@ def send_email_change_notification(old_email, new_email, user):
             "new_email": new_email,
         },
     )
+
 
 def send_activation_password_setup_email(user):
     from user.tasks import send_password_setup_link_task

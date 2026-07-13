@@ -14,6 +14,7 @@ from user_profile.models import StudentProfile
 from django.db import transaction
 from datetime import datetime
 
+
 class AdminStudentSerializer(serializers.ModelSerializer):
     data = serializers.CharField(write_only=True, required=False)
     profile_image = serializers.ImageField(required=False, write_only=True)
@@ -60,62 +61,66 @@ class AdminStudentSerializer(serializers.ModelSerializer):
             if not city_id:
                 errors["city"] = "This field is required."
 
-        if email and User.objects.filter(email=email, deleted=False).exclude(id=getattr(self.instance, "id", None)).exists():
-            errors ["email"] = "An account with this email already exists"
+        if (
+            email
+            and User.objects.filter(email=email, deleted=False)
+            .exclude(id=getattr(self.instance, "id", None))
+            .exists()
+        ):
+            errors["email"] = "An account with this email already exists"
 
-        if phone and User.objects.filter(phone=phone, deleted=False).exclude(id=getattr(self.instance, "id", None)).exists():
-            errors ["phone"] = "An Account with this phone number already exists"
+        if (
+            phone
+            and User.objects.filter(phone=phone, deleted=False)
+            .exclude(id=getattr(self.instance, "id", None))
+            .exists()
+        ):
+            errors["phone"] = "An Account with this phone number already exists"
 
         country = None
         if country_id is not None:
             country = Country.objects.filter(id=country_id).first()
             if not country:
                 errors["country"] = "Invalid country id"
-        
+
         state = None
         if state_id is not None:
             state = State.objects.filter(id=state_id).first()
             if not state:
                 errors["state"] = "Invalid state id"
-        
+
         city = None
         if city_id is not None:
             city = City.objects.filter(id=city_id).first()
             if not city:
                 errors["city"] = "Invalid city id"
-            
+
         education_level = None
         if education_level_id:
             education_level = EducationLevel.objects.filter(
-                id = education_level_id
+                id=education_level_id
             ).first()
             if not education_level:
                 errors["education_level"] = "Invalid education level"
-        
+
         stream = None
         if stream_id:
-            stream = Stream.objects.filter(
-                id = stream_id
-            ).first()
+            stream = Stream.objects.filter(id=stream_id).first()
             if not stream:
                 errors["stream"] = "Invalid stream"
-        
+
         languages = []
         if language_sent:
             if not isinstance(language_ids, list):
                 errors["languages"] = "Language must be a list of ids"
             else:
-                languages = Language.objects.filter(
-                    id__in=language_ids,
-                    deleted = False
-                )
+                languages = Language.objects.filter(id__in=language_ids, deleted=False)
                 if len(language_ids) != languages.count():
                     errors["language"] = "Invalid language ids"
-        
+
         if medium is not None:
             valid_mediums = [
-                choice[0]
-                for choice in StudentProfile._meta.get_field("medium").choices
+                choice[0] for choice in StudentProfile._meta.get_field("medium").choices
             ]
             if medium not in valid_mediums:
                 errors["medium"] = "Invalid medium"
@@ -124,7 +129,7 @@ class AdminStudentSerializer(serializers.ModelSerializer):
         if referral_code:
             referred_by = User.objects.filter(
                 referral_code__iexact=referral_code,
-                user_type__in = [
+                user_type__in=[
                     User.Role.SCHOOL_COLLEGE,
                     User.Role.INSTITUTE,
                     User.Role.CORPORATE,
@@ -135,7 +140,7 @@ class AdminStudentSerializer(serializers.ModelSerializer):
                 errors["referral_code"] = "Invalid referral code."
         if errors:
             raise serializers.ValidationError(errors)
-        
+
         validated = {}
 
         if email is not None:
@@ -184,8 +189,12 @@ class AdminStudentSerializer(serializers.ModelSerializer):
         medium = validated_data_inner.pop("medium", None)
         referred_by = validated_data_inner.pop("referred_by", None)
 
-
-        user = User.objects.create(**validated_data_inner,user_type = User.Role.STUDENT,created_by=request.user,terms_accepted=True,)
+        user = User.objects.create(
+            **validated_data_inner,
+            user_type=User.Role.STUDENT,
+            created_by=request.user,
+            terms_accepted=True,
+        )
         setup_web_user_password(user)
 
         if profile_image_file:
@@ -199,7 +208,7 @@ class AdminStudentSerializer(serializers.ModelSerializer):
         if languages:
             profile.language.set(languages)
         return user
-    
+
     @transaction.atomic()
     def update(self, instance, validated_data):
         request = self.context["request"]
@@ -217,7 +226,7 @@ class AdminStudentSerializer(serializers.ModelSerializer):
         medium = data.pop("medium", None)
         referral_sent = "referred_by" in data
         referred_by = data.pop("referred_by", None)
-        
+
         for attr, value in data.items():
             setattr(instance, attr, value)
 
@@ -225,7 +234,7 @@ class AdminStudentSerializer(serializers.ModelSerializer):
 
         if profile_image_file:
             instance.upload_profile_image(profile_image_file)
-        
+
         try:
             profile = instance.student_profile
         except StudentProfile.DoesNotExist:
@@ -240,7 +249,7 @@ class AdminStudentSerializer(serializers.ModelSerializer):
 
         if medium_sent:
             profile.medium = medium
-        
+
         if referral_sent:
             profile.referred_by = referred_by
 
@@ -261,7 +270,8 @@ class AdminStudentSerializer(serializers.ModelSerializer):
             setup_web_user_password(instance)
 
         return instance
-    
+
+
 class AdminStudentSortSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
@@ -274,7 +284,6 @@ class AdminStudentSortSerializer(serializers.ModelSerializer):
     city = serializers.IntegerField(source="user.city.id", default=None)
     city_name = serializers.CharField(source="user.city.name")
     referral_code = serializers.CharField(source="referred_by.referral_code")
-    
 
     class Meta:
         model = StudentProfile
@@ -298,6 +307,7 @@ class AdminStudentSortSerializer(serializers.ModelSerializer):
             "referral_code",
         ]
 
+
 class BulkUserUploadSerializer(serializers.Serializer):
     file = serializers.FileField()
     user_type = serializers.ChoiceField(choices=User.Role.choices)
@@ -313,4 +323,3 @@ class BulkUserUploadSerializer(serializers.Serializer):
             )
 
         return value
-    

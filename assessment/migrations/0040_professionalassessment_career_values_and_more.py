@@ -6,33 +6,72 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0039_guidancereason_workconstraint_professionalassessment'),
+        ("assessment", "0039_guidancereason_workconstraint_professionalassessment"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='professionalassessment',
-            name='career_values',
-            field=models.ManyToManyField(blank=True, to='assessment.careervalue'),
+            model_name="professionalassessment",
+            name="career_values",
+            field=models.ManyToManyField(blank=True, to="assessment.careervalue"),
         ),
         migrations.AddField(
-            model_name='professionalassessment',
-            name='platform_goals',
-            field=models.ManyToManyField(blank=True, to='assessment.usergoal'),
+            model_name="professionalassessment",
+            name="platform_goals",
+            field=models.ManyToManyField(blank=True, to="assessment.usergoal"),
         ),
         migrations.AddField(
-            model_name='professionalassessment',
-            name='salary_expectation',
-            field=models.CharField(blank=True, choices=[('3_5_lakhs_per_year', '3-5 lakhs per year'), ('5_8_lakhs_per_year', '5-8 lakhs per year'), ('8_15_lakhs_per_year', '8-15 Lakhs per year'), ('15_25_lakhs_per_year', '15-25 Lakhs per year'), ('25_plus_lakhs_per_year', '25+ Lakhs per year'), ('not_sure_open_to_discussion', 'Not Sure / Open to Discussion')], max_length=50, null=True),
+            model_name="professionalassessment",
+            name="salary_expectation",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("3_5_lakhs_per_year", "3-5 lakhs per year"),
+                    ("5_8_lakhs_per_year", "5-8 lakhs per year"),
+                    ("8_15_lakhs_per_year", "8-15 Lakhs per year"),
+                    ("15_25_lakhs_per_year", "15-25 Lakhs per year"),
+                    ("25_plus_lakhs_per_year", "25+ Lakhs per year"),
+                    ("not_sure_open_to_discussion", "Not Sure / Open to Discussion"),
+                ],
+                max_length=50,
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='professionalassessment',
-            name='timeline',
-            field=models.CharField(blank=True, choices=[('immediately_within_3_months', 'Immediately (within 3 months)'), ('within_6_months', 'Within 6 months'), ('within_1_year', 'Within 1 year'), ('exploring_options_no_rush', 'Exploring options, no rush'), ('not_sure_yet', 'Not Sure Yet')], max_length=50, null=True),
+            model_name="professionalassessment",
+            name="timeline",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("immediately_within_3_months", "Immediately (within 3 months)"),
+                    ("within_6_months", "Within 6 months"),
+                    ("within_1_year", "Within 1 year"),
+                    ("exploring_options_no_rush", "Exploring options, no rush"),
+                    ("not_sure_yet", "Not Sure Yet"),
+                ],
+                max_length=50,
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='professionalassessment',
-            name='current_screen',
-            field=models.CharField(choices=[('career_intention', 'Career Intention'), ('guidance_reason', 'Guidance Reason'), ('work_constraint', 'Work Constraint'), ('work_style', 'Work Style'), ('domain_category', 'Domain Category'), ('domain', 'Domain'), ('career_values', 'Career Values'), ('salary', 'Salary Expectations'), ('timeline', 'Timeline'), ('platform_goals', 'Platform Goals'), ('complete', 'Complete')], default='career_intention', max_length=32),
+            model_name="professionalassessment",
+            name="current_screen",
+            field=models.CharField(
+                choices=[
+                    ("career_intention", "Career Intention"),
+                    ("guidance_reason", "Guidance Reason"),
+                    ("work_constraint", "Work Constraint"),
+                    ("work_style", "Work Style"),
+                    ("domain_category", "Domain Category"),
+                    ("domain", "Domain"),
+                    ("career_values", "Career Values"),
+                    ("salary", "Salary Expectations"),
+                    ("timeline", "Timeline"),
+                    ("platform_goals", "Platform Goals"),
+                    ("complete", "Complete"),
+                ],
+                default="career_intention",
+                max_length=32,
+            ),
         ),
     ]

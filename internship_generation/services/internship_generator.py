@@ -12,7 +12,10 @@ from internship_generation.prompts.internship_generation_prompt import (
     build_internship_generation_prompt,
     format_prompt_inputs,
 )
-from internship_generation.providers.factory import ensure_ai_provider_configured, get_llm_provider
+from internship_generation.providers.factory import (
+    ensure_ai_provider_configured,
+    get_llm_provider,
+)
 from internship_generation.schemas.internship_output import InternshipGenerationPayload
 from internship_generation.services.json_response_parser import JsonResponseParser
 
@@ -25,7 +28,9 @@ class InternshipGenerator:
     """Single LLM invocation: internship overview input -> structured internship details."""
 
     @classmethod
-    def generate(cls, *, generation_input: dict[str, Any]) -> InternshipGenerationPayload:
+    def generate(
+        cls, *, generation_input: dict[str, Any]
+    ) -> InternshipGenerationPayload:
         if not ai_llm_enabled():
             raise InternshipGenerationConfigurationError(
                 "AI internship generation is temporarily unavailable"
@@ -41,7 +46,10 @@ class InternshipGenerator:
         for attempt in range(_MAX_GENERATION_ATTEMPTS):
             try:
                 inputs = format_prompt_inputs(
-                    generation_input={**generation_input, "validation_feedback": validation_feedback}
+                    generation_input={
+                        **generation_input,
+                        "validation_feedback": validation_feedback,
+                    }
                 )
                 return cls._invoke_once(
                     prompt=prompt,
@@ -52,7 +60,10 @@ class InternshipGenerator:
             except InternshipGenerationValidationError as exc:
                 last_error = exc
                 validation_feedback = _clip_feedback(exc.details)
-                if not _is_retryable_generation_error(exc) or attempt == _MAX_GENERATION_ATTEMPTS - 1:
+                if (
+                    not _is_retryable_generation_error(exc)
+                    or attempt == _MAX_GENERATION_ATTEMPTS - 1
+                ):
                     raise
                 logger.warning(
                     "Retrying internship generation after %s (attempt %s/%s)",

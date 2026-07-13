@@ -4,14 +4,12 @@ from user_profile.models import SchoolCollegeProfile
 
 
 class SchoolCollegeBulkUpload:
-    REQUIRED_COLUMNS = [
-        "Institute Name"
-    ]
+    REQUIRED_COLUMNS = ["Institute Name"]
 
     @classmethod
     def preload(cls):
         return {}
-    
+
     @staticmethod
     def clean(value):
         if pd.isna(value):
@@ -19,7 +17,7 @@ class SchoolCollegeBulkUpload:
 
         value = str(value).strip()
         return value or None
-    
+
     @classmethod
     def validate_row(cls, row, masters):
         courses_value = row.get("Courses Offered")
@@ -27,9 +25,7 @@ class SchoolCollegeBulkUpload:
         courses_offered = []
         if not pd.isna(courses_value) and str(courses_value).strip():
             courses_offered = [
-                item.strip()
-                for item in str(courses_value).split(",")
-                if item.strip()
+                item.strip() for item in str(courses_value).split(",") if item.strip()
             ]
 
         return {

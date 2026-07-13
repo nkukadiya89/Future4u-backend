@@ -12,9 +12,11 @@ def internship_generation_enabled() -> bool:
 
 
 def internship_generation_llm_provider() -> str:
-    return str(
-        getattr(settings, "INTERNSHIP_GENERATION_LLM_PROVIDER", "groq")
-    ).strip().lower()
+    return (
+        str(getattr(settings, "INTERNSHIP_GENERATION_LLM_PROVIDER", "groq"))
+        .strip()
+        .lower()
+    )
 
 
 def ai_llm_enabled() -> bool:

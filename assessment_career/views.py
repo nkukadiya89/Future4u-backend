@@ -34,11 +34,20 @@ class CareerSuggestionViewSet(ModelViewSet):
     ]
 
     def get_queryset(self):
-        queryset = CareerRecommendation.objects.filter(
-            deleted=False, user=self.request.user,
-        ).select_related(
-            "student_assessment", "parent_assessment", "professional_assessment", "user",
-        ).prefetch_related("suggestions").order_by("-id")
+        queryset = (
+            CareerRecommendation.objects.filter(
+                deleted=False,
+                user=self.request.user,
+            )
+            .select_related(
+                "student_assessment",
+                "parent_assessment",
+                "professional_assessment",
+                "user",
+            )
+            .prefetch_related("suggestions")
+            .order_by("-id")
+        )
         if self.profile_type:
             queryset = queryset.filter(profile_type=self.profile_type)
         assessment_id = self.request.query_params.get("assessment_id")
@@ -70,7 +79,10 @@ class CareerSuggestionViewSet(ModelViewSet):
         instance = self.get_object()
         if not instance:
             return Response(
-                {"success": False, "message": "No recommendation matches the given query"},
+                {
+                    "success": False,
+                    "message": "No recommendation matches the given query",
+                },
                 status=status.HTTP_404_NOT_FOUND,
             )
         serializer = self.serializer_class(instance)
@@ -118,7 +130,9 @@ class CareerSuggestionViewSet(ModelViewSet):
             deleted=False,
         ).order_by("display_order")
         if self.profile_type:
-            suggestions = suggestions.filter(recommendation__profile_type=self.profile_type)
+            suggestions = suggestions.filter(
+                recommendation__profile_type=self.profile_type
+            )
 
         if suggestions.count() != 2:
             return Response(
@@ -126,7 +140,9 @@ class CareerSuggestionViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        recommendation_ids = {suggestion.recommendation_id for suggestion in suggestions}
+        recommendation_ids = {
+            suggestion.recommendation_id for suggestion in suggestions
+        }
         if len(recommendation_ids) != 1:
             return Response(
                 {

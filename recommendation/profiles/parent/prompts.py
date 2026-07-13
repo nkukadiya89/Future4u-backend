@@ -68,8 +68,8 @@ Return ONLY valid JSON using this shape:
 """
 
 PARENT_NORMAL_MODE = (
-    'Parent career mode: recommend careers for the parent\'s child. '
-    'Use career/job-readiness roadmap tasks and India INR salary.'
+    "Parent career mode: recommend careers for the parent's child. "
+    "Use career/job-readiness roadmap tasks and India INR salary."
 )
 
 
@@ -102,9 +102,7 @@ def build_parent_recommendation_prompt() -> ChatPromptTemplate:
     return build_prompt(SYSTEM_PROMPT, USER_PROMPT)
 
 
-def format_parent_prompt_inputs(
-    *, parent_assessment: dict[str, Any]
-) -> dict[str, str]:
+def format_parent_prompt_inputs(*, parent_assessment: dict[str, Any]) -> dict[str, str]:
     mode = (
         PARENT_STUDY_ABROAD_MODE_INSTRUCTIONS
         if is_study_abroad_mode(parent_assessment)

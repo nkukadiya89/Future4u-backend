@@ -593,7 +593,6 @@ class Command(BaseCommand):
             for name in names:
                 model.objects.get_or_create(name__iexact=name, defaults={"name": name})
 
-
     # State Upload CSV
     def load_state(self, admin_user=None):
         self.stdout.write("Loading State...")
@@ -891,16 +890,16 @@ class Command(BaseCommand):
     # Subscription Create
     subscription_data = [
         {
-            "package_name": "Explorer",
+            "package_name": "Free",
             "subscription_type": "subscription",
-            "subscription_price": 2800.0,
+            "subscription_price": 0,
             "subscription_discount": 0.0,
-            "subscription_sell_price": 2800.0,
-            "plan_price": 26800.0,
+            "subscription_sell_price": 0,
+            "plan_price": 0,
             "duration_days": 365,
             "description": (
-                "Begin your career journey with essential self-discovery tools. "
-                "Explore career domains, take aptitude assessments, and gain clarity on your strengths and interests."
+                "Free tier with limited access to career assessment, internship, "
+                "job assistance, and course certification features."
             ),
             "status": True,
             "core_features": [
@@ -917,60 +916,24 @@ class Command(BaseCommand):
                 {"feature_name": "premium_counsellor", "feature_status": False},
             ],
             "subscription_feature": [
-                {"feature_name": "Career Aptitude Assessment", "feature_status": True},
-                {"feature_name": "Domain & Stream Exploration", "feature_status": True},
-                {"feature_name": "Basic Career Reports", "feature_status": True},
-                {"feature_name": "Career Interest Profiling", "feature_status": True},
-                {"feature_name": "Progress Tracking Dashboard", "feature_status": True},
+                {"feature_name": "Single Profile Assessment", "feature_status": True},
+                {"feature_name": "Limited Internship Access", "feature_status": True},
+                {"feature_name": "Limited Job Assistance", "feature_status": True},
+                {"feature_name": "Limited Course Certification", "feature_status": True},
+                {"feature_name": "Limited Career Roadmap", "feature_status": True},
             ],
         },
         {
-            "package_name": "Career Builder",
+            "package_name": "Pro",
             "subscription_type": "subscription",
-            "subscription_price": 6000.0,
+            "subscription_price": 1800,
             "subscription_discount": 0.0,
-            "subscription_sell_price": 6000.0,
-            "plan_price": 30000.0,
+            "subscription_sell_price": 1800,
+            "plan_price": 1800,
             "duration_days": 365,
             "description": (
-                "Accelerate your career growth with in-depth guidance, skill gap analysis, "
-                "and a personalized career roadmap crafted by expert counsellors."
-            ),
-            "status": True,
-            "core_features": [
-                {"feature_name": "career_assessment", "feature_status": True},
-                {"feature_name": "domain_exploration", "feature_status": True},
-                {"feature_name": "skill_gap_analysis", "feature_status": True},
-                {"feature_name": "career_roadmap", "feature_status": True},
-                {"feature_name": "counsellor_session", "feature_status": True},
-                {"feature_name": "resume_builder", "feature_status": True},
-                {"feature_name": "job_recommendations", "feature_status": False},
-                {"feature_name": "learning_resources", "feature_status": False},
-                {"feature_name": "mock_interview", "feature_status": False},
-                {"feature_name": "mentorship_access", "feature_status": False},
-                {"feature_name": "premium_counsellor", "feature_status": False},
-            ],
-            "subscription_feature": [
-                {"feature_name": "Career Aptitude Assessment", "feature_status": True},
-                {"feature_name": "Domain & Stream Exploration", "feature_status": True},
-                {"feature_name": "Skill Gap Analysis", "feature_status": True},
-                {"feature_name": "Personalized Career Roadmap", "feature_status": True},
-                {"feature_name": "Live Counsellor Sessions", "feature_status": True},
-                {"feature_name": "Resume Builder", "feature_status": True},
-                {"feature_name": "Detailed Career Reports", "feature_status": True},
-            ],
-        },
-        {
-            "package_name": "Career Pro",
-            "subscription_type": "subscription",
-            "subscription_price": 8000.0,
-            "subscription_discount": 0.0,
-            "subscription_sell_price": 8000.0,
-            "plan_price": 32000.0,
-            "duration_days": 365,
-            "description": (
-                "Unlock your full career potential with premium counselling, mentorship access, "
-                "AI-powered job recommendations, mock interviews, and comprehensive career intelligence."
+                "Full access to profile assessments, unlimited internship, job, "
+                "and course access, career compare, roadmap, and AI chat."
             ),
             "status": True,
             "core_features": [
@@ -987,20 +950,13 @@ class Command(BaseCommand):
                 {"feature_name": "premium_counsellor", "feature_status": True},
             ],
             "subscription_feature": [
-                {"feature_name": "Career Aptitude Assessment", "feature_status": True},
-                {"feature_name": "Domain & Stream Exploration", "feature_status": True},
-                {"feature_name": "Skill Gap Analysis", "feature_status": True},
-                {"feature_name": "Personalized Career Roadmap", "feature_status": True},
-                {"feature_name": "Live Counsellor Sessions", "feature_status": True},
-                {"feature_name": "Resume Builder", "feature_status": True},
-                {
-                    "feature_name": "AI-Powered Job Recommendations",
-                    "feature_status": True,
-                },
-                {"feature_name": "Curated Learning Resources", "feature_status": True},
-                {"feature_name": "Mock Interview Practice", "feature_status": True},
-                {"feature_name": "Mentorship Access", "feature_status": True},
-                {"feature_name": "Premium Career Counselling", "feature_status": True},
+                {"feature_name": "Profile Assessments", "feature_status": True},
+                {"feature_name": "Full Internship Access", "feature_status": True},
+                {"feature_name": "Full Job Assistance", "feature_status": True},
+                {"feature_name": "Full Course Certification", "feature_status": True},
+                {"feature_name": "Career Compare", "feature_status": True},
+                {"feature_name": "Career Roadmap Path", "feature_status": True},
+                {"feature_name": "AI Chat Access", "feature_status": True},
             ],
         },
     ]

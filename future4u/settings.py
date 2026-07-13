@@ -114,7 +114,7 @@ INSTALLED_APPS = [
     "job_generation",
     "course_generation",
     "internship_generation",
-
+    "token_override",
 ]
 
 MIDDLEWARE = [
@@ -235,8 +235,6 @@ REST_FRAMEWORK = {
         "course_generation": "10/min",
         "internship_generation": "10/min",
     },
-
-
 }
 
 # ── Logging ───────────────────────────────────────────────────────────────────
@@ -291,7 +289,6 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
-
     },
 }
 
@@ -319,10 +316,14 @@ JOB_GENERATION_ENABLED = config(
     default=True,
     cast=bool,
 )
-JOB_GENERATION_LLM_PROVIDER = config(
-    "JOB_GENERATION_LLM_PROVIDER",
-    default="groq",
-).strip().lower()
+JOB_GENERATION_LLM_PROVIDER = (
+    config(
+        "JOB_GENERATION_LLM_PROVIDER",
+        default="groq",
+    )
+    .strip()
+    .lower()
+)
 JOB_GENERATION_MAX_TOKENS = config(
     "JOB_GENERATION_MAX_TOKENS",
     default=1000,
@@ -339,10 +340,14 @@ COURSE_GENERATION_ENABLED = config(
     default=True,
     cast=bool,
 )
-COURSE_GENERATION_LLM_PROVIDER = config(
-    "COURSE_GENERATION_LLM_PROVIDER",
-    default="groq",
-).strip().lower()
+COURSE_GENERATION_LLM_PROVIDER = (
+    config(
+        "COURSE_GENERATION_LLM_PROVIDER",
+        default="groq",
+    )
+    .strip()
+    .lower()
+)
 COURSE_GENERATION_MAX_TOKENS = config(
     "COURSE_GENERATION_MAX_TOKENS",
     default=3000,
@@ -359,10 +364,14 @@ INTERNSHIP_GENERATION_ENABLED = config(
     default=True,
     cast=bool,
 )
-INTERNSHIP_GENERATION_LLM_PROVIDER = config(
-    "INTERNSHIP_GENERATION_LLM_PROVIDER",
-    default="groq",
-).strip().lower()
+INTERNSHIP_GENERATION_LLM_PROVIDER = (
+    config(
+        "INTERNSHIP_GENERATION_LLM_PROVIDER",
+        default="groq",
+    )
+    .strip()
+    .lower()
+)
 INTERNSHIP_GENERATION_MAX_TOKENS = config(
     "INTERNSHIP_GENERATION_MAX_TOKENS",
     default=3000,

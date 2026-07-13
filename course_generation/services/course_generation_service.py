@@ -4,7 +4,9 @@ from typing import Any
 
 from course_generation.exceptions import CourseGenerationAccessDeniedError
 from course_generation.schemas.course_output import CourseGenerationPayload
-from course_generation.selectors.course_generation_access import can_user_generate_courses
+from course_generation.selectors.course_generation_access import (
+    can_user_generate_courses,
+)
 from course_generation.services.course_generator import CourseGenerator
 
 

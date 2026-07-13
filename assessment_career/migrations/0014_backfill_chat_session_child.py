@@ -9,13 +9,19 @@ def backfill_chat_session_child(apps, schema_editor):
     CareerRecommendation = apps.get_model("assessment_career", "CareerRecommendation")
     ParentAssessment = apps.get_model("assessment", "ParentAssessment")
 
-    for session in ChatSession.objects.filter(child_id__isnull=True).select_related("suggestion__recommendation"):
+    for session in ChatSession.objects.filter(child_id__isnull=True).select_related(
+        "suggestion__recommendation"
+    ):
         rec = session.suggestion.recommendation
         if rec.profile_type == "parent" and rec.parent_assessment_id is not None:
             try:
-                pa = ParentAssessment.objects.only("child_id").get(id=rec.parent_assessment_id)
+                pa = ParentAssessment.objects.only("child_id").get(
+                    id=rec.parent_assessment_id
+                )
                 if pa.child_id is not None:
-                    ChatSession.objects.filter(id=session.id).update(child_id=pa.child_id)
+                    ChatSession.objects.filter(id=session.id).update(
+                        child_id=pa.child_id
+                    )
             except ParentAssessment.DoesNotExist:
                 pass
 
@@ -27,5 +33,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(backfill_chat_session_child, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            backfill_chat_session_child, reverse_code=migrations.RunPython.noop
+        ),
     ]

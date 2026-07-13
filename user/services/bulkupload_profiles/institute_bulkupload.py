@@ -33,9 +33,7 @@ class InstituteBulkUpload:
         courses_offered = []
         if not pd.isna(courses_value) and str(courses_value).strip():
             courses_offered = [
-                item.strip()
-                for item in str(courses_value).split(",")
-                if item.strip()
+                item.strip() for item in str(courses_value).split(",") if item.strip()
             ]
 
         return {

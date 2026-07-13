@@ -26,6 +26,7 @@ class CustomModelPermissions(DjangoModelPermissions):
         "DELETE": ["%(app_label)s.delete_%(model_name)s"],
     }
 
+
 class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
     filter_backends = [CustomSearchFilter, OrderingFilter]
     pagination_class = Pagination
@@ -91,6 +92,7 @@ class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
             entity_id=getattr(instance, "id", None),
             request=request,
         )
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -101,13 +103,18 @@ class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
             )
             self.log_action(request, instance, "CREATE")
             return Response(
-                {"success": True,"message":"Record Created Successfully", "data": serializer.data},
+                {
+                    "success": True,
+                    "message": "Record Created Successfully",
+                    "data": serializer.data,
+                },
                 status=status.HTTP_201_CREATED,
             )
         return Response(
             {"success": False, "message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
     @transaction.atomic
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -119,12 +126,18 @@ class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
             )
             self.log_action(request, instance, "UPDATE")
             return Response(
-                {"success": True,"message":"Updated Successfully", "data": serializer.data}, status=status.HTTP_200_OK
+                {
+                    "success": True,
+                    "message": "Updated Successfully",
+                    "data": serializer.data,
+                },
+                status=status.HTTP_200_OK,
             )
         return Response(
             {"success": False, "message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
     @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -163,7 +176,7 @@ class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
             {"success": True, "data": serializer.data},
             status=status.HTTP_200_OK,
         )
-    
+
     @action(methods=["get"], detail=False, url_path="archive-list")
     def archive_list(self, request):
         queryset = self.filter_queryset(

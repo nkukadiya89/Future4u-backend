@@ -7,19 +7,26 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='CourseGenerationPanel',
+            name="CourseGenerationPanel",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'AI Course Generation',
-                'verbose_name_plural': 'AI Course Generation',
-                'managed': False,
+                "verbose_name": "AI Course Generation",
+                "verbose_name_plural": "AI Course Generation",
+                "managed": False,
             },
         ),
     ]

@@ -34,7 +34,9 @@ from recommendation.exceptions import (
 )
 from recommendation.models import AIRecommendationPanel
 from recommendation.profiles.parent.service import ParentRecommendationService
-from recommendation.profiles.professional.service import ProfessionalRecommendationService
+from recommendation.profiles.professional.service import (
+    ProfessionalRecommendationService,
+)
 from recommendation.profiles.student.service import StudentRecommendationService
 
 
@@ -74,7 +76,9 @@ def _provider_status() -> dict:
 def _assessment_queryset(assessment_type):
     if assessment_type == "parent":
         return (
-            ParentAssessment.objects.filter(deleted=False, domain_category__isnull=False)
+            ParentAssessment.objects.filter(
+                deleted=False, domain_category__isnull=False
+            )
             .select_related("user", "domain_category", "child")
             .order_by("-id")
         )
@@ -114,7 +118,9 @@ class AIRecommendationRunForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        assessment_type = self.data.get("assessment_type", "student") if self.is_bound else "student"
+        assessment_type = (
+            self.data.get("assessment_type", "student") if self.is_bound else "student"
+        )
         qs = _assessment_queryset(assessment_type)
         assessments = list(qs[:500])
         if self.is_bound:
@@ -128,9 +134,7 @@ class AIRecommendationRunForm(forms.Form):
                     extra = qs.filter(pk=selected_id).first()
                     if extra:
                         assessments.insert(0, extra)
-        self.fields["assessment"].choices = [
-            (a.id, str(a)) for a in assessments
-        ]
+        self.fields["assessment"].choices = [(a.id, str(a)) for a in assessments]
 
     def clean_assessment(self):
         assessment_id = self.cleaned_data["assessment"]
@@ -159,7 +163,15 @@ class AIRecommendationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                     "user_id": assessment.user_id,
                     "user_email": getattr(assessment.user, "email", ""),
                     "type": assessment_type,
-                    "domain": getattr(assessment, "domain_category_id" if assessment_type == "parent" else "domain_id", None),
+                    "domain": getattr(
+                        assessment,
+                        (
+                            "domain_category_id"
+                            if assessment_type == "parent"
+                            else "domain_id"
+                        ),
+                        None,
+                    ),
                     "is_completed": assessment.is_completed,
                     "current_screen": assessment.current_screen,
                     "provider": _provider_status(),

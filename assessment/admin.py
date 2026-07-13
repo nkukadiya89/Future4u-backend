@@ -16,7 +16,7 @@ from assessment.models import (
     UserResponse,
     GuidanceReason,
     WorkConstraint,
-    ProfessionalAssessment
+    ProfessionalAssessment,
 )
 
 admin.site.register(CareerDirection)
@@ -27,6 +27,7 @@ admin.site.register(ParentCareerExpectation)
 admin.site.register(ParentConstraint)
 admin.site.register(GuidanceReason)
 admin.site.register(WorkConstraint)
+
 
 class OptionInline(admin.TabularInline):
     model = Option
@@ -288,17 +289,30 @@ class StudentAssessmentAdmin(admin.ModelAdmin):
             )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+
 @admin.register(ProfessionalAssessment)
 class ProfessionalAssessmentAdmin(admin.ModelAdmin):
     list_display = (
-        "id", "user", "career_intention", "preferred_environment", "preferred_structure",
-        "domain_category", "domain", "salary_expectation", "timeline",
-        "current_screen", "is_completed", "created_at"
+        "id",
+        "user",
+        "career_intention",
+        "preferred_environment",
+        "preferred_structure",
+        "domain_category",
+        "domain",
+        "salary_expectation",
+        "timeline",
+        "current_screen",
+        "is_completed",
+        "created_at",
     )
 
     list_filter = (
-        "is_completed", "current_screen", "career_intention",
-        "preferred_environment", "preferred_structure"
+        "is_completed",
+        "current_screen",
+        "career_intention",
+        "preferred_environment",
+        "preferred_structure",
     )
 
     search_fields = (
@@ -312,7 +326,10 @@ class ProfessionalAssessmentAdmin(admin.ModelAdmin):
     raw_id_fields = ("domain_category", "domain")
 
     filter_horizontal = (
-        "guidance_reasons", "work_constraints", "career_values", "platform_goals"
+        "guidance_reasons",
+        "work_constraints",
+        "career_values",
+        "platform_goals",
     )
 
     list_select_related = ("domain_category", "domain")
@@ -327,4 +344,3 @@ class ProfessionalAssessmentAdmin(admin.ModelAdmin):
                 parent__isnull=False, deleted=False
             )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
