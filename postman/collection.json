@@ -17142,14 +17142,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/internship/archive-list/?page=1&pagesize=10&search=&ordering=-deleted_at",
+              "raw": "{{base_url}}/course/archive-list/?page=1&pagesize=10&search=&ordering=-deleted_at",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "internship",
-                "archive-list",
-                ""
+                "course",
+                "archive-list"
               ],
               "query": [
                 {
@@ -17323,6 +17322,68 @@
                 "{{course_id}}",
                 ""
               ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk_archive (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course/bulk-archive/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course",
+                "bulk-archive"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [{{course_id}}]}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk_restore (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course/bulk-restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course",
+                "bulk-restore"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [{{course_id}}]}"
             }
           },
           "response": []
@@ -17858,14 +17919,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/course/archive-list/?page=1&pagesize=10&search=&ordering=-deleted_at",
+              "raw": "{{base_url}}/internship/archive-list/?page=1&pagesize=10&search=&ordering=-deleted_at",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "course",
-                "archive-list",
-                ""
+                "internship",
+                "archive-list"
               ],
               "query": [
                 {
@@ -18062,6 +18122,68 @@
           "response": []
         },
         {
+          "name": "bulk_archive (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship/bulk-archive/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship",
+                "bulk-archive"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [{{internship_id}}]}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk_restore (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship/bulk-restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship",
+                "bulk-restore"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [{{internship_id}}]}"
+            }
+          },
+          "response": []
+        },
+        {
           "name": "restore (PATCH)",
           "request": {
             "method": "PATCH",
@@ -18227,14 +18349,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/course-inquiry/archive-list/?page=1&pagesize=10&search=&ordering=-deleted_at",
+              "raw": "{{base_url}}/job/archive-list/?page=1&pagesize=10&search=&ordering=-deleted_at",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "course-inquiry",
-                "archive-list",
-                ""
+                "job",
+                "archive-list"
               ],
               "query": [
                 {
@@ -18429,6 +18550,68 @@
               ]
             },
             "description": "Soft-deletes (archives) the job record. Only the provider (creator) can delete.\n\nReturns 403 if the authenticated user is not the job provider."
+          },
+          "response": []
+        },
+        {
+          "name": "bulk_archive (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job/bulk-archive/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job",
+                "bulk-archive"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [{{job_id}}]}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk_restore (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job/bulk-restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job",
+                "bulk-restore"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [{{job_id}}]}"
+            }
           },
           "response": []
         },

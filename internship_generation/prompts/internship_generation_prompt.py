@@ -129,6 +129,7 @@ Previous validation feedback (fix these issues): {{validation_feedback}}
 
 USER_PROMPT = """Generate AI fields for the Future4U Post Internship form using the employer-provided details below.
 
+internship_title (employer input): {internship_title}
 internship_overview (employer input): {internship_overview}
 department: {department}
 stipend: {stipend}
@@ -160,6 +161,10 @@ def format_prompt_inputs(*, generation_input: dict) -> dict[str, str]:
         deadline_text = str(deadline)
 
     return {
+        "internship_title": str(
+            generation_input.get("internship_title") or ""
+        ).strip()
+        or "Not provided",
         "internship_overview": str(
             generation_input.get("internship_overview") or ""
         ).strip()

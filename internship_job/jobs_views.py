@@ -8,6 +8,7 @@ from common.master_view import BaseModelViewSet
 from django.utils import timezone
 from assessment_career.models import CareerSuggestion
 from .service import match_jobs
+from activity_log.services import log_event
 
 
 class JobViewSet(BaseModelViewSet):
@@ -105,7 +106,120 @@ class JobViewSet(BaseModelViewSet):
             {"success": True, "message": "Job restored successfully"},
             status=status.HTTP_200_OK,
         )
+
+    @action(detail=False, methods=["patch"], url_path="bulk-archive")
+    @transaction.atomic
+    def bulk_archive(self, request, *args, **kwargs):
+        ids = request.data.get("ids", [])
+
+        if not isinstance(ids, list) or not ids:
+            return Response(
+                {"success": False, "message": "ids must be a non-empty array"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        records = Job.objects.filter(id__in=ids)
+
+        if not records.exists():
+            return Response(
+                {"success": False, "message": "Jobs not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if records.filter(deleted=True).exists():
+            return Response(
+                {"success": False, "message": "Some jobs are already archived"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        now = timezone.now()
+        records.update(
+            deleted=True,
+            deleted_at=now,
+            deleted_by=request.user,
+        )
+
+        log_event(
+            event="job.bulk_archive",
+            description=f"Admin {request.user.email} bulk archived {records.count()} job(s)",
+            user=request.user,
+            entity_type="job",
+            entity_id=None,
+            metadata={"job_ids": ids, "count": records.count()},
+            request=request,
+        )
+
+        return Response(
+            {"success": True, "message": "Jobs archived successfully"},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["patch"], url_path="bulk-restore")
+    @transaction.atomic
+    def bulk_restore(self, request, *args, **kwargs):
+        ids = request.data.get("ids", [])
+
+        if not isinstance(ids, list) or not ids:
+            return Response(
+                {"success": False, "message": "ids must be a non-empty array"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        records = Job.objects.filter(id__in=ids)
+
+        if not records.exists():
+            return Response(
+                {"success": False, "message": "Jobs not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if records.filter(deleted=False).exists():
+            return Response(
+                {"success": False, "message": "Some jobs are already active"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        now = timezone.now()
+        records.update(
+            deleted=False,
+            deleted_at=None,
+            deleted_by=None,
+            updated_at=now,
+            updated_by=request.user,
+        )
+
+        log_event(
+            event="job.bulk_restore",
+            description=f"Admin {request.user.email} bulk restored {records.count()} job(s)",
+            user=request.user,
+            entity_type="job",
+            entity_id=None,
+            metadata={"job_ids": ids, "count": records.count()},
+            request=request,
+        )
+
+        return Response(
+            {"success": True, "message": "Jobs restored successfully"},
+            status=status.HTTP_200_OK,
+        )
     
+
+    @action(detail=False, methods=["get"], url_path="archive-list")
+    def archive_list(self, request):
+        queryset = Job.objects.select_related(
+            "city", "country", "state", "provider"
+        ).prefetch_related("education_tags").filter(deleted=True).order_by("-deleted_at")
+
+        queryset = self.filter_queryset(queryset)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"success": True, "data": serializer.data})
 
     @action(detail=False, methods=["get"], url_path="job-recommended")
     def job_recommended(self, request):

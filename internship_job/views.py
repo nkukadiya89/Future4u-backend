@@ -10,6 +10,7 @@ from rest_framework.decorators import action
 from rest_framework import status
 from assessment_career.models import CareerSuggestion
 from .service import match_internships
+from activity_log.services import log_event
 
 # Create your views here.
 
@@ -17,7 +18,7 @@ from .service import match_internships
 class InternshipViewSet(BaseModelViewSet):
     def get_queryset(self):
         queryset = Internship.objects.select_related(
-            "city", "provider"
+            "country", "state", "city", "provider", "internship_provider"
         ).prefetch_related("education_tags")
         user = self.request.user
         if user.is_superuser:
@@ -30,13 +31,13 @@ class InternshipViewSet(BaseModelViewSet):
             return queryset.filter(
                 provider=user,
             )
-        return queryset
+        # Students/parents: only see active internships, exclude drafts
+        return queryset.filter(status="active")
 
     serializer_class = InternshipSerializer
 
     search_fields = BaseModelViewSet.searching_fields + [
         "name",
-        "organization_name",
         "description",
         "responsibilities",
         "skills",
@@ -44,6 +45,8 @@ class InternshipViewSet(BaseModelViewSet):
         "why_this_match",
         "mode",
         "duration",
+        "country__name",
+        "state__name",
         "city__name",
         "internship_type",
         "fees_amount",
@@ -51,11 +54,12 @@ class InternshipViewSet(BaseModelViewSet):
     ]
     ordering_fields = BaseModelViewSet.ordering_fields + [
         "name",
-        "organization_name",
+        "country",
+        "state",
+        "city",
         "internship_type",
         "mode",
         "provider",
-        "city",
         "duration",
         "fees_amount",
         "stipend_amount",
@@ -102,13 +106,127 @@ class InternshipViewSet(BaseModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+    @action(detail=False, methods=["patch"], url_path="bulk-archive")
+    @transaction.atomic
+    def bulk_archive(self, request, *args, **kwargs):
+        ids = request.data.get("ids", [])
+
+        if not isinstance(ids, list) or not ids:
+            return Response(
+                {"success": False, "message": "ids must be a non-empty array"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        records = Internship.objects.filter(id__in=ids)
+
+        if not records.exists():
+            return Response(
+                {"success": False, "message": "Internships not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if records.filter(deleted=True).exists():
+            return Response(
+                {"success": False, "message": "Some internships are already archived"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        now = timezone.now()
+        records.update(
+            deleted=True,
+            deleted_at=now,
+            deleted_by=request.user,
+        )
+
+        log_event(
+            event="internship.bulk_archive",
+            description=f"Admin {request.user.email} bulk archived {records.count()} internship(s)",
+            user=request.user,
+            entity_type="internship",
+            entity_id=None,
+            metadata={"internship_ids": ids, "count": records.count()},
+            request=request,
+        )
+
+        return Response(
+            {"success": True, "message": "Internships archived successfully"},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["patch"], url_path="bulk-restore")
+    @transaction.atomic
+    def bulk_restore(self, request, *args, **kwargs):
+        ids = request.data.get("ids", [])
+
+        if not isinstance(ids, list) or not ids:
+            return Response(
+                {"success": False, "message": "ids must be a non-empty array"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        records = Internship.objects.filter(id__in=ids)
+
+        if not records.exists():
+            return Response(
+                {"success": False, "message": "Internships not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if records.filter(deleted=False).exists():
+            return Response(
+                {"success": False, "message": "Some internships are already active"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        now = timezone.now()
+        records.update(
+            deleted=False,
+            deleted_at=None,
+            deleted_by=None,
+            updated_at=now,
+            updated_by=request.user,
+        )
+
+        log_event(
+            event="internship.bulk_restore",
+            description=f"Admin {request.user.email} bulk restored {records.count()} internship(s)",
+            user=request.user,
+            entity_type="internship",
+            entity_id=None,
+            metadata={"internship_ids": ids, "count": records.count()},
+            request=request,
+        )
+
+        return Response(
+            {"success": True, "message": "Internships restored successfully"},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["get"], url_path="archive-list")
+    def archive_list(self, request):
+        queryset = Internship.objects.select_related(
+            "country", "state", "city", "provider", "internship_provider"
+        ).prefetch_related("education_tags").filter(deleted=True).order_by("-deleted_at")
+
+        queryset = self.filter_queryset(queryset)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"success": True, "data": serializer.data})
+
     @action(detail=False, methods=["get"], url_path="internship-recommended")
     def internship_recommended(self, request):
         mode = request.query_params.get("mode")
         city_id = request.query_params.get("city_id")
         search = request.query_params.get("search")
 
-        internship_qs = self.get_queryset()
+        # Public listing: only active internships, exclude drafts
+        internship_qs = self.get_queryset().filter(status="active", deleted=False)
 
         if mode:
             internship_qs = internship_qs.filter(mode=mode)
@@ -200,6 +318,7 @@ class InternshipApplicationViewSet(BaseModelViewSet):
             internship = Internship.objects.get(
                 id=internship_id,
                 deleted=False,
+                status="active",
             )
         except Internship.DoesNotExist:
             return Response(
