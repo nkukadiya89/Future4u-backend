@@ -22,17 +22,20 @@ class InternshipViewSet(BaseModelViewSet):
         ).prefetch_related("education_tags")
         user = self.request.user
         if user.is_superuser:
-            return queryset
-        if user.user_type in [
+            base = queryset
+        elif user.user_type in [
             "institute",
             "school_college",
             "corporate",
         ]:
-            return queryset.filter(
-                provider=user,
-            )
-        # Students/parents: only see active internships, exclude drafts
-        return queryset.filter(status="active")
+            base = queryset.filter(provider=user)
+        else:
+            # Students/parents: only see active internships
+            base = queryset.filter(status="active")
+        # Allow restore/archive actions to access deleted records
+        if self.action not in ["restore", "archive_list", "archive", "bulk_archive", "bulk_restore", "destroy"]:
+            base = base.filter(deleted=False)
+        return base
 
     serializer_class = InternshipSerializer
 

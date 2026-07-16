@@ -19862,6 +19862,87 @@
           }
         }
       ]
+    },
+    {
+      "name": "jobs",
+      "item": [
+        {
+          "name": "search (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/search/?title=Python+Developer&location=Ahmedabad&remote=true&limit=10&page=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jobs",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "title",
+                  "value": "Python Developer"
+                },
+                {
+                  "key": "location",
+                  "value": "Ahmedabad"
+                },
+                {
+                  "key": "remote",
+                  "value": "true"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "recommended (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/recommended/?assessment_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jobs",
+                "recommended"
+              ],
+              "query": [
+                {
+                  "key": "assessment_id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
