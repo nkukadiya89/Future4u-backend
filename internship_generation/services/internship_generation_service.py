@@ -28,7 +28,7 @@ def _build_response(
 ) -> dict[str, Any]:
     data = payload.model_dump()
     for field in (
-        "department", "stipend", "duration", "mode",
+        "internship_overview", "department", "stipend", "duration", "mode",
         "application_deadline", "country", "state", "city",
         "certificate_provided",
     ):

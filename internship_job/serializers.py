@@ -11,6 +11,12 @@ class InternshipSerializer(BaseModelSerializer):
     internship_provider_name = serializers.SerializerMethodField()
 
     # Field aliases for the AI generation pipeline / frontend payload
+    internship_overview = serializers.CharField(
+        required=False,
+        allow_null=True,
+        allow_blank=True,
+        help_text="Employer-provided internship overview used as AI generation context.",
+    )
     internship_title = serializers.CharField(
         source="name",
         max_length=250,
@@ -66,6 +72,8 @@ class InternshipSerializer(BaseModelSerializer):
             "id",
             "name",
             "internship_title",
+            "internship_overview",
+            "department",
             "country",
             "country_name",
             "state",

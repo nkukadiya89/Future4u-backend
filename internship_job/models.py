@@ -38,6 +38,7 @@ class Internship(BaseModule):
     )
 
     name = models.CharField(max_length=250, null=True, blank=True)
+    internship_overview = models.TextField(null=True, blank=True, help_text="Employer-provided internship overview used as AI generation context.")
     department = models.CharField(max_length=250, null=True, blank=True, help_text="Department or division for this internship.")
     country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True, blank=True)
     state = models.ForeignKey(State, on_delete=models.CASCADE, null=True, blank=True)
