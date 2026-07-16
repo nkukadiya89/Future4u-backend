@@ -6,6 +6,7 @@ from django.db import transaction
 from rest_framework.response import Response
 from common.master_view import BaseModelViewSet
 from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
 from assessment_career.models import CareerSuggestion
 from .service import match_jobs
 from activity_log.services import log_event
@@ -33,19 +34,29 @@ class JobViewSet(BaseModelViewSet):
         
     serializer_class = JobSerializer
 
+    filter_backends = BaseModelViewSet.filter_backends + [DjangoFilterBackend]
+    filterset_fields = {
+        "status": ["exact"],
+        "state": ["exact"],
+        "city": ["exact"],
+        "country": ["exact"],
+        "experience_level": ["exact"],
+        "job_type": ["exact"],
+        "mode": ["exact"],
+    }
+
     search_fields = BaseModelViewSet.searching_fields + [
         "name",
-        "corporate",
+        "corporate__company_name",
         "description",
-        "skills",
-        "responsibilities",
-        "education_tags__name",
+        "job_overview",
+        "education_tags__display_name",
         "experience_level",
         "job_type",
         "mode",
         "city__name",
-        "salary_min",
-        "salary_max",
+        "state__name",
+        "country__name",
         "provider__full_name",
         "why_this_match",
     ]

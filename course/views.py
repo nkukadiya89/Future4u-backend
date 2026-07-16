@@ -2,6 +2,7 @@ from assessment_career.models import CareerSuggestion
 from common.master_view import BaseModelViewSet
 from course.services import match_courses
 from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -33,20 +34,30 @@ class CoursesViewSet(BaseModelViewSet):
 
     serializer_class = CoursesSerializer
 
+    filter_backends = BaseModelViewSet.filter_backends + [DjangoFilterBackend]
+    filterset_fields = {
+        "status": ["exact"],
+        "state": ["exact"],
+        "city": ["exact"],
+        "country": ["exact"],
+        "course_type": ["exact"],
+        "mode": ["exact"],
+    }
+
     search_fields = BaseModelViewSet.searching_fields + [
         "name",
         "course_type",
-        "skills",
-        "education_tags",
         "mode",
         "duration",
         "city__name",
         "country__name",
         "state__name",
-        "course_content",
         "course_overview",
         "course_description",
+        "why_this_course",
         "certification_info",
+        "course_price",
+        "provider__full_name",
     ]
     ordering_fields = BaseModelViewSet.ordering_fields + [
         "name",

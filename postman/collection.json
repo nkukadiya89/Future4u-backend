@@ -17326,6 +17326,36 @@
           },
           "response": []
         },
+         {
+          "name": "restore (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course/{{course_id}}/restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course",
+                "{{course_id}}",
+                "restore",
+                ""
+              ]
+            },
+            "description": "Restore an archived course (sets deleted=false). Only the provider (creator) can restore."
+          },
+          "response": []
+        },
         {
           "name": "bulk_archive (PATCH)",
           "request": {

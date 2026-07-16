@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.db import transaction
 from rest_framework.decorators import action
-from rest_framework import status
+from django_filters.rest_framework import DjangoFilterBackend
 from assessment_career.models import CareerSuggestion
 from .service import match_internships
 from activity_log.services import log_event
@@ -39,12 +39,22 @@ class InternshipViewSet(BaseModelViewSet):
 
     serializer_class = InternshipSerializer
 
+    filter_backends = BaseModelViewSet.filter_backends + [DjangoFilterBackend]
+    filterset_fields = {
+        "status": ["exact"],
+        "state": ["exact"],
+        "city": ["exact"],
+        "country": ["exact"],
+        "internship_type": ["exact"],
+        "mode": ["exact"],
+        "certificate_provided": ["exact"],
+    }
+
     search_fields = BaseModelViewSet.searching_fields + [
         "name",
+        "department",
         "description",
-        "responsibilities",
-        "skills",
-        "education_tags",
+        "education_tags__display_name",
         "why_this_match",
         "mode",
         "duration",
@@ -52,8 +62,7 @@ class InternshipViewSet(BaseModelViewSet):
         "state__name",
         "city__name",
         "internship_type",
-        "fees_amount",
-        "stipend_amount",
+        "provider__full_name",
     ]
     ordering_fields = BaseModelViewSet.ordering_fields + [
         "name",
