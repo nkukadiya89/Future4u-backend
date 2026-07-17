@@ -187,14 +187,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         user.keep_me_logged_in = keep_me_logged
         user.last_login = now()
         user.save()
-        log_event(
-            event="user.login",
-            description=f"User {user.email} logged in",
-            user=user,
-            entity_type="user",
-            entity_id=user.id,
-        )
-
         data = {
             "success": True,
             "message": "Login Successful",

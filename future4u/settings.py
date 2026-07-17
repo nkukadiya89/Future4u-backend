@@ -114,7 +114,6 @@ INSTALLED_APPS = [
     "job_generation",
     "course_generation",
     "internship_generation",
-    "token_override",
     "jobs",
 ]
 
@@ -291,6 +290,7 @@ LOGGING = {
             "propagate": False,
         },
     },
+
 }
 
 SIMPLE_JWT = {

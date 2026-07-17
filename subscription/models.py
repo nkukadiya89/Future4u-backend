@@ -115,6 +115,10 @@ class SubscriptionFeature(models.Model):
 
     is_core = models.BooleanField(default=False)
     is_enabled = models.BooleanField(default=True)
+    is_hidden = models.BooleanField(
+        default=False,
+        help_text="True for system flat-field features that should not appear in core_features/subscription_feature arrays",
+    )
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -159,6 +163,9 @@ class UserSubscription(models.Model):
     end_date = models.DateField()
 
     is_active = models.BooleanField(default=True)
+    # Tracks when monthly tokens were last reset for this user.
+    # Used by check_and_deduct_token to enforce per-month windows for Pro plan.
+    last_reset_at = models.DateField(null=True, blank=True)
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

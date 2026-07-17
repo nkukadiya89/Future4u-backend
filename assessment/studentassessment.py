@@ -31,7 +31,9 @@ from common.api.mixins import ArchiveMixin
 from common.master_view import BaseModelViewSet
 from activity_log.services import log_event
 from domain.models import Domain
+from subscription.services.usage import consume_feature
 from utils.pagination import Pagination
+from utils.token_check import check_and_deduct_token
 
 STREAM_REQUIRED_LEVEL_CODES = {
     "higher_secondary",
@@ -295,18 +297,19 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_200_OK,
                 )
 
+        try:
+            check_and_deduct_token(request.user, "assessment")
+        except Exception as exc:
+            return Response(
+                {"success": False, "message": str(exc)},
+                status=status.HTTP_402_PAYMENT_REQUIRED,
+            )
+
         assessment = StudentAssessment(user=request.user, is_completed=False)
         assessment._request_user = request.user
         assessment.save()
         sync_current_screen(assessment, request.user)
-        log_event(
-            event="assessment.created",
-            description=f"Student {request.user.email} created assessment #{assessment.id}",
-            user=request.user,
-            entity_type="student_assessment",
-            entity_id=assessment.id,
-            request=request,
-        )
+        consume_feature(request.user, "assessment", 1)
         serializer = StudentAssessmentCreateSerializer(assessment)
         return Response(
             {
@@ -370,14 +373,6 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
                     "updated_by",
                 ]
             )
-        log_event(
-            event="assessment.completed",
-            description=f"Student {request.user.email} completed assessment #{assessment.id}",
-            user=request.user,
-            entity_type="student_assessment",
-            entity_id=assessment.id,
-            request=request,
-        )
         return Response(
             {
                 "success": True,

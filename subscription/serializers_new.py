@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from .models import (
-    Discount,
     PaymentSubscription,
     PlanPrice,
     Subscription,
@@ -9,7 +8,10 @@ from .models import (
     SubscriptionInvoice,
     UserSubscription,
 )
-from subscription.services.pricing import calculate_price
+from subscription.services.pricing import PricingService, calculate_price
+from subscription.services.feature_service import FeatureService
+from user.serializers import UserQuickSerializer
+from utils.datetime_formatter import format_datetime
 
 
 class SubscriptionFeatureSerializer(serializers.ModelSerializer):
@@ -18,46 +20,33 @@ class SubscriptionFeatureSerializer(serializers.ModelSerializer):
         fields = ["id", "feature_name", "is_core", "is_enabled"]
 
 
-class SubscriptionSerializer(serializers.ModelSerializer):
-    features = SubscriptionFeatureSerializer(many=True, read_only=True)
-    prices = serializers.SerializerMethodField()
-
-    def get_prices(self, obj):
-        prices = obj.prices.filter(is_active=True, deleted=False)
-        return [
-            {
-                "id": p.id,
-                "period": p.period,
-                "price": p.price,
-                "duration_days": p.duration_days,
-            }
-            for p in prices
-        ]
-
-
-class SubscriptionCreateSerializer(serializers.ModelSerializer):
-    """Writable serializer that accepts frontend/admin payload and creates
-    a Subscription (plan) plus a PlanPrice snapshot and SubscriptionFeatures.
-
-    Accepts these write-only fields:
-      - subscription_price / subscription_sell_price
-      - duration_days
-      - period (optional)
-      - core_features (list of dicts)
-      - subscription_features or subscription_feature (list of dicts)
-    """
-
+class SubscriptionWriteSerializer(serializers.ModelSerializer):
     subscription_price = serializers.IntegerField(write_only=True, required=False)
+    subscription_discount = serializers.IntegerField(write_only=True, required=False)
     subscription_sell_price = serializers.IntegerField(write_only=True, required=False)
+    plan_price = serializers.IntegerField(write_only=True, required=False)
     duration_days = serializers.IntegerField(write_only=True, required=False)
-    period = serializers.CharField(write_only=True, required=False)
+
+    no_of_profile_assessment = serializers.IntegerField(write_only=True, required=False)
+    no_of_tokens = serializers.IntegerField(write_only=True, required=False)
+
+    internship_access_type = serializers.CharField(write_only=True, required=False)
+    no_of_internship_access = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    job_portal_access_type = serializers.CharField(write_only=True, required=False)
+    no_of_job_portal_access = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    course_portal_access_type = serializers.CharField(write_only=True, required=False)
+    no_of_course_portal_access = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    project_topic_access_type = serializers.CharField(write_only=True, required=False)
+    no_of_project_topic_access = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+
+    career_compare = serializers.BooleanField(write_only=True, required=False)
+    career_roadmap = serializers.BooleanField(write_only=True, required=False)
+    ai_chat_access = serializers.BooleanField(write_only=True, required=False)
 
     core_features = serializers.ListField(
         child=serializers.DictField(), write_only=True, required=False
     )
-    subscription_features = serializers.ListField(
-        child=serializers.DictField(), write_only=True, required=False
-    )
+
     subscription_feature = serializers.ListField(
         child=serializers.DictField(), write_only=True, required=False
     )
@@ -70,123 +59,201 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
             "description",
             "is_active",
             "subscription_price",
+            "subscription_discount",
             "subscription_sell_price",
             "duration_days",
-            "period",
+            "plan_price",
+            "no_of_profile_assessment",
+            "no_of_tokens",
+            "internship_access_type",
+            "no_of_internship_access",
+            "job_portal_access_type",
+            "no_of_job_portal_access",
+            "course_portal_access_type",
+            "no_of_course_portal_access",
+            "project_topic_access_type",
+            "no_of_project_topic_access",
+            "career_compare",
+            "career_roadmap",
+            "ai_chat_access",
             "core_features",
-            "subscription_features",
             "subscription_feature",
-            "features",
-            "prices",
         ]
-        read_only_fields = ["features", "prices"]
+
+    def validate(self, data):
+        for type_field, count_field, _ in FeatureService.ACCESS_PAIRS:
+            if type_field in data and data[type_field] == "limited":
+                count_val = data.get(count_field)
+                if count_val is None or count_val <= 0:
+                    access_name = type_field.replace("_access_type", "").replace("_", " ").title()
+                    raise serializers.ValidationError(
+                        f"Count is required for {access_name} when access type is 'limited'."
+                    )
+        return data
+
+    @staticmethod
+    def _get_user(context):
+        request = context.get("request")
+        user = getattr(request, "user", None)
+        return user if user and getattr(user, "is_authenticated", False) else None
+
+    def _save(self, validated_data, instance=None):
+        user = self._get_user(self.context)
+        price_data = PricingService.extract(validated_data)
+        subs_features = validated_data.pop("subscription_feature", None)
+        core_features_data = validated_data.pop("core_features", None)
+        is_update = instance is not None
+
+        if instance is None:
+            instance = Subscription.objects.create(
+                package_name=validated_data.get("package_name"),
+                description=validated_data.get("description"),
+                is_active=validated_data.get("is_active", True),
+                created_by=user,
+            )
+        else:
+            for attr in ("package_name", "description", "is_active"):
+                if attr in validated_data:
+                    setattr(instance, attr, validated_data[attr])
+            instance.updated_by = user
+            instance.save()
+
+        PricingService.save(instance, price_data, user, update=is_update)
+        FeatureService.sync_flat_fields(instance, validated_data, user)
+        FeatureService.sync_custom_features(instance, subs_features, user, mode="update" if is_update else "create")
+        FeatureService.sync_core_features(instance, core_features_data, user)
+
+        return instance
 
     def create(self, validated_data):
-        request = self.context.get("request")
-        user = getattr(request, "user", None)
+        return self._save(validated_data)
 
-        # Extract lists (support both names for compatibility)
-        core_features = validated_data.pop("core_features", []) or []
-        subs_features = validated_data.pop("subscription_features", None)
-        if subs_features is None:
-            subs_features = validated_data.pop("subscription_feature", []) or []
+    def update(self, instance, validated_data):
+        return self._save(validated_data, instance=instance)
 
-        # Determine price and duration
-        price = validated_data.pop("subscription_price", None)
-        if price is None:
-            price = validated_data.pop("subscription_sell_price", None)
 
-        duration = validated_data.pop("duration_days", None) or 30
-        period = validated_data.pop("period", None)
-        if not period:
-            # infer period from duration
-            period = "yearly" if int(duration) >= 350 else "monthly"
-
-        # create the subscription (plan)
-        subscription = Subscription.objects.create(
-            package_name=validated_data.get("package_name"),
-            description=validated_data.get("description", None),
-            is_active=validated_data.get("is_active", True),
-            created_by=(
-                user if user and getattr(user, "is_authenticated", False) else None
-            ),
-        )
-
-        # create PlanPrice if price provided
-        if price is not None:
-            PlanPrice.objects.create(
-                plan=subscription,
-                period=period,
-                price=price,
-                duration_days=duration,
-                created_by=(
-                    user if user and getattr(user, "is_authenticated", False) else None
-                ),
-            )
-
-        # Helper to normalize feature dict keys
-        def _norm_feature(d):
-            name = (
-                d.get("feature")
-                or d.get("feature_name")
-                or d.get("featureCode")
-                or d.get("feature_code")
-            )
-            enabled = (
-                d.get("feature_status")
-                if "feature_status" in d
-                else d.get("is_enabled", True)
-            )
-            value = d.get("value") or d.get("count") or None
-            is_unlimited = d.get("is_unlimited", False)
-            code = d.get("feature_code") or d.get("featureCode") or None
-            return {
-                "feature_name": name,
-                "is_enabled": bool(enabled),
-                "value": value,
-                "is_unlimited": bool(is_unlimited),
-                "feature_code": code,
-            }
-
-        # create core features
-        for f in core_features:
-            nf = _norm_feature(f)
-            SubscriptionFeature.objects.create(
-                subscription=subscription,
-                feature_name=nf["feature_name"],
-                feature_code=nf.get("feature_code"),
-                is_core=True,
-                is_enabled=nf["is_enabled"],
-                value=nf.get("value"),
-                is_unlimited=nf.get("is_unlimited", False),
-                created_by=(
-                    user if user and getattr(user, "is_authenticated", False) else None
-                ),
-            )
-
-        # create subscription-specific features
-        for f in subs_features:
-            nf = _norm_feature(f)
-            SubscriptionFeature.objects.create(
-                subscription=subscription,
-                feature_name=nf["feature_name"],
-                feature_code=nf.get("feature_code"),
-                is_core=False,
-                is_enabled=nf["is_enabled"],
-                value=nf.get("value"),
-                is_unlimited=nf.get("is_unlimited", False),
-                created_by=(
-                    user if user and getattr(user, "is_authenticated", False) else None
-                ),
-            )
-
-        return subscription
+SubscriptionCreateSerializer = SubscriptionWriteSerializer
 
 
 class UserSubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSubscription
         fields = "__all__"
+
+
+class UserSubscriptionMeSerializer(serializers.Serializer):
+    subscription = serializers.SerializerMethodField()
+    period = serializers.CharField(source="plan_price.period", read_only=True)
+    start_date = serializers.DateField(read_only=True)
+    end_date = serializers.DateField(read_only=True)
+    is_active = serializers.BooleanField(read_only=True)
+    features = serializers.SerializerMethodField()
+    subscription_feature = serializers.SerializerMethodField()
+    core_features = serializers.SerializerMethodField()
+
+    class Meta:
+        fields = [
+            "subscription", "period", "start_date", "end_date",
+            "is_active", "features", "subscription_feature", "core_features",
+        ]
+
+    FEATURE_CODES = [
+        "assessment", "monthly_tokens", "ai_chat",
+        "career_compare", "career_roadmap",
+        "internship", "job", "course", "project_topic",
+    ]
+
+    CORE_FEATURE_MAP = [
+        ("career_compare", "Career Compare"),
+        ("career_roadmap", "Career Roadmap Path"),
+        ("ai_chat", "AI Chat Access"),
+    ]
+
+    def get_subscription(self, obj):
+        plan = getattr(obj.plan_price, "plan", None)
+        if not plan:
+            return None
+        return {
+            "id": plan.id,
+            "package_name": plan.package_name,
+            "description": plan.description,
+        }
+
+    def get_features(self, obj):
+        plan = getattr(obj.plan_price, "plan", None)
+        if not plan:
+            return {}
+
+        features_qs = SubscriptionFeature.objects.filter(
+            subscription=plan,
+            feature_code__in=self.FEATURE_CODES,
+            deleted=False,
+        )
+        features_by_code = {f.feature_code: f for f in features_qs}
+
+        from subscription.models import FeatureUsage
+        usage_qs = FeatureUsage.objects.filter(
+            user=getattr(obj, "user", None),
+            feature_code__in=self.FEATURE_CODES,
+            plan_price=obj.plan_price,
+        )
+        usage_by_code = {u.feature_code: u.used for u in usage_qs}
+
+        features_data = {}
+        for fc in self.FEATURE_CODES:
+            feature = features_by_code.get(fc)
+            used = usage_by_code.get(fc, 0)
+
+            if feature and feature.is_enabled:
+                if feature.is_unlimited:
+                    allowed = "unlimited"
+                    remaining = None
+                else:
+                    allowed = int(feature.value or 0)
+                    remaining = max(allowed - used, 0)
+            else:
+                allowed = 0
+                remaining = 0
+
+            features_data[fc] = {"allowed": allowed, "used": used, "remaining": remaining}
+
+        return features_data
+
+    def get_subscription_feature(self, obj):
+        plan = getattr(obj.plan_price, "plan", None)
+        if not plan:
+            return []
+
+        features = SubscriptionFeature.objects.filter(
+            subscription=plan,
+            is_core=False,
+            is_hidden=False,
+            deleted=False,
+        ).order_by("id")
+        return [
+            {"feature_name": f.feature_name, "feature_status": bool(f.is_enabled)}
+            for f in features
+        ]
+
+    def get_core_features(self, obj):
+        plan = getattr(obj.plan_price, "plan", None)
+        if not plan:
+            return []
+
+        features_qs = SubscriptionFeature.objects.filter(
+            subscription=plan,
+            feature_code__in=[code for code, _ in self.CORE_FEATURE_MAP],
+            deleted=False,
+        )
+        features_by_code = {f.feature_code: f for f in features_qs}
+
+        return [
+            {
+                "feature_code": code,
+                "feature_status": bool(features_by_code.get(code) and features_by_code[code].is_enabled),
+            }
+            for code, _ in self.CORE_FEATURE_MAP
+        ]
 
 
 class PlanPriceSerializer(serializers.ModelSerializer):
@@ -211,26 +278,15 @@ class PaymentSubscriptionSerializer(serializers.ModelSerializer):
         read_only_fields = ["status", "razorpay_payment_id", "payment_date"]
 
 
-
-class SubscriptionAPISerializer(serializers.ModelSerializer):
-    discounted_price = serializers.SerializerMethodField()
-    discount_amount = serializers.SerializerMethodField()
-    price = serializers.SerializerMethodField()
-    period = serializers.SerializerMethodField()
-    duration_days = serializers.SerializerMethodField()
-    country = serializers.SerializerMethodField()
-    state = serializers.SerializerMethodField()
-    country_name = serializers.SerializerMethodField()
-    state_name = serializers.SerializerMethodField()
+class SubscriptionSerializer(serializers.ModelSerializer):
     subscription_price = serializers.SerializerMethodField()
     subscription_discount = serializers.SerializerMethodField()
     subscription_sell_price = serializers.SerializerMethodField()
-    plan_price = serializers.SerializerMethodField()
-    core_features = serializers.SerializerMethodField()
-    subscription_feature = serializers.SerializerMethodField()
-    subscription_features = serializers.SerializerMethodField()
+    duration_days = serializers.SerializerMethodField()
+
     no_of_profile_assessment = serializers.SerializerMethodField()
     no_of_tokens = serializers.SerializerMethodField()
+
     internship_access_type = serializers.SerializerMethodField()
     no_of_internship_access = serializers.SerializerMethodField()
     job_portal_access_type = serializers.SerializerMethodField()
@@ -239,28 +295,29 @@ class SubscriptionAPISerializer(serializers.ModelSerializer):
     no_of_course_portal_access = serializers.SerializerMethodField()
     project_topic_access_type = serializers.SerializerMethodField()
     no_of_project_topic_access = serializers.SerializerMethodField()
-    portal_access = serializers.SerializerMethodField()
+
+    core_features = serializers.SerializerMethodField()
+
+    subscription_feature = serializers.SerializerMethodField()
+
+    created_by = UserQuickSerializer(read_only=True)
+    updated_by = UserQuickSerializer(read_only=True)
+    created_at = serializers.SerializerMethodField(read_only=True)
+    updated_at = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Subscription
         fields = [
             "id",
             "package_name",
-            "description",
-            "is_active",
             "subscription_price",
             "subscription_discount",
             "subscription_sell_price",
-            "plan_price",
             "duration_days",
-            "country",
-            "state",
-            "country_name",
-            "state_name",
             "no_of_profile_assessment",
             "no_of_tokens",
-            "core_features",
-            "subscription_feature",
+            "description",
+            "is_active",
             "internship_access_type",
             "no_of_internship_access",
             "job_portal_access_type",
@@ -269,13 +326,12 @@ class SubscriptionAPISerializer(serializers.ModelSerializer):
             "no_of_course_portal_access",
             "project_topic_access_type",
             "no_of_project_topic_access",
-            "price",
-            "period",
-            "discounted_price",
-            "discount_amount",
-            "portal_access",
-            "prices",
-            "subscription_features",
+            "core_features",
+            "subscription_feature",
+            "created_by",
+            "updated_by",
+            "created_at",
+            "updated_at",
         ]
 
     def _get_pricing(self, obj):
@@ -301,20 +357,8 @@ class SubscriptionAPISerializer(serializers.ModelSerializer):
                 obj._pricing_cache = pricing
         return obj._pricing_cache
 
-    def get_price(self, obj):
-        return self._get_pricing(obj)["price"]
-
-    def get_period(self, obj):
-        return self._get_pricing(obj)["period"]
-
     def get_duration_days(self, obj):
         return self._get_pricing(obj)["duration_days"]
-
-    def get_discounted_price(self, obj):
-        return self._get_pricing(obj)["final_price"]
-
-    def get_discount_amount(self, obj):
-        return self._get_pricing(obj)["discount"]
 
     def get_subscription_price(self, obj):
         return self._get_pricing(obj)["price"]
@@ -333,23 +377,88 @@ class SubscriptionAPISerializer(serializers.ModelSerializer):
     def get_subscription_sell_price(self, obj):
         return self._get_pricing(obj)["final_price"]
 
-    def get_plan_price(self, obj):
-        return self._get_pricing(obj)["final_price"]
+    def _get_feature(self, obj, feature_code):
+        return obj.features.filter(
+            feature_code=feature_code, deleted=False
+        ).first()
 
-    def get_country(self, obj):
-        return None
+    def _get_feature_value(self, obj, feature_code):
+        feature = self._get_feature(obj, feature_code)
+        if not feature or not feature.is_enabled:
+            return None
+        if feature.is_unlimited or feature.value is None:
+            return None
+        try:
+            return int(feature.value)
+        except (TypeError, ValueError):
+            return None
 
-    def get_state(self, obj):
-        return None
+    def get_no_of_profile_assessment(self, obj):
+        return self._get_feature_value(obj, "assessment")
 
-    def get_country_name(self, obj):
-        return None
+    def get_no_of_tokens(self, obj):
+        return self._get_feature_value(obj, "monthly_tokens")
 
-    def get_state_name(self, obj):
-        return None
+    def _get_access_type(self, obj, feature_code):
+        feature = self._get_feature(obj, feature_code)
+        if not feature:
+            return "full"
+        return "full" if feature.is_unlimited else "limited"
 
-    def _serialize_feature_list(self, obj, is_core):
-        features = obj.features.filter(is_core=is_core, deleted=False).order_by("id")
+    def _get_access_count(self, obj, feature_code):
+        feature = self._get_feature(obj, feature_code)
+        if not feature or feature.is_unlimited or feature.value is None:
+            return None
+        try:
+            return int(feature.value)
+        except (TypeError, ValueError):
+            return None
+
+    def get_internship_access_type(self, obj):
+        return self._get_access_type(obj, "internship")
+
+    def get_no_of_internship_access(self, obj):
+        return self._get_access_count(obj, "internship")
+
+    def get_job_portal_access_type(self, obj):
+        return self._get_access_type(obj, "job")
+
+    def get_no_of_job_portal_access(self, obj):
+        return self._get_access_count(obj, "job")
+
+    def get_course_portal_access_type(self, obj):
+        return self._get_access_type(obj, "course")
+
+    def get_no_of_course_portal_access(self, obj):
+        return self._get_access_count(obj, "course")
+
+    def get_project_topic_access_type(self, obj):
+        return self._get_access_type(obj, "project_topic")
+
+    def get_no_of_project_topic_access(self, obj):
+        return self._get_access_count(obj, "project_topic")
+
+    def _get_toggle(self, obj, feature_code):
+        feature = self._get_feature(obj, feature_code)
+        return bool(feature.is_enabled) if feature else False
+
+    def get_core_features(self, obj):
+        return [
+            {"feature_code": "career_compare", "feature_status": self._get_toggle(obj, "career_compare")},
+            {"feature_code": "career_roadmap", "feature_status": self._get_toggle(obj, "career_roadmap")},
+            {"feature_code": "ai_chat", "feature_status": self._get_toggle(obj, "ai_chat")},
+        ]
+
+    def get_created_at(self, obj):
+        return format_datetime(obj.created_at)
+
+    def get_updated_at(self, obj):
+        return format_datetime(obj.updated_at)
+
+    def get_subscription_feature(self, obj):
+        features = obj.features.filter(
+            is_core=False, is_hidden=False, deleted=False
+        ).order_by("id")
         return [
             {
                 "feature_name": f.feature_name,
@@ -358,129 +467,5 @@ class SubscriptionAPISerializer(serializers.ModelSerializer):
             for f in features
         ]
 
-    def get_core_features(self, obj):
-        return self._serialize_feature_list(obj, True)
 
-    def get_subscription_feature(self, obj):
-        return self._serialize_feature_list(obj, False)
-
-    def get_subscription_features(self, obj):
-        return self.get_subscription_feature(obj)
-
-    def _feature_value_for_keyword(self, obj, keywords):
-        features = obj.features.filter(deleted=False, is_enabled=True)
-        for feature in features:
-            name = (feature.feature_name or "").lower()
-            code = (feature.feature_code or "").lower()
-            if any(keyword in name or keyword in code for keyword in keywords):
-                if feature.is_unlimited:
-                    return None
-                if feature.value is None:
-                    return None
-                try:
-                    return int(feature.value)
-                except (TypeError, ValueError):
-                    return None
-        return None
-
-    def get_no_of_profile_assessment(self, obj):
-        return self._feature_value_for_keyword(obj, ["assessment"])
-
-    def get_no_of_tokens(self, obj):
-        return self._feature_value_for_keyword(obj, ["token", "tokens"])
-
-    def _access_type_for_keyword(self, obj, keywords):
-        features = obj.features.filter(deleted=False, is_enabled=True)
-        for feature in features:
-            name = (feature.feature_name or "").lower()
-            code = (feature.feature_code or "").lower()
-            if any(keyword in name or keyword in code for keyword in keywords):
-                if feature.is_unlimited:
-                    return "full"
-                if feature.value is None:
-                    return "full"
-                return "limited"
-        return "none"
-
-    def _feature_value_for_access(self, obj, keywords):
-        features = obj.features.filter(deleted=False, is_enabled=True)
-        for feature in features:
-            name = (feature.feature_name or "").lower()
-            code = (feature.feature_code or "").lower()
-            if any(keyword in name or keyword in code for keyword in keywords):
-                if feature.is_unlimited:
-                    return None
-                if feature.value is None:
-                    return None
-                try:
-                    return int(feature.value)
-                except (TypeError, ValueError):
-                    return None
-        return None
-
-    def get_internship_access_type(self, obj):
-        return self._access_type_for_keyword(obj, ["internship"])
-
-    def get_no_of_internship_access(self, obj):
-        return self._feature_value_for_access(obj, ["internship"])
-
-    def get_job_portal_access_type(self, obj):
-        return self._access_type_for_keyword(obj, ["job", "job_portal"])
-
-    def get_no_of_job_portal_access(self, obj):
-        return self._feature_value_for_access(obj, ["job", "job_portal"])
-
-    def get_course_portal_access_type(self, obj):
-        return self._access_type_for_keyword(obj, ["course", "course_portal"])
-
-    def get_no_of_course_portal_access(self, obj):
-        return self._feature_value_for_access(obj, ["course", "course_portal"])
-
-    def get_project_topic_access_type(self, obj):
-        return self._access_type_for_keyword(obj, ["project_topic", "project topic"])
-
-    def get_no_of_project_topic_access(self, obj):
-        return self._feature_value_for_access(obj, ["project_topic", "project topic"])
-
-    def get_portal_access(self, obj):
-        access_fields = [
-            "assessment",
-            "career_assessment",
-            "domain_exploration",
-            "skill_gap_analysis",
-            "career_roadmap",
-            "counsellor_session",
-            "resume_builder",
-            "job_recommendations",
-            "learning_resources",
-            "mock_interview",
-            "mentorship_access",
-            "premium_counsellor",
-        ]
-        features = list(obj.features.filter(deleted=False))
-        access = {}
-        for key in access_fields:
-            enabled = any(
-                (feature.feature_code or "").lower() == key
-                or (feature.feature_name or "").lower() == key
-                or key in (feature.feature_name or "").lower()
-                or key in (feature.feature_code or "").lower()
-                for feature in features
-                if feature.is_enabled
-            )
-            access[key] = enabled
-        return access
-
-    prices = serializers.SerializerMethodField()
-
-    def get_prices(self, obj):
-        prices = obj.prices.filter(is_active=True, deleted=False)
-        return [
-            {
-                "id": p.id,
-                "period": p.period,
-                "price": p.price,
-                "duration_days": p.duration_days,
-            }
-            for p in prices
-        ]
+SubscriptionAPISerializer = SubscriptionSerializer

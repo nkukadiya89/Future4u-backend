@@ -35,7 +35,10 @@ class InternshipViewSet(BaseModelViewSet):
         # Allow restore/archive actions to access deleted records
         if self.action not in ["restore", "archive_list", "archive", "bulk_archive", "bulk_restore", "destroy"]:
             base = base.filter(deleted=False)
-        return base
+
+        # Apply subscription plan portal limit (internship access)
+        from subscription.services.usage import apply_portal_limit
+        return apply_portal_limit(user, base, "internship")
 
     serializer_class = InternshipSerializer
 

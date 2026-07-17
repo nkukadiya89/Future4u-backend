@@ -4,6 +4,50 @@ from django.db.models import F
 from subscription.models import FeatureUsage, SubscriptionFeature, UserSubscription
 
 
+def apply_portal_limit(user, queryset, feature_code):
+    """
+    Slice a portal queryset (courses / internships / jobs) based on the
+    user's active subscription plan limit.
+
+    - Full access (is_unlimited=True) → no limit applied.
+    - Limited access → only first N items are returned.
+    - No active subscription or no feature config → queryset unchanged.
+
+    Usage in get_queryset():
+        base = apply_portal_limit(user, base, "course")
+        return base
+    """
+    if user.user_type not in ["student", "parent", "working_professional"]:
+        return queryset
+
+    user_sub = (
+        UserSubscription.objects.filter(user=user, is_active=True)
+        .select_related("plan_price__plan")
+        .first()
+    )
+    if not user_sub:
+        return queryset
+
+    plan = getattr(user_sub.plan_price, "plan", None)
+    if not plan:
+        return queryset
+
+    feature = SubscriptionFeature.objects.filter(
+        subscription=plan,
+        feature_code=feature_code,
+        is_enabled=True,
+        deleted=False,
+    ).first()
+    if feature and not feature.is_unlimited:
+        try:
+            limit = int(feature.value or 0)
+            return queryset[:limit]
+        except (TypeError, ValueError):
+            pass
+
+    return queryset
+
+
 def consume_feature(user, feature_code, quantity=1):
     """
     Validate and consume a feature usage.

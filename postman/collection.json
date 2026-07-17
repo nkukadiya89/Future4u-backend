@@ -14149,60 +14149,6 @@
       ]
     },
     {
-      "name": "subscription",
-      "item": [
-        {
-          "name": "list_plans (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/subscriptions/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "subscriptions"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "my_subscription (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/company-subscriptions/me/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "company-subscriptions",
-                "me"
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
       "name": "Admin Users",
       "description": "Super Admin / staff endpoints for creating and managing student users. Requires Bearer {{access_token}}. Base path: /admin-student-users/\n\nList active students with GET /api/student-profile/ (superuser token).\n\nActivate or deactivate students with PATCH {user_id}/update-status/ (status: active | inactive). Active students receive a password setup email when activated.\n\nSoft-delete (archive): DELETE single student or PATCH bulk-archive. Students must be inactive before archiving. Restore archived students with PATCH bulk-restore. List archived students with GET archive-list.",
       "item": [
@@ -15069,6 +15015,40 @@
           ]
         },
         {
+          "name": "update-tokens (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"extra_token_limit\": 5000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/school-college-profile/{{school_college_profile_id}}/update-tokens/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "school-college-profile",
+                "{{school_college_profile_id}}",
+                "update-tokens",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "update-status (PATCH)",
           "request": {
             "method": "PATCH",
@@ -15652,6 +15632,40 @@
               }
             }
           ]
+        },
+        {
+          "name": "update-tokens (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"extra_token_limit\": 5000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/institute-profile/{{institute_profile_id}}/update-tokens/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "institute-profile",
+                "{{institute_profile_id}}",
+                "update-tokens",
+                ""
+              ]
+            }
+          },
+          "response": []
         },
         {
           "name": "update-status (PATCH)",
@@ -16440,6 +16454,40 @@
           ]
         },
         {
+          "name": "update-tokens (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"extra_token_limit\": 5000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/corporate-profile/{{corporate_profile_id}}/update-tokens/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "corporate-profile",
+                "{{corporate_profile_id}}",
+                "update-tokens",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "update-status (PATCH)",
           "request": {
             "method": "PATCH",
@@ -16645,6 +16693,948 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Subscription Master",
+      "item": [
+        {
+          "name": "subscriptions list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/?search=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "subscriptions retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/{{subscription_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions",
+                "{{subscription_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "subscriptions create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_name\": \"Premium Plan\",\n  \"description\": \"Full access premium subscription\",\n  \"subscription_sell_price\": 2500,\n  \"duration_days\": 30,\n  \"no_of_profile_assessment\": 10,\n  \"no_of_tokens\": 60000,\n  \"internship_access_type\": \"limited\",\n  \"no_of_internship_access\": 50,\n  \"job_portal_access_type\": \"full\",\n  \"no_of_job_portal_access\": null,\n  \"course_portal_access_type\": \"full\",\n  \"no_of_course_portal_access\": null,\n  \"project_topic_access_type\": \"limited\",\n  \"no_of_project_topic_access\": 40,\n  \"core_features\": [\n    {\n      \"feature_name\": \"Career Compare\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"Career Roadmap Path\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"AI Chat Access\",\n      \"feature_status\": false\n    }\n  ],\n  \"subscription_feature\": [\n    {\n      \"feature_name\": \"AI Resume Builder\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"Mock Interview\",\n      \"feature_status\": false\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "subscriptions update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/{{subscription_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions",
+                "{{subscription_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_name\": \"Premium Plan Updated\",\n  \"description\": \"Full access premium subscription with updates\",\n  \"subscription_sell_price\": 2200,\n  \"duration_days\": 30,\n  \"no_of_profile_assessment\": 10,\n  \"no_of_tokens\": 60000,\n  \"internship_access_type\": \"full\",\n  \"no_of_internship_access\": null,\n  \"job_portal_access_type\": \"full\",\n  \"no_of_job_portal_access\": null,\n  \"course_portal_access_type\": \"full\",\n  \"no_of_course_portal_access\": null,\n  \"project_topic_access_type\": \"full\",\n  \"no_of_project_topic_access\": null,\n  \"core_features\": [\n    {\n      \"feature_name\": \"Career Compare\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"Career Roadmap Path\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"AI Chat Access\",\n      \"feature_status\": false\n    }\n  ],\n  \"subscription_feature\": [\n    {\n      \"feature_name\": \"Mock Interview\",\n      \"feature_status\": true\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "subscriptions partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/{{subscription_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions",
+                "{{subscription_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated plan with higher token limit\",\n  \"no_of_tokens\": 75000,\n  \"internship_access_type\": \"limited\",\n  \"no_of_internship_access\": 100,\n  \"core_features\": [\n    {\n      \"feature_name\": \"Career Compare\",\n      \"feature_status\": false\n    }\n  ],\n  \"subscription_feature\": [\n    {\n      \"feature_name\": \"Mock Interview\",\n      \"feature_status\": true\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "subscriptions destroy soft-delete (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/{{subscription_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions",
+                "{{subscription_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "company-subscriptions list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/company-subscriptions/?user_id=",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "company-subscriptions",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "user_id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "company-subscriptions retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/company-subscriptions/{{user_subscription_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "company-subscriptions",
+                "{{user_subscription_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "company-subscriptions create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/company-subscriptions/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "company-subscriptions",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_name\": \"Premium Plan\",\n  \"description\": \"Full access premium subscription\",\n  \"subscription_sell_price\": 2500,\n  \"duration_days\": 30,\n  \"no_of_profile_assessment\": 10,\n  \"no_of_tokens\": 60000,\n  \"internship_access_type\": \"limited\",\n  \"no_of_internship_access\": 50,\n  \"job_portal_access_type\": \"full\",\n  \"no_of_job_portal_access\": null,\n  \"course_portal_access_type\": \"full\",\n  \"no_of_course_portal_access\": null,\n  \"project_topic_access_type\": \"limited\",\n  \"no_of_project_topic_access\": 40,\n  \"core_features\": [\n    {\n      \"feature_name\": \"Career Compare\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"Career Roadmap Path\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"AI Chat Access\",\n      \"feature_status\": false\n    }\n  ],\n  \"subscription_feature\": [\n    {\n      \"feature_name\": \"AI Resume Builder\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"Mock Interview\",\n      \"feature_status\": false\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "company-subscriptions update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/company-subscriptions/{{user_subscription_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "company-subscriptions",
+                "{{user_subscription_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_name\": \"Premium Plan Updated\",\n  \"description\": \"Full access premium subscription with updates\",\n  \"subscription_sell_price\": 2200,\n  \"duration_days\": 30,\n  \"no_of_profile_assessment\": 10,\n  \"no_of_tokens\": 60000,\n  \"internship_access_type\": \"full\",\n  \"no_of_internship_access\": null,\n  \"job_portal_access_type\": \"full\",\n  \"no_of_job_portal_access\": null,\n  \"course_portal_access_type\": \"full\",\n  \"no_of_course_portal_access\": null,\n  \"project_topic_access_type\": \"full\",\n  \"no_of_project_topic_access\": null,\n  \"core_features\": [\n    {\n      \"feature_name\": \"Career Compare\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"Career Roadmap Path\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"AI Chat Access\",\n      \"feature_status\": false\n    }\n  ],\n  \"subscription_feature\": [\n    {\n      \"feature_name\": \"Mock Interview\",\n      \"feature_status\": true\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "company-subscriptions partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/company-subscriptions/{{user_subscription_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "company-subscriptions",
+                "{{user_subscription_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated plan with higher token limit\",\n  \"no_of_tokens\": 75000,\n  \"internship_access_type\": \"limited\",\n  \"no_of_internship_access\": 100,\n  \"core_features\": [\n    {\n      \"feature_name\": \"Career Compare\",\n      \"feature_status\": false\n    }\n  ],\n  \"subscription_feature\": [\n    {\n      \"feature_name\": \"Mock Interview\",\n      \"feature_status\": true\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "company-subscriptions destroy (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/company-subscriptions/{{user_subscription_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "company-subscriptions",
+                "{{user_subscription_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "my_subscription (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/company-subscriptions/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "company-subscriptions",
+                "me",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "payments list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "payments retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/{{payment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "{{payment_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "payments create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_name\": \"\",\n  \"description\": \"\",\n  \"subscription_sell_price\": 2500,\n  \"duration_days\": 30,\n  \"no_of_profile_assessment\": 10,\n  \"no_of_tokens\": 60000,\n  \"internship_access_type\": \"limited\",\n  \"no_of_internship_access\": 50,\n  \"job_portal_access_type\": \"full\",\n  \"no_of_job_portal_access\": null,\n  \"course_portal_access_type\": \"full\",\n  \"no_of_course_portal_access\": null,\n  \"project_topic_access_type\": \"limited\",\n  \"no_of_project_topic_access\": 40,\n  \"core_features\": [\n    {\n      \"feature_name\": \"Career Compare\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"Career Roadmap Path\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"AI Chat Access\",\n      \"feature_status\": false\n    }\n  ],\n  \"subscription_feature\": [\n    {\n      \"feature_name\": \"AI Resume Builder\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"Mock Interview\",\n      \"feature_status\": false\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "payments create-order (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/create-order/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "create-order",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_name\": \"\",\n  \"description\": \"\",\n  \"subscription_sell_price\": 2500,\n  \"duration_days\": 30,\n  \"no_of_profile_assessment\": 10,\n  \"no_of_tokens\": 60000,\n  \"internship_access_type\": \"limited\",\n  \"no_of_internship_access\": 50,\n  \"job_portal_access_type\": \"full\",\n  \"no_of_job_portal_access\": null,\n  \"course_portal_access_type\": \"full\",\n  \"no_of_course_portal_access\": null,\n  \"project_topic_access_type\": \"limited\",\n  \"no_of_project_topic_access\": 40,\n  \"core_features\": [\n    {\n      \"feature_name\": \"Career Compare\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"Career Roadmap Path\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"AI Chat Access\",\n      \"feature_status\": false\n    }\n  ],\n  \"subscription_feature\": [\n    {\n      \"feature_name\": \"AI Resume Builder\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"Mock Interview\",\n      \"feature_status\": false\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "payments mark_paid (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/{{payment_id}}/mark_paid/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "{{payment_id}}",
+                "mark_paid",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_id\": \"pay_test_payment_id\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "payments update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/{{payment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "{{payment_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"duration_days\": 30,\n  \"no_of_profile_assessment\": 10,\n  \"no_of_tokens\": 60000,\n  \"internship_access_type\": \"full\",\n  \"no_of_internship_access\": null,\n  \"job_portal_access_type\": \"full\",\n  \"no_of_job_portal_access\": null,\n  \"course_portal_access_type\": \"full\",\n  \"no_of_course_portal_access\": null,\n  \"project_topic_access_type\": \"full\",\n  \"no_of_project_topic_access\": null,\n  \"core_features\": [\n    {\n      \"feature_name\": \"Career Compare\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"Career Roadmap Path\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"AI Chat Access\",\n      \"feature_status\": false\n    }\n  ],\n  \"subscription_feature\": [\n    {\n      \"feature_name\": \"Mock Interview\",\n      \"feature_status\": true\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "payments partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/{{payment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "{{payment_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated plan with higher token limit\",\n  \"no_of_tokens\": 75000,\n  \"internship_access_type\": \"limited\",\n  \"no_of_internship_access\": 100,\n  \"core_features\": [\n    {\n      \"feature_name\": \"Career Compare\",\n      \"feature_status\": false\n    }\n  ],\n  \"subscription_feature\": [\n    {\n      \"feature_name\": \"Mock Interview\",\n      \"feature_status\": true\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "payments destroy (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/{{payment_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "{{payment_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "invoices list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invoices",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "invoices retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/{{invoice_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invoices",
+                "{{invoice_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "invoices create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invoices",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_name\": \"\",\n  \"description\": \"\",\n  \"subscription_sell_price\": 2500,\n  \"duration_days\": 30,\n  \"no_of_profile_assessment\": 10,\n  \"no_of_tokens\": 60000,\n  \"internship_access_type\": \"limited\",\n  \"no_of_internship_access\": 50,\n  \"job_portal_access_type\": \"full\",\n  \"no_of_job_portal_access\": null,\n  \"course_portal_access_type\": \"full\",\n  \"no_of_course_portal_access\": null,\n  \"project_topic_access_type\": \"limited\",\n  \"no_of_project_topic_access\": 40,\n  \"core_features\": [\n    {\n      \"feature_name\": \"Career Compare\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"Career Roadmap Path\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"AI Chat Access\",\n      \"feature_status\": false\n    }\n  ],\n  \"subscription_feature\": [\n    {\n      \"feature_name\": \"AI Resume Builder\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"Mock Interview\",\n      \"feature_status\": false\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "invoices mark_final (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/{{invoice_id}}/mark_final/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invoices",
+                "{{invoice_id}}",
+                "mark_final",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "invoices update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/{{invoice_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invoices",
+                "{{invoice_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"duration_days\": 30,\n  \"no_of_profile_assessment\": 10,\n  \"no_of_tokens\": 60000,\n  \"internship_access_type\": \"full\",\n  \"no_of_internship_access\": null,\n  \"job_portal_access_type\": \"full\",\n  \"no_of_job_portal_access\": null,\n  \"course_portal_access_type\": \"full\",\n  \"no_of_course_portal_access\": null,\n  \"project_topic_access_type\": \"full\",\n  \"no_of_project_topic_access\": null,\n  \"core_features\": [\n    {\n      \"feature_name\": \"Career Compare\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"Career Roadmap Path\",\n      \"feature_status\": true\n    },\n    {\n      \"feature_name\": \"AI Chat Access\",\n      \"feature_status\": false\n    }\n  ],\n  \"subscription_feature\": [\n    {\n      \"feature_name\": \"Mock Interview\",\n      \"feature_status\": true\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "invoices partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/{{invoice_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invoices",
+                "{{invoice_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated plan with higher token limit\",\n  \"no_of_tokens\": 75000,\n  \"internship_access_type\": \"limited\",\n  \"no_of_internship_access\": 100,\n  \"core_features\": [\n    {\n      \"feature_name\": \"Career Compare\",\n      \"feature_status\": false\n    }\n  ],\n  \"subscription_feature\": [\n    {\n      \"feature_name\": \"Mock Interview\",\n      \"feature_status\": true\n    }\n  ]\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "invoices destroy (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/{{invoice_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invoices",
+                "{{invoice_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "razorpay webhook (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Razorpay-Signature",
+                "value": "test_signature"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/razorpay/webhook/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "razorpay",
+                "webhook",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": \"payment.captured\",\n  \"payload\": {\n    \"payment\": {\n      \"entity\": {\n        \"id\": \"pay_test_payment_id\",\n        \"order_id\": \"order_test_order_id\",\n        \"amount\": 100000,\n        \"currency\": \"INR\",\n        \"status\": \"captured\"\n      }\n    }\n  }\n}"
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Subscription management endpoints for plans, company subscriptions, payments, invoices, and Razorpay webhooks"
     },
     {
       "name": "language_master",
@@ -17326,7 +18316,7 @@
           },
           "response": []
         },
-         {
+        {
           "name": "restore (PATCH)",
           "request": {
             "method": "PATCH",
@@ -19647,111 +20637,6 @@
               ]
             },
             "description": "Returns the resume data as JSON for frontend preview or debugging. Does not call AI or generate a PDF."
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "token-overrides",
-      "item": [
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/token-overrides/?no_pagination=1&pagesize=10",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "token-overrides"
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1"
-                },
-                {
-                  "key": "pagesize",
-                  "value": "10"
-                },
-                {
-                  "key": "search",
-                  "value": ""
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/token-overrides/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "token-overrides"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"user\": 1, \"entity_type\": \"school_college\", \"entity_user_id\": 1, \"extra_monthly_tokens\": 5000, \"is_active\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/token-overrides/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "token-overrides",
-                "1"
-              ]
-            }
           },
           "response": []
         }

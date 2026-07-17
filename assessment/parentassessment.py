@@ -10,6 +10,8 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from activity_log.services import log_event
 from user_profile.models import ChildProfile
+from subscription.services.usage import consume_feature
+from utils.token_check import check_and_deduct_token
 
 from assessment.models import ParentAssessment
 from assessment.serializers import (
@@ -185,6 +187,14 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_200_OK,
                 )
 
+        try:
+            check_and_deduct_token(request.user, "assessment")
+        except Exception as exc:
+            return Response(
+                {"success": False, "message": str(exc)},
+                status=status.HTTP_402_PAYMENT_REQUIRED,
+            )
+
         assessment = ParentAssessment(
             user=request.user,
             child_id=child_id,
@@ -193,14 +203,7 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
         assessment._request_user = request.user
         assessment.save()
         sync_parent_screen(assessment)
-        log_event(
-            event="assessment.created",
-            description=f"Parent {request.user.email} created assessment #{assessment.id} for child #{child_id}",
-            user=request.user,
-            entity_type="parent_assessment",
-            entity_id=assessment.id,
-            request=request,
-        )
+        consume_feature(request.user, "assessment", 1)
         serializer = ParentAssessmentSerializer(
             assessment, context=self.get_serializer_context()
         )
@@ -392,14 +395,6 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
                     "updated_by",
                 ]
             )
-        log_event(
-            event="assessment.completed",
-            description=f"Parent {request.user.email} completed assessment #{assessment.id}",
-            user=request.user,
-            entity_type="parent_assessment",
-            entity_id=assessment.id,
-            request=request,
-        )
         return Response(
             {
                 "success": True,

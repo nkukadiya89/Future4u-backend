@@ -481,6 +481,75 @@ class BaseAdminProfileViewSet(ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+    @action(detail=True, methods=["patch"], url_path="update-tokens")
+    def update_tokens(self, request, pk=None):
+        """
+        PATCH /admin-{role}-users/<user_id>/update-tokens/
+
+        Super Admin grants extra monthly tokens to an organization user.
+        The extra_token_limit is accumulated each time this is called.
+        Body: {"extra_token_limit": 5000}
+        """
+        extra = request.data.get("extra_token_limit")
+        if extra is None or not isinstance(extra, int) or extra < 0:
+            return Response(
+                {
+                    "success": False,
+                    "message": "extra_token_limit must be a non-negative integer",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = self.get_user(pk)
+        if not user:
+            return Response(
+                {
+                    "success": False,
+                    "message": f"{self.role_name} not found",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        profile = self.profile_model.objects.filter(user=user).first()
+        if not profile:
+            return Response(
+                {
+                    "success": False,
+                    "message": f"{self.role_name} profile not found",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Accumulate extra tokens and add to running balance
+        profile.extra_token_limit = (profile.extra_token_limit or 0) + extra
+        profile.token_limit = (profile.token_limit or 0) + extra
+        profile.save(update_fields=["extra_token_limit", "token_limit"])
+
+        log_event(
+            event="user.tokens_updated",
+            description=(
+                f"Admin {request.user.email} added {extra} extra tokens "
+                f"to {self.role_name} {user.email}"
+            ),
+            user=request.user,
+            entity_type="user",
+            entity_id=user.id,
+            request=request,
+        )
+
+        return Response(
+            {
+                "success": True,
+                "message": f"{extra} extra tokens added to {self.role_name}.",
+                "data": {
+                    "extra_token_limit": profile.extra_token_limit,
+                    "token_limit": profile.token_limit,
+                    "last_token_reset_at": profile.last_token_reset_at,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
     @action(detail=False, methods=["post"], url_path="bulk-upload")
     def bulk_upload_users(self, request):
         serializer = BulkUserUploadSerializer(data=request.data)

@@ -1,5 +1,7 @@
 # subscription/services/pricing.py
 
+from datetime import timedelta
+
 from django.utils.timezone import now
 
 from subscription.models import Discount, PromoCode, PlanPrice, Subscription
@@ -112,3 +114,78 @@ def calculate_price(target, promocode=None):
         "final_price": final_price,
         "promo_code_applied": promo_code_applied,
     }
+
+
+class PricingService:
+    """Extract and persist pricing data for Subscription plans."""
+
+    @staticmethod
+    def extract(validated_data):
+        """Pop pricing fields from validated_data and return as a dict."""
+        price = validated_data.pop("subscription_price", None)
+        if price is None:
+            price = validated_data.pop("subscription_sell_price", None)
+        if price is None:
+            price = validated_data.pop("plan_price", None)
+        discount = validated_data.pop("subscription_discount", None)
+        duration = validated_data.pop("duration_days", None) or 30
+        period = validated_data.pop("period", None)
+        if not period:
+            period = "yearly" if int(duration) >= 350 else "monthly"
+        return {
+            "price": price,
+            "duration": duration,
+            "period": period,
+            "discount": discount,
+        }
+
+    @staticmethod
+    def save(subscription, price_data, user, *, update=False):
+        """Create or update PlanPrice and Discount for a subscription.
+
+        When ``update=True``, old PlanPrice records are soft-deleted first.
+        """
+        price = price_data.get("price")
+        duration = price_data.get("duration")
+        period = price_data.get("period")
+        discount = price_data.get("discount")
+
+        if price is not None:
+            if update:
+                PlanPrice.objects.filter(plan=subscription, deleted=False).update(
+                    deleted=True, deleted_by=user, deleted_at=now()
+                )
+            PlanPrice.objects.create(
+                plan=subscription,
+                period=period,
+                price=price,
+                duration_days=duration,
+                created_by=user,
+            )
+
+        if discount is not None:
+            existing_discount = None
+            if update:
+                existing_discount = Discount.objects.filter(
+                    subscription=subscription,
+                    discount_type="percent",
+                    deleted=False,
+                ).first()
+
+            if existing_discount:
+                existing_discount.value = float(discount)
+                existing_discount.valid_from = now()
+                existing_discount.valid_to = now() + timedelta(days=365 * 5)
+                existing_discount.updated_by = user
+                existing_discount.save()
+            else:
+                Discount.objects.create(
+                    subscription=subscription,
+                    name=f"{subscription.package_name} Discount",
+                    discount_type="percent",
+                    value=float(discount),
+                    is_active=True,
+                    valid_from=now(),
+                    valid_to=now() + timedelta(days=365 * 5),
+                    created_by=user,
+                )

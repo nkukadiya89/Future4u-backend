@@ -5,11 +5,21 @@ from __future__ import annotations
 import logging
 
 from resume_builder.resume_services.config import GROQ_API_KEY, GROQ_MODEL
+from utils.token_usage import extract_token_usage
 
 logger = logging.getLogger(__name__)
 
+# Track last AI call's token usage so the calling view can deduct actual tokens.
+_last_token_usage = 0
+
+
+def get_last_token_usage() -> int:
+    global _last_token_usage
+    return _last_token_usage
+
 
 def _call_groq(prompt: str, max_tokens: int) -> str:
+    global _last_token_usage
     from groq import Groq
 
     client = Groq(api_key=GROQ_API_KEY)
@@ -19,6 +29,7 @@ def _call_groq(prompt: str, max_tokens: int) -> str:
         max_tokens=max_tokens,
         temperature=0.7,
     )
+    _last_token_usage = extract_token_usage(response)
     return response.choices[0].message.content.strip()
 
 

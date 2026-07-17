@@ -21,6 +21,5 @@ class ActivityLogSerializer(serializers.ModelSerializer):
             "entity_type",
             "entity_id",
             "metadata",
-            "ip_address",
             "created_at",
         ]

@@ -97,13 +97,6 @@ class VerifyOtpViewSet(ModelViewSet):
                 user.status = "active"
                 user.otp = None
                 user.save()
-                log_event(
-                    event="user.otp_verified",
-                    description=f"User {user.email} verified OTP during registration",
-                    user=user,
-                    entity_type="user",
-                    entity_id=user.id,
-                )
                 return Response(
                     {
                         "success": True,
@@ -235,14 +228,6 @@ class ResetPasswordViewSet(ModelViewSet):
             user.status = "active"
             user.save()
 
-        log_event(
-            event="user.password_reset",
-            description=f"User {user.email} reset their password via reset password flow",
-            user=user,
-            entity_type="user",
-            entity_id=user.id,
-        )
-
         if user.last_login is None:
             context = {
                 "name": user.first_name,
@@ -345,14 +330,6 @@ class ForgotPasswordViewSet(ModelViewSet):
             user.password_last_changed = timezone.now()
             user.status = "active"
             user.save()
-
-        log_event(
-            event="user.password_reset",
-            description=f"User {user.email} reset their password via forgot password flow",
-            user=user,
-            entity_type="user",
-            entity_id=user.id,
-        )
 
         if user.last_login is None:
             context = {
@@ -564,13 +541,6 @@ class LogoutViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         try:
             logout(request)
-            log_event(
-                event="user.logout",
-                description=f"User {request.user.email} logged out",
-                user=request.user,
-                entity_type="user",
-                entity_id=request.user.id,
-            )
             return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
         except Exception:
             return Response(

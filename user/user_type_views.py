@@ -50,14 +50,6 @@ class AuthViewSet(viewsets.ViewSet):
         if not user.is_active and not is_web_source(source):
             send_registration_email(user)
 
-        log_event(
-            event="user.register",
-            description=f"User {user.email} registered as {user.user_type}",
-            user=user,
-            entity_type="user",
-            entity_id=user.id,
-        )
-
         response_data = {
             "success": True,
             "user_id": user.id,
@@ -135,13 +127,6 @@ class AuthViewSet(viewsets.ViewSet):
                 "otp_created_at",
             ]
         )
-        log_event(
-            event="user.otp_verified",
-            description=f"User {user.email} verified their email",
-            user=user,
-            entity_type="user",
-            entity_id=user.id,
-        )
         return Response(
             {
                 "success": True,
@@ -203,13 +188,6 @@ class AuthViewSet(viewsets.ViewSet):
     def logout(self, request):
         try:
             logout(request)
-            log_event(
-                event="user.logout",
-                description=f"User {request.user.email} logged out",
-                user=request.user,
-                entity_type="user",
-                entity_id=request.user.id,
-            )
             return Response(
                 {"success": True, "message": "Logout successfully"},
                 status=status.HTTP_200_OK,
@@ -273,14 +251,6 @@ class AuthViewSet(viewsets.ViewSet):
                 "must_change_password",
                 "password_last_changed",
             ]
-        )
-
-        log_event(
-            event="user.password_changed",
-            description=f"User {user.email} changed their password",
-            user=user,
-            entity_type="user",
-            entity_id=user.id,
         )
 
         return Response(
@@ -403,13 +373,6 @@ class AuthViewSet(viewsets.ViewSet):
             update_fields.extend(["is_active", "status", "email_verified"])
 
         user.save(update_fields=update_fields)
-        log_event(
-            event="user.password_reset",
-            description=f"User {user.email} reset their password",
-            user=user,
-            entity_type="user",
-            entity_id=user.id,
-        )
         message = (
             "Password set successfully."
             if was_pending

@@ -18,7 +18,8 @@ from course_generation.serializers.course_generation_input import (
 )
 from course_generation.services.course_generation_service import CourseGenerationService
 from utils.throttles import CourseGenerationRateThrottle
-from utils.token_check import check_and_deduct_token
+from utils.token_check import check_and_deduct_token, deduct_monthly_tokens
+from course_generation.services.course_generator import CourseGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,14 @@ class CourseGenerationAPIView(APIView):
                 user=request.user,
                 validated_input=serializer.validated_data,
             )
+            # Deduct actual LLM token usage after successful AI call
+            try:
+                deduct_monthly_tokens(request.user, CourseGenerator._last_token_usage)
+            except Exception as exc:
+                logger.error(
+                    "TOKEN_RECONCILE user=%s feature=course_gen cost=%s err=%s",
+                    request.user.id, CourseGenerator._last_token_usage, exc,
+                )
             return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
         except CourseGenerationAccessDeniedError:
             return Response(

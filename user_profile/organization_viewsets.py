@@ -1,4 +1,4 @@
-from datetime import timezone
+from django.utils.timezone import now
 import json
 
 from django.db import transaction
@@ -6,6 +6,7 @@ from django.db.models import F
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.filters import OrderingFilter, SearchFilter
 from common.master_view import BaseModelViewSet
@@ -179,10 +180,79 @@ class OrganizationProfileViewSet(BaseModelViewSet):
         serializer.is_valid(raise_exception=True)
         profile = serializer.save()
         profile.updated_by = request.user
-        profile.updated_at = timezone.now()
+        profile.updated_at = now()
         profile.save(update_fields=["updated_by", "updated_at"])
         return Response(
             {"success": True, "data": self.read_serializer_class(profile).data},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["patch"], url_path="update-tokens")
+    def update_tokens(self, request, pk=None):
+        """
+        PATCH /api/institute-profile/{id}/update-tokens/
+        Admins can set extra_token_limit for an org profile.
+        The increase is added to the running token_limit balance.
+        Monthly reset will only restore base default tokens, not extras.
+        """
+        if not request.user.is_superuser:
+            return Response(
+                {"success": False, "message": "Only super admin can update tokens"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        profile = self.get_object()
+
+        extra_token_limit = request.data.get("extra_token_limit")
+        if extra_token_limit is None:
+            return Response(
+                {"success": False, "message": "extra_token_limit is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            extra_token_limit = int(extra_token_limit)
+        except (TypeError, ValueError):
+            return Response(
+                {
+                    "success": False,
+                    "message": "extra_token_limit must be a valid integer",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if extra_token_limit < 0:
+            return Response(
+                {"success": False, "message": "extra_token_limit cannot be negative"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Get current extra from DB (not from cached profile)
+        old_extra = (
+            self.profile_model.objects.only("extra_token_limit")
+            .get(id=profile.id)
+            .extra_token_limit
+        )
+        increase = extra_token_limit - (old_extra or 0)
+
+        with transaction.atomic():
+            profile.extra_token_limit = extra_token_limit
+            if increase > 0:
+                profile.token_limit = (profile.token_limit or 0) + increase
+            profile.updated_by = request.user
+            profile.updated_at = now()
+            profile.save(
+                update_fields=[
+                    "extra_token_limit",
+                    "token_limit",
+                    "updated_by",
+                    "updated_at",
+                ]
+            )
+
+        serializer = self.read_serializer_class(profile)
+        return Response(
+            {"success": True, "data": serializer.data},
             status=status.HTTP_200_OK,
         )
 
