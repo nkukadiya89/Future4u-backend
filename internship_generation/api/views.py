@@ -20,7 +20,8 @@ from internship_generation.services.internship_generation_service import (
     InternshipGenerationService,
 )
 from utils.throttles import InternshipGenerationRateThrottle
-from utils.token_check import check_and_deduct_token
+from utils.token_check import check_and_deduct_token, deduct_monthly_tokens
+from internship_generation.services.internship_generator import InternshipGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,14 @@ class InternshipGenerationAPIView(APIView):
                 user=request.user,
                 validated_input=serializer.validated_data,
             )
+            # Deduct actual LLM token usage after successful AI call
+            try:
+                deduct_monthly_tokens(request.user, InternshipGenerator._last_token_usage)
+            except Exception as exc:
+                logger.error(
+                    "TOKEN_RECONCILE user=%s feature=internship_gen cost=%s err=%s",
+                    request.user.id, InternshipGenerator._last_token_usage, exc,
+                )
             return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
         except InternshipGenerationAccessDeniedError:
             return Response(

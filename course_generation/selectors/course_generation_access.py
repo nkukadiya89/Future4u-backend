@@ -8,5 +8,6 @@ def can_user_generate_courses(user) -> bool:
         return False
     return user.user_type in (
         User.Role.INSTITUTE,
+        User.Role.SCHOOL_COLLEGE,
         User.Role.SUPER_ADMIN,
     )

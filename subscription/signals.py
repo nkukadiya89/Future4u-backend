@@ -9,31 +9,40 @@ from subscription.models import Subscription, UserSubscription
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def assign_basic_subscription(sender, instance, created, **kwargs):
-    """Assign the 'Basic' subscription to a user on account creation.
+def assign_free_subscription(sender, instance, created, **kwargs):
+    """
+    Auto-assign the "Free" plan to new users on signup.
 
-    This looks for a Subscription with package_name 'Basic' (case-insensitive),
-    active and not deleted. If found, creates a UserSubscription for the new user.
+    Only applies to subscription-based user types:
+    student, parent, and working_professional.
+
+    If no "Free" plan exists, the signal does nothing (user gets no plan).
     """
     if not created:
         return
 
+    # Only assign to subscription-based user types
+    if instance.user_type not in [
+        "student",
+        "parent",
+        "working_professional",
+    ]:
+        return
+
     try:
-        basic = (
+        free_plan = (
             Subscription.objects.filter(
-                package_name__iexact="Basic", is_active=True, deleted=False
+                package_name__iexact="Free", is_active=True, deleted=False
             )
             .order_by("-id")
             .first()
         )
 
-        if not basic:
+        if not free_plan:
             return
 
-        # create only if user doesn't already have an active subscription for this plan
-        # pick default active PlanPrice for the Basic plan
         plan_price = (
-            basic.prices.filter(is_active=True, deleted=False)
+            free_plan.prices.filter(is_active=True, deleted=False)
             .order_by("-price")
             .first()
         )
@@ -50,5 +59,5 @@ def assign_basic_subscription(sender, instance, created, **kwargs):
             },
         )
     except Exception:
-        # avoid breaking user creation; logging can be added if needed
+        # Silently skip on error to not block user creation
         pass

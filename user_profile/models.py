@@ -585,6 +585,9 @@ class InstituteProfile(BaseModule):
     key_highlights = models.JSONField(default=list, blank=True)
     website = models.CharField(max_length=250, null=True, blank=True)
     institute_name = models.CharField(max_length=200, null=True, blank=True)
+    extra_token_limit = models.IntegerField(default=0)
+    token_limit = models.IntegerField(default=20000)
+    last_token_reset_at = models.DateField(null=True, blank=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -680,6 +683,9 @@ class SchoolCollegeProfile(BaseModule):
         max_length=50, choices=READINESS, default="flexible_timeline"
     )
     website = models.CharField(max_length=250, null=True, blank=True)
+    extra_token_limit = models.IntegerField(default=0)
+    token_limit = models.IntegerField(default=15000)
+    last_token_reset_at = models.DateField(null=True, blank=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -720,6 +726,9 @@ class CorporateProfile(BaseModule):
     years_in_business = models.PositiveIntegerField(null=True, blank=True)
     about_us = models.TextField(null=True, blank=True)
     perks_benefits = models.JSONField(default=list, blank=True)
+    extra_token_limit = models.IntegerField(default=0)
+    token_limit = models.IntegerField(default=20000)
+    last_token_reset_at = models.DateField(null=True, blank=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
     )

@@ -25,9 +25,24 @@ class Internship(BaseModule):
         ("offline", "Offline"),
     )
 
+    # Which type of organisation is posting this internship
+    PROVIDER_TYPE_CHOICES = (
+        ("institute", "Institute"),
+        ("corporate", "Corporate"),
+    )
+
+    INTERNSHIP_STATUS_CHOICE = (
+        ("draft", "Draft"),
+        ("active", "Active"),
+        ("closed", "Closed"),
+    )
+
     name = models.CharField(max_length=250, null=True, blank=True)
+    internship_overview = models.TextField(null=True, blank=True, help_text="Employer-provided internship overview used as AI generation context.")
+    department = models.CharField(max_length=250, null=True, blank=True, help_text="Department or division for this internship.")
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True, blank=True)
+    state = models.ForeignKey(State, on_delete=models.CASCADE, null=True, blank=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True)
-    organization_name = models.CharField(max_length=250, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     responsibilities = models.JSONField(default=list, blank=True)
     skills = models.JSONField(default=list, blank=True)
@@ -40,6 +55,23 @@ class Internship(BaseModule):
     stipend_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     certificate_provided = models.BooleanField(default=True)
     provider = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="internships")
+    provider_type = models.CharField(
+        max_length=20,
+        choices=PROVIDER_TYPE_CHOICES,
+        null=True,
+        blank=True,
+        help_text="Select whether this internship is posted by an Institute or a Corporate.",
+    )
+    internship_provider = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="internship_provider",
+        help_text="Select the institute or corporate posting this internship.",
+    )
+    application_deadline = models.DateField(null=True, blank=True, help_text="Application deadline date")
+    status = models.CharField(max_length=100, choices=INTERNSHIP_STATUS_CHOICE, default="draft")
 
     class Meta:
         db_table = "internship"
@@ -144,6 +176,7 @@ class Job(BaseModule):
     provider = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="jobs")
     why_this_match = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=100, choices=JOB_STATUS_CHOICE, default="draft")
+    application_deadline = models.DateField(null=True, blank=True, help_text="Application deadline date")
 
     class Meta:
         db_table = "jobs"

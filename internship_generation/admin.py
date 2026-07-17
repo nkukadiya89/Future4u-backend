@@ -15,13 +15,17 @@ from django.conf import settings
 from django.contrib import admin
 from django.shortcuts import render
 
+from city.models import City
 from common.mixins.admin_mixins import ReadOnlyAdminMixin
+from country.models import Country
 from internship_generation.config import ai_llm_enabled, internship_generation_enabled
 from internship_generation.constants.internship_generation_constants import (
     INTERNSHIP_OVERVIEW_INPUT_MAX_LENGTH,
     OPTIONAL_FIELD_MAX_LENGTH,
 )
 from internship_job.models import Internship
+from state.models import State
+from user.models import User
 from internship_generation.exceptions import (
     InternshipGenerationConfigurationError,
     InternshipGenerationValidationError,
@@ -30,6 +34,20 @@ from internship_generation.models import InternshipGenerationPanel
 from internship_generation.providers.factory import get_llm_provider
 from internship_generation.services.internship_generation_service import _build_response
 from internship_generation.services.internship_generator import InternshipGenerator
+
+
+class InternshipProviderUserChoiceField(forms.ModelChoiceField):
+    """ModelChoiceField that displays the institute/corporate name instead of the user email."""
+
+    def label_from_instance(self, obj):
+        name = None
+        if hasattr(obj, "institute_profile"):
+            name = obj.institute_profile.institute_name
+        elif hasattr(obj, "corporate_profile"):
+            name = obj.corporate_profile.company_name
+        if name:
+            return f"{name} ({obj.user_type})"
+        return obj.full_name or obj.email
 
 
 def _pretty_json(value) -> str:
@@ -62,6 +80,10 @@ def _provider_status() -> dict:
 
 
 class InternshipGenerationRunForm(forms.Form):
+    internship_title = forms.CharField(
+        max_length=OPTIONAL_FIELD_MAX_LENGTH,
+        help_text="Required. Internship title (e.g. 'Marketing Intern').",
+    )
     internship_overview = forms.CharField(
         widget=forms.Textarea(attrs={"rows": 4}),
         min_length=10,
@@ -88,11 +110,64 @@ class InternshipGenerationRunForm(forms.Form):
         required=False,
         help_text="Optional. Work mode.",
     )
+    country = forms.ModelChoiceField(
+        required=False,
+        queryset=Country.objects.filter(deleted=False),
+        empty_label="Select a country",
+        help_text="Optional. Select the internship location country.",
+    )
+    state = forms.ModelChoiceField(
+        required=False,
+        queryset=State.objects.filter(deleted=False),
+        empty_label="Select a state",
+        help_text="Optional. Select the internship location state.",
+    )
+    city = forms.ModelChoiceField(
+        required=False,
+        queryset=City.objects.filter(deleted=False).select_related("country", "state"),
+        empty_label="Select a city",
+        help_text="Optional. Select the internship location city.",
+    )
     application_deadline = forms.DateField(
         required=False,
         input_formats=["%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y"],
         help_text="Optional. Use DD/MM/YYYY (e.g. 20/07/2027) or YYYY-MM-DD.",
     )
+    certificate_provided = forms.BooleanField(
+        required=False,
+        initial=True,
+        help_text="Optional. Whether a completion certificate is provided (default: yes).",
+    )
+    # Dropdown 1 — type of organisation
+    provider_type = forms.ChoiceField(
+        required=False,
+        choices=(("", "---------"),) + Internship.PROVIDER_TYPE_CHOICES,
+        help_text="Optional. Select whether the internship is posted by an Institute or a Corporate.",
+    )
+    # Dropdown 2 — specific user of the selected provider_type
+    internship_provider = InternshipProviderUserChoiceField(
+        required=False,
+        queryset=User.objects.filter(
+            user_type__in=["institute", "corporate"],
+            deleted=False,
+        ).select_related("institute_profile", "corporate_profile").order_by("full_name"),
+        label="Internship Provider",
+        empty_label="Select an internship provider",
+        help_text="Optional. Select the institute or corporate posting this internship.",
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        provider_type = cleaned.get("provider_type") or ""
+        internship_provider = cleaned.get("internship_provider")
+
+        if internship_provider and provider_type:
+            if internship_provider.user_type != provider_type:
+                self.add_error(
+                    "internship_provider",
+                    f"Selected user does not belong to the '{provider_type}' type.",
+                )
+        return cleaned
 
 
 @admin.register(InternshipGenerationPanel)
@@ -104,19 +179,32 @@ class InternshipGenerationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         error = None
 
         if request.method == "POST" and form.is_valid():
+            country = form.cleaned_data.get("country")
+            state = form.cleaned_data.get("state")
+            city = form.cleaned_data.get("city")
             generation_input = {
+                "internship_title": form.cleaned_data.get("internship_title", ""),
                 "internship_overview": form.cleaned_data.get("internship_overview", ""),
                 "department": form.cleaned_data.get("department", ""),
                 "stipend": form.cleaned_data.get("stipend", ""),
                 "duration": form.cleaned_data.get("duration", ""),
                 "mode": form.cleaned_data.get("mode", ""),
+                "country": country,
+                "state": state,
+                "city": city,
                 "application_deadline": form.cleaned_data.get("application_deadline"),
+                "certificate_provided": form.cleaned_data.get("certificate_provided", True),
+                "provider_type": form.cleaned_data.get("provider_type", ""),
+                "internship_provider": form.cleaned_data.get("internship_provider"),
             }
             try:
                 diagnostics = {
                     "requested_by": getattr(request.user, "email", ""),
                     "provider": _provider_status(),
-                    "input": generation_input,
+                    "input": {
+                        k: getattr(v, "pk", v) if hasattr(v, "_meta") else v
+                        for k, v in generation_input.items()
+                    },
                 }
                 payload = InternshipGenerator.generate(
                     generation_input=generation_input

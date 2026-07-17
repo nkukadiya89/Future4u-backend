@@ -18,6 +18,7 @@ from internship_generation.providers.factory import (
 )
 from internship_generation.schemas.internship_output import InternshipGenerationPayload
 from internship_generation.services.json_response_parser import JsonResponseParser
+from utils.token_usage import extract_token_usage
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,8 @@ _MAX_GENERATION_ATTEMPTS = 3
 
 class InternshipGenerator:
     """Single LLM invocation: internship overview input -> structured internship details."""
+
+    _last_token_usage = 0
 
     @classmethod
     def generate(
@@ -90,6 +93,7 @@ class InternshipGenerator:
         try:
             chain = prompt | llm
             result = chain.invoke(inputs)
+            cls._last_token_usage = extract_token_usage(result)
             raw_text = _extract_text_content(result)
         except Exception as exc:
             logger.exception("LLM internship generation failed")

@@ -2,43 +2,65 @@ from assessment_career.models import CareerSuggestion
 from common.master_view import BaseModelViewSet
 from course.services import match_courses
 from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
 from .models import CourseInquiry, Courses
 from .serializers import CourseInquirySerializer, CoursesSerializer
+from activity_log.services import log_event
 
 
 class CoursesViewSet(BaseModelViewSet):
     def get_queryset(self):
-        queryset = Courses.objects.select_related("city", "provider")
+        queryset = Courses.objects.select_related("country", "state", "city", "provider")
         user = self.request.user
         if user.is_superuser:
-            return queryset
-        if user.user_type in [
+            base = queryset
+        elif user.user_type in [
             "institute",
             "school_college",
             "corporate",
         ]:
-            return queryset.filter(
-                provider=user,
-            )
-        return queryset
+            base = queryset.filter(provider=user)
+        else:
+            # Students/parents: only see active courses
+            base = queryset.filter(status="active")
+        # Allow restore/archive actions to access deleted records
+        if self.action not in ["restore", "archive_list", "archive", "bulk_archive", "bulk_restore", "destroy"]:
+            base = base.filter(deleted=False)
+
+        # Apply subscription plan portal limit (course access)
+        from subscription.services.usage import apply_portal_limit
+        return apply_portal_limit(user, base, "course")
 
     serializer_class = CoursesSerializer
+
+    filter_backends = BaseModelViewSet.filter_backends + [DjangoFilterBackend]
+    filterset_fields = {
+        "status": ["exact"],
+        "state": ["exact"],
+        "city": ["exact"],
+        "country": ["exact"],
+        "course_type": ["exact"],
+        "mode": ["exact"],
+    }
 
     search_fields = BaseModelViewSet.searching_fields + [
         "name",
         "course_type",
-        "skills",
-        "education_tags",
         "mode",
         "duration",
         "city__name",
-        "course_content",
+        "country__name",
+        "state__name",
         "course_overview",
+        "course_description",
+        "why_this_course",
         "certification_info",
+        "course_price",
+        "provider__full_name",
     ]
     ordering_fields = BaseModelViewSet.ordering_fields + [
         "name",
@@ -92,6 +114,119 @@ class CoursesViewSet(BaseModelViewSet):
             {"success": True, "message": "Course restored successfully"},
             status=status.HTTP_200_OK,
         )
+
+    @action(detail=False, methods=["patch"], url_path="bulk-archive")
+    @transaction.atomic
+    def bulk_archive(self, request, *args, **kwargs):
+        ids = request.data.get("ids", [])
+
+        if not isinstance(ids, list) or not ids:
+            return Response(
+                {"success": False, "message": "ids must be a non-empty array"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        records = Courses.objects.filter(id__in=ids)
+
+        if not records.exists():
+            return Response(
+                {"success": False, "message": "Courses not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if records.filter(deleted=True).exists():
+            return Response(
+                {"success": False, "message": "Some courses are already archived"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        now = timezone.now()
+        records.update(
+            deleted=True,
+            deleted_at=now,
+            deleted_by=request.user,
+        )
+
+        log_event(
+            event="course.bulk_archive",
+            description=f"Admin {request.user.email} bulk archived {records.count()} course(s)",
+            user=request.user,
+            entity_type="course",
+            entity_id=None,
+            metadata={"course_ids": ids, "count": records.count()},
+            request=request,
+        )
+
+        return Response(
+            {"success": True, "message": "Courses archived successfully"},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["patch"], url_path="bulk-restore")
+    @transaction.atomic
+    def bulk_restore(self, request, *args, **kwargs):
+        ids = request.data.get("ids", [])
+
+        if not isinstance(ids, list) or not ids:
+            return Response(
+                {"success": False, "message": "ids must be a non-empty array"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        records = Courses.objects.filter(id__in=ids)
+
+        if not records.exists():
+            return Response(
+                {"success": False, "message": "Courses not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if records.filter(deleted=False).exists():
+            return Response(
+                {"success": False, "message": "Some courses are already active"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        now = timezone.now()
+        records.update(
+            deleted=False,
+            deleted_at=None,
+            deleted_by=None,
+            updated_at=now,
+            updated_by=request.user,
+        )
+
+        log_event(
+            event="course.bulk_restore",
+            description=f"Admin {request.user.email} bulk restored {records.count()} course(s)",
+            user=request.user,
+            entity_type="course",
+            entity_id=None,
+            metadata={"course_ids": ids, "count": records.count()},
+            request=request,
+        )
+
+        return Response(
+            {"success": True, "message": "Courses restored successfully"},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["get"], url_path="archive-list")
+    def archive_list(self, request):
+        queryset = Courses.objects.select_related(
+            "country", "state", "city", "provider"
+        ).filter(deleted=True).order_by("-deleted_at")
+
+        queryset = self.filter_queryset(queryset)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"success": True, "data": serializer.data})
 
     @action(detail=False, methods=["get"], url_path="recommended")
     def recommended_courses(self, request):

@@ -1,6 +1,7 @@
 from django.apps import AppConfig
 
 
-class TokenOverrideConfig(AppConfig):
+class JobsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "token_override"
+    name = "jobs"
+    verbose_name = "LinkedIn Job Search"

@@ -18,6 +18,7 @@ from job_generation.providers.factory import (
 )
 from job_generation.schemas.job_output import JobGenerationPayload
 from job_generation.services.json_response_parser import JsonResponseParser
+from utils.token_usage import extract_token_usage
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,8 @@ _MAX_GENERATION_ATTEMPTS = 3
 
 class JobGenerator:
     """Single LLM invocation: summary input -> structured job posting."""
+
+    _last_token_usage = 0
 
     @classmethod
     def generate(cls, *, generation_input: dict[str, Any]) -> JobGenerationPayload:
@@ -88,6 +91,7 @@ class JobGenerator:
         try:
             chain = prompt | llm
             result = chain.invoke(inputs)
+            cls._last_token_usage = extract_token_usage(result)
             raw_text = _extract_text_content(result)
         except Exception as exc:
             logger.exception("LLM job generation failed")

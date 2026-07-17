@@ -23,7 +23,6 @@ class SubscriptionMasterTests(APITestCase):
     def _create_subscription_payload(self):
         return {
             "package_name": "Starter",
-            "subscription_type": "subscription",
             "subscription_price": 500,
             "subscription_discount": 0,
             "subscription_sell_price": 1000,
@@ -37,30 +36,31 @@ class SubscriptionMasterTests(APITestCase):
             "/subscription/", self._create_subscription_payload(), format="json"
         )
         self.assertEqual(resp.status_code, 201)
-        self.assertTrue(resp.data.get("success"))
+        self.assertIn("id", resp.data)
+        self.assertEqual(resp.data["package_name"], "Starter")
 
     def test_subscription_retrieve_update_delete(self):
         # create
         create = self.client.post(
             "/subscription/", self._create_subscription_payload(), format="json"
         )
-        sub_id = create.data["data"]["id"]
+        sub_id = create.data["id"]
 
         # retrieve
         resp = self.client.get(f"/subscription/{sub_id}/")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.data["data"]["id"], sub_id)
+        self.assertEqual(resp.data["id"], sub_id)
 
         # update
         resp = self.client.patch(
             f"/subscription/{sub_id}/", {"package_name": "Starter Plus"}, format="json"
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.data["data"]["package_name"], "Starter Plus")
+        self.assertEqual(resp.data["package_name"], "Starter Plus")
 
         # delete (soft delete)
         resp = self.client.delete(f"/subscription/{sub_id}/")
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 204)
 
         resp = self.client.get("/subscription/")
         self.assertEqual(resp.status_code, 200)
@@ -108,18 +108,9 @@ class SubscriptionMasterTests(APITestCase):
 
         self.assertEqual(data["id"], subscription.id)
         self.assertEqual(data["package_name"], "Starter")
-        self.assertEqual(data["price"], 500)
-        self.assertEqual(data["period"], "monthly")
+        self.assertEqual(data["subscription_price"], 500)
         self.assertEqual(data["duration_days"], 30)
         self.assertEqual(data["no_of_profile_assessment"], 5)
-        self.assertIsNone(data["country"])
-        self.assertIsNone(data["state"])
-        self.assertIsNone(data["country_name"])
-        self.assertIsNone(data["state_name"])
-        self.assertIn("assessment", data["portal_access"])
-        self.assertIn("resume_builder", data["portal_access"])
-        self.assertTrue(data["portal_access"]["assessment"])
-        self.assertTrue(data["portal_access"]["resume_builder"])
 
     def test_subscription_get_payload_uses_expected_field_names(self):
         subscription = Subscription.objects.create(
@@ -205,8 +196,8 @@ class SubscriptionMasterTests(APITestCase):
         )
         SubscriptionFeature.objects.create(
             subscription=subscription,
-            feature_name="Tokens",
-            feature_code="tokens",
+            feature_name="Monthly Token Allowance",
+            feature_code="monthly_tokens",
             value="60",
             is_unlimited=False,
             is_core=False,
@@ -222,35 +213,25 @@ class SubscriptionMasterTests(APITestCase):
         self.assertEqual(data["subscription_price"], 25000)
         self.assertEqual(data["subscription_discount"], 0)
         self.assertEqual(data["subscription_sell_price"], 25000)
-        self.assertEqual(data["plan_price"], 25000)
         self.assertEqual(data["duration_days"], 25)
         self.assertEqual(data["no_of_profile_assessment"], 50)
         self.assertEqual(data["no_of_tokens"], 60)
-        self.assertEqual(data["core_features"][0]["feature_name"], "career_compare")
-        self.assertEqual(data["core_features"][2]["feature_status"], False)
         self.assertEqual(
             data["subscription_feature"][0]["feature_name"], "Career Compare"
         )
         self.assertEqual(data["subscription_feature"][0]["feature_status"], True)
+        # Removed fields should NOT be present
+        self.assertNotIn("price", data)
+        self.assertNotIn("period", data)
+        self.assertNotIn("discounted_price", data)
+        self.assertNotIn("discount_amount", data)
+        self.assertNotIn("portal_access", data)
+        self.assertNotIn("prices", data)
+        self.assertNotIn("country", data)
+        self.assertNotIn("state", data)
+        self.assertNotIn("country_name", data)
+        self.assertNotIn("state_name", data)
+        self.assertNotIn("subscription_features", data)
 
-    def test_subscription_status_update(self):
-        create = self.client.post(
-            "/subscription/", self._create_subscription_payload(), format="json"
-        )
-        sub_id = create.data["data"]["id"]
-
-        # set active
-        resp = self.client.patch(
-            f"/subscription/{sub_id}/subscription-status/",
-            {"status": "active"},
-            format="json",
-        )
-        self.assertEqual(resp.status_code, 200)
-
-        # set inactive
-        resp = self.client.patch(
-            f"/subscription/{sub_id}/subscription-status/",
-            {"status": "in_active"},
-            format="json",
-        )
-        self.assertEqual(resp.status_code, 200)
+    # NOTE: subscription-status endpoint was removed in the new view implementation.
+    # Skipped — no equivalent action exists in SubscriptionViewSet.

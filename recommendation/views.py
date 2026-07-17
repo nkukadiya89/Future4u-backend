@@ -20,7 +20,12 @@ from recommendation.exceptions import (
     AssessmentNotReadyError,
 )
 from utils.throttles import AIChatRateThrottle, RecommendationRateThrottle
-from utils.token_check import check_and_deduct_token
+from utils.token_check import check_and_deduct_token, deduct_monthly_tokens
+from recommendation.generators.ai_recommendation_generator import RecommendationGenerator
+from recommendation.engine.chat_service import BaseAIChatService
+from subscription.models import FeatureUsage
+from assessment_career.models import CareerRecommendation
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +36,9 @@ class RecommendationAPIView(APIView):
 
     Auto-detects the assessment type (Student / Parent / Professional) from the
     assessment_id and dispatches to the correct service implementation.
+
+    Each assessment can generate a recommendation exactly once (enforced via
+    the OneToOne relationship on CareerRecommendation).
     """
 
     authentication_classes = [JWTAuthentication]
@@ -38,9 +46,14 @@ class RecommendationAPIView(APIView):
     throttle_classes = [RecommendationRateThrottle]
 
     def get(self, request, assessment_id, *args, **kwargs):
-        # Check token availability before AI call
         try:
-            check_and_deduct_token(request.user, "ai_recommendation")
+            usage = FeatureUsage.objects.filter(
+                user=request.user, feature_code="assessment"
+            ).first()
+            if not usage or usage.used <= 0:
+                raise Exception(
+                    "Please complete a profile assessment first to get career recommendations."
+                )
         except Exception as exc:
             return Response(
                 {"success": False, "message": str(exc)},
@@ -52,18 +65,51 @@ class RecommendationAPIView(APIView):
             result = resolve_recommendation_service(
                 assessment_id, profile_type=profile_type
             )
+
+            # ── 1 assessment = 1 recommendation ────────────────────────
+            # The OneToOneField on CareerRecommendation enforces this at
+            # the DB level; we catch it early to show a clear error.
+            reco_exists = CareerRecommendation.objects.filter(
+                user=request.user,
+            ).filter(
+                Q(student_assessment_id=assessment_id)
+                | Q(parent_assessment_id=assessment_id)
+                | Q(professional_assessment_id=assessment_id)
+            ).exists()
+
+            if reco_exists:
+                return Response(
+                    {
+                        "success": False,
+                        "message": "A recommendation has already been generated for this assessment. "
+                        "You can view it in your career suggestions.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Check token availability before AI generation
+            try:
+                check_and_deduct_token(request.user, "recommendation")
+            except Exception as exc:
+                return Response(
+                    {"success": False, "message": str(exc)},
+                    status=status.HTTP_402_PAYMENT_REQUIRED,
+                )
+
             data = result.service.generate(
                 assessment_id=assessment_id,
                 user=request.user,
             )
-            log_event(
-                event="ai.recommendation_generated",
-                description=f"AI recommendation generated for user {request.user.email}, assessment #{assessment_id}",
-                user=request.user,
-                entity_type="recommendation",
-                entity_id=assessment_id,
-                request=request,
-            )
+            # Deduct actual LLM token usage after successful AI call
+            try:
+                deduct_monthly_tokens(request.user, RecommendationGenerator._last_token_usage)
+            except Exception as exc:
+                logger.warning("Monthly token deduction failed: %s", exc)
+                return Response(
+                    {"success": False, "message": str(exc)},
+                    status=status.HTTP_402_PAYMENT_REQUIRED,
+                )
+
             return Response(
                 {
                     "success": True,
@@ -192,14 +238,16 @@ class RecommendationChatAPIView(APIView):
                 suggestion_id=request.data.get("suggestion_id"),
                 question=request.data.get("message"),
             )
-            log_event(
-                event="ai.chat_message",
-                description=f"AI chat message from user {request.user.email}, assessment #{assessment_id}",
-                user=request.user,
-                entity_type="recommendation_chat",
-                entity_id=assessment_id,
-                request=request,
-            )
+            # Deduct actual LLM token usage after successful AI call
+            try:
+                deduct_monthly_tokens(request.user, BaseAIChatService._last_token_usage)
+            except Exception as exc:
+                logger.warning("Monthly token deduction failed: %s", exc)
+                return Response(
+                    {"success": False, "message": str(exc)},
+                    status=status.HTTP_402_PAYMENT_REQUIRED,
+                )
+
             return Response(
                 {
                     "success": True,

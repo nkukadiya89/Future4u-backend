@@ -2,7 +2,8 @@ from django.db import models
 from common.models import BaseModule
 from django.conf import settings
 from city.models import City
-
+from country.models import Country
+from state.models import State
 # Create your models here.
 
 
@@ -21,25 +22,54 @@ class Courses(BaseModule):
         ("offline", "Offline"),
     )
 
+    COURSE_STATUS_CHOICES = (
+        ("draft", "Draft"),
+        ("active", "Active"),
+        ("closed", "Closed"),
+    )
+
+    # Which type of organisation is posting this course
+    PROVIDER_TYPE_CHOICES = (
+        ("school_college", "School / College"),
+        ("institute", "Institute"),
+    )
+
     name = models.CharField(max_length=200)
     course_type = models.CharField(max_length=20, choices=COURSE_TYPE_CHOICES)
     mode = models.CharField(max_length=20, choices=MODE_CHOICE)
     skills = models.JSONField(default=list, blank=True)
     education_tags = models.JSONField(default=list, blank=True)
     duration = models.CharField(max_length=100, null=True, blank=True)
-    provider = models.ForeignKey(
+    provider = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,null=True, blank=True, related_name="courses")
+    provider_type = models.CharField(
+        max_length=20,
+        choices=PROVIDER_TYPE_CHOICES,
+        null=True,
+        blank=True,
+        help_text="Select whether this course is posted by a School/College or an Institute.",
+    )
+    course_provider = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="courses",
+        related_name="course_provider",
+        help_text="Select the institute or school/college posting this course.",
     )
+    country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True, blank=True)
+    state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True, blank=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True)
     course_overview = models.TextField(null=True, blank=True)
-    why_this_course = models.JSONField(default=list, blank=True)
+    course_description = models.TextField(null=True, blank=True)
+    why_this_course = models.TextField(null=True, blank=True)
     certification_info = models.TextField(null=True, blank=True)
     course_content = models.JSONField(default=list, blank=True)
     course_price = models.CharField(max_length=250, null=True, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=COURSE_STATUS_CHOICES,
+        default="draft",
+    )
 
     class Meta:
         db_table = "courses"

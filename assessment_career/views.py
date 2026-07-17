@@ -8,6 +8,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from common.master_view import BaseModelViewSet
 from utils.pagination import Pagination
+from utils.token_check import check_and_deduct_token
 
 from .models import (
     CareerRecommendation,
@@ -93,6 +94,14 @@ class CareerSuggestionViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="compare")
     def compare(self, request):
+        try:
+            check_and_deduct_token(request.user, "career_compare")
+        except Exception as exc:
+            return Response(
+                {"success": False, "message": str(exc)},
+                status=status.HTTP_402_PAYMENT_REQUIRED,
+            )
+
         suggestion_ids = request.query_params.get("suggestion_ids")
 
         if not suggestion_ids:

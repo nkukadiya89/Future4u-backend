@@ -12,6 +12,7 @@ from recommendation.exceptions import (
     AssessmentNotFoundError,
 )
 from recommendation.engine.ai_chat_prompt import build_ai_chat_prompt
+from utils.token_usage import extract_token_usage
 from recommendation.engine.chat_helpers import (
     as_list,
     format_education,
@@ -133,6 +134,8 @@ class BaseAIChatService:
             raise AssessmentAccessDeniedError("Invalid suggestion for this assessment")
         raise AssessmentNotFoundError("Recommendation not found for this assessment")
 
+    _last_token_usage = 0
+
     def _ask_llm(self, *, suggestion, question: str, summary: str) -> str:
         try:
             chain = build_ai_chat_prompt() | get_chat_model(max_tokens=CHAT_MAX_TOKENS)
@@ -143,6 +146,7 @@ class BaseAIChatService:
                     "question": question,
                 }
             )
+            type(self)._last_token_usage = extract_token_usage(response)
         except AIConfigurationError:
             raise
         except Exception as exc:

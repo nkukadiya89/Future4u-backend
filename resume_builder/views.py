@@ -27,13 +27,14 @@ from django.http import HttpResponse
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from activity_log.services import log_event
-from utils.token_check import check_and_deduct_token
+from utils.token_check import check_and_deduct_token, deduct_monthly_tokens
 from resume_builder.services import (
     build_student_resume_data,
     build_professional_resume_data,
     build_child_resume_data,
     generate_resume_pdf,
 )
+from resume_builder.resume_services.ai import get_last_token_usage
 
 logger = logging.getLogger(__name__)
 
@@ -180,6 +181,15 @@ class ResumeGenerateView(APIView):
 
         try:
             pdf_bytes = generate_resume_pdf(resume_data)
+            # Deduct actual LLM token usage after successful AI call
+            try:
+                deduct_monthly_tokens(request.user, get_last_token_usage())
+            except Exception as exc:
+                logger.warning("Monthly token deduction failed: %s", exc)
+                return Response(
+                    {"success": False, "message": str(exc)},
+                    status=status.HTTP_402_PAYMENT_REQUIRED,
+                )
         except ValueError as exc:
             logger.error("Resume generation error: %s", exc)
             return Response(
@@ -226,15 +236,6 @@ class ResumeGenerateView(APIView):
             name = (user.full_name or user.email).replace(" ", "_")
         filename = f"{name}_resume.pdf"
         logger.info("Resume generated for user=%s template=%s", user.id, template)
-
-        log_event(
-            event="ai.resume_generated",
-            description=f"AI resume generated for user {user.email}, template={template}",
-            user=user,
-            entity_type="resume",
-            entity_id=user.id,
-            request=request,
-        )
 
         response = HttpResponse(pdf_bytes, content_type="application/pdf")
         response["Content-Disposition"] = f"attachment; filename={filename}"

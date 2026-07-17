@@ -14,25 +14,72 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from subscription.models import FeatureUsage, SubscriptionFeature
+from subscription.models import FeatureUsage
 from subscription.serializers_new import (PaymentSubscriptionSerializer,
                                           SubscriptionAPISerializer,
+                                          SubscriptionCreateSerializer,
                                           SubscriptionInvoiceSerializer,
                                           SubscriptionSerializer,
+                                          UserSubscriptionMeSerializer,
                                           UserSubscriptionSerializer)
 from subscription.services.pricing import calculate_price
-
 from .models import (PaymentSubscription, PlanPrice, PromoCode, Subscription,
                      SubscriptionInvoice, UserSubscription)
 
 
 class SubscriptionViewSet(ModelViewSet):
-    queryset = Subscription.objects.filter(is_active=True)
+    queryset = Subscription.objects.filter(deleted=False)
     serializer_class = SubscriptionAPISerializer
-    http_method_names = ["get", "head", "options"]
 
     def get_serializer_class(self):
+        if self.action in ("create", "update", "partial_update"):
+            return SubscriptionCreateSerializer
         return SubscriptionAPISerializer
+
+    def create(self, request, *args, **kwargs):
+        # Validate with create serializer, respond with clean API serializer
+        create_ser = SubscriptionCreateSerializer(
+            data=request.data, context={"request": request}
+        )
+        create_ser.is_valid(raise_exception=True)
+        instance = create_ser.save()
+        resp_ser = SubscriptionAPISerializer(instance)
+        return Response(
+            {"success": True, "message": "Subscription package created successfully", "data": resp_ser.data},
+            status=201,
+        )
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        create_ser = SubscriptionCreateSerializer(
+            instance, data=request.data, context={"request": request}
+        )
+        create_ser.is_valid(raise_exception=True)
+        instance = create_ser.save()
+        resp_ser = SubscriptionAPISerializer(instance)
+        return Response(
+            {"success": True, "message": "Subscription package updated successfully", "data": resp_ser.data},
+        )
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        create_ser = SubscriptionCreateSerializer(
+            instance, data=request.data, partial=True, context={"request": request}
+        )
+        create_ser.is_valid(raise_exception=True)
+        instance = create_ser.save()
+        resp_ser = SubscriptionAPISerializer(instance)
+        return Response(
+            {"success": True, "message": "Subscription package updated successfully", "data": resp_ser.data},
+        )
+
+    def perform_destroy(self, instance):
+        """Soft-delete: mark as deleted instead of removing from DB."""
+        instance.deleted = True
+        instance.deleted_at = now()
+        if self.request.user.is_authenticated:
+            instance.deleted_by = self.request.user
+        instance.save()
 
 
 class UserSubscriptionViewSet(ModelViewSet):
@@ -48,50 +95,15 @@ class UserSubscriptionViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="me")
     def me(self, request):
-        user = request.user
         user_sub = (
-            UserSubscription.objects.filter(user=user, is_active=True)
+            UserSubscription.objects.filter(user=request.user, is_active=True)
             .select_related("plan_price__plan")
             .first()
         )
-
         if not user_sub:
             return Response({"subscription": None})
-
-        # default feature to report (assessment)
-        feature_code = "assessment"
-        plan = getattr(user_sub.plan_price, "plan", None)
-        feature = SubscriptionFeature.objects.filter(
-            subscription=plan,
-            feature_code=feature_code,
-            is_enabled=True,
-            deleted=False,
-        ).first()
-
-        usage = FeatureUsage.objects.filter(
-            user=user, feature_code=feature_code, plan_price=user_sub.plan_price
-        ).first()
-
-        used = usage.used if usage else 0
-
-        if feature:
-            allowed = "unlimited" if feature.is_unlimited else int(feature.value or 0)
-            remaining = None if feature.is_unlimited else max(allowed - used, 0)
-        else:
-            allowed = 0
-            remaining = 0
-
-        return Response(
-            {
-                "subscription": plan.package_name if plan else None,
-                "period": user_sub.plan_price.period if user_sub.plan_price else None,
-                "start_date": user_sub.start_date,
-                "end_date": user_sub.end_date,
-                "features": {
-                    feature_code: {"allowed": allowed, "used": used, "remaining": remaining}
-                },
-            }
-        )
+        serializer = UserSubscriptionMeSerializer(user_sub, context={"request": request})
+        return Response(serializer.data)
 
 
 class PaymentSubscriptionViewSet(ModelViewSet):

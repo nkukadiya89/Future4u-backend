@@ -40,6 +40,8 @@ The institute has already filled these fields on the form — use them only as c
 - course_type
 - mode
 - duration
+- provider_type
+- course_provider
 
 Generate ONLY the six fields in the JSON shape above. Every value must be written fresh from the institute-provided details in the user message. Never copy placeholder or example text from these instructions.
 
@@ -57,6 +59,8 @@ The output must be concrete: name specific tools, technologies, domains, or skil
 course_title
 - Clear, professional course title that precisely reflects the course content
 - Must be specific enough to distinguish this course from generic offerings
+- If the user provided a course_title hint, refine and professionalize it — do NOT copy it verbatim; keep the subject the same
+- If no course_title hint is provided, generate a suitable title from the course_overview
 - Avoid hype titles (no Best Course Ever, Ultimate, World Class Course)
 - Good: "Advanced Data Analytics with Python" | "Full-Stack Web Development with React & Django"
 - Poor: "Computer Course" | "Skill Development Program"
@@ -127,11 +131,14 @@ Previous validation feedback (fix these issues if provided): {{validation_feedba
 
 USER_PROMPT = """Generate AI fields for the Future4U Add Course form using the institute-provided details below.
 
+course_title: {course_title}
 course_overview: {course_overview}
 course_price: {course_price}
 course_type: {course_type}
 mode: {mode}
 duration: {duration}
+provider_type: {provider_type}
+course_provider: {course_provider}
 """
 
 
@@ -151,7 +158,20 @@ def _choice_display(choices: tuple[tuple[str, str], ...], value: object) -> str:
 
 
 def format_prompt_inputs(*, generation_input: dict) -> dict[str, str]:
+    # Resolve course_provider name from profile
+    course_provider = generation_input.get("course_provider")
+    if course_provider:
+        name = None
+        if hasattr(course_provider, "institute_profile"):
+            name = getattr(course_provider.institute_profile, "institute_name", None)
+        if not name and hasattr(course_provider, "school_college_profile"):
+            name = getattr(course_provider.school_college_profile, "institute_name", None)
+        course_provider_str = name or getattr(course_provider, "full_name", None) or str(course_provider)
+    else:
+        course_provider_str = ""
+
     return {
+        "course_title": str(generation_input.get("course_title") or "").strip() or "Not provided",
         "course_overview": str(generation_input.get("course_overview") or "").strip(),
         "course_price": str(generation_input.get("course_price") or "").strip(),
         "course_type": _choice_display(
@@ -159,7 +179,9 @@ def format_prompt_inputs(*, generation_input: dict) -> dict[str, str]:
         ),
         "mode": _choice_display(Courses.MODE_CHOICE, generation_input.get("mode")),
         "duration": str(generation_input.get("duration") or "").strip(),
-        "validation_feedback": str(
-            generation_input.get("validation_feedback") or ""
-        ).strip(),
+        "provider_type": _choice_display(
+            Courses.PROVIDER_TYPE_CHOICES, generation_input.get("provider_type")
+        ),
+        "course_provider": course_provider_str,
+        "validation_feedback": str(generation_input.get("validation_feedback") or "").strip(),
     }

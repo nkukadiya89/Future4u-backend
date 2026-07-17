@@ -114,7 +114,7 @@ INSTALLED_APPS = [
     "job_generation",
     "course_generation",
     "internship_generation",
-    "token_override",
+    "jobs",
 ]
 
 MIDDLEWARE = [
@@ -290,6 +290,7 @@ LOGGING = {
             "propagate": False,
         },
     },
+
 }
 
 SIMPLE_JWT = {
@@ -423,3 +424,21 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
 CELERY_ENABLE_UTC = True
+
+# ── LinkedIn Job Search (RapidAPI) ──────────────────────────────────────────
+RAPIDAPI_KEY = config("RAPIDAPI_KEY", default="").strip()
+RAPIDAPI_HOST = config(
+    "RAPIDAPI_HOST",
+    default="linkedin-job-search-api.p.rapidapi.com",
+).strip()
+RAPIDAPI_BASE_URL = config(
+    "RAPIDAPI_BASE_URL",
+    default="https://linkedin-job-search-api.p.rapidapi.com",
+).strip()
+
+# Feature toggle for the LinkedIn job search
+JOBS_LINKEDIN_SEARCH_ENABLED = config(
+    "JOBS_LINKEDIN_SEARCH_ENABLED",
+    default=True,
+    cast=bool,
+)

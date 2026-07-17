@@ -19,7 +19,7 @@ from language_master.services import language_service
 from state.models import State
 from stream.serializers import StreamSerializer
 from stream.services import stream_service
-from subscription.models import Subscription, SubscriptionFeature
+
 from user.models import CustomGroup, RoleFamily, User
 from assessment.models import (
     CareerDirection,
@@ -58,16 +58,8 @@ class Command(BaseCommand):
 
         parser.add_argument("--groups", type=bool, help="Create Groups")
         parser.add_argument("--user", type=bool, help="Create Super User")
-        parser.add_argument(
-            "--subscription", type=bool, help="Subscription plans data to be seeded"
-        )
-
     def handle(self, *args, **kwargs):
         self.stdout.write("Initialise..")
-        if kwargs["subscription"]:
-            self.load_subscription()
-            return
-
         # Handle specific flags
         if kwargs["groups"]:
             admin_user = (
@@ -114,7 +106,6 @@ class Command(BaseCommand):
             and kwargs["assessment"] is None
             and kwargs["groups"] is None
             and kwargs["user"] is None
-            and kwargs["subscription"] is None
         ):
             self.load_business_category()
             admin_user = self.create_super_user()
@@ -131,11 +122,17 @@ class Command(BaseCommand):
             self.load_assessment_questions()
             self.load_assessment_masters()
             self.load_language_master()
-            self.load_subscription()  # TODO: fix field mismatch with current Subscription model
-
     # Super User Create
     def create_super_user(self):
         self.stdout.write("Creating Super User.......")
+        exist_superuser = User.objects.filter(
+            is_superuser = True
+        ).first()
+        if exist_superuser:
+            self.stdout.write(
+                self.style.WARNING("Super User already exists, skipping creation.")
+            )
+            return exist_superuser
         init_email = config("INIT_EMAIL")
         defaults = dict(
             is_superuser=True,
@@ -303,6 +300,9 @@ class Command(BaseCommand):
             "education_level|Can view education level",
             "stream|Can view stream",
             "user|Can view user",
+            "course|Can view courses",
+            "course|Can add course inquiry",
+            "course|Can view course inquiry",
             "internship_job|Can view internship",
             "internship_job|Can view internship application",
             "internship_job|Can add internship application",
@@ -322,6 +322,8 @@ class Command(BaseCommand):
             "education_level|Can view education level",
             "stream|Can view stream",
             "user|Can view user",
+            "course|Can view courses",
+            "course|Can add course inquiry",
             "course|Can view course inquiry",
             "internship_job|Can view internship",
             "internship_job|Can view internship application",
@@ -348,13 +350,6 @@ class Command(BaseCommand):
             "course|Can delete courses",
             "course|Can view course inquiry",
             "course|Can change course inquiry",
-            "internship_job|Can view internship",
-            "internship_job|Can add internship",
-            "internship_job|Can change internship",
-            "internship_job|Can view job",
-            "internship_job|Can delete internship",
-            "internship_job|Can view internship application",
-            "internship_job|Can change internship application",
         ]
 
         # Institute Permissions - Manage courses, grade students
@@ -372,7 +367,6 @@ class Command(BaseCommand):
             "course|Can delete courses",
             "course|Can view course inquiry",
             "course|Can change course inquiry",
-            "internship_job|Can view job",
             "internship_job|Can view internship",
             "internship_job|Can add internship",
             "internship_job|Can change internship",
@@ -388,12 +382,6 @@ class Command(BaseCommand):
             "education_level|Can view education level",
             "stream|Can view stream",
             "user|Can view user",
-            "course|Can view courses",
-            "course|Can add courses",
-            "course|Can change courses",
-            "course|Can delete courses",
-            "course|Can view course inquiry",
-            "course|Can change course inquiry",
             "internship_job|Can view job",
             "internship_job|Can add job",
             "internship_job|Can change job",
@@ -887,136 +875,3 @@ class Command(BaseCommand):
             importer=language_service.bulk_import_languages,
         )
 
-    # Subscription Create
-    subscription_data = [
-        {
-            "package_name": "Free",
-            "subscription_type": "subscription",
-            "subscription_price": 0,
-            "subscription_discount": 0.0,
-            "subscription_sell_price": 0,
-            "plan_price": 0,
-            "duration_days": 365,
-            "description": (
-                "Free tier with limited access to career assessment, internship, "
-                "job assistance, and course certification features."
-            ),
-            "status": True,
-            "core_features": [
-                {"feature_name": "career_assessment", "feature_status": True},
-                {"feature_name": "domain_exploration", "feature_status": True},
-                {"feature_name": "skill_gap_analysis", "feature_status": False},
-                {"feature_name": "career_roadmap", "feature_status": False},
-                {"feature_name": "counsellor_session", "feature_status": False},
-                {"feature_name": "resume_builder", "feature_status": False},
-                {"feature_name": "job_recommendations", "feature_status": False},
-                {"feature_name": "learning_resources", "feature_status": False},
-                {"feature_name": "mock_interview", "feature_status": False},
-                {"feature_name": "mentorship_access", "feature_status": False},
-                {"feature_name": "premium_counsellor", "feature_status": False},
-            ],
-            "subscription_feature": [
-                {"feature_name": "Single Profile Assessment", "feature_status": True},
-                {"feature_name": "Limited Internship Access", "feature_status": True},
-                {"feature_name": "Limited Job Assistance", "feature_status": True},
-                {"feature_name": "Limited Course Certification", "feature_status": True},
-                {"feature_name": "Limited Career Roadmap", "feature_status": True},
-            ],
-        },
-        {
-            "package_name": "Pro",
-            "subscription_type": "subscription",
-            "subscription_price": 1800,
-            "subscription_discount": 0.0,
-            "subscription_sell_price": 1800,
-            "plan_price": 1800,
-            "duration_days": 365,
-            "description": (
-                "Full access to profile assessments, unlimited internship, job, "
-                "and course access, career compare, roadmap, and AI chat."
-            ),
-            "status": True,
-            "core_features": [
-                {"feature_name": "career_assessment", "feature_status": True},
-                {"feature_name": "domain_exploration", "feature_status": True},
-                {"feature_name": "skill_gap_analysis", "feature_status": True},
-                {"feature_name": "career_roadmap", "feature_status": True},
-                {"feature_name": "counsellor_session", "feature_status": True},
-                {"feature_name": "resume_builder", "feature_status": True},
-                {"feature_name": "job_recommendations", "feature_status": True},
-                {"feature_name": "learning_resources", "feature_status": True},
-                {"feature_name": "mock_interview", "feature_status": True},
-                {"feature_name": "mentorship_access", "feature_status": True},
-                {"feature_name": "premium_counsellor", "feature_status": True},
-            ],
-            "subscription_feature": [
-                {"feature_name": "Profile Assessments", "feature_status": True},
-                {"feature_name": "Full Internship Access", "feature_status": True},
-                {"feature_name": "Full Job Assistance", "feature_status": True},
-                {"feature_name": "Full Course Certification", "feature_status": True},
-                {"feature_name": "Career Compare", "feature_status": True},
-                {"feature_name": "Career Roadmap Path", "feature_status": True},
-                {"feature_name": "AI Chat Access", "feature_status": True},
-            ],
-        },
-    ]
-
-    def load_subscription(self, *args, **kwargs):
-        self.stdout.write("Creating Subscription Plans...")
-
-        created_by_user = User.objects.first()
-
-        for data in self.subscription_data:
-            subscription, created = Subscription.objects.get_or_create(
-                package_name=data["package_name"],
-                defaults={
-                    "description": data["description"],
-                    "is_active": data["status"],
-                    "created_by": created_by_user,
-                    "created_at": now(),
-                },
-            )
-
-            if created:
-                self.stdout.write(f"Created subscription: {subscription.package_name}")
-
-                # seed a default PlanPrice (assume yearly prices in initial data)
-                from subscription.models import PlanPrice
-
-                PlanPrice.objects.create(
-                    plan=subscription,
-                    period="yearly",
-                    price=int(data["plan_price"]),
-                    duration_days=int(data["duration_days"]),
-                    is_active=True,
-                    created_by=created_by_user,
-                    created_at=now(),
-                )
-
-                for feature in data["core_features"]:
-                    SubscriptionFeature.objects.create(
-                        subscription=subscription,
-                        feature_name=feature["feature_name"],
-                        is_enabled=feature["feature_status"],
-                        is_core=True,
-                        created_by=created_by_user,
-                        created_at=now(),
-                    )
-                    self.stdout.write(
-                        f"  - Added core feature: {feature['feature_name']}"
-                    )
-
-                for feature in data["subscription_feature"]:
-                    SubscriptionFeature.objects.create(
-                        subscription=subscription,
-                        feature_name=feature["feature_name"],
-                        is_enabled=feature["feature_status"],
-                        is_core=False,
-                        created_by=created_by_user,
-                        created_at=now(),
-                    )
-                    self.stdout.write(
-                        f"  - Added subscription feature: {feature['feature_name']}"
-                    )
-
-        self.stdout.write("Subscription data uploaded.")

@@ -4,46 +4,114 @@ from django.db.models import F
 from django.utils.timezone import now
 
 from subscription.models import FeatureUsage, SubscriptionFeature, UserSubscription
-from subscription.services.usage import consume_feature
-from token_override.models import TokenOverride
+from user.models import User
 
 
-def get_bonus_tokens(user):
-    """Get total bonus monthly tokens from admin overrides (per-user + entity-level)."""
-    total_bonus = 0
+FEATURE_NAMES = {
+    "ai_chat": "AI Chat",
+    "career_compare": "Career Compare",
+    "career_roadmap": "Career Roadmap Path",
+    "assessment": "Profile Assessment",
+    "recommendation": "Career Recommendation",
+    "course_gen": "Course Generation",
+    "internship_gen": "Internship Generation",
+    "job_gen": "Job Generation",
+    "resume_enhance": "Resume Builder",
+    "monthly_tokens": "Monthly Token Allowance",
+}
 
-    # Direct per-user override
-    direct = TokenOverride.objects.filter(
-        user=user,
-        is_active=True,
-        deleted=False,
-    ).first()
-    if direct:
-        total_bonus += direct.extra_monthly_tokens
+MIN_TOKENS_REQUIRED = {
+    "ai_chat": 500,
+    "recommendation": 3000,
+    "course_gen": 500,
+    "internship_gen": 500,
+    "job_gen": 500,
+}
 
-    # Entity-level override: check if user belongs to a school/college/institute/corporate
-    # via their StudentProfile.referred_by or ProfessionalProfile.referred_by
-    referred_by_user_id = None
-    if hasattr(user, "student_profile") and user.student_profile:
-        referred_by_user_id = user.student_profile.referred_by_id
-    elif hasattr(user, "professional_profile") and user.professional_profile:
-        referred_by_user_id = user.professional_profile.referred_by_id
+ORGANIZATION_TYPES = (
+    User.Role.SCHOOL_COLLEGE,
+    User.Role.INSTITUTE,
+    User.Role.CORPORATE,
+)
 
-    if referred_by_user_id:
-        entity_bonus = TokenOverride.objects.filter(
-            entity_user_id=referred_by_user_id,
-            is_active=True,
-            deleted=False,
-        ).first()
-        if entity_bonus:
-            total_bonus += entity_bonus.extra_monthly_tokens
+# Default monthly token allowance per org type (used during monthly reset).
+# Stored in code so changing it affects ALL existing users, not just new ones.
+# Per-user overrides are tracked via extra_token_limit on the profile.
+DEFAULT_ORG_TOKEN_LIMITS = {
+    User.Role.INSTITUTE: 20000,
+    User.Role.CORPORATE: 20000,
+    User.Role.SCHOOL_COLLEGE: 15000,
+}
 
-    return total_bonus
+
+def _get_org_profile(user):
+    if user.user_type == User.Role.SCHOOL_COLLEGE:
+        return getattr(user, "school_college_profile", None)
+    elif user.user_type == User.Role.INSTITUTE:
+        return getattr(user, "institute_profile", None)
+    elif user.user_type == User.Role.CORPORATE:
+        return getattr(user, "corporate_profile", None)
+    return None
+
+
+def _check_org_monthly_reset(profile, user_type):
+    """Reset token_limit to base default only.
+    extra_token_limit is a one-time per-month grant — it resets to 0
+    so the new month starts cleanly with just the config default."""
+    today = now().date()
+    if not profile.last_token_reset_at or (today - profile.last_token_reset_at).days >= 30:
+        base = DEFAULT_ORG_TOKEN_LIMITS.get(user_type, 20000)
+        profile.token_limit = base
+        profile.extra_token_limit = 0
+        profile.last_token_reset_at = today
+        profile.save(update_fields=["token_limit", "extra_token_limit", "last_token_reset_at"])
+
+
+def _reset_subscription_monthly_tokens(user, user_sub):
+    """Reset monthly token usage for subscription users if 30+ days have passed.
+    Uses last_reset_at on UserSubscription. Also resets all feature-specific usage
+    counts (assessment, ai_chat, etc.) so they get a fresh allowance each month."""
+    today = now().date()
+    if not user_sub.last_reset_at or (today - user_sub.last_reset_at).days >= 30:
+        plan_price = user_sub.plan_price
+        # Reset monthly_tokens usage to 0
+        FeatureUsage.objects.filter(
+            user=user,
+            feature_code="monthly_tokens",
+            plan_price=plan_price,
+        ).update(used=0)
+        # Reset all feature-specific usage counts too
+        FeatureUsage.objects.filter(
+            user=user,
+            plan_price=plan_price,
+        ).exclude(feature_code="monthly_tokens").update(used=0)
+        # Update reset timestamp
+        UserSubscription.objects.filter(id=user_sub.id).update(last_reset_at=today)
 
 
 def check_and_deduct_token(user, feature_code, quantity=1):
+    if user.is_superuser:
+        return True
 
-    # 1. Look up subscription + monthly token config
+    name = FEATURE_NAMES.get(feature_code, feature_code)
+
+    # ── ORG USERS: CHECK availability only, no deduction ──
+    if user.user_type in ORGANIZATION_TYPES:
+        profile = _get_org_profile(user)
+        if not profile:
+            raise Exception("Profile not found")
+
+        _check_org_monthly_reset(profile, user.user_type)
+
+        min_required = MIN_TOKENS_REQUIRED.get(feature_code, 100)
+        if profile.token_limit < min_required:
+            raise Exception(
+                f"Insufficient tokens. Need at least {min_required} tokens "
+                f"for {name}. Contact your super admin."
+            )
+        return True
+
+    # ── SUBSCRIPTION USERS (existing flow unchanged) ──
     user_sub = UserSubscription.objects.filter(
         user=user, is_active=True
     ).select_related("plan_price__plan").first()
@@ -51,7 +119,6 @@ def check_and_deduct_token(user, feature_code, quantity=1):
     if not user_sub:
         raise Exception("No active subscription. Please subscribe to a plan.")
 
-    # Check if subscription period has expired
     if user_sub.end_date < now().date():
         raise Exception(
             "Your subscription has expired. Please renew your plan."
@@ -61,6 +128,9 @@ def check_and_deduct_token(user, feature_code, quantity=1):
     if not plan:
         raise Exception("No active subscription plan found.")
 
+    # Check monthly reset before checking limits
+    _reset_subscription_monthly_tokens(user, user_sub)
+
     monthly_feature = SubscriptionFeature.objects.filter(
         subscription=plan,
         feature_code="monthly_tokens",
@@ -69,48 +139,94 @@ def check_and_deduct_token(user, feature_code, quantity=1):
     ).first()
 
     if not monthly_feature:
-        raise Exception("Monthly tokens not available in your plan.")
+        raise Exception(
+            "Monthly tokens are not included in your current plan. "
+            "Please upgrade your plan to continue."
+        )
 
-    # 2. Deduct monthly_tokens AND per-feature in a SINGLE atomic transaction
-    #    so that if either fails, BOTH roll back together.
-    #    consume_feature() has its own nested atomic (savepoint); if it fails,
-    #    the outer atomic rolls back the monthly_tokens deduction too.
-    with transaction.atomic():
-        if not monthly_feature.is_unlimited:
-            base_limit = int(monthly_feature.value or 0)
-            bonus = get_bonus_tokens(user)
-            effective_limit = base_limit + bonus
-
-            usage, _ = FeatureUsage.objects.select_for_update().get_or_create(
-                user=user,
-                feature_code="monthly_tokens",
-                plan_price=user_sub.plan_price,
-                defaults={"used": 0},
+    # Check monthly token budget — block if user has exhausted their allowance
+    if not monthly_feature.is_unlimited:
+        base_limit = int(monthly_feature.value or 0)
+        if base_limit <= 0:
+            raise Exception(
+                "Your monthly token plan is not configured properly. "
+                "Please contact support."
             )
-            if usage.used + quantity > effective_limit:
-                raise Exception(
-                    "Monthly token limit exceeded. "
-                    "Please upgrade your plan or contact support."
-                )
-            usage.used = F("used") + quantity
-            usage.save(update_fields=["used"])
 
-        # Deduct from specific feature (e.g. job_gen, course_gen)
-        # If consume_feature raises, we catch and re-raise so the outer
-        # atomic rolls back the monthly_tokens deduction too.
-        try:
-            consume_feature(user, feature_code, quantity)
-        except Exception as e:
-            error_msg = str(e).lower()
-            if "not available in plan" in error_msg:
-                raise Exception(
-                    f"{feature_code} is not included in your plan."
-                )
-            if "no active subscription" in error_msg:
-                raise Exception(
-                    "Your subscription is no longer active. "
-                    "Please renew your plan."
-                )
-            raise Exception(f"Your {feature_code} limit is exhausted.")
+        # Get how many tokens used this month
+        usage = FeatureUsage.objects.filter(
+            user=user,
+            feature_code="monthly_tokens",
+            plan_price=user_sub.plan_price,
+        ).first()
+        used = usage.used if usage else 0
+
+        min_required = MIN_TOKENS_REQUIRED.get(feature_code, 100)
+        if used + min_required > base_limit:
+            raise Exception(
+                f"You have used {used} out of {base_limit} monthly tokens. "
+                f"At least {min_required} tokens are needed for {name}. "
+                f"Please upgrade your plan or wait for your tokens to reset."
+            )
+
+    # Verify this specific feature is included in the user's plan
+    if feature_code not in ("monthly_tokens",):
+        feature = SubscriptionFeature.objects.filter(
+            subscription=plan,
+            feature_code=feature_code,
+            is_enabled=True,
+            deleted=False,
+        ).first()
+        if not feature:
+            raise Exception(
+                f"{name} is not included in your current plan. "
+                f"Please upgrade to access this feature."
+            )
 
     return True
+
+
+def deduct_monthly_tokens(user, actual_tokens):
+    """Deduct actual LLM token usage after a successful AI generation."""
+    if user.is_superuser or actual_tokens <= 0:
+        return
+
+    # ── ORG USERS: deduct from profile.token_limit ──
+    if user.user_type in ORGANIZATION_TYPES:
+        profile = _get_org_profile(user)
+        if not profile:
+            return
+
+        _check_org_monthly_reset(profile, user.user_type)
+
+        if profile.token_limit < actual_tokens:
+            raise Exception("Monthly token allowance exhausted.")
+
+        profile.token_limit -= actual_tokens
+        profile.save(update_fields=["token_limit"])
+        return
+
+    # ── SUBSCRIPTION USERS (existing flow unchanged) ──
+    user_sub = UserSubscription.objects.filter(
+        user=user, is_active=True
+    ).select_related("plan_price__plan").first()
+
+    if not user_sub:
+        return
+
+    plan = getattr(user_sub.plan_price, "plan", None)
+    if not plan:
+        return
+
+    # Check monthly reset before deducting
+    _reset_subscription_monthly_tokens(user, user_sub)
+
+    with transaction.atomic():
+        usage, _ = FeatureUsage.objects.select_for_update().get_or_create(
+            user=user,
+            feature_code="monthly_tokens",
+            plan_price=user_sub.plan_price,
+            defaults={"used": 0},
+        )
+        usage.used = F("used") + actual_tokens
+        usage.save(update_fields=["used"])

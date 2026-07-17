@@ -21,7 +21,8 @@ from job_generation.exceptions import (
 from job_generation.serializers.job_generation_input import JobGenerationInputSerializer
 from job_generation.services.job_generation_service import JobGenerationService
 from utils.throttles import JobGenerationRateThrottle
-from utils.token_check import check_and_deduct_token
+from utils.token_check import check_and_deduct_token, deduct_monthly_tokens
+from job_generation.services.job_generator import JobGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +60,14 @@ class JobGenerationAPIView(APIView):
                 user=request.user,
                 validated_input=serializer.validated_data,
             )
+            # Deduct actual LLM token usage after successful AI call
+            try:
+                deduct_monthly_tokens(request.user, JobGenerator._last_token_usage)
+            except Exception as exc:
+                logger.error(
+                    "TOKEN_RECONCILE user=%s feature=job_gen cost=%s err=%s",
+                    request.user.id, JobGenerator._last_token_usage, exc,
+                )
             return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
 
         except JobGenerationAccessDeniedError:
@@ -205,6 +214,15 @@ class JobGenerationSaveView(APIView):
         if save_mode not in ("draft", "publish"):
             save_mode = "draft"
         
+        # Deduct actual LLM token usage after successful AI call
+        try:
+            deduct_monthly_tokens(request.user, JobGenerator._last_token_usage)
+        except Exception as exc:
+            logger.error(
+                "TOKEN_RECONCILE user=%s feature=job_gen_save cost=%s err=%s",
+                request.user.id, JobGenerator._last_token_usage, exc,
+            )
+
         # Create the Job record with provider/audit fields
         job = Job.objects.create(
             **generated_data,

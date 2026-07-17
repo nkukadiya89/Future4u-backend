@@ -18,6 +18,7 @@ from course_generation.providers.factory import (
 )
 from course_generation.schemas.course_output import CourseGenerationPayload
 from course_generation.services.json_response_parser import JsonResponseParser
+from utils.token_usage import extract_token_usage
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,10 @@ _MAX_GENERATION_ATTEMPTS = 3
 
 class CourseGenerator:
     """Single LLM invocation: course overview input -> structured course details."""
+
+    # Tracks actual LLM token usage from the last successful generation.
+    # The calling view reads this to deduct from the user's monthly allowance.
+    _last_token_usage = 0
 
     @classmethod
     def generate(cls, *, generation_input: dict[str, Any]) -> CourseGenerationPayload:
@@ -88,6 +93,7 @@ class CourseGenerator:
         try:
             chain = prompt | llm
             result = chain.invoke(inputs)
+            cls._last_token_usage = extract_token_usage(result)
             raw_text = _extract_text_content(result)
         except Exception as exc:
             logger.exception("LLM course generation failed")
