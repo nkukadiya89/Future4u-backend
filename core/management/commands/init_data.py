@@ -125,6 +125,14 @@ class Command(BaseCommand):
     # Super User Create
     def create_super_user(self):
         self.stdout.write("Creating Super User.......")
+        exist_superuser = User.objects.filter(
+            is_superuser = True
+        ).first()
+        if exist_superuser:
+            self.stdout.write(
+                self.style.WARNING("Super User already exists, skipping creation.")
+            )
+            return exist_superuser
         init_email = config("INIT_EMAIL")
         defaults = dict(
             is_superuser=True,
@@ -292,6 +300,9 @@ class Command(BaseCommand):
             "education_level|Can view education level",
             "stream|Can view stream",
             "user|Can view user",
+            "course|Can view courses",
+            "course|Can add course inquiry",
+            "course|Can view course inquiry",
             "internship_job|Can view internship",
             "internship_job|Can view internship application",
             "internship_job|Can add internship application",
@@ -311,6 +322,8 @@ class Command(BaseCommand):
             "education_level|Can view education level",
             "stream|Can view stream",
             "user|Can view user",
+            "course|Can view courses",
+            "course|Can add course inquiry",
             "course|Can view course inquiry",
             "internship_job|Can view internship",
             "internship_job|Can view internship application",
@@ -337,13 +350,6 @@ class Command(BaseCommand):
             "course|Can delete courses",
             "course|Can view course inquiry",
             "course|Can change course inquiry",
-            "internship_job|Can view internship",
-            "internship_job|Can add internship",
-            "internship_job|Can change internship",
-            "internship_job|Can view job",
-            "internship_job|Can delete internship",
-            "internship_job|Can view internship application",
-            "internship_job|Can change internship application",
         ]
 
         # Institute Permissions - Manage courses, grade students
@@ -361,7 +367,6 @@ class Command(BaseCommand):
             "course|Can delete courses",
             "course|Can view course inquiry",
             "course|Can change course inquiry",
-            "internship_job|Can view job",
             "internship_job|Can view internship",
             "internship_job|Can add internship",
             "internship_job|Can change internship",
@@ -377,12 +382,6 @@ class Command(BaseCommand):
             "education_level|Can view education level",
             "stream|Can view stream",
             "user|Can view user",
-            "course|Can view courses",
-            "course|Can add courses",
-            "course|Can change courses",
-            "course|Can delete courses",
-            "course|Can view course inquiry",
-            "course|Can change course inquiry",
             "internship_job|Can view job",
             "internship_job|Can add job",
             "internship_job|Can change job",
