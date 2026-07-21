@@ -18,6 +18,7 @@ from user.admin_user_views import (
     AdminInstituteViewSet,
     AdminWorkingProfessionalViewSet,
 )
+from user.student_organization_views import OrganizationStudentViewSet
 from user.resend_password_reset import ResendPasswordResetViewSet
 from user.user_type_views import AuthViewSet
 from user.views import (
@@ -108,5 +109,10 @@ user_router.register(
     "admin-working-professional-users",
     AdminWorkingProfessionalViewSet,
     basename="admin_working_professional_users",
+)
+user_router.register(
+    "organization-students",
+    OrganizationStudentViewSet,
+    basename="organization_students",
 )
 user_router.register("users", UserListViewSet, basename="users")

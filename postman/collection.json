@@ -9396,6 +9396,179 @@
       ]
     },
     {
+      "name": "Organization Students",
+      "description": "School / College / Institute endpoints for managing students created by the authenticated organization user. Requires Bearer {{access_token}} and a user_type of school, college or institute. Base path: /organization-students/\n\nCreate students with multipart form-data, list with pagination/search/ordering, retrieve a single student, and soft-delete (archive) a student. Students must be inactive before archiving.",
+      "item": [
+        {
+          "name": "list organization students (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-students/?pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-students",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "-id",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List students created by the authenticated organization user.\n\nGET /organization-students/\n\nRequires Bearer {{access_token}} and user_type school/college/institute.\n\nOptional query params: no_pagination, pagesize, search, ordering.\n\n200 response: paginated list of students with id, first_name, last_name, full_name, email, phone, country, country_name, state, state_name, city, city_name, profile_image, is_active, status."
+          },
+          "response": []
+        },
+        {
+          "name": "create organization student (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-students/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-students",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"email\":\"{{user_email}}\",\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"country\":\"{{country_id}}\",\"state\":\"{{state_id}}\",\"city\":\"{{city_id}}\",\"address\":\"{{address}}\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Create a student under the authenticated organization user.\n\nPOST /organization-students/\n\nMultipart form-data: `data` (JSON string) + optional `profile_image`.\n\nRequired in `data`: email, first_name, country, state, city\nOptional: last_name, phone, address\n\nDo not send user_type — always creates a student with status pending and must_change_password true.\n\n201 response: success, message, student (full serialized object)\n400 response: success, errors"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Organization student created', () => pm.expect(json.success).to.eql(true));",
+                  "    if (json.student && json.student.id != null) {",
+                  "      pm.collectionVariables.set('organization_student_id', String(json.student.id));",
+                  "      pm.environment.set('organization_student_id', String(json.student.id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "retrieve organization student (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-students/{{organization_student_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-students",
+                "{{organization_student_id}}",
+                ""
+              ]
+            },
+            "description": "Retrieve a single student created by the authenticated organization user.\n\nGET /organization-students/{organization_student_id}/\n\nSet {{organization_student_id}} from create response or list response.\n\n200 response: success, data (student object)\n404 if student not found or not created by this user."
+          },
+          "response": []
+        },
+        {
+          "name": "delete organization student (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-students/{{organization_student_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-students",
+                "{{organization_student_id}}",
+                ""
+              ]
+            },
+            "description": "Soft-delete (archive) a student created by the authenticated organization user.\n\nDELETE /organization-students/{organization_student_id}/\n\nSet {{organization_student_id}} from create response or list response.\n\nStudent must be inactive before delete. Active students return 400. Already-archived students return 400.\n\n200 response: success, message\n400 response: success, message (active student / already archived / not created by you)\n404 if student not found."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "user_profile",
       "item": [
         {
