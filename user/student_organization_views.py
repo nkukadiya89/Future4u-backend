@@ -9,9 +9,13 @@ from .permissions import IsSchoolCollegeOrInstittute
 from django.db import transaction
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from rest_framework import status
 from django.utils import timezone
-
+from assessment.models import StudentAssessment
+from assessment.serializers import StudentAssessmentSerializer
+from assessment_career.models import CareerRecommendation
+from assessment_career.serializers import CareerRecommendationSerializer
 
 class OrganizationStudentViewSet(BaseModelViewSet):
     authentication_classes = [JWTAuthentication]
@@ -66,12 +70,21 @@ class OrganizationStudentViewSet(BaseModelViewSet):
                 "country",
                 "states",
                 "city",
+                "student_profile",
+                "student_profile__education_level",
+            )
+            .prefetch_related(
+                "student_assessments",
+                "career_recommendations",
+                "career_recommendations__suggestions",
             ).order_by("-id")
         )
     
     def get_serializer_class(self):
         if self.action == "create":
             return OrganizationStudentCreateSerializer
+        if self.action == "student_assessment":
+            return StudentAssessmentSerializer
         return OrganizationStudentListSerializer
 
     @transaction.atomic
@@ -161,3 +174,75 @@ class OrganizationStudentViewSet(BaseModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+    @action(detail=True, methods=["get"], url_path="assessments")
+    def student_assessment(self, request, pk=None):
+        student = self.get_object()
+        queryset = StudentAssessment.objects.filter(user=student, deleted=False).order_by("-created_at")
+        no_pagination = request.query_params.get("no_pagination")
+        if no_pagination:
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(
+                {
+                    "success" : True,
+                    "data" : serializer.data,
+                },
+                status= status.HTTP_200_OK,
+            )
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                {
+                    "success" : True,
+                    "data" : serializer.data,
+                },
+            )
+        
+        serializer = self.get_serializer(queryset, many=True)
+        return self.get_paginated_response(
+            {
+                "success" : True,
+                "data" : serializer.data,
+            },
+        )
+    @action(detail=True, methods=["get"], url_path="recommendation")
+    def student_recommendation(self, request, pk=None):
+        assessment_id = request.query_params.get("assessment_id")
+        if not assessment_id:
+            return Response(
+                {
+                    "success" : False,
+                    "message" : "Assessment id is required",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        student = self.get_object()
+        assessment = StudentAssessment.objects.filter(id=assessment_id, user=student, deleted=False).first()
+        if not assessment:
+            return Response(
+                {
+                    "success" : False,
+                    "message" : "Assessment not found",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        recommendation = (CareerRecommendation.objects.filter(student_assessment=assessment, deleted=False).prefetch_related("suggestions").first())
+        if not recommendation:
+            return Response(
+                {
+                    "success" : False,
+                    "message" : "Recommendation not found",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        
+        serializer = CareerRecommendationSerializer(recommendation)
+        return Response(
+            {
+                "success" : True,
+                "data" : serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+    
