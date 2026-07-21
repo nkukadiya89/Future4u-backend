@@ -9444,7 +9444,7 @@
                 }
               ]
             },
-            "description": "List students created by the authenticated organization user.\n\nGET /organization-students/\n\nRequires Bearer {{access_token}} and user_type school/college/institute.\n\nOptional query params: no_pagination, pagesize, search, ordering.\n\n200 response: paginated list of students with id, first_name, last_name, full_name, email, phone, country, country_name, state, state_name, city, city_name, profile_image, is_active, status."
+            "description": "List students created by the authenticated organization user.\n\nGET /organization-students/\n\nRequires Bearer {{access_token}} and user_type school/college/institute.\n\nOptional query params: no_pagination, pagesize, search, ordering.\n\n200 response: paginated list of students with id, first_name, last_name, full_name, email, phone, country, country_name, state, state_name, city, city_name, profile_image, is_active, status, education_level, assessment_status, recommendation_score, last_active."
           },
           "response": []
         },
@@ -9563,6 +9563,103 @@
               ]
             },
             "description": "Soft-delete (archive) a student created by the authenticated organization user.\n\nDELETE /organization-students/{organization_student_id}/\n\nSet {{organization_student_id}} from create response or list response.\n\nStudent must be inactive before delete. Active students return 400. Already-archived students return 400.\n\n200 response: success, message\n400 response: success, message (active student / already archived / not created by you)\n404 if student not found."
+          },
+          "response": []
+        },
+        {
+          "name": "student assessments (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-students/{{organization_student_id}}/assessments/?pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-students",
+                "{{organization_student_id}}",
+                "assessments",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "List all assessments for a student created by the authenticated organization user.\n\nGET /organization-students/{organization_student_id}/assessments/\n\nSet {{organization_student_id}} from list or create response.\n\nReturns paginated list of StudentAssessment objects."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const data = json.data && Array.isArray(json.data) ? json.data : (json.data && json.data.results ? json.data.results : []);",
+                  "    if (data.length > 0 && data[0].id != null) {",
+                  "      pm.collectionVariables.set('organization_student_assessment_id', String(data[0].id));",
+                  "      pm.environment.set('organization_student_assessment_id', String(data[0].id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "student recommendation (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-students/{{organization_student_id}}/recommendation/?assessment_id={{organization_student_assessment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-students",
+                "{{organization_student_id}}",
+                "recommendation",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "assessment_id",
+                  "value": "{{organization_student_assessment_id}}"
+                }
+              ]
+            },
+            "description": "Get the career recommendation for a specific assessment of a student.\n\nGET /organization-students/{organization_student_id}/recommendation/?assessment_id={assessment_id}\n\nSet {{organization_student_id}} and {{organization_student_assessment_id}}. Run the `student assessments (GET)` request first to auto-set the assessment id.\n\n404 if recommendation not generated yet."
           },
           "response": []
         }

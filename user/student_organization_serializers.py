@@ -130,12 +130,21 @@ class OrganizationStudentListSerializer(BaseModelSerializer):
     country_name = serializers.CharField(source="country.name", read_only=True)
     states_name = serializers.CharField(source="states.name", read_only=True)
     city_name = serializers.CharField(source="city.name", read_only=True)
+    education_level = serializers.CharField(source="student_profile.education_level.display_name", read_only=True, default=None)
+    assessment_status = serializers.SerializerMethodField()
+    recommendation_score = serializers.SerializerMethodField()
+    last_active = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = BaseModelSerializer.Meta.fields+[
             "first_name",
             "last_name",
             "user_type",
+            "education_level",
+            "assessment_status",
+            "recommendation_score",
+            "last_active",
             "email",
             "email_verified",
             "must_change_password",
@@ -153,4 +162,20 @@ class OrganizationStudentListSerializer(BaseModelSerializer):
         ]
         read_only_fields = fields
 
+    def get_assessment_status(self, obj):
+        assessment = obj.student_assessments.filter(deleted=False).order_by("-created_at").first()
+        if not assessment:
+            return "Pending"
+        return "Completed" if assessment.is_completed else assessment.current_screen
+    
+    def get_recommendation_score(self, obj):
+        recommendation = obj.career_recommendations.filter(deleted=False, profile_type="student").order_by("-created_at").first()
+        if recommendation:
+            top = recommendation.suggestions.order_by("-match_percentage").first()
+            return f"{top.match_percentage}%" if top else None
+        return None
+    
+    def get_last_active(self, obj):
+        return obj.last_login.date().isoformat() if obj.last_login else None
+    
 
