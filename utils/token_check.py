@@ -89,7 +89,7 @@ def _reset_subscription_monthly_tokens(user, user_sub):
         UserSubscription.objects.filter(id=user_sub.id).update(last_reset_at=today)
 
 
-def check_and_deduct_token(user, feature_code, quantity=1):
+def check_token_available(user, feature_code, quantity=1):
     if user.is_superuser:
         return True
 
@@ -170,7 +170,8 @@ def check_and_deduct_token(user, feature_code, quantity=1):
             )
 
     # Verify this specific feature is included in the user's plan
-    if feature_code not in ("monthly_tokens",):
+    # recommendation is bundled with assessment — no separate plan feature
+    if feature_code not in ("monthly_tokens", "recommendation"):
         feature = SubscriptionFeature.objects.filter(
             subscription=plan,
             feature_code=feature_code,
@@ -199,11 +200,13 @@ def deduct_monthly_tokens(user, actual_tokens):
 
         _check_org_monthly_reset(profile, user.user_type)
 
-        if profile.token_limit < actual_tokens:
-            raise Exception("Monthly token allowance exhausted.")
-
-        profile.token_limit -= actual_tokens
-        profile.save(update_fields=["token_limit"])
+        with transaction.atomic():
+            locked_profile = type(profile).objects.select_for_update().get(id=profile.id)
+            if locked_profile.token_limit < actual_tokens:
+                raise Exception("Monthly token allowance exhausted.")
+            type(profile).objects.filter(id=locked_profile.id).update(
+                token_limit=F("token_limit") - actual_tokens
+            )
         return
 
     # ── SUBSCRIPTION USERS (existing flow unchanged) ──

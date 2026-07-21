@@ -9,7 +9,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from activity_log.services import log_event
 from assessment.models import ProfessionalAssessment
 from subscription.services.usage import consume_feature
-from utils.token_check import check_and_deduct_token
+from utils.token_check import check_token_available
 from assessment.serializers import (
     ProfessionalAssessmentSerializer,
     ProfessionalAssessmentWriteSerializer,
@@ -151,7 +151,15 @@ class ProfessionalAssessmentViewSet(viewsets.ModelViewSet):
                 )
 
         try:
-            check_and_deduct_token(request.user, "assessment")
+            check_token_available(request.user, "assessment")
+        except Exception as exc:
+            return Response(
+                {"success": False, "message": str(exc)},
+                status=status.HTTP_402_PAYMENT_REQUIRED,
+            )
+
+        try:
+            consume_feature(request.user, "assessment", 1)
         except Exception as exc:
             return Response(
                 {"success": False, "message": str(exc)},
@@ -161,7 +169,6 @@ class ProfessionalAssessmentViewSet(viewsets.ModelViewSet):
         assessment = ProfessionalAssessment(user=request.user, is_completed=False)
         assessment.save()
         sync_professional_screen(assessment)
-        consume_feature(request.user, "assessment", 1)
         serializer = ProfessionalAssessmentSerializer(assessment)
         return Response(
             {

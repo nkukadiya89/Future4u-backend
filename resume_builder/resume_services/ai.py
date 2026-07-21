@@ -9,17 +9,8 @@ from utils.token_usage import extract_token_usage
 
 logger = logging.getLogger(__name__)
 
-# Track last AI call's token usage so the calling view can deduct actual tokens.
-_last_token_usage = 0
 
-
-def get_last_token_usage() -> int:
-    global _last_token_usage
-    return _last_token_usage
-
-
-def _call_groq(prompt: str, max_tokens: int) -> str:
-    global _last_token_usage
+def _call_groq(prompt: str, max_tokens: int) -> tuple[str, int]:
     from groq import Groq
 
     client = Groq(api_key=GROQ_API_KEY)
@@ -29,25 +20,24 @@ def _call_groq(prompt: str, max_tokens: int) -> str:
         max_tokens=max_tokens,
         temperature=0.7,
     )
-    _last_token_usage = extract_token_usage(response)
-    return response.choices[0].message.content.strip()
+    token_usage = extract_token_usage(response)
+    return response.choices[0].message.content.strip(), token_usage
 
 
-def _call_ai(prompt: str, max_tokens: int) -> str:
+def _call_ai(prompt: str, max_tokens: int) -> tuple[str, int]:
     if not GROQ_API_KEY:
         raise ValueError("No AI provider configured. Set GROQ_API_KEY in .env")
 
     try:
-        result = _call_groq(prompt, max_tokens)
+        result, token_usage = _call_groq(prompt, max_tokens)
         logger.info("AI summary generated via Groq")
-        return result
+        return result, token_usage
     except Exception as exc:
         logger.error("Groq failed: %s", exc)
         raise ValueError(f"AI provider failed. Last error: {exc}") from exc
 
 
-def enhance_fresher_summary(data: dict) -> str:
-    """Generate an ATS-optimized objective for a fresher resume."""
+def enhance_fresher_summary(data: dict) -> tuple[str, int]:
     pi = data["personal_info"]
     cd = data["career_direction"]
     skills = ", ".join(data["skills"]["technical"] + data["skills"]["soft"])
@@ -76,8 +66,7 @@ Return ONLY the final objective text. No labels, no commentary."""
     return _call_ai(prompt, max_tokens=200)
 
 
-def enhance_professional_summary(data: dict) -> str:
-    """Generate an ATS-optimized summary for a professional resume."""
+def enhance_professional_summary(data: dict) -> tuple[str, int]:
     pi = data["personal_info"]
     cp = data["career_positioning"]
     skills = ", ".join(cp["key_expertise"])

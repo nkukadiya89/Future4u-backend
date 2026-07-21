@@ -20,8 +20,7 @@ from internship_generation.services.internship_generation_service import (
     InternshipGenerationService,
 )
 from utils.throttles import InternshipGenerationRateThrottle
-from utils.token_check import check_and_deduct_token, deduct_monthly_tokens
-from internship_generation.services.internship_generator import InternshipGenerator
+from utils.token_check import check_token_available, deduct_monthly_tokens
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +45,7 @@ class InternshipGenerationAPIView(APIView):
 
         # Check token availability before AI call
         try:
-            check_and_deduct_token(request.user, "internship_gen")
+            check_token_available(request.user, "internship_gen")
         except Exception as exc:
             return Response(
                 {"success": False, "message": str(exc)},
@@ -54,17 +53,17 @@ class InternshipGenerationAPIView(APIView):
             )
 
         try:
-            data = InternshipGenerationService().generate(
+            data, token_usage = InternshipGenerationService().generate(
                 user=request.user,
                 validated_input=serializer.validated_data,
             )
             # Deduct actual LLM token usage after successful AI call
             try:
-                deduct_monthly_tokens(request.user, InternshipGenerator._last_token_usage)
+                deduct_monthly_tokens(request.user, token_usage)
             except Exception as exc:
                 logger.error(
                     "TOKEN_RECONCILE user=%s feature=internship_gen cost=%s err=%s",
-                    request.user.id, InternshipGenerator._last_token_usage, exc,
+                    request.user.id, token_usage, exc,
                 )
             return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
         except InternshipGenerationAccessDeniedError:

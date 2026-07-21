@@ -502,7 +502,7 @@ def build_child_resume_data(child, template: str = "professional") -> dict:
     }
 
 
-def generate_resume_pdf(resume_data: dict, skip_ai: bool = False) -> bytes:
+def generate_resume_pdf(resume_data: dict, skip_ai: bool = False) -> tuple[bytes, int]:
     """
     Given a fully-built resume dict, call AI enhancement + PDF generation.
     Returns raw PDF bytes.
@@ -518,9 +518,10 @@ def generate_resume_pdf(resume_data: dict, skip_ai: bool = False) -> bytes:
 
     if skip_ai:
         summary = "Experienced professional seeking to leverage technical skills and domain expertise to deliver impactful results in a dynamic environment."
+        token_usage = 0
     elif resume_type == "fresher":
-        summary = enhance_fresher_summary(resume_data)
+        summary, token_usage = enhance_fresher_summary(resume_data)
     else:
-        summary = enhance_professional_summary(resume_data)
+        summary, token_usage = enhance_professional_summary(resume_data)
 
-    return build_resume(resume_data, summary)
+    return build_resume(resume_data, summary), token_usage

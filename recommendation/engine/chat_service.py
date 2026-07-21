@@ -89,20 +89,23 @@ class BaseAIChatService:
                 **self._chat_context(suggestion, session=session),
                 "answer": reused,
                 "messages": serialize_messages(session),
+                "_token_usage": 0,
             }
 
-        answer = self._ask_llm(
+        answer, token_usage = self._ask_llm(
             suggestion=suggestion,
             question=question,
             summary=session.summary,
         )
         self._save_chat_turn(session=session, question=question, answer=answer)
 
-        return {
+        response = {
             **self._chat_context(suggestion, session=session),
             "answer": answer,
             "messages": serialize_messages(session),
         }
+        response["_token_usage"] = token_usage
+        return response
 
     def _get_suggestion(self, *, user, assessment_id: int, suggestion_id: int):
         from django.db.models import Q
@@ -134,9 +137,8 @@ class BaseAIChatService:
             raise AssessmentAccessDeniedError("Invalid suggestion for this assessment")
         raise AssessmentNotFoundError("Recommendation not found for this assessment")
 
-    _last_token_usage = 0
-
-    def _ask_llm(self, *, suggestion, question: str, summary: str) -> str:
+    def _ask_llm(self, *, suggestion, question: str, summary: str) -> tuple[str, int]:
+        token_usage = 0
         try:
             chain = build_ai_chat_prompt() | get_chat_model(max_tokens=CHAT_MAX_TOKENS)
             response = chain.invoke(
@@ -146,7 +148,7 @@ class BaseAIChatService:
                     "question": question,
                 }
             )
-            type(self)._last_token_usage = extract_token_usage(response)
+            token_usage = extract_token_usage(response)
         except AIConfigurationError:
             raise
         except Exception as exc:
@@ -156,7 +158,7 @@ class BaseAIChatService:
         answer = str(content or "").strip()
         if not answer:
             raise AIGenerationError("AI chat returned an empty answer")
-        return answer
+        return answer, token_usage
 
     def _chat_context(self, suggestion, session=None) -> dict:
         from recommendation.engine.recommendation_service import (

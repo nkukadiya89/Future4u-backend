@@ -27,15 +27,13 @@ from django.http import HttpResponse
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from activity_log.services import log_event
-from utils.token_check import check_and_deduct_token, deduct_monthly_tokens
+from utils.token_check import check_token_available, deduct_monthly_tokens
 from resume_builder.services import (
     build_student_resume_data,
     build_professional_resume_data,
     build_child_resume_data,
     generate_resume_pdf,
 )
-from resume_builder.resume_services.ai import get_last_token_usage
-
 logger = logging.getLogger(__name__)
 
 
@@ -172,18 +170,19 @@ class ResumeGenerateView(APIView):
 
         # Check token availability before AI call
         try:
-            check_and_deduct_token(request.user, "resume_enhance")
+            check_token_available(request.user, "resume_enhance")
         except Exception as exc:
             return Response(
                 {"success": False, "message": str(exc)},
                 status=status.HTTP_402_PAYMENT_REQUIRED,
             )
 
+        token_usage = 0
         try:
-            pdf_bytes = generate_resume_pdf(resume_data)
+            pdf_bytes, token_usage = generate_resume_pdf(resume_data)
             # Deduct actual LLM token usage after successful AI call
             try:
-                deduct_monthly_tokens(request.user, get_last_token_usage())
+                deduct_monthly_tokens(request.user, token_usage)
             except Exception as exc:
                 logger.warning("Monthly token deduction failed: %s", exc)
                 return Response(

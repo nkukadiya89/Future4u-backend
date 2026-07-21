@@ -24,8 +24,6 @@ logger = logging.getLogger(__name__)
 class RecommendationGenerator:
     """LLM call: structured_assessment -> career recommendations (profile-agnostic)."""
 
-    _last_token_usage = 0
-
     @classmethod
     def generate(
         cls,
@@ -33,7 +31,7 @@ class RecommendationGenerator:
         structured_assessment: dict[str, Any],
         build_prompt: Callable,
         format_inputs: Callable,
-    ) -> AIRecommendationPayload:
+    ) -> tuple[AIRecommendationPayload, int]:
         prompt = build_prompt()
         inputs = format_inputs(structured_assessment)
         llm = get_chat_model()
@@ -52,14 +50,15 @@ class RecommendationGenerator:
     @classmethod
     def _invoke_once(
         cls, *, prompt, inputs: dict[str, Any], llm
-    ) -> AIRecommendationPayload:
+    ) -> tuple[AIRecommendationPayload, int]:
         """Exactly one provider invocation."""
+        token_usage = 0
         try:
             # Make raw LLM call first to capture actual token usage,
             # then use structured output for guaranteed valid JSON parsing.
             raw_chain = prompt | llm
             ai_message = raw_chain.invoke(inputs)
-            cls._last_token_usage = extract_token_usage(ai_message)
+            token_usage = extract_token_usage(ai_message)
 
             # Parse the raw response through structured output for validation
             raw_text = ai_message.content
@@ -105,4 +104,4 @@ class RecommendationGenerator:
                 "AI response did not meet the required recommendation schema. "
                 f"Details: {'; '.join(gaps)}"
             )
-        return payload
+        return payload, token_usage
