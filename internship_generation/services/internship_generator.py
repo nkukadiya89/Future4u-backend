@@ -28,12 +28,10 @@ _MAX_GENERATION_ATTEMPTS = 3
 class InternshipGenerator:
     """Single LLM invocation: internship overview input -> structured internship details."""
 
-    _last_token_usage = 0
-
     @classmethod
     def generate(
         cls, *, generation_input: dict[str, Any]
-    ) -> InternshipGenerationPayload:
+    ) -> tuple[InternshipGenerationPayload, int]:
         if not ai_llm_enabled():
             raise InternshipGenerationConfigurationError(
                 "AI internship generation is temporarily unavailable"
@@ -89,11 +87,12 @@ class InternshipGenerator:
         inputs: dict[str, str],
         llm,
         parser: JsonResponseParser,
-    ) -> InternshipGenerationPayload:
+    ) -> tuple[InternshipGenerationPayload, int]:
+        token_usage = 0
         try:
             chain = prompt | llm
             result = chain.invoke(inputs)
-            cls._last_token_usage = extract_token_usage(result)
+            token_usage = extract_token_usage(result)
             raw_text = _extract_text_content(result)
         except Exception as exc:
             logger.exception("LLM internship generation failed")
@@ -107,7 +106,7 @@ class InternshipGenerator:
             raw_text, model_class=InternshipGenerationPayload
         )
         if parse_result.success and parse_result.validated_model is not None:
-            return parse_result.validated_model  # type: ignore[return-value]
+            return parse_result.validated_model, token_usage  # type: ignore[return-value]
 
         if parse_result.is_json_parse_failure:
             details = parse_result.parse_error or "Invalid JSON in LLM response"

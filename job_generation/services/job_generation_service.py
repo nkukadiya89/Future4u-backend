@@ -14,7 +14,7 @@ from user_profile.models import CorporateProfile
 class JobGenerationService:
     """Orchestrates AI job posting generation for institute and corporate users."""
 
-    def generate(self, *, user, validated_input: dict[str, Any]) -> dict[str, Any]:
+    def generate(self, *, user, validated_input: dict[str, Any]) -> tuple[dict[str, Any], int]:
         if not can_user_generate_jobs(user):
             raise JobGenerationAccessDeniedError(
                 "Job generation is only available for institute and corporate accounts"
@@ -42,8 +42,8 @@ class JobGenerationService:
             "company_about_us": company.about_us or "",
         }
 
-        payload = JobGenerator.generate(generation_input=generation_input)
-        return _build_response(payload, validated_input, company)
+        payload, token_usage = JobGenerator.generate(generation_input=generation_input)
+        return _build_response(payload, validated_input, company), token_usage
 
 
 

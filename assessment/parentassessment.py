@@ -11,7 +11,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from activity_log.services import log_event
 from user_profile.models import ChildProfile
 from subscription.services.usage import consume_feature
-from utils.token_check import check_and_deduct_token
+from utils.token_check import check_token_available
 
 from assessment.models import ParentAssessment
 from assessment.serializers import (
@@ -188,7 +188,15 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
                 )
 
         try:
-            check_and_deduct_token(request.user, "assessment")
+            check_token_available(request.user, "assessment")
+        except Exception as exc:
+            return Response(
+                {"success": False, "message": str(exc)},
+                status=status.HTTP_402_PAYMENT_REQUIRED,
+            )
+
+        try:
+            consume_feature(request.user, "assessment", 1)
         except Exception as exc:
             return Response(
                 {"success": False, "message": str(exc)},
@@ -203,7 +211,6 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
         assessment._request_user = request.user
         assessment.save()
         sync_parent_screen(assessment)
-        consume_feature(request.user, "assessment", 1)
         serializer = ParentAssessmentSerializer(
             assessment, context=self.get_serializer_context()
         )

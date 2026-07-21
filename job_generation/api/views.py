@@ -21,8 +21,7 @@ from job_generation.exceptions import (
 from job_generation.serializers.job_generation_input import JobGenerationInputSerializer
 from job_generation.services.job_generation_service import JobGenerationService
 from utils.throttles import JobGenerationRateThrottle
-from utils.token_check import check_and_deduct_token, deduct_monthly_tokens
-from job_generation.services.job_generator import JobGenerator
+from utils.token_check import check_token_available, deduct_monthly_tokens
 
 logger = logging.getLogger(__name__)
 
@@ -48,25 +47,26 @@ class JobGenerationAPIView(APIView):
 
         # Check token availability before AI call
         try:
-            check_and_deduct_token(request.user, "job_gen")
+            check_token_available(request.user, "job_gen")
         except Exception as exc:
             return Response(
                 {"success": False, "message": str(exc)},
                 status=status.HTTP_402_PAYMENT_REQUIRED,
             )
 
+        token_usage = 0
         try:
-            data = JobGenerationService().generate(
+            data, token_usage = JobGenerationService().generate(
                 user=request.user,
                 validated_input=serializer.validated_data,
             )
             # Deduct actual LLM token usage after successful AI call
             try:
-                deduct_monthly_tokens(request.user, JobGenerator._last_token_usage)
+                deduct_monthly_tokens(request.user, token_usage)
             except Exception as exc:
                 logger.error(
                     "TOKEN_RECONCILE user=%s feature=job_gen cost=%s err=%s",
-                    request.user.id, JobGenerator._last_token_usage, exc,
+                    request.user.id, token_usage, exc,
                 )
             return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
 
@@ -131,15 +131,16 @@ class JobGenerationSaveView(APIView):
 
         # Check token availability before AI call
         try:
-            check_and_deduct_token(request.user, "job_gen")
+            check_token_available(request.user, "job_gen")
         except Exception as exc:
             return Response(
                 {"success": False, "message": str(exc)},
                 status=status.HTTP_402_PAYMENT_REQUIRED,
             )
 
+        token_usage = 0
         try:
-            generated_data = JobGenerationService().generate(
+            generated_data, token_usage = JobGenerationService().generate(
                 user=request.user,
                 validated_input=serializer.validated_data,
             )
@@ -216,11 +217,11 @@ class JobGenerationSaveView(APIView):
         
         # Deduct actual LLM token usage after successful AI call
         try:
-            deduct_monthly_tokens(request.user, JobGenerator._last_token_usage)
+            deduct_monthly_tokens(request.user, token_usage)
         except Exception as exc:
             logger.error(
                 "TOKEN_RECONCILE user=%s feature=job_gen_save cost=%s err=%s",
-                request.user.id, JobGenerator._last_token_usage, exc,
+                request.user.id, token_usage, exc,
             )
 
         # Create the Job record with provider/audit fields

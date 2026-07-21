@@ -28,12 +28,8 @@ _MAX_GENERATION_ATTEMPTS = 3
 class CourseGenerator:
     """Single LLM invocation: course overview input -> structured course details."""
 
-    # Tracks actual LLM token usage from the last successful generation.
-    # The calling view reads this to deduct from the user's monthly allowance.
-    _last_token_usage = 0
-
     @classmethod
-    def generate(cls, *, generation_input: dict[str, Any]) -> CourseGenerationPayload:
+    def generate(cls, *, generation_input: dict[str, Any]) -> tuple[CourseGenerationPayload, int]:
         if not ai_llm_enabled():
             raise CourseGenerationConfigurationError(
                 "AI course generation is temporarily unavailable"
@@ -89,11 +85,12 @@ class CourseGenerator:
         inputs: dict[str, str],
         llm,
         parser: JsonResponseParser,
-    ) -> CourseGenerationPayload:
+    ) -> tuple[CourseGenerationPayload, int]:
+        token_usage = 0
         try:
             chain = prompt | llm
             result = chain.invoke(inputs)
-            cls._last_token_usage = extract_token_usage(result)
+            token_usage = extract_token_usage(result)
             raw_text = _extract_text_content(result)
         except Exception as exc:
             logger.exception("LLM course generation failed")
@@ -107,7 +104,7 @@ class CourseGenerator:
             raw_text, model_class=CourseGenerationPayload
         )
         if parse_result.success and parse_result.validated_model is not None:
-            return parse_result.validated_model  # type: ignore[return-value]
+            return parse_result.validated_model, token_usage  # type: ignore[return-value]
 
         if parse_result.is_json_parse_failure:
             details = parse_result.parse_error or "Invalid JSON in LLM response"

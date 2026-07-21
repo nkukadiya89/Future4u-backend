@@ -164,7 +164,7 @@ class UserSubscription(models.Model):
 
     is_active = models.BooleanField(default=True)
     # Tracks when monthly tokens were last reset for this user.
-    # Used by check_and_deduct_token to enforce per-month windows for Pro plan.
+    # Used by check_token_available to enforce per-month windows for Pro plan.
     last_reset_at = models.DateField(null=True, blank=True)
 
     created_by = models.ForeignKey(

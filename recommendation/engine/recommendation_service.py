@@ -272,7 +272,7 @@ def save_recommendation(
             s.save()
 
     for stale in existing_suggestions[len(payload.top_suggestions) :]:
-        stale.soft_delete(user=user)
+        stale.delete()
 
     return recommendation
 

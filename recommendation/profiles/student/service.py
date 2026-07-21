@@ -5,12 +5,10 @@ from django.db.models import Prefetch
 from assessment.models import Option, StudentAssessment, UserResponse
 from assessment_career.models import CareerRecommendation, CareerSuggestion
 from recommendation.engine.recommendation_service import (
-    AI_RECOMMENDATION_DISCLAIMER,
     load_recommendation_and_check_cycle,
     normalize_study_abroad_payload,
     save_recommendation,
     serialize_recommendation,
-    public_career_factors,
 )
 from recommendation.engine._shared import is_study_abroad_mode
 from recommendation.exceptions import (
@@ -24,7 +22,6 @@ from recommendation.profiles.student.context_builder import AssessmentContextBui
 
 __all__ = [
     "StudentRecommendationService",
-    "AI_RECOMMENDATION_DISCLAIMER",
     "_normalize_study_abroad_payload",
 ]
 
@@ -32,9 +29,7 @@ __all__ = [
 class StudentRecommendationService:
     """Student-specific AI recommendation service."""
 
-    _public_career_factors = staticmethod(public_career_factors)
-
-    def generate(self, *, assessment_id: int, user) -> dict:
+    def generate(self, *, assessment_id: int, user) -> tuple[dict, int]:
         assessment = self._load_assessment(assessment_id)
         if assessment.user_id != user.id:
             raise AssessmentAccessDeniedError("Assessment access denied")
@@ -46,11 +41,11 @@ class StudentRecommendationService:
             recommendation_model=CareerRecommendation,
         )
         if within_cycle:
-            return serialize_recommendation(recommendation)
+            return serialize_recommendation(recommendation), 0
 
         structured_input = AssessmentContextBuilder.build_llm_input(assessment)
 
-        payload = RecommendationPipeline.run(
+        payload, token_usage = RecommendationPipeline.run(
             structured_assessment=structured_input,
             build_prompt=student_prompts.build_recommendation_prompt,
             format_inputs=lambda data: student_prompts.format_prompt_inputs(
@@ -68,7 +63,7 @@ class StudentRecommendationService:
             suggestion_model=CareerSuggestion,
             existing=recommendation,
         )
-        return serialize_recommendation(recommendation)
+        return serialize_recommendation(recommendation), token_usage
 
     @staticmethod
     def _load_assessment(assessment_id: int) -> StudentAssessment:

@@ -13,14 +13,14 @@ from internship_generation.services.internship_generator import InternshipGenera
 class InternshipGenerationService:
     """Orchestrates AI internship detail generation for institute and corporate users."""
 
-    def generate(self, *, user, validated_input: dict[str, Any]) -> dict[str, Any]:
+    def generate(self, *, user, validated_input: dict[str, Any]) -> tuple[dict[str, Any], int]:
         if not can_user_generate_internships(user):
             raise InternshipGenerationAccessDeniedError(
                 "Internship generation is only available for institute and corporate accounts"
             )
 
-        payload = InternshipGenerator.generate(generation_input=validated_input)
-        return _build_response(payload, validated_input)
+        payload, token_usage = InternshipGenerator.generate(generation_input=validated_input)
+        return _build_response(payload, validated_input), token_usage
 
 
 def _build_response(

@@ -24,7 +24,7 @@ class RecommendationPipeline:
         structured_assessment: dict[str, Any],
         build_prompt: Callable,
         format_inputs: Callable,
-    ) -> AIRecommendationPayload:
+    ) -> tuple[AIRecommendationPayload, int]:
         if not ai_llm_enabled():
             raise AIConfigurationError("AI recommendations are temporarily unavailable")
 

@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from activity_log.services import log_event
 from recommendation.engine.dispatch import (
     resolve_chat_service,
     resolve_recommendation_service,
@@ -14,45 +13,59 @@ from recommendation.engine.dispatch import (
 from recommendation.exceptions import (
     AIConfigurationError,
     AIGenerationError,
-    AmbiguousAssessmentError,
     AssessmentAccessDeniedError,
     AssessmentNotFoundError,
     AssessmentNotReadyError,
 )
 from utils.throttles import AIChatRateThrottle, RecommendationRateThrottle
-from utils.token_check import check_and_deduct_token, deduct_monthly_tokens
-from recommendation.generators.ai_recommendation_generator import RecommendationGenerator
-from recommendation.engine.chat_service import BaseAIChatService
-from subscription.models import FeatureUsage
-from assessment_career.models import CareerRecommendation
-from django.db.models import Q
+from utils.token_check import check_token_available, deduct_monthly_tokens
+from assessment.models import ParentAssessment, ProfessionalAssessment, StudentAssessment
 
 logger = logging.getLogger(__name__)
 
 
+AssessmentModel = StudentAssessment | ParentAssessment | ProfessionalAssessment
+
+
+def _resolve_assessment_type(
+    user, assessment_id: int
+) -> tuple[AssessmentModel | None, str | None]:
+
+    checks: list[tuple[type[AssessmentModel], str]] = [
+        (StudentAssessment, "student"),
+        (ParentAssessment, "parent"),
+        (ProfessionalAssessment, "professional"),
+    ]
+    for Model, ptype in checks:
+        try:
+            assessment = Model.objects.get(
+                id=assessment_id, user=user, deleted=False
+            )
+            return assessment, ptype
+        except Model.DoesNotExist:
+            continue
+    return None, None
+
+
 class RecommendationAPIView(APIView):
-    """
-    Unified recommendation endpoint.
-
-    Auto-detects the assessment type (Student / Parent / Professional) from the
-    assessment_id and dispatches to the correct service implementation.
-
-    Each assessment can generate a recommendation exactly once (enforced via
-    the OneToOne relationship on CareerRecommendation).
-    """
-
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     throttle_classes = [RecommendationRateThrottle]
 
     def get(self, request, assessment_id, *args, **kwargs):
         try:
-            usage = FeatureUsage.objects.filter(
-                user=request.user, feature_code="assessment"
-            ).first()
-            if not usage or usage.used <= 0:
+            assessment, determined_type = _resolve_assessment_type(
+                request.user, assessment_id
+            )
+            if not assessment:
+                return Response(
+                    {"success": False, "message": "Assessment not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            if not assessment.is_completed:
                 raise Exception(
-                    "Please complete a profile assessment first to get career recommendations."
+                    "Please complete your profile assessment first to get career recommendations."
                 )
         except Exception as exc:
             return Response(
@@ -61,48 +74,30 @@ class RecommendationAPIView(APIView):
             )
 
         try:
-            profile_type = request.query_params.get("profile_type")
+            profile_type = (
+                request.query_params.get("profile_type") or determined_type
+            )
             result = resolve_recommendation_service(
                 assessment_id, profile_type=profile_type
             )
 
-            # ── 1 assessment = 1 recommendation ────────────────────────
-            # The OneToOneField on CareerRecommendation enforces this at
-            # the DB level; we catch it early to show a clear error.
-            reco_exists = CareerRecommendation.objects.filter(
-                user=request.user,
-            ).filter(
-                Q(student_assessment_id=assessment_id)
-                | Q(parent_assessment_id=assessment_id)
-                | Q(professional_assessment_id=assessment_id)
-            ).exists()
-
-            if reco_exists:
-                return Response(
-                    {
-                        "success": False,
-                        "message": "A recommendation has already been generated for this assessment. "
-                        "You can view it in your career suggestions.",
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            # Check token availability before AI generation
+            # Check minimum token balance (3000) before AI call
             try:
-                check_and_deduct_token(request.user, "recommendation")
+                check_token_available(request.user, "recommendation")
             except Exception as exc:
                 return Response(
                     {"success": False, "message": str(exc)},
                     status=status.HTTP_402_PAYMENT_REQUIRED,
                 )
 
-            data = result.service.generate(
+            token_usage = 0
+            data, token_usage = result.service.generate(
                 assessment_id=assessment_id,
                 user=request.user,
             )
             # Deduct actual LLM token usage after successful AI call
             try:
-                deduct_monthly_tokens(request.user, RecommendationGenerator._last_token_usage)
+                deduct_monthly_tokens(request.user, token_usage)
             except Exception as exc:
                 logger.warning("Monthly token deduction failed: %s", exc)
                 return Response(
@@ -122,11 +117,6 @@ class RecommendationAPIView(APIView):
             return Response(
                 {"success": False, "message": str(exc)},
                 status=status.HTTP_400_BAD_REQUEST,
-            )
-        except AmbiguousAssessmentError as exc:
-            return Response(
-                {"success": False, "message": str(exc)},
-                status=status.HTTP_409_CONFLICT,
             )
         except AssessmentNotFoundError:
             return Response(
@@ -183,7 +173,18 @@ class RecommendationChatAPIView(APIView):
 
     def get(self, request, assessment_id, *args, **kwargs):
         try:
-            profile_type = request.query_params.get("profile_type")
+            assessment, determined_type = _resolve_assessment_type(
+                request.user, assessment_id
+            )
+            if not assessment:
+                return Response(
+                    {"success": False, "message": "Assessment not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            profile_type = (
+                request.query_params.get("profile_type") or determined_type
+            )
             result = resolve_chat_service(assessment_id, profile_type=profile_type)
             data = result.service.context(
                 user=request.user,
@@ -203,11 +204,6 @@ class RecommendationChatAPIView(APIView):
                 {"success": False, "message": str(exc)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        except AmbiguousAssessmentError as exc:
-            return Response(
-                {"success": False, "message": str(exc)},
-                status=status.HTTP_409_CONFLICT,
-            )
         except AssessmentNotFoundError:
             return Response(
                 {"success": False, "message": "Recommendation not found"},
@@ -222,7 +218,7 @@ class RecommendationChatAPIView(APIView):
     def post(self, request, assessment_id, *args, **kwargs):
         # Check token availability before AI call
         try:
-            check_and_deduct_token(request.user, "ai_chat")
+            check_token_available(request.user, "ai_chat")
         except Exception as exc:
             return Response(
                 {"success": False, "message": str(exc)},
@@ -230,7 +226,18 @@ class RecommendationChatAPIView(APIView):
             )
 
         try:
-            profile_type = request.query_params.get("profile_type")
+            assessment, determined_type = _resolve_assessment_type(
+                request.user, assessment_id
+            )
+            if not assessment:
+                return Response(
+                    {"success": False, "message": "Assessment not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            profile_type = (
+                request.query_params.get("profile_type") or determined_type
+            )
             result = resolve_chat_service(assessment_id, profile_type=profile_type)
             data = result.service.ask(
                 user=request.user,
@@ -239,8 +246,9 @@ class RecommendationChatAPIView(APIView):
                 question=request.data.get("message"),
             )
             # Deduct actual LLM token usage after successful AI call
+            token_usage = data.pop("_token_usage", 0)
             try:
-                deduct_monthly_tokens(request.user, BaseAIChatService._last_token_usage)
+                deduct_monthly_tokens(request.user, token_usage)
             except Exception as exc:
                 logger.warning("Monthly token deduction failed: %s", exc)
                 return Response(
@@ -260,11 +268,6 @@ class RecommendationChatAPIView(APIView):
             return Response(
                 {"success": False, "message": str(exc)},
                 status=status.HTTP_400_BAD_REQUEST,
-            )
-        except AmbiguousAssessmentError as exc:
-            return Response(
-                {"success": False, "message": str(exc)},
-                status=status.HTTP_409_CONFLICT,
             )
         except AssessmentNotFoundError:
             return Response(

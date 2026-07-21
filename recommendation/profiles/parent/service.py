@@ -6,7 +6,6 @@ from assessment.models import ParentAssessment
 from assessment_career.models import CareerRecommendation, CareerSuggestion
 
 from recommendation.engine.recommendation_service import (
-    AI_RECOMMENDATION_DISCLAIMER,
     load_recommendation_and_check_cycle,
     normalize_study_abroad_payload,
     save_recommendation,
@@ -30,7 +29,7 @@ logger = logging.getLogger(__name__)
 class ParentRecommendationService:
     """Parent-specific AI recommendation service."""
 
-    def generate(self, *, assessment_id: int, user) -> dict:
+    def generate(self, *, assessment_id: int, user) -> tuple[dict, int]:
         assessment = self._load_assessment(assessment_id)
         if assessment.user_id != user.id:
             raise AssessmentAccessDeniedError("Assessment access denied")
@@ -42,11 +41,11 @@ class ParentRecommendationService:
             recommendation_model=CareerRecommendation,
         )
         if within_cycle:
-            return serialize_recommendation(recommendation)
+            return serialize_recommendation(recommendation), 0
 
         structured_input = ParentAssessmentContextBuilder.build_llm_input(assessment)
 
-        payload = RecommendationPipeline.run(
+        payload, token_usage = RecommendationPipeline.run(
             structured_assessment=structured_input,
             build_prompt=parent_prompts.build_parent_recommendation_prompt,
             format_inputs=lambda data: parent_prompts.format_parent_prompt_inputs(
@@ -64,7 +63,7 @@ class ParentRecommendationService:
             suggestion_model=CareerSuggestion,
             existing=recommendation,
         )
-        return serialize_recommendation(recommendation)
+        return serialize_recommendation(recommendation), token_usage
 
     @staticmethod
     def _load_assessment(assessment_id: int) -> ParentAssessment:

@@ -33,7 +33,7 @@ from activity_log.services import log_event
 from domain.models import Domain
 from subscription.services.usage import consume_feature
 from utils.pagination import Pagination
-from utils.token_check import check_and_deduct_token
+from utils.token_check import check_token_available
 
 STREAM_REQUIRED_LEVEL_CODES = {
     "higher_secondary",
@@ -298,7 +298,15 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
                 )
 
         try:
-            check_and_deduct_token(request.user, "assessment")
+            check_token_available(request.user, "assessment")
+        except Exception as exc:
+            return Response(
+                {"success": False, "message": str(exc)},
+                status=status.HTTP_402_PAYMENT_REQUIRED,
+            )
+
+        try:
+            consume_feature(request.user, "assessment", 1)
         except Exception as exc:
             return Response(
                 {"success": False, "message": str(exc)},
@@ -309,7 +317,6 @@ class StudentAssessmentViewSet(viewsets.ModelViewSet):
         assessment._request_user = request.user
         assessment.save()
         sync_current_screen(assessment, request.user)
-        consume_feature(request.user, "assessment", 1)
         serializer = StudentAssessmentCreateSerializer(assessment)
         return Response(
             {

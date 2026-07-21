@@ -276,6 +276,7 @@ class ProfessionalProfileSerializer(
     """Working Professional-specific profile serializer matching StudentProfile pattern"""
 
     role = serializers.CharField(source="user.user_type", read_only=True)
+    status = serializers.CharField(source="user.status", read_only=True)
     language = serializers.SerializerMethodField()
     # Location fields from User model
     country = serializers.IntegerField(
@@ -336,6 +337,7 @@ class ProfessionalProfileSerializer(
             "id",
             "user",
             "role",
+            "status",
             "language",
             "country",
             "country_name",
@@ -545,6 +547,23 @@ class ParentProfileSerializer(
     city_name = serializers.CharField(
         source="user.city.name", read_only=True, default=None
     )
+    first_name = serializers.CharField(source="user.first_name", read_only=True)
+    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    profile_image = serializers.CharField(source="user.profile_image", read_only=True)
+    status = serializers.CharField(source="user.status", read_only=True)
+    referral_code = serializers.CharField(
+        source="referred_by.referral_code",
+        read_only=True,
+        allow_null=True,
+        default=None,
+    )
+    referred_by = UserQuickSerializer(read_only=True)
+    created_by = UserQuickSerializer(source="user.created_by", read_only=True)
+    updated_by = UserQuickSerializer(read_only=True)
+    deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
+    deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
 
     class Meta:
         model = ParentProfile
@@ -552,6 +571,7 @@ class ParentProfileSerializer(
             "id",
             "user",
             "role",
+            "status",
             "language",
             "country",
             "country_name",
@@ -566,8 +586,14 @@ class ParentProfileSerializer(
             "phone",
             "email",
             "profile_image",
+            "referral_code",
+            "referred_by",
+            "created_by",
+            "updated_by",
             "created_at",
             "updated_at",
+            "deleted_at",
+            "deleted_by",
         ]
 
 
@@ -596,35 +622,53 @@ class ParentProfileUpsertSerializer(
             "profile_image",
         ]
 
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop("user", {})
+        language = validated_data.pop("language", None)
+
+        user = instance.user
+        for attr, value in user_data.items():
+            setattr(user, attr, value)
+        user.save()
+
+        instance = super().update(instance, validated_data)
+
+        if language is not None:
+            instance.language.set(language)
+
+        return instance
+
     def validate(self, attrs):
-        relationship = attrs.get(
-            "relationship",
-            getattr(self.instance, "relationship", None),
-        )
-        other_text = attrs.get(
-            "other_relationship_text",
-            getattr(self.instance, "other_relationship_text", ""),
-        )
-
-        if not relationship:
-            raise serializers.ValidationError(
-                {"relationship": "This field is required."}
+        # On partial updates, only validate relationship if it was provided
+        if "relationship" in attrs or not self.partial:
+            relationship = attrs.get(
+                "relationship",
+                getattr(self.instance, "relationship", None),
+            )
+            other_text = attrs.get(
+                "other_relationship_text",
+                getattr(self.instance, "other_relationship_text", ""),
             )
 
-        if (
-            relationship == ParentProfile.Relationship.OTHER
-            and not (other_text or "").strip()
-        ):
-            raise serializers.ValidationError(
-                {
-                    "other_relationship_text": (
-                        "This field is required when relationship is other."
-                    )
-                }
-            )
+            if not relationship:
+                raise serializers.ValidationError(
+                    {"relationship": "This field is required."}
+                )
 
-        if relationship != ParentProfile.Relationship.OTHER:
-            attrs["other_relationship_text"] = ""
+            if (
+                relationship == ParentProfile.Relationship.OTHER
+                and not (other_text or "").strip()
+            ):
+                raise serializers.ValidationError(
+                    {
+                        "other_relationship_text": (
+                            "This field is required when relationship is other."
+                        )
+                    }
+                )
+
+            if relationship != ParentProfile.Relationship.OTHER:
+                attrs["other_relationship_text"] = ""
 
         return attrs
 

@@ -2,17 +2,16 @@
 Dispatch assessment IDs to the correct recommendation / chat service.
 
 Resolves which assessment model (Student, Parent, Professional) an ID belongs to
-and returns the appropriate service without the caller needing to know the profile type.
+and returns the appropriate service.
 """
 
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 from recommendation.exceptions import (
-    AmbiguousAssessmentError,
     AssessmentNotFoundError,
 )
 
@@ -87,87 +86,42 @@ def _validate(profile_type: str) -> str:
 
 def resolve_recommendation_service(
     assessment_id: int,
-    profile_type: Optional[str] = None,
+    profile_type: str,
 ) -> DispatchResult:
     """Return a ``DispatchResult`` with the correct recommendation service.
 
-    * When ``profile_type`` is provided the lookup is instant — the assessment
-      is also verified to exist so the caller gets a 404 early.
-    * Otherwise the function collects **all** matching tables and only returns
-      a service when exactly one match is found.  If multiple tables contain the
-      same ID an ``AmbiguousAssessmentError`` is raised.
+    ``profile_type`` is **required** — the caller must determine the type
+    (e.g. by querying the assessment with a user filter) before calling
+    this function so ambiguous-ID collisions across user types are avoided.
     """
-    if profile_type:
-        profile_type = _validate(profile_type)
-        models = _models()
-        if (
-            not models[profile_type]
-            .objects.filter(id=assessment_id, deleted=False)
-            .exists()
-        ):
-            raise AssessmentNotFoundError("Assessment not found")
-        svc = _recommendation_services()
-        return DispatchResult(service=svc[profile_type](), profile_type=profile_type)
-
-    return _auto_detect(assessment_id, _recommendation_services())
+    profile_type = _validate(profile_type)
+    models = _models()
+    if (
+        not models[profile_type]
+        .objects.filter(id=assessment_id, deleted=False)
+        .exists()
+    ):
+        raise AssessmentNotFoundError("Assessment not found")
+    svc = _recommendation_services()
+    return DispatchResult(service=svc[profile_type](), profile_type=profile_type)
 
 
 def resolve_chat_service(
     assessment_id: int,
-    profile_type: Optional[str] = None,
+    profile_type: str,
 ) -> DispatchResult:
     """Return a ``DispatchResult`` with the correct chat service instance.
 
-    Behaves the same as ``resolve_recommendation_service`` but returns a
-    pre-instantiated singleton chat-service instance instead of a class.
+    ``profile_type`` is **required** — see ``resolve_recommendation_service``
+    for the rationale.
     """
-    if profile_type:
-        profile_type = _validate(profile_type)
-        models = _models()
-        if (
-            not models[profile_type]
-            .objects.filter(id=assessment_id, deleted=False)
-            .exists()
-        ):
-            raise AssessmentNotFoundError("Assessment not found")
-        svc = _chat_services()
-        return DispatchResult(service=svc[profile_type], profile_type=profile_type)
-
-    return _auto_detect(assessment_id, _chat_services())
-
-
-def _auto_detect(
-    assessment_id: int,
-    services: dict[str, Any],
-) -> DispatchResult:
+    profile_type = _validate(profile_type)
     models = _models()
-    matches: list[str] = []
-    for pt in ("student", "parent", "professional"):
-        if models[pt].objects.filter(id=assessment_id, deleted=False).exists():
-            matches.append(pt)
-
-    if len(matches) == 0:
+    if (
+        not models[profile_type]
+        .objects.filter(id=assessment_id, deleted=False)
+        .exists()
+    ):
         raise AssessmentNotFoundError("Assessment not found")
-
-    if len(matches) > 1:
-        logger.error(
-            "Ambiguous assessment_id %s — found in %s",
-            assessment_id,
-            ", ".join(matches),
-        )
-        raise AmbiguousAssessmentError(
-            f"Assessment ID {assessment_id} matches multiple profile types. "
-            f"Please pass ?profile_type= explicitly."
-        )
-
-    detected = matches[0]
-
-    # Log auto-detections so we can track frontend migration progress.
-    logger.warning(
-        "Auto-detected profile_type=%s for assessment_id=%s (no ?profile_type= sent)",
-        detected,
-        assessment_id,
-    )
-
-    instance = services[detected]()
-    return DispatchResult(service=instance, profile_type=detected)
+    svc = _chat_services()
+    return DispatchResult(service=svc[profile_type], profile_type=profile_type)

@@ -4,7 +4,6 @@ from assessment.models import ProfessionalAssessment
 from assessment_career.models import CareerRecommendation, CareerSuggestion
 
 from recommendation.engine.recommendation_service import (
-    AI_RECOMMENDATION_DISCLAIMER,
     load_recommendation_and_check_cycle,
     save_recommendation,
     serialize_recommendation,
@@ -23,7 +22,7 @@ from recommendation.profiles.professional.context_builder import (
 
 class ProfessionalRecommendationService:
 
-    def generate(self, *, assessment_id: int, user) -> dict:
+    def generate(self, *, assessment_id: int, user) -> tuple[dict, int]:
         assessment = self._load_assessment(assessment_id)
         if assessment.user_id != user.id:
             raise AssessmentAccessDeniedError("Assessment access denied")
@@ -35,13 +34,13 @@ class ProfessionalRecommendationService:
             recommendation_model=CareerRecommendation,
         )
         if within_cycle:
-            return serialize_recommendation(recommendation)
+            return serialize_recommendation(recommendation), 0
 
         structured_input = ProfessionalAssessmentContextBuilder.build_llm_input(
             assessment
         )
 
-        payload = RecommendationPipeline.run(
+        payload, token_usage = RecommendationPipeline.run(
             structured_assessment=structured_input,
             build_prompt=professional_prompts.build_recommendation_prompt,
             format_inputs=lambda data: professional_prompts.format_prompt_inputs(
@@ -57,7 +56,7 @@ class ProfessionalRecommendationService:
             suggestion_model=CareerSuggestion,
             existing=recommendation,
         )
-        return serialize_recommendation(recommendation)
+        return serialize_recommendation(recommendation), token_usage
 
     @staticmethod
     def _load_assessment(assessment_id: int) -> ProfessionalAssessment:

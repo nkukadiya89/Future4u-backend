@@ -25,12 +25,12 @@ class FeatureService:
         ("project_topic_access_type", "no_of_project_topic_access", "project_topic"),
     ]
 
-    # Core feature name → (feature_code, display_name) mapping
-    CORE_FEATURE_MAP = {
-        "career compare": ("career_compare", "Career Compare"),
-        "career roadmap path": ("career_roadmap", "Career Roadmap Path"),
-        "ai chat access": ("ai_chat", "AI Chat Access"),
-    }
+    # Core feature (feature_code, display_name) mapping
+    CORE_FEATURE_MAP = [
+        ("career_compare", "Career Compare"),
+        ("career_roadmap", "Career Roadmap Path"),
+        ("ai_chat", "AI Chat Access"),
+    ]
 
     @staticmethod
     def upsert(subscription, feature_code, *, feature_name=None,
@@ -116,13 +116,17 @@ class FeatureService:
         if core_data is None:
             return
         for item in core_data:
-            name = (item.get("feature_name") or "").strip().lower()
+            code = (item.get("feature_code") or "").strip().lower()
             enabled = bool(
                 item.get("feature_status", item.get("is_enabled", True))
             )
-            match = cls.CORE_FEATURE_MAP.get(name)
-            if match:
-                code, display_name = match
+            # Find display name by matching feature_code
+            display_name = None
+            for fc, dn in cls.CORE_FEATURE_MAP:
+                if fc == code:
+                    display_name = dn
+                    break
+            if display_name:
                 cls.upsert(
                     subscription, code,
                     feature_name=display_name,

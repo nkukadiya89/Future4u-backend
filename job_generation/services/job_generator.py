@@ -28,10 +28,8 @@ _MAX_GENERATION_ATTEMPTS = 3
 class JobGenerator:
     """Single LLM invocation: summary input -> structured job posting."""
 
-    _last_token_usage = 0
-
     @classmethod
-    def generate(cls, *, generation_input: dict[str, Any]) -> JobGenerationPayload:
+    def generate(cls, *, generation_input: dict[str, Any]) -> tuple[JobGenerationPayload, int]:
         if not ai_llm_enabled():
             raise JobGenerationConfigurationError(
                 "AI job generation is temporarily unavailable"
@@ -87,11 +85,12 @@ class JobGenerator:
         inputs: dict[str, str],
         llm,
         parser: JsonResponseParser,
-    ) -> JobGenerationPayload:
+    ) -> tuple[JobGenerationPayload, int]:
+        token_usage = 0
         try:
             chain = prompt | llm
             result = chain.invoke(inputs)
-            cls._last_token_usage = extract_token_usage(result)
+            token_usage = extract_token_usage(result)
             raw_text = _extract_text_content(result)
         except Exception as exc:
             logger.exception("LLM job generation failed")
@@ -105,7 +104,7 @@ class JobGenerator:
             raw_text, model_class=JobGenerationPayload
         )
         if parse_result.success and parse_result.validated_model is not None:
-            return parse_result.validated_model  # type: ignore[return-value]
+            return parse_result.validated_model, token_usage  # type: ignore[return-value]
 
         if parse_result.is_json_parse_failure:
             details = parse_result.parse_error or "Invalid JSON in LLM response"
