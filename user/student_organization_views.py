@@ -14,8 +14,8 @@ from rest_framework import status
 from django.utils import timezone
 from assessment.models import StudentAssessment
 from assessment.serializers import StudentAssessmentSerializer
-from assessment_career.models import CareerRecommendation
-from assessment_career.serializers import CareerRecommendationSerializer
+from assessment_career.models import CareerRecommendation, CareerSuggestion
+from assessment_career.serializers import CareerRecommendationSerializer, CareerSuggestionSerializer
 
 class OrganizationStudentViewSet(BaseModelViewSet):
     authentication_classes = [JWTAuthentication]
@@ -85,6 +85,8 @@ class OrganizationStudentViewSet(BaseModelViewSet):
             return OrganizationStudentCreateSerializer
         if self.action == "student_assessment":
             return StudentAssessmentSerializer
+        if self.action == "student_suggestion":
+            return CareerSuggestionSerializer
         return OrganizationStudentListSerializer
 
     @transaction.atomic
@@ -246,3 +248,37 @@ class OrganizationStudentViewSet(BaseModelViewSet):
             status=status.HTTP_200_OK,
         )
     
+    @action(detail=True, methods=["get"], url_path="suggestion")
+    def student_suggestion(self, request, pk=None):
+        suggestion_id = request.query_params.get("suggestion_id")
+        if not suggestion_id:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Suggestion id is required",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        student = self.get_object()
+        suggestion = CareerSuggestion.objects.filter(
+            id=suggestion_id,
+            deleted=False,  
+            recommendation__user=student,
+            recommendation__profile_type="student",
+        ).select_related("recommendation").first()
+        if not suggestion:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Suggestion not found",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = self.get_serializer(suggestion)
+        return Response(
+            {
+                "success": True,
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
