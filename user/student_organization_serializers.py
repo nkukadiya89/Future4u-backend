@@ -166,10 +166,19 @@ class OrganizationStudentListSerializer(BaseModelSerializer):
         assessment = obj.student_assessments.filter(deleted=False).order_by("-created_at").first()
         if not assessment:
             return "Pending"
-        return "Completed" if assessment.is_completed else assessment.current_screen
+        return "Completed" if assessment.is_completed else "In-Progress"
     
     def get_recommendation_score(self, obj):
-        recommendation = obj.career_recommendations.filter(deleted=False, profile_type="student").order_by("-created_at").first()
+        assessment = obj.student_assessments.filter(deleted=False).order_by("-created_at").first()
+        if not assessment:
+            return None
+        if not assessment.is_completed:
+            return None
+        recommendation = obj.career_recommendations.filter(deleted=False, profile_type="student", student_assessment_id = assessment.id).order_by("-created_at").first()
+
+        if not recommendation:
+            return None
+        
         if recommendation:
             top = recommendation.suggestions.order_by("-match_percentage").first()
             return f"{top.match_percentage}%" if top else None
