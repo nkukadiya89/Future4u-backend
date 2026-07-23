@@ -95,6 +95,7 @@ class InternshipGenerationAPIView(APIView):
             return Response(
                 {
                     "success": False,
+                    "message": str(exc) or "Unable to generate internship details. Please try again.",
                     "error": exc.error,
                     "details": exc.details,
                 },

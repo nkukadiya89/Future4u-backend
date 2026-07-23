@@ -123,6 +123,7 @@ class StudentProfileSerializer(
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
+    subscription = serializers.JSONField(source="user.subscription_info", read_only=True)
 
     class Meta:
         model = StudentProfile
@@ -131,6 +132,7 @@ class StudentProfileSerializer(
             "user",
             "status",
             "role",
+            "subscription",
             "country",
             "country_name",
             "state",
@@ -330,6 +332,7 @@ class ProfessionalProfileSerializer(
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
+    subscription = serializers.JSONField(source="user.subscription_info", read_only=True)
 
     class Meta:
         model = ProfessionalProfile
@@ -339,6 +342,7 @@ class ProfessionalProfileSerializer(
             "role",
             "status",
             "language",
+            "subscription",
             "country",
             "country_name",
             "state",
@@ -564,6 +568,7 @@ class ParentProfileSerializer(
     updated_by = UserQuickSerializer(read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
+    subscription = serializers.JSONField(source="user.subscription_info", read_only=True)
 
     class Meta:
         model = ParentProfile
@@ -573,6 +578,7 @@ class ParentProfileSerializer(
             "role",
             "status",
             "language",
+            "subscription",
             "country",
             "country_name",
             "state",

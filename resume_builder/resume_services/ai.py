@@ -4,36 +4,31 @@ from __future__ import annotations
 
 import logging
 
-from resume_builder.resume_services.config import GROQ_API_KEY, GROQ_MODEL
+from langchain_core.prompts import ChatPromptTemplate
+
+from ai.provider import get_chat_model
 from utils.token_usage import extract_token_usage
 
 logger = logging.getLogger(__name__)
 
 
-def _call_groq(prompt: str, max_tokens: int) -> tuple[str, int]:
-    from groq import Groq
-
-    client = Groq(api_key=GROQ_API_KEY)
-    response = client.chat.completions.create(
-        model=GROQ_MODEL,
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=max_tokens,
-        temperature=0.7,
-    )
+def _call_llm(prompt: str, max_tokens: int) -> tuple[str, int]:
+    chat_template = ChatPromptTemplate.from_messages([
+        ("user", "{input}"),
+    ])
+    chain = chat_template | get_chat_model(max_tokens=max_tokens, temperature=0.7)
+    response = chain.invoke({"input": prompt})
     token_usage = extract_token_usage(response)
-    return response.choices[0].message.content.strip(), token_usage
+    return response.content.strip(), token_usage
 
 
 def _call_ai(prompt: str, max_tokens: int) -> tuple[str, int]:
-    if not GROQ_API_KEY:
-        raise ValueError("No AI provider configured. Set GROQ_API_KEY in .env")
-
     try:
-        result, token_usage = _call_groq(prompt, max_tokens)
-        logger.info("AI summary generated via Groq")
+        result, token_usage = _call_llm(prompt, max_tokens)
+        logger.info("AI summary generated")
         return result, token_usage
     except Exception as exc:
-        logger.error("Groq failed: %s", exc)
+        logger.error("AI provider failed: %s", exc)
         raise ValueError(f"AI provider failed. Last error: {exc}") from exc
 
 

@@ -184,10 +184,9 @@ class ResumeGenerateView(APIView):
             try:
                 deduct_monthly_tokens(request.user, token_usage)
             except Exception as exc:
-                logger.warning("Monthly token deduction failed: %s", exc)
-                return Response(
-                    {"success": False, "message": str(exc)},
-                    status=status.HTTP_402_PAYMENT_REQUIRED,
+                logger.error(
+                    "TOKEN_RECONCILE user=%s feature=resume_enhance cost=%s err=%s",
+                    request.user.id, token_usage, exc,
                 )
         except ValueError as exc:
             logger.error("Resume generation error: %s", exc)

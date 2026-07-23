@@ -2,47 +2,74 @@ from django.conf import settings
 from django.db import models
 from django.utils.timezone import now
 
+from base.models import BaseModel
 from company.models import Company
 from user.models import User
 
 
-class Subscription(models.Model):
-    package_name = models.CharField(max_length=100)
-    # Logical subscription plan. Pricing moved to PlanPrice model to support
-    # multiple billing periods (monthly/yearly) per plan.
-    # legacy price/duration moved to `PlanPrice`.
-    description = models.TextField(null=True, blank=True)
-    is_active = models.BooleanField(default=True)
+class AccessType(models.TextChoices):
+    FULL = "full", "Full"
+    LIMITED = "limited", "Limited"
 
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="subcription_created",
+
+class Subscription(BaseModel):
+    package_name = models.CharField(max_length=100)
+    description = models.TextField(null=True, blank=True)
+
+    no_of_profile_assessment = models.IntegerField(default=0)
+    no_of_tokens = models.IntegerField(default=0)
+
+    internship_access_type = models.CharField(
+        max_length=10, choices=AccessType.choices, default=AccessType.FULL
     )
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name="subcription_updated",
+    no_of_internship_access = models.IntegerField(null=True, blank=True, default=None)
+
+    job_portal_access_type = models.CharField(
+        max_length=10, choices=AccessType.choices, default=AccessType.FULL
     )
-    deleted = models.BooleanField(default=False)
-    deleted_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="subcription_deleted",
+    no_of_job_portal_access = models.IntegerField(null=True, blank=True, default=None)
+
+    course_portal_access_type = models.CharField(
+        max_length=10, choices=AccessType.choices, default=AccessType.FULL
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-    deleted_at = models.DateTimeField(null=True, blank=True)
+    no_of_course_portal_access = models.IntegerField(null=True, blank=True, default=None)
+
+    project_topic_access_type = models.CharField(
+        max_length=10, choices=AccessType.choices, default=AccessType.FULL
+    )
+    no_of_project_topic_access = models.IntegerField(null=True, blank=True, default=None)
+
+    career_compare = models.BooleanField(default=False)
+    career_roadmap = models.BooleanField(default=False)
+    ai_chat_access = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
 
     def __str__(self):
         return self.package_name
 
-    class Meta:
-        ordering = ["-created_at"]
+    def clean(self):
+        """Validate access type + count pairs."""
+        from django.core.exceptions import ValidationError
+
+        pairs = [
+            ("internship_access_type", "no_of_internship_access", "Internship"),
+            ("job_portal_access_type", "no_of_job_portal_access", "Job Portal"),
+            ("course_portal_access_type", "no_of_course_portal_access", "Course Portal"),
+            ("project_topic_access_type", "no_of_project_topic_access", "Project Topic"),
+        ]
+        for type_field, count_field, label in pairs:
+            access_type = getattr(self, type_field, AccessType.FULL)
+            count_val = getattr(self, count_field, None)
+            if access_type == AccessType.LIMITED:
+                if count_val is None or count_val <= 0:
+                    raise ValidationError(
+                        f"Count is required for {label} when access type is 'limited'."
+                    )
+            elif access_type == AccessType.FULL:
+                if count_val is not None:
+                    setattr(self, count_field, None)
 
 
 class SubscriptionPlan(Subscription):
@@ -99,7 +126,6 @@ class PlanPrice(models.Model):
 
 
 class SubscriptionFeature(models.Model):
-    # Feature belongs to a logical Subscription (plan). Pricing is on PlanPrice.
     subscription = models.ForeignKey(
         Subscription, on_delete=models.CASCADE, related_name="features"
     )
@@ -109,16 +135,7 @@ class SubscriptionFeature(models.Model):
     feature_code = models.CharField(
         max_length=50, verbose_name="Unique code for feature", null=True, blank=True
     )
-
-    value = models.CharField(max_length=100, null=True, blank=True)
-    is_unlimited = models.BooleanField(default=False)
-
-    is_core = models.BooleanField(default=False)
     is_enabled = models.BooleanField(default=True)
-    is_hidden = models.BooleanField(
-        default=False,
-        help_text="True for system flat-field features that should not appear in core_features/subscription_feature arrays",
-    )
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -199,37 +216,44 @@ class UserSubscription(models.Model):
         return f"{getattr(self.user, 'first_name', '') or getattr(self.user, 'email', '')} - {plan_name or ''}"
 
     def can_consume(self, feature_code, quantity=1):
-        """Return True if the user can consume `quantity` of `feature_code` under this subscription."""
-        from subscription.models import FeatureUsage, SubscriptionFeature
+        """Return True if the user can consume `quantity` of `feature_code`.
+
+        For known features (assessment, monthly_tokens), reads from plan model fields.
+        For custom features, checks SubscriptionFeature existence + is_enabled.
+        """
+        from subscription.models import FeatureUsage
 
         if not self.is_active:
             return False
 
-        # Features are defined at the plan level (Subscription.plan)
         plan = getattr(self.plan_price, "plan", None)
         if not plan:
             return False
 
+        # Check model field first (for known features)
+        from subscription.services.usage import _CONSUME_FIELD_MAP
+        field_name = _CONSUME_FIELD_MAP.get(feature_code)
+        if field_name:
+            limit = getattr(plan, field_name, 0) or 0
+            if limit <= 0:
+                return False
+            usage = FeatureUsage.objects.filter(
+                user=self.user, feature_code=feature_code, plan_price=self.plan_price
+            ).first()
+            used = usage.used if usage else 0
+            return (used + quantity) <= limit
+
+        # Fallback for custom features with feature_code
+        from subscription.models import SubscriptionFeature
         feature = SubscriptionFeature.objects.filter(
             subscription=plan,
             feature_code=feature_code,
             is_enabled=True,
             deleted=False,
         ).first()
-
         if not feature:
             return False
-
-        if feature.is_unlimited:
-            return True
-
-        limit = int(feature.value or 0)
-        usage = FeatureUsage.objects.filter(
-            user=self.user, feature_code=feature_code, plan_price=self.plan_price
-        ).first()
-        used = usage.used if usage else 0
-
-        return (used + quantity) <= limit
+        return True  # Custom features have no limit — just existence + enabled
 
     def consume(self, feature_code, quantity=1):
         """Consume `quantity` of `feature_code` for the user using atomic service.

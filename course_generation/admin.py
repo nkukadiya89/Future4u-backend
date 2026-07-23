@@ -19,7 +19,7 @@ from city.models import City
 from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from country.models import Country
 from course.models import Courses
-from course_generation.config import ai_llm_enabled, course_generation_enabled
+from ai.config import is_configured
 from course_generation.constants.course_generation_constants import (
     COURSE_OVERVIEW_MAX_LENGTH,
     COURSE_TITLE_MAX_LENGTH,
@@ -32,7 +32,6 @@ from course_generation.exceptions import (
     CourseGenerationValidationError,
 )
 from course_generation.models import CourseGenerationPanel
-from course_generation.providers.factory import get_llm_provider
 from course_generation.services.course_generation_service import _build_response
 from course_generation.services.course_generator import CourseGenerator
 
@@ -60,20 +59,21 @@ def _pretty_json(value) -> str:
 
 
 def _provider_status() -> dict:
-    provider = get_llm_provider()
-    configured = provider.is_configured()
-    enabled = course_generation_enabled()
+    from ai.config import llm_provider
+    configured = is_configured()
+    enabled = getattr(settings, "COURSE_GENERATION_ENABLED", True)
+    pname = llm_provider()
     if not enabled:
         mode = "disabled"
     elif not configured:
-        mode = f"enabled, {provider.provider_name()} not configured"
+        mode = f"enabled, {pname} not configured"
     else:
-        mode = f"{provider.provider_name()} course generation"
+        mode = f"{pname} course generation"
     return {
         "course_generation_enabled": enabled,
-        "provider_name": provider.provider_name(),
+        "provider_name": pname,
         "provider_configured": configured,
-        "ai_llm_enabled": ai_llm_enabled(),
+        "ai_llm_enabled": configured,
         "ai_tracing_enabled": bool(
             getattr(settings, "LANGSMITH_TRACING_ENABLED", False)
         ),

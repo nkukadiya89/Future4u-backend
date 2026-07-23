@@ -16,7 +16,7 @@ from django.contrib import admin
 from django.shortcuts import render
 
 from common.mixins.admin_mixins import ReadOnlyAdminMixin
-from job_generation.config import ai_llm_enabled, job_generation_enabled
+from ai.config import is_configured
 from city.models import City
 from country.models import Country
 from state.models import State
@@ -30,7 +30,6 @@ from job_generation.exceptions import (
     JobGenerationValidationError,
 )
 from job_generation.models import JobGenerationPanel
-from job_generation.providers.factory import get_llm_provider
 from job_generation.services.job_generation_service import _build_response
 from job_generation.services.job_generator import JobGenerator
 from user_profile.models import CorporateProfile
@@ -44,20 +43,21 @@ def _pretty_json(value) -> str:
 
 
 def _provider_status() -> dict:
-    provider = get_llm_provider()
-    configured = provider.is_configured()
-    enabled = job_generation_enabled()
+    from ai.config import llm_provider
+    configured = is_configured()
+    enabled = getattr(settings, "JOB_GENERATION_ENABLED", True)
+    pname = llm_provider()
     if not enabled:
         mode = "disabled"
     elif not configured:
-        mode = f"enabled, {provider.provider_name()} not configured"
+        mode = f"enabled, {pname} not configured"
     else:
-        mode = f"{provider.provider_name()} job generation"
+        mode = f"{pname} job generation"
     return {
         "job_generation_enabled": enabled,
-        "provider_name": provider.provider_name(),
+        "provider_name": pname,
         "provider_configured": configured,
-        "ai_llm_enabled": ai_llm_enabled(),
+        "ai_llm_enabled": configured,
         "ai_tracing_enabled": bool(
             getattr(settings, "LANGSMITH_TRACING_ENABLED", False)
         ),

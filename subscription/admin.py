@@ -36,12 +36,9 @@ class SubscriptionFeatureAdmin(RelatedDataAdminMixin, admin.ModelAdmin):
         "subscription__package_name",
         "feature_name",
         "feature_code",
-        "value",
-        "is_unlimited",
-        "is_core",
         "is_enabled",
     )
-    list_filter = ("is_enabled", "is_core", "is_unlimited")
+    list_filter = ("is_enabled",)
     search_fields = ("subscription__package_name", "feature_name")
 
 

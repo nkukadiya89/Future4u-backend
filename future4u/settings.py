@@ -78,7 +78,6 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "activity_log",
     "business_category",
-    "career",
     "city",
     "city_areas",
     "common",
@@ -86,23 +85,21 @@ INSTALLED_APPS = [
     "company",
     "country",
     "domain",
+    "domain_skill_mapping",
     "education_level",
     "employee",
     "end_client",
     "faq",
     "partner_company",
     "pincode",
+    "skill",
     "state",
     "subscription",
     "stream",
-    "stream_domain_mapping",
-    "domain_skill_mapping",
-    "domain_career_mapping",
     "assessment",
-    "skill",
     "user",
-    "user_skill",
     "user_profile",
+    "user_skill",
     "recommendation",
     "language_master",
     "resume_builder",
@@ -317,23 +314,10 @@ JOB_GENERATION_ENABLED = config(
     default=True,
     cast=bool,
 )
-JOB_GENERATION_LLM_PROVIDER = (
-    config(
-        "JOB_GENERATION_LLM_PROVIDER",
-        default="groq",
-    )
-    .strip()
-    .lower()
-)
 JOB_GENERATION_MAX_TOKENS = config(
     "JOB_GENERATION_MAX_TOKENS",
     default=1000,
     cast=int,
-)
-JOB_GENERATION_TEMPERATURE = config(
-    "JOB_GENERATION_TEMPERATURE",
-    default=0.2,
-    cast=float,
 )
 
 COURSE_GENERATION_ENABLED = config(
@@ -341,47 +325,11 @@ COURSE_GENERATION_ENABLED = config(
     default=True,
     cast=bool,
 )
-COURSE_GENERATION_LLM_PROVIDER = (
-    config(
-        "COURSE_GENERATION_LLM_PROVIDER",
-        default="groq",
-    )
-    .strip()
-    .lower()
-)
-COURSE_GENERATION_MAX_TOKENS = config(
-    "COURSE_GENERATION_MAX_TOKENS",
-    default=3000,
-    cast=int,
-)
-COURSE_GENERATION_TEMPERATURE = config(
-    "COURSE_GENERATION_TEMPERATURE",
-    default=0.2,
-    cast=float,
-)
 
 INTERNSHIP_GENERATION_ENABLED = config(
     "INTERNSHIP_GENERATION_ENABLED",
     default=True,
     cast=bool,
-)
-INTERNSHIP_GENERATION_LLM_PROVIDER = (
-    config(
-        "INTERNSHIP_GENERATION_LLM_PROVIDER",
-        default="groq",
-    )
-    .strip()
-    .lower()
-)
-INTERNSHIP_GENERATION_MAX_TOKENS = config(
-    "INTERNSHIP_GENERATION_MAX_TOKENS",
-    default=3000,
-    cast=int,
-)
-INTERNSHIP_GENERATION_TEMPERATURE = config(
-    "INTERNSHIP_GENERATION_TEMPERATURE",
-    default=0.2,
-    cast=float,
 )
 
 OPENAI_API_KEY = config("OPENAI_API_KEY", default="").strip()

@@ -23,7 +23,7 @@ from assessment.models import (
     ProfessionalAssessment,
     StudentAssessment,
 )
-from recommendation.clients.groq_client import get_groq_api_key_optional
+from ai.config import groq_api_key, is_configured
 from recommendation.config import ai_recommendations_enabled
 from recommendation.exceptions import (
     AIConfigurationError,
@@ -55,17 +55,17 @@ def _pretty_json(value) -> str:
 
 
 def _provider_status() -> dict:
-    groq_ok = bool(get_groq_api_key_optional())
+    configured = is_configured()
     use_llm = ai_recommendations_enabled()
     if not use_llm:
         mode = "disabled"
-    elif not groq_ok:
+    elif not configured:
         mode = "enabled, Groq key missing"
     else:
         mode = "Groq GPT OSS recommendations"
     return {
         "ai_recommendations_enabled": use_llm,
-        "groq_configured": groq_ok,
+        "groq_configured": configured,
         "ai_tracing_enabled": bool(
             getattr(settings, "LANGSMITH_TRACING_ENABLED", False)
         ),

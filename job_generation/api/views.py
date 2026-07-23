@@ -96,6 +96,7 @@ class JobGenerationAPIView(APIView):
             return Response(
                 {
                     "success": False,
+                    "message": str(exc) or "Unable to generate job details. Please try again.",
                     "error": exc.error,
                     "details": exc.details,
                 },
@@ -170,6 +171,7 @@ class JobGenerationSaveView(APIView):
             return Response(
                 {
                     "success": False,
+                    "message": str(exc) or "Unable to generate job details. Please try again.",
                     "error": exc.error,
                     "details": exc.details,
                 },
