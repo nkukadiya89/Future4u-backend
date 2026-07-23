@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import json
 import logging
 from typing import Any
 
-from internship_generation.config import ai_llm_enabled
+from pydantic import ValidationError
+
+from ai.config import is_configured
+from ai.provider import ensure_configured, get_chat_model
+
 from internship_generation.exceptions import (
     InternshipGenerationConfigurationError,
     InternshipGenerationValidationError,
@@ -12,17 +17,13 @@ from internship_generation.prompts.internship_generation_prompt import (
     build_internship_generation_prompt,
     format_prompt_inputs,
 )
-from internship_generation.providers.factory import (
-    ensure_ai_provider_configured,
-    get_llm_provider,
-)
 from internship_generation.schemas.internship_output import InternshipGenerationPayload
-from internship_generation.services.json_response_parser import JsonResponseParser
+from internship_generation.services.payload_parser import parse_ai_payload
 from utils.token_usage import extract_token_usage
 
 logger = logging.getLogger(__name__)
 
-_MAX_GENERATION_ATTEMPTS = 3
+_MAX_GENERATION_ATTEMPTS = 2
 
 
 class InternshipGenerator:
@@ -32,15 +33,14 @@ class InternshipGenerator:
     def generate(
         cls, *, generation_input: dict[str, Any]
     ) -> tuple[InternshipGenerationPayload, int]:
-        if not ai_llm_enabled():
+        if not is_configured():
             raise InternshipGenerationConfigurationError(
                 "AI internship generation is temporarily unavailable"
             )
-        ensure_ai_provider_configured()
+        ensure_configured()
 
         prompt = build_internship_generation_prompt()
-        llm = get_llm_provider().get_chat_model()
-        parser = JsonResponseParser()
+        llm = get_chat_model()
         last_error: InternshipGenerationValidationError | None = None
         validation_feedback = "None"
 
@@ -56,7 +56,6 @@ class InternshipGenerator:
                     prompt=prompt,
                     inputs=inputs,
                     llm=llm,
-                    parser=parser,
                 )
             except InternshipGenerationValidationError as exc:
                 last_error = exc
@@ -86,14 +85,45 @@ class InternshipGenerator:
         prompt,
         inputs: dict[str, str],
         llm,
-        parser: JsonResponseParser,
     ) -> tuple[InternshipGenerationPayload, int]:
-        token_usage = 0
         try:
             chain = prompt | llm
             result = chain.invoke(inputs)
             token_usage = extract_token_usage(result)
             raw_text = _extract_text_content(result)
+            if not raw_text or not raw_text.strip():
+                raise InternshipGenerationValidationError(
+                    "Empty response from AI",
+                    error="Generation failed",
+                    details="AI returned an empty response",
+                )
+
+            parsed = json.loads(raw_text)
+            if not isinstance(parsed, dict):
+                raise InternshipGenerationValidationError(
+                    "Response is not a valid JSON object",
+                    error="Generation failed",
+                    details="AI response root must be a JSON object",
+                )
+
+            payload = parse_ai_payload(parsed)
+            return payload, token_usage
+        except json.JSONDecodeError as exc:
+            logger.warning("Internship generation JSON parse failed: %s", exc)
+            raise InternshipGenerationValidationError(
+                "Unable to generate internship details. Please try again.",
+                error="Generation failed",
+                details="AI response could not be parsed as valid JSON",
+            ) from exc
+        except (ValidationError, ValueError) as exc:
+            logger.warning("Internship generation validation failed: %s", exc)
+            raise InternshipGenerationValidationError(
+                str(exc),
+                error="Validation failed",
+                details=str(exc),
+            ) from exc
+        except InternshipGenerationValidationError:
+            raise
         except Exception as exc:
             logger.exception("LLM internship generation failed")
             raise InternshipGenerationValidationError(
@@ -101,27 +131,6 @@ class InternshipGenerator:
                 error="LLM request failed",
                 details=_format_llm_error(exc),
             ) from exc
-
-        parse_result = parser.parse_and_validate(
-            raw_text, model_class=InternshipGenerationPayload
-        )
-        if parse_result.success and parse_result.validated_model is not None:
-            return parse_result.validated_model, token_usage  # type: ignore[return-value]
-
-        if parse_result.is_json_parse_failure:
-            details = parse_result.parse_error or "Invalid JSON in LLM response"
-            raise InternshipGenerationValidationError(
-                details,
-                error="JSON parsing failed",
-                details=details,
-            )
-
-        details = parse_result.validation_errors or "Schema validation failed"
-        raise InternshipGenerationValidationError(
-            details,
-            error="Schema validation failed",
-            details=details,
-        )
 
 
 def _extract_text_content(result: Any) -> str:
@@ -153,7 +162,7 @@ def _format_llm_error(exc: Exception) -> str:
 
 
 def _is_retryable_generation_error(exc: InternshipGenerationValidationError) -> bool:
-    return exc.error in ("JSON parsing failed", "Schema validation failed")
+    return exc.error in ("Generation failed", "Validation failed")
 
 
 def _clip_feedback(message: str) -> str:

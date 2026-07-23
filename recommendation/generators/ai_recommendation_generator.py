@@ -5,7 +5,9 @@ from typing import Any, Callable
 
 from pydantic import ValidationError
 
-from recommendation.clients.llm_client import get_chat_model
+from django.conf import settings
+
+from ai.provider import get_chat_model
 from recommendation.exceptions import AIGenerationError
 from utils.token_usage import extract_token_usage
 from recommendation.engine._shared import (
@@ -34,7 +36,7 @@ class RecommendationGenerator:
     ) -> tuple[AIRecommendationPayload, int]:
         prompt = build_prompt()
         inputs = format_inputs(structured_assessment)
-        llm = get_chat_model()
+        llm = get_chat_model(max_tokens=getattr(settings, "GROQ_MAX_TOKENS", 4400))
         last_error: AIGenerationError | None = None
         for attempt in range(2):
             try:
@@ -51,36 +53,17 @@ class RecommendationGenerator:
     def _invoke_once(
         cls, *, prompt, inputs: dict[str, Any], llm
     ) -> tuple[AIRecommendationPayload, int]:
-        """Exactly one provider invocation."""
-        token_usage = 0
+        """Exactly one LLM call per attempt."""
         try:
-            # Make raw LLM call first to capture actual token usage,
-            # then use structured output for guaranteed valid JSON parsing.
-            raw_chain = prompt | llm
-            ai_message = raw_chain.invoke(inputs)
+            chain = prompt | llm
+            ai_message = chain.invoke(inputs)
             token_usage = extract_token_usage(ai_message)
 
-            # Parse the raw response through structured output for validation
             raw_text = ai_message.content
-            if isinstance(raw_text, str) and raw_text.strip():
-                # Try direct model parse first
-                try:
-                    result = AIRecommendationPayload.model_validate_json(raw_text)
-                except Exception:
-                    # Fall back to structured output
-                    structured_llm = llm.with_structured_output(
-                        AIRecommendationPayload,
-                        method="json_mode",
-                    )
-                    chain = prompt | structured_llm
-                    result = chain.invoke(inputs)
-            else:
-                structured_llm = llm.with_structured_output(
-                    AIRecommendationPayload,
-                    method="json_mode",
-                )
-                chain = prompt | structured_llm
-                result = chain.invoke(inputs)
+            if not raw_text or not raw_text.strip():
+                raise AIGenerationError("Empty response from AI")
+
+            result = AIRecommendationPayload.model_validate_json(raw_text)
         except ValidationError as exc:
             logger.warning("LLM output validation failed: %s", exc)
             raise AIGenerationError("AI response failed validation") from exc

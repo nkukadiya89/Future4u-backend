@@ -18,7 +18,7 @@ from django.shortcuts import render
 from city.models import City
 from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from country.models import Country
-from internship_generation.config import ai_llm_enabled, internship_generation_enabled
+from ai.config import is_configured
 from internship_generation.constants.internship_generation_constants import (
     INTERNSHIP_OVERVIEW_INPUT_MAX_LENGTH,
     OPTIONAL_FIELD_MAX_LENGTH,
@@ -31,7 +31,6 @@ from internship_generation.exceptions import (
     InternshipGenerationValidationError,
 )
 from internship_generation.models import InternshipGenerationPanel
-from internship_generation.providers.factory import get_llm_provider
 from internship_generation.services.internship_generation_service import _build_response
 from internship_generation.services.internship_generator import InternshipGenerator
 
@@ -58,20 +57,21 @@ def _pretty_json(value) -> str:
 
 
 def _provider_status() -> dict:
-    provider = get_llm_provider()
-    configured = provider.is_configured()
-    enabled = internship_generation_enabled()
+    from ai.config import llm_provider
+    configured = is_configured()
+    enabled = getattr(settings, "INTERNSHIP_GENERATION_ENABLED", True)
+    pname = llm_provider()
     if not enabled:
         mode = "disabled"
     elif not configured:
-        mode = f"enabled, {provider.provider_name()} not configured"
+        mode = f"enabled, {pname} not configured"
     else:
-        mode = f"{provider.provider_name()} internship generation"
+        mode = f"{pname} internship generation"
     return {
         "internship_generation_enabled": enabled,
-        "provider_name": provider.provider_name(),
+        "provider_name": pname,
         "provider_configured": configured,
-        "ai_llm_enabled": ai_llm_enabled(),
+        "ai_llm_enabled": configured,
         "ai_tracing_enabled": bool(
             getattr(settings, "LANGSMITH_TRACING_ENABLED", False)
         ),

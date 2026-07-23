@@ -53,24 +53,22 @@ class RecommendationAPIView(APIView):
     throttle_classes = [RecommendationRateThrottle]
 
     def get(self, request, assessment_id, *args, **kwargs):
-        try:
-            assessment, determined_type = _resolve_assessment_type(
-                request.user, assessment_id
-            )
-            if not assessment:
-                return Response(
-                    {"success": False, "message": "Assessment not found"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-
-            if not assessment.is_completed:
-                raise Exception(
-                    "Please complete your profile assessment first to get career recommendations."
-                )
-        except Exception as exc:
+        assessment, determined_type = _resolve_assessment_type(
+            request.user, assessment_id
+        )
+        if not assessment:
             return Response(
-                {"success": False, "message": str(exc)},
-                status=status.HTTP_402_PAYMENT_REQUIRED,
+                {"success": False, "message": "Assessment not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if not assessment.is_completed:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Please complete your profile assessment first to get career recommendations.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
@@ -99,10 +97,9 @@ class RecommendationAPIView(APIView):
             try:
                 deduct_monthly_tokens(request.user, token_usage)
             except Exception as exc:
-                logger.warning("Monthly token deduction failed: %s", exc)
-                return Response(
-                    {"success": False, "message": str(exc)},
-                    status=status.HTTP_402_PAYMENT_REQUIRED,
+                logger.error(
+                    "TOKEN_RECONCILE user=%s feature=recommendation cost=%s err=%s",
+                    request.user.id, token_usage, exc,
                 )
 
             return Response(
@@ -250,10 +247,9 @@ class RecommendationChatAPIView(APIView):
             try:
                 deduct_monthly_tokens(request.user, token_usage)
             except Exception as exc:
-                logger.warning("Monthly token deduction failed: %s", exc)
-                return Response(
-                    {"success": False, "message": str(exc)},
-                    status=status.HTTP_402_PAYMENT_REQUIRED,
+                logger.error(
+                    "TOKEN_RECONCILE user=%s feature=ai_chat cost=%s err=%s",
+                    request.user.id, token_usage, exc,
                 )
 
             return Response(

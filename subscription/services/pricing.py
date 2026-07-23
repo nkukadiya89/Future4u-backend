@@ -121,7 +121,11 @@ class PricingService:
 
     @staticmethod
     def extract(validated_data):
-        """Pop pricing fields from validated_data and return as a dict."""
+        """Pop pricing fields from validated_data and return as a dict.
+
+        Priority: ``subscription_price`` → ``subscription_sell_price`` → ``plan_price``.
+        ``subscription_discount`` is an optional percentage stored separately.
+        """
         price = validated_data.pop("subscription_price", None)
         if price is None:
             price = validated_data.pop("subscription_sell_price", None)

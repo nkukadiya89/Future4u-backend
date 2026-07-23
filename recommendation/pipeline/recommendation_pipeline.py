@@ -3,8 +3,9 @@ from __future__ import annotations
 import logging
 from typing import Any, Callable
 
-from recommendation.clients.llm_client import ensure_ai_provider_configured
-from recommendation.config import ai_llm_enabled
+from ai.config import is_configured
+from ai.provider import ensure_configured
+from recommendation.config import ai_recommendations_enabled
 from recommendation.exceptions import AIGenerationError, AIConfigurationError
 from recommendation.generators.ai_recommendation_generator import (
     RecommendationGenerator,
@@ -25,10 +26,10 @@ class RecommendationPipeline:
         build_prompt: Callable,
         format_inputs: Callable,
     ) -> tuple[AIRecommendationPayload, int]:
-        if not ai_llm_enabled():
+        if not is_configured() or not ai_recommendations_enabled():
             raise AIConfigurationError("AI recommendations are temporarily unavailable")
 
-        ensure_ai_provider_configured()
+        ensure_configured()
         try:
             return RecommendationGenerator.generate(
                 structured_assessment=structured_assessment,

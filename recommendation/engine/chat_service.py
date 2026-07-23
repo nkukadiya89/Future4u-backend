@@ -4,7 +4,7 @@ from typing import Any, Callable
 
 from django.db import transaction
 
-from recommendation.clients.llm_client import get_chat_model
+from ai.provider import get_chat_model
 from recommendation.exceptions import (
     AIConfigurationError,
     AIGenerationError,

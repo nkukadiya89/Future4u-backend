@@ -67,7 +67,7 @@ def build_student_resume_data(profile, user, template: str = "professional") -> 
         ),
         "stream_code": profile.stream.stream_code if profile.stream else None,
         "stream_name": profile.stream.stream_name if profile.stream else None,
-        "science_track": profile.science_track or None,
+        "science_track": None,
         "medium": profile.medium or None,
     }
 

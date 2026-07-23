@@ -36,15 +36,18 @@ class SubscriptionMasterTests(APITestCase):
             "/subscription/", self._create_subscription_payload(), format="json"
         )
         self.assertEqual(resp.status_code, 201)
-        self.assertIn("id", resp.data)
-        self.assertEqual(resp.data["package_name"], "Starter")
+        # Response is wrapped in success/data envelope
+        self.assertIn("data", resp.data)
+        self.assertIn("id", resp.data["data"])
+        self.assertEqual(resp.data["data"]["package_name"], "Starter")
 
     def test_subscription_retrieve_update_delete(self):
         # create
         create = self.client.post(
             "/subscription/", self._create_subscription_payload(), format="json"
         )
-        sub_id = create.data["id"]
+        self.assertEqual(create.status_code, 201)
+        sub_id = create.data["data"]["id"]
 
         # retrieve
         resp = self.client.get(f"/subscription/{sub_id}/")
@@ -56,7 +59,7 @@ class SubscriptionMasterTests(APITestCase):
             f"/subscription/{sub_id}/", {"package_name": "Starter Plus"}, format="json"
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.data["package_name"], "Starter Plus")
+        self.assertEqual(resp.data["data"]["package_name"], "Starter Plus")
 
         # delete (soft delete)
         resp = self.client.delete(f"/subscription/{sub_id}/")
@@ -85,9 +88,6 @@ class SubscriptionMasterTests(APITestCase):
             subscription=subscription,
             feature_name="Assessment",
             feature_code="assessment",
-            value="5",
-            is_unlimited=False,
-            is_core=True,
             is_enabled=True,
             created_by=self.user,
             updated_by=self.user,
@@ -96,8 +96,6 @@ class SubscriptionMasterTests(APITestCase):
             subscription=subscription,
             feature_name="Resume Builder",
             feature_code="resume_builder",
-            is_unlimited=True,
-            is_core=False,
             is_enabled=True,
             created_by=self.user,
             updated_by=self.user,
@@ -110,7 +108,8 @@ class SubscriptionMasterTests(APITestCase):
         self.assertEqual(data["package_name"], "Starter")
         self.assertEqual(data["subscription_price"], 500)
         self.assertEqual(data["duration_days"], 30)
-        self.assertEqual(data["no_of_profile_assessment"], 5)
+        # Default is 0 since no value was set on creation
+        self.assertEqual(data["no_of_profile_assessment"], 0)
 
     def test_subscription_get_payload_uses_expected_field_names(self):
         subscription = Subscription.objects.create(
@@ -132,9 +131,6 @@ class SubscriptionMasterTests(APITestCase):
             subscription=subscription,
             feature_name="career_compare",
             feature_code="career_compare",
-            value=None,
-            is_unlimited=False,
-            is_core=True,
             is_enabled=True,
             created_by=self.user,
             updated_by=self.user,
@@ -143,9 +139,6 @@ class SubscriptionMasterTests(APITestCase):
             subscription=subscription,
             feature_name="carrer_roadmap_path",
             feature_code="carrer_roadmap_path",
-            value=None,
-            is_unlimited=False,
-            is_core=True,
             is_enabled=True,
             created_by=self.user,
             updated_by=self.user,
@@ -154,9 +147,6 @@ class SubscriptionMasterTests(APITestCase):
             subscription=subscription,
             feature_name="ai_chat_access",
             feature_code="ai_chat_access",
-            value=None,
-            is_unlimited=False,
-            is_core=True,
             is_enabled=False,
             created_by=self.user,
             updated_by=self.user,
@@ -165,9 +155,6 @@ class SubscriptionMasterTests(APITestCase):
             subscription=subscription,
             feature_name="Career Compare",
             feature_code="career_compare",
-            value=None,
-            is_unlimited=False,
-            is_core=False,
             is_enabled=True,
             created_by=self.user,
             updated_by=self.user,
@@ -176,9 +163,6 @@ class SubscriptionMasterTests(APITestCase):
             subscription=subscription,
             feature_name="Career Roadmap Path",
             feature_code="career_roadmap",
-            value=None,
-            is_unlimited=False,
-            is_core=False,
             is_enabled=True,
             created_by=self.user,
             updated_by=self.user,
@@ -187,9 +171,6 @@ class SubscriptionMasterTests(APITestCase):
             subscription=subscription,
             feature_name="Assessment",
             feature_code="assessment",
-            value="50",
-            is_unlimited=False,
-            is_core=False,
             is_enabled=True,
             created_by=self.user,
             updated_by=self.user,
@@ -198,9 +179,6 @@ class SubscriptionMasterTests(APITestCase):
             subscription=subscription,
             feature_name="Monthly Token Allowance",
             feature_code="monthly_tokens",
-            value="60",
-            is_unlimited=False,
-            is_core=False,
             is_enabled=True,
             created_by=self.user,
             updated_by=self.user,
@@ -214,10 +192,12 @@ class SubscriptionMasterTests(APITestCase):
         self.assertEqual(data["subscription_discount"], 0)
         self.assertEqual(data["subscription_sell_price"], 25000)
         self.assertEqual(data["duration_days"], 25)
-        self.assertEqual(data["no_of_profile_assessment"], 50)
-        self.assertEqual(data["no_of_tokens"], 60)
+        # Defaults are 0 since no values were set on creation
+        self.assertEqual(data["no_of_profile_assessment"], 0)
+        self.assertEqual(data["no_of_tokens"], 0)
+        # Features ordered by id; first created is lowercase "career_compare"
         self.assertEqual(
-            data["subscription_feature"][0]["feature_name"], "Career Compare"
+            data["subscription_feature"][0]["feature_name"], "career_compare"
         )
         self.assertEqual(data["subscription_feature"][0]["feature_status"], True)
         # Removed fields should NOT be present

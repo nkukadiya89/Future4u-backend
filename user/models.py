@@ -187,6 +187,20 @@ class User(AbstractUser):
     def full_name_property(self):
         return f"{self.first_name} {self.last_name}".strip()
 
+    @property
+    def subscription_info(self):
+        from subscription.models import UserSubscription
+        us = UserSubscription.objects.filter(
+            user=self, is_active=True, deleted=False
+        ).select_related("plan_price__plan").first()
+        if not us or not us.plan_price or not us.plan_price.plan:
+            return None
+        return {
+            "package_name": us.plan_price.plan.package_name,
+            "is_active": us.is_active,
+            "end_date": us.end_date,
+        }
+
     def upload_profile_image(self, profile_image_file):
         allowed_types = [".jpg", ".jpeg", ".png"]
 

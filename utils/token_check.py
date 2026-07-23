@@ -20,12 +20,24 @@ FEATURE_NAMES = {
     "monthly_tokens": "Monthly Token Allowance",
 }
 
+_FEATURE_FIELD_MAP = {
+    "ai_chat": "ai_chat_access",
+    "career_compare": "career_compare",
+    "career_roadmap": "career_roadmap",
+    "assessment": "no_of_profile_assessment",
+    "monthly_tokens": "no_of_tokens",
+    "internship_gen": "no_of_internship_access",
+    "course_gen": "no_of_course_portal_access",
+    "job_gen": "no_of_job_portal_access",
+}
+
 MIN_TOKENS_REQUIRED = {
-    "ai_chat": 500,
+    "ai_chat": 600,
     "recommendation": 3000,
-    "course_gen": 500,
-    "internship_gen": 500,
-    "job_gen": 500,
+    "course_gen": 2000,
+    "internship_gen": 2000,
+    "job_gen": 2000,
+    "resume_enhance": 500,
 }
 
 ORGANIZATION_TYPES = (
@@ -131,58 +143,59 @@ def check_token_available(user, feature_code, quantity=1):
     # Check monthly reset before checking limits
     _reset_subscription_monthly_tokens(user, user_sub)
 
-    monthly_feature = SubscriptionFeature.objects.filter(
-        subscription=plan,
-        feature_code="monthly_tokens",
-        is_enabled=True,
-        deleted=False,
-    ).first()
-
-    if not monthly_feature:
+    base_limit = plan.no_of_tokens or 0
+    if base_limit <= 0:
         raise Exception(
             "Monthly tokens are not included in your current plan. "
             "Please upgrade your plan to continue."
         )
 
-    # Check monthly token budget — block if user has exhausted their allowance
-    if not monthly_feature.is_unlimited:
-        base_limit = int(monthly_feature.value or 0)
-        if base_limit <= 0:
-            raise Exception(
-                "Your monthly token plan is not configured properly. "
-                "Please contact support."
-            )
+    # Get how many tokens used this month
+    usage = FeatureUsage.objects.filter(
+        user=user,
+        feature_code="monthly_tokens",
+        plan_price=user_sub.plan_price,
+    ).first()
+    used = usage.used if usage else 0
 
-        # Get how many tokens used this month
-        usage = FeatureUsage.objects.filter(
-            user=user,
-            feature_code="monthly_tokens",
-            plan_price=user_sub.plan_price,
-        ).first()
-        used = usage.used if usage else 0
-
-        min_required = MIN_TOKENS_REQUIRED.get(feature_code, 100)
-        if used + min_required > base_limit:
-            raise Exception(
-                f"You have used {used} out of {base_limit} monthly tokens. "
-                f"At least {min_required} tokens are needed for {name}. "
-                f"Please upgrade your plan or wait for your tokens to reset."
-            )
+    min_required = MIN_TOKENS_REQUIRED.get(feature_code, 100)
+    if used + min_required > base_limit:
+        raise Exception(
+            f"You have used {used} out of {base_limit} monthly tokens. "
+            f"At least {min_required} tokens are needed for {name}. "
+            f"Please upgrade your plan or wait for your tokens to reset."
+        )
 
     # Verify this specific feature is included in the user's plan
     # recommendation is bundled with assessment — no separate plan feature
     if feature_code not in ("monthly_tokens", "recommendation"):
-        feature = SubscriptionFeature.objects.filter(
-            subscription=plan,
-            feature_code=feature_code,
-            is_enabled=True,
-            deleted=False,
-        ).first()
-        if not feature:
-            raise Exception(
-                f"{name} is not included in your current plan. "
-                f"Please upgrade to access this feature."
-            )
+        field_name = _FEATURE_FIELD_MAP.get(feature_code)
+        if field_name:
+            value = getattr(plan, field_name, 0)
+            if isinstance(value, bool):
+                if not value:
+                    raise Exception(
+                        f"{name} is not included in your current plan. "
+                        f"Please upgrade to access this feature."
+                    )
+            elif isinstance(value, int):
+                if value <= 0:
+                    raise Exception(
+                        f"{name} is not included in your current plan. "
+                        f"Please upgrade to access this feature."
+                    )
+        else:
+            feature = SubscriptionFeature.objects.filter(
+                subscription=plan,
+                feature_code=feature_code,
+                is_enabled=True,
+                deleted=False,
+            ).first()
+            if not feature:
+                raise Exception(
+                    f"{name} is not included in your current plan. "
+                    f"Please upgrade to access this feature."
+                )
 
     return True
 
@@ -202,10 +215,9 @@ def deduct_monthly_tokens(user, actual_tokens):
 
         with transaction.atomic():
             locked_profile = type(profile).objects.select_for_update().get(id=profile.id)
-            if locked_profile.token_limit < actual_tokens:
-                raise Exception("Monthly token allowance exhausted.")
+            deduction = min(actual_tokens, locked_profile.token_limit)
             type(profile).objects.filter(id=locked_profile.id).update(
-                token_limit=F("token_limit") - actual_tokens
+                token_limit=F("token_limit") - deduction
             )
         return
 
