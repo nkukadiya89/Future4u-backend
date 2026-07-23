@@ -11,7 +11,13 @@ from state.models import State
 from stream.models import Stream
 from user.models import User
 from user.services.registration_service import setup_web_user_password
-from user_profile.models import StudentProfile, ProfessionalProfile
+from user_profile.models import (
+    CorporateProfile,
+    InstituteProfile,
+    ProfessionalProfile,
+    SchoolCollegeProfile,
+    StudentProfile,
+)
 from utils.auth import is_web_source, validate_password_strength
 
 
@@ -42,6 +48,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         city_id = json_data.get("city")
         address = json_data.get("address")
         referral_code = (json_data.get("referral_code") or "").strip()
+        profile_data = json_data.get("profile") or {}
         source = json_data.get("source")
         is_web = is_web_source(source)
         errors = {}
@@ -100,6 +107,19 @@ class RegisterSerializer(serializers.ModelSerializer):
                 f"Invalid user_type. Must be one of: {', '.join(valid_user_types)}"
             )
 
+        if not isinstance(profile_data, dict):
+            errors["profile"] = "Profile must be an object."
+            profile_data = {}
+        elif is_web and user_type in [
+            User.Role.SCHOOL_COLLEGE,
+            User.Role.INSTITUTE,
+        ] and not (profile_data.get("institute_name") or "").strip():
+            errors["profile.institute_name"] = "This field is required."
+        elif is_web and user_type == User.Role.CORPORATE and not (
+            profile_data.get("company_name") or ""
+        ).strip():
+            errors["profile.company_name"] = "This field is required."
+
         referred_by = None
         if referral_code:
             if user_type == User.Role.STUDENT:
@@ -142,6 +162,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             "terms_accepted": terms_accepted,
             "source": source,
             "referred_by": referred_by,
+            "profile": profile_data,
         }
         if user_type in [
             User.Role.SCHOOL_COLLEGE,
@@ -163,6 +184,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         terms_accepted = validated_data_inner.pop("terms_accepted")
         source = validated_data_inner.pop("source", None)
         referred_by = validated_data_inner.pop("referred_by", None)
+        profile_data = validated_data_inner.pop("profile", {})
 
         user = User.objects.create(**validated_data_inner)
         user.created_by = user
@@ -180,6 +202,34 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         if profile_image_file:
             user.upload_profile_image(profile_image_file)
+
+        if user.user_type == User.Role.INSTITUTE:
+            profile, _ = InstituteProfile.objects.get_or_create(
+                user=user,
+                defaults={"created_by": user},
+            )
+            institute_name = (profile_data.get("institute_name") or "").strip()
+            if institute_name:
+                profile.institute_name = institute_name
+                profile.save(update_fields=["institute_name"])
+        elif user.user_type == User.Role.SCHOOL_COLLEGE:
+            profile, _ = SchoolCollegeProfile.objects.get_or_create(
+                user=user,
+                defaults={"created_by": user},
+            )
+            institute_name = (profile_data.get("institute_name") or "").strip()
+            if institute_name:
+                profile.institute_name = institute_name
+                profile.save(update_fields=["institute_name"])
+        elif user.user_type == User.Role.CORPORATE:
+            profile, _ = CorporateProfile.objects.get_or_create(
+                user=user,
+                defaults={"created_by": user},
+            )
+            company_name = (profile_data.get("company_name") or "").strip()
+            if company_name:
+                profile.company_name = company_name
+                profile.save(update_fields=["company_name"])
 
         def update_profile_referral():
             if user.user_type == User.Role.STUDENT:

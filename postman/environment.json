@@ -58,6 +58,16 @@
       "enabled": true
     },
     {
+      "key": "institute_name",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "company_name",
+      "value": "",
+      "enabled": true
+    },
+    {
       "key": "referral_code",
       "value": "",
       "enabled": true

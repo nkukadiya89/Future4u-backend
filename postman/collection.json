@@ -13965,7 +13965,7 @@
               "formdata": [
                 {
                   "key": "data",
-                  "value": "{\"email\":\"{{user_email}}\",\"terms_accepted\":true,\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"user_type\":\"{{user_type}}\",\"country\":{{country_id}},\"state\":{{state_id}},\"city\":{{city_id}},\"referral_code\":\"{{referral_code}}\",\"source\":\"web\"}",
+                  "value": "{\"email\":\"{{user_email}}\",\"terms_accepted\":true,\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"user_type\":\"{{user_type}}\",\"country\":{{country_id}},\"state\":{{state_id}},\"city\":{{city_id}},\"referral_code\":\"{{referral_code}}\",\"source\":\"web\",\"profile\":{\"institute_name\":\"{{institute_name}}\",\"company_name\":\"{{company_name}}\"}}",
                   "type": "text"
                 },
                 {
@@ -13976,7 +13976,7 @@
                 }
               ]
             },
-            "description": "Public web self-registration (source=web). For Super Admin creating users, see the Admin Users folder."
+            "description": "Public web self-registration (source=web). For user_type=school_college or institute, set {{institute_name}}. For user_type=corporate, set {{company_name}}. These fields are required for web organization registration. For Super Admin creating users, see the Admin Users folder."
           },
           "response": [],
           "event": [
