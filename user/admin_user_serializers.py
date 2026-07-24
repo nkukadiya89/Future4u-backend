@@ -273,17 +273,17 @@ class AdminStudentSerializer(serializers.ModelSerializer):
 
 
 class AdminStudentSortSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField(source="user.first_name")
-    last_name = serializers.CharField(source="user.last_name")
-    phone = serializers.CharField(source="user.phone")
-    email = serializers.CharField(source="user.email")
-    country = serializers.IntegerField(source="user.country.id", default=None)
-    country_name = serializers.CharField(source="user.country.name")
-    state = serializers.IntegerField(source="user.states.id", default=None)
-    state_name = serializers.CharField(source="user.states.name")
-    city = serializers.IntegerField(source="user.city.id", default=None)
-    city_name = serializers.CharField(source="user.city.name")
-    referral_code = serializers.CharField(source="referred_by.referral_code")
+    first_name = serializers.CharField(source="user.first_name", read_only=True)
+    last_name = serializers.CharField(source="user.last_name", read_only=True)
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    country = serializers.IntegerField(source="user.country.id", default=None, read_only=True)
+    country_name = serializers.CharField(source="user.country.name", default=None, read_only=True)
+    state = serializers.IntegerField(source="user.states.id", default=None, read_only=True)
+    state_name = serializers.CharField(source="user.states.name", default=None, read_only=True)
+    city = serializers.IntegerField(source="user.city.id", default=None, read_only=True)
+    city_name = serializers.CharField(source="user.city.name", default=None, read_only=True)
+    referral_code = serializers.CharField(source="referred_by.referral_code", default=None, allow_null=True, read_only=True)
 
     class Meta:
         model = StudentProfile
@@ -306,7 +306,6 @@ class AdminStudentSortSerializer(serializers.ModelSerializer):
             "city_name",
             "referral_code",
         ]
-
 
 class BulkUserUploadSerializer(serializers.Serializer):
     file = serializers.FileField()
