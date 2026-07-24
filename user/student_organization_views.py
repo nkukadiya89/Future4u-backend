@@ -7,6 +7,7 @@ from user.models import User
 from utils.pagination import Pagination
 from .permissions import IsSchoolCollegeOrInstittute
 from django.db import transaction
+from django.db.models import Q
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -60,25 +61,22 @@ class OrganizationStudentViewSet(BaseModelViewSet):
     http_method_names = ["get", "post", "delete", "head", "options"]
 
     def get_queryset(self):
-        return(
-            User.objects.filter(
-                user_type = User.Role.STUDENT,
-                created_by = self.request.user,
-                deleted = False,
-            )
-            .select_related(
-                "country",
-                "states",
-                "city",
-                "student_profile",
-                "student_profile__education_level",
-            )
-            .prefetch_related(
-                "student_assessments",
-                "career_recommendations",
-                "career_recommendations__suggestions",
-            ).order_by("-id")
-        )
+        user = self.request.user
+        return User.objects.filter(
+            Q(created_by=user) | Q(student_profile__referred_by=user),
+            user_type=User.Role.STUDENT,
+            deleted=False,
+        ).select_related(
+            "country",
+            "states",
+            "city",
+            "student_profile",
+            "student_profile__education_level",
+        ).prefetch_related(
+            "student_assessments",
+            "career_recommendations",
+            "career_recommendations__suggestions",
+        ).order_by("-id")
     
     def get_serializer_class(self):
         if self.action == "create":
