@@ -565,6 +565,7 @@ class ParentProfileSerializer(
     )
     referred_by = UserQuickSerializer(read_only=True)
     created_by = UserQuickSerializer(source="user.created_by", read_only=True)
+    created_at = serializers.CharField(source="user.created_at", read_only=True)
     updated_by = UserQuickSerializer(read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)

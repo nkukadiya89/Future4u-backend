@@ -639,7 +639,7 @@ class StudentProfileViewSet(ModelViewSet):
     def get_queryset(self):
         return StudentProfile.objects.filter(user__deleted=False).select_related(
             "user__country", "user__states", "user__city", "education_level", "stream"
-        )
+        ).prefetch_related("language")
 
     def get_profile_object(self, request):
         queryset = self.get_queryset()
@@ -930,7 +930,7 @@ class ProfessionalProfileViewSet(ModelViewSet):
             data = {}
         profile_image = request.FILES.get("profile_image")
         if profile_image:
-            request.user.upload_profile_image(profile_image)
+            profile.user.upload_profile_image(profile_image)
 
         serializer = ProfessionalProfileUpsertSerializer(
             profile, data=data, partial=True
@@ -960,30 +960,50 @@ class ProfessionalProfileViewSet(ModelViewSet):
 
 
 class ParentProfileViewSet(ModelViewSet):
-    """
-    Parent-specific profile endpoint
-    Endpoints:
-    - GET   /api/parent-profile/
-    - PATCH /api/parent-profile/
-    """
-
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+    filter_backends = [SearchFilter, OrderingFilter]
     http_method_names = ["get", "patch", "head", "options"]
 
     throttle_classes = [PerUserBurstRateThrottle]
 
+    search_fields = [
+        "user__status",
+        "user__user_type",
+        "user__country__name",
+        "user__states__name",
+        "user__city__name",
+        "user__first_name",
+        "user__last_name",
+        "user__phone",
+        "user__email",
+        "relationship",
+        "other_relationship_text",
+    ]
+
+    ordering_fields = [
+        "id",
+        "user",
+        "relationship",
+        "updated_at",
+    ]
+
     def get_queryset(self):
-        return (
-            ParentProfile.objects.filter(user=self.request.user)
-            .select_related("user__country", "user__states", "user__city")
+        qs = (
+            ParentProfile.objects.select_related(
+                "user__country", "user__states", "user__city"
+            )
             .prefetch_related("language")
         )
+        if (
+            self.request.user.is_superuser
+            or self.request.user.user_type == self.request.user.Role.SUPER_ADMIN
+        ):
+            return qs.filter(user__deleted=False)
+        return qs.filter(user=self.request.user)
 
     def get_profile_object(self, request):
-        queryset = ParentProfile.objects.select_related(
-            "user__country", "user__states", "user__city"
-        ).prefetch_related("language")
+        queryset = self.get_queryset()
         if request.user.is_superuser:
             user_id = request.query_params.get("user_id")
             if user_id:
@@ -991,20 +1011,86 @@ class ParentProfileViewSet(ModelViewSet):
         return queryset.filter(user=request.user).first()
 
     def list(self, request, *args, **kwargs):
-        profile = self.get_profile_object(request)
+        if request.user.is_superuser:
+            user_id = request.query_params.get("user_id")
+            queryset = self.get_queryset()
+            no_pagination = request.query_params.get("no_pagination")
+
+            status_filter = request.query_params.get("status")
+            city_id = request.query_params.get("city")
+            state_id = request.query_params.get("state")
+            country_id = request.query_params.get("country")
+
+            if status_filter:
+                queryset = queryset.filter(user__status=status_filter)
+
+            if city_id:
+                queryset = queryset.filter(user__city_id=city_id)
+
+            if state_id:
+                queryset = queryset.filter(user__states_id=state_id)
+
+            if country_id:
+                queryset = queryset.filter(user__country_id=country_id)
+
+            queryset = self.filter_queryset(queryset)
+
+            if user_id:
+                profile = queryset.filter(user_id=user_id).first()
+
+                if not profile:
+                    return Response(
+                        {"success": False, "message": "Profile not found"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+
+                serializer = ParentProfileSerializer(profile)
+                return Response(
+                    {"success": True, "data": serializer.data},
+                    status=status.HTTP_200_OK,
+                )
+            if no_pagination:
+                serializer = ParentProfileSerializer(queryset, many=True)
+
+                return Response(
+                    {
+                        "success": True,
+                        "data": serializer.data,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            page = self.paginate_queryset(queryset)
+
+            if page is not None:
+                serializer = ParentProfileSerializer(page, many=True)
+                return self.get_paginated_response(
+                    {
+                        "success": True,
+                        "data": serializer.data,
+                    }
+                )
+            serializer = ParentProfileSerializer(queryset, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+
+        profile = self.get_queryset().filter(user=request.user).first()
+
         if not profile:
             return Response(
                 {"success": False, "message": "Profile not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        data = ParentProfileSerializer(profile).data
+
+        serializer = ParentProfileSerializer(profile)
+
         return Response(
-            {"success": True, "data": data},
+            {"success": True, "data": serializer.data},
             status=status.HTTP_200_OK,
         )
 
     def partial_update(self, request, *args, **kwargs):
-        profile = ParentProfile.objects.filter(user=request.user).first()
+        profile = self.get_profile_object(request)
         if not profile:
             return Response(
                 {"success": False, "message": "Profile not found"},
@@ -1017,7 +1103,7 @@ class ParentProfileViewSet(ModelViewSet):
             data = {}
         profile_image = request.FILES.get("profile_image")
         if profile_image:
-            request.user.upload_profile_image(profile_image)
+            profile.user.upload_profile_image(profile_image)
 
         serializer = ParentProfileUpsertSerializer(profile, data=data, partial=True)
         if not serializer.is_valid():
