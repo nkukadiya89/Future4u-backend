@@ -18442,6 +18442,39 @@
           ]
         },
         {
+          "name": "update-status (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course/update-status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course",
+                "update-status",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"closed\",\n  \"ids\": [{{course_id}}]\n}"
+            },
+            "description": "Admins can update any course. Institute, school/college, and corporate providers can update only courses they own. Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."
+          },
+          "response": []
+        },
+        {
           "name": "archive-list (GET)",
           "request": {
             "method": "GET",
@@ -19249,6 +19282,39 @@
           ]
         },
         {
+          "name": "update-status (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship/update-status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship",
+                "update-status",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"closed\",\n  \"ids\": [{{internship_id}}]\n}"
+            },
+            "description": "Admins can update any internship. Institute, school/college, and corporate providers can update only internships they own. Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."
+          },
+          "response": []
+        },
+        {
           "name": "archive-list (GET)",
           "request": {
             "method": "GET",
@@ -19677,6 +19743,39 @@
               }
             }
           ]
+        },
+        {
+          "name": "update-status (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job/update-status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job",
+                "update-status",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"closed\",\n  \"ids\": [{{job_id}}]\n}"
+            },
+            "description": "Admins can update any job. Institute, school/college, and corporate providers can update only jobs they own. Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."
+          },
+          "response": []
         },
         {
           "name": "archive-list (GET)",

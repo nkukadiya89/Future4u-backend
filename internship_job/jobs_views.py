@@ -4,12 +4,14 @@ from rest_framework import status
 from rest_framework.decorators import action
 from django.db import transaction
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from common.master_view import BaseModelViewSet
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from assessment_career.models import CareerSuggestion
 from .service import match_jobs
 from activity_log.services import log_event
+from user.permissions import IsAdminOrProvider, is_admin_user
 
 
 class JobViewSet(BaseModelViewSet):
@@ -100,6 +102,79 @@ class JobViewSet(BaseModelViewSet):
                 "message": serializer.errors,
             },
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    @action(
+        detail=False,
+        methods=["patch"],
+        url_path="update-status",
+        permission_classes=[IsAuthenticated, IsAdminOrProvider],
+    )
+    @transaction.atomic
+    def bulk_update_status(self, request, *args, **kwargs):
+        ids = request.data.get("ids", [])
+        new_status = request.data.get("status")
+
+        if not isinstance(ids, list) or not ids:
+            return Response(
+                {"success": False, "message": "ids must be a non-empty list."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if new_status not in ["draft", "active", "closed"]:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Status must be draft, active, or closed.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        is_admin = is_admin_user(request.user)
+
+        jobs = Job.objects.filter(id__in=ids, deleted=False)
+        if not is_admin:
+            jobs = jobs.filter(provider=request.user)
+
+        found_ids = set(jobs.values_list("id", flat=True))
+        not_found_ids = list(set(ids) - found_ids)
+        skipped_ids = list(jobs.filter(status=new_status).values_list("id", flat=True))
+        updated_ids = list(jobs.exclude(status=new_status).values_list("id", flat=True))
+
+        if updated_ids:
+            Job.objects.filter(id__in=updated_ids).update(
+                status=new_status,
+                updated_at=timezone.now(),
+                updated_by=request.user,
+            )
+            log_event(
+                event="job.bulk_status_changed",
+                description=(
+                    f"{request.user.email} changed {len(updated_ids)} job(s) "
+                    f"to {new_status}"
+                ),
+                user=request.user,
+                entity_type="job",
+                entity_id=None,
+                metadata={
+                    "job_ids": updated_ids,
+                    "status": new_status,
+                    "count": len(updated_ids),
+                },
+                request=request,
+            )
+
+        return Response(
+            {
+                "success": True,
+                "message": f"{len(updated_ids)} job(s) updated successfully.",
+                "data": {
+                    "updated_job_ids": updated_ids,
+                    "skipped_job_ids": skipped_ids,
+                    "not_found_job_ids": not_found_ids,
+                },
+            },
+            status=status.HTTP_200_OK,
         )
         
     @action(methods=["patch"], detail=True, url_path="restore")

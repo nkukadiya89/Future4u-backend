@@ -6,7 +6,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
+from user.permissions import IsAdminOrProvider, is_admin_user
 from .models import CourseInquiry, Courses
 from .serializers import CourseInquirySerializer, CoursesSerializer
 from activity_log.services import log_event
@@ -91,6 +93,81 @@ class CoursesViewSet(BaseModelViewSet):
         return Response(
             {"success": False, "message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    @action(
+        detail=False,
+        methods=["patch"],
+        url_path="update-status",
+        permission_classes=[IsAuthenticated, IsAdminOrProvider],
+    )
+    @transaction.atomic
+    def bulk_update_status(self, request, *args, **kwargs):
+        ids = request.data.get("ids", [])
+        new_status = request.data.get("status")
+
+        if not isinstance(ids, list) or not ids:
+            return Response(
+                {"success": False, "message": "ids must be a non-empty list."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if new_status not in ["draft", "active", "closed"]:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Status must be draft, active, or closed.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        is_admin = is_admin_user(request.user)
+
+        courses = Courses.objects.filter(id__in=ids, deleted=False)
+        if not is_admin:
+            courses = courses.filter(provider=request.user)
+
+        found_ids = set(courses.values_list("id", flat=True))
+        not_found_ids = list(set(ids) - found_ids)
+        skipped_ids = list(courses.filter(status=new_status).values_list("id", flat=True))
+        updated_ids = list(
+            courses.exclude(status=new_status).values_list("id", flat=True)
+        )
+
+        if updated_ids:
+            Courses.objects.filter(id__in=updated_ids).update(
+                status=new_status,
+                updated_at=timezone.now(),
+                updated_by=request.user,
+            )
+            log_event(
+                event="course.bulk_status_changed",
+                description=(
+                    f"{request.user.email} changed {len(updated_ids)} course(s) "
+                    f"to {new_status}"
+                ),
+                user=request.user,
+                entity_type="course",
+                entity_id=None,
+                metadata={
+                    "course_ids": updated_ids,
+                    "status": new_status,
+                    "count": len(updated_ids),
+                },
+                request=request,
+            )
+
+        return Response(
+            {
+                "success": True,
+                "message": f"{len(updated_ids)} course(s) updated successfully.",
+                "data": {
+                    "updated_course_ids": updated_ids,
+                    "skipped_course_ids": skipped_ids,
+                    "not_found_course_ids": not_found_ids,
+                },
+            },
+            status=status.HTTP_200_OK,
         )
 
     @action(methods=["patch"], detail=True, url_path="restore")
@@ -310,6 +387,11 @@ class CourseInquiryViewSet(BaseModelViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             course = serializer.validated_data.get("course")
+            if course.deleted or course.status != "active":
+                return Response(
+                    {"success": False, "message": "Course is not available for inquiries."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
             if CourseInquiry.objects.filter(user=request.user, course=course).exists():
                 return Response(
                     {

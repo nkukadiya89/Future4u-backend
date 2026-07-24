@@ -4,6 +4,7 @@ from .serializers import InternshipSerializer, InternshipApplicationSerializer
 from common.master_view import BaseModelViewSet
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from django.db import transaction
 from rest_framework.decorators import action
@@ -11,6 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from assessment_career.models import CareerSuggestion
 from .service import match_internships
 from activity_log.services import log_event
+from user.permissions import IsAdminOrProvider, is_admin_user
 
 # Create your views here.
 
@@ -97,6 +99,89 @@ class InternshipViewSet(BaseModelViewSet):
         return Response(
             {"success": False, "message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    @action(
+        detail=False,
+        methods=["patch"],
+        url_path="update-status",
+        permission_classes=[IsAuthenticated, IsAdminOrProvider],
+    )
+    @transaction.atomic
+    def bulk_update_status(self, request, *args, **kwargs):
+        ids = request.data.get("ids", [])
+        new_status = request.data.get("status")
+
+        if not isinstance(ids, list) or not ids:
+            return Response(
+                {
+                    "success": False,
+                    "message": "ids must be a non-empty list.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if new_status not in ["draft", "active", "closed"]:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Status must be draft, active, or closed.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        is_admin = is_admin_user(request.user)
+
+        internships = Internship.objects.filter(
+            id__in=ids,
+            deleted=False,
+        )
+        if not is_admin:
+            internships = internships.filter(provider=request.user)
+
+        found_ids = set(internships.values_list("id", flat=True))
+        not_found_ids = list(set(ids) - found_ids)
+        skipped_ids = list(
+            internships.filter(status=new_status).values_list("id", flat=True)
+        )
+        updated_ids = list(
+            internships.exclude(status=new_status).values_list("id", flat=True)
+        )
+
+        if updated_ids:
+            Internship.objects.filter(id__in=updated_ids).update(
+                status=new_status,
+                updated_at=timezone.now(),
+                updated_by=request.user,
+            )
+            log_event(
+                event="internship.bulk_status_changed",
+                description=(
+                    f"{request.user.email} changed {len(updated_ids)} "
+                    f"internship(s) to {new_status}"
+                ),
+                user=request.user,
+                entity_type="internship",
+                entity_id=None,
+                metadata={
+                    "internship_ids": updated_ids,
+                    "status": new_status,
+                    "count": len(updated_ids),
+                },
+                request=request,
+            )
+
+        return Response(
+            {
+                "success": True,
+                "message": f"{len(updated_ids)} internship(s) updated successfully.",
+                "data": {
+                    "updated_internship_ids": updated_ids,
+                    "skipped_internship_ids": skipped_ids,
+                    "not_found_internship_ids": not_found_ids,
+                },
+            },
+            status=status.HTTP_200_OK,
         )
 
     @action(methods=["patch"], detail=True, url_path="restore")
