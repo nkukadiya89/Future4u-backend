@@ -14771,22 +14771,21 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/admin-student-users/{{user_id}}/update-status/",
+              "raw": "{{base_url}}/admin-student-users/update-status/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "admin-student-users",
-                "{{user_id}}",
                 "update-status",
                 ""
               ]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"inactive\"\n}"
+              "raw": "{\n  \"ids\": [{{user_id}}],\n  \"status\": \"inactive\"\n}"
             },
-            "description": "Admin-only: activate or deactivate a student.\n\nPATCH /admin-student-users/{user_id}/update-status/\n\nSet {{user_id}} from create response or list students.\n\nBody: status (required) — \"active\" or \"inactive\".\n\nWhen status is set to active:\n- is_active is set to true\n- Password setup email is sent to the student\n\nWhen status is set to inactive:\n- is_active is set to false\n\nStudent must not be archived (deleted).\nAlready at the requested status returns 200 with success: false.\n\n200 response: success, message\n400 response: success, message (invalid status)\n404 response: success, message (not found)"
+            "description": "Admin-only: bulk activate or deactivate students.\n\nPATCH /admin-student-users/update-status/\n\nBody: ids (required non-empty list of user IDs), status (required) — \"active\" or \"inactive\".\n\n200 response includes updated_ids, skipped_ids, and not_found_ids. Activating an inactive student sends a password setup email."
           },
           "response": [],
           "event": [
@@ -15390,22 +15389,21 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/admin-school-colleges-users/{{user_id}}/update-status/",
+              "raw": "{{base_url}}/admin-school-colleges-users/update-status/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "admin-school-colleges-users",
-                "{{user_id}}",
                 "update-status",
                 ""
               ]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"inactive\"\n}"
+              "raw": "{\n  \"ids\": [{{user_id}}],\n  \"status\": \"inactive\"\n}"
             },
-            "description": "Admin-only: activate or deactivate a school/college user.\n\nPATCH /admin-school-colleges-users/{user_id}/update-status/\n\nSet {{user_id}} from create response or list users.\n\nBody: status (required) — \"active\" or \"inactive\".\n\nWhen status is set to active:\n- is_active is set to true\n- Password setup email is sent to the user\n\nWhen status is set to inactive:\n- is_active is set to false\n\nUser must not be archived (deleted).\nAlready at the requested status returns 200 with success: false.\n\n200 response: success, message\n400 response: success, message (invalid status)\n404 response: success, message (not found)"
+            "description": "Admin-only: bulk activate or deactivate school/college users.\n\nPATCH /admin-school-colleges-users/update-status/\n\nBody: ids (required non-empty list of user IDs), status (required) — \"active\" or \"inactive\".\n\n200 response includes updated_ids, skipped_ids, and not_found_ids. Activating an inactive user sends a password setup email."
           },
           "response": [],
           "event": [
@@ -16009,22 +16007,21 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/admin-institute-users/{{user_id}}/update-status/",
+              "raw": "{{base_url}}/admin-institute-users/update-status/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "admin-institute-users",
-                "{{user_id}}",
                 "update-status",
                 ""
               ]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"inactive\"\n}"
+              "raw": "{\n  \"ids\": [{{user_id}}],\n  \"status\": \"inactive\"\n}"
             },
-            "description": "Admin-only: activate or deactivate an institute user.\n\nPATCH /admin-institute-users/{user_id}/update-status/\n\nBody: status (required) — \"active\" or \"inactive\"."
+            "description": "Admin-only: bulk activate or deactivate institute users.\n\nPATCH /admin-institute-users/update-status/\n\nBody: ids (required non-empty list of user IDs), status (required) — \"active\" or \"inactive\".\n\n200 response includes updated_ids, skipped_ids, and not_found_ids."
           },
           "response": []
         },
@@ -16348,7 +16345,7 @@
           "response": []
         },
         {
-          "name": "update_status (PATCH)",
+          "name": "update-status (PATCH)",
           "request": {
             "method": "PATCH",
             "header": [
@@ -16362,20 +16359,21 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/admin-working-professional-users/1/update-status/",
+              "raw": "{{base_url}}/admin-working-professional-users/update-status/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "admin-working-professional-users",
-                "1",
-                "update-status"
+                "update-status",
+                ""
               ]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"status\": \"active\"}"
-            }
+              "raw": "{\n  \"ids\": [{{user_id}}],\n  \"status\": \"active\"\n}"
+            },
+            "description": "Admin-only: bulk activate or deactivate working professionals.\n\nPATCH /admin-working-professional-users/update-status/\n\nBody: ids (required non-empty list of user IDs), status (required) — \"active\" or \"inactive\".\n\n200 response includes updated_ids, skipped_ids, and not_found_ids."
           },
           "response": []
         },
@@ -16829,22 +16827,21 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/admin-corporate-users/{{user_id}}/update-status/",
+              "raw": "{{base_url}}/admin-corporate-users/update-status/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "admin-corporate-users",
-                "{{user_id}}",
                 "update-status",
                 ""
               ]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"inactive\"\n}"
+              "raw": "{\n  \"ids\": [{{user_id}}],\n  \"status\": \"inactive\"\n}"
             },
-            "description": "Admin-only: activate or deactivate a corporate user.\n\nPATCH /admin-corporate-users/{user_id}/update-status/"
+            "description": "Admin-only: bulk activate or deactivate corporate users.\n\nPATCH /admin-corporate-users/update-status/\n\nBody: ids (required non-empty list of user IDs), status (required) — \"active\" or \"inactive\".\n\n200 response includes updated_ids, skipped_ids, and not_found_ids."
           },
           "response": []
         },
