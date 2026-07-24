@@ -238,13 +238,22 @@ class BaseAdminProfileViewSet(ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @action(detail=True, methods=["patch"], url_path="update-status")
+    @action(detail=False, methods=["patch"], url_path="update-status")
     @transaction.atomic
     def update_status(self, request, *args, **kwargs):
-        pk = kwargs.get("pk")
-        status_value = request.data.get("status")
+        ids = request.data.get("ids", [])
+        new_status = request.data.get("status")
 
-        if status_value not in ["active", "inactive"]:
+        if not isinstance(ids, list) or not ids:
+            return Response(
+                {
+                    "success": False,
+                    "message": "ids must be a non-empty list."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if new_status not in ["active", "inactive"]:
             return Response(
                 {
                     "success": False,
@@ -253,56 +262,67 @@ class BaseAdminProfileViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        user = self.get_user(pk)
+        users = self.get_queryset().filter(id__in=ids)
 
-        if not user:
-            return Response(
-                {
-                    "success": False,
-                    "message": f"{self.role_name} not found",
-                },
-                status=status.HTTP_404_NOT_FOUND,
+        found_ids = set(users.values_list("id", flat=True))
+        not_found_ids = list(set(ids) - found_ids)
+
+        skipped_ids = []
+        updated_ids = []
+        activated_users = []
+
+        for user in users:
+            if user.status == new_status:
+                skipped_ids.append(user.id)
+                continue
+
+            old_status = user.status
+
+            user.status = new_status
+            user.is_active = new_status == "active"
+            user.updated_by = request.user
+            user.updated_at = timezone.now()
+
+            user.save(
+                update_fields = [
+                    "status",
+                    "is_active",
+                    "updated_at",
+                    "updated_by",
+                ]
             )
 
-        if user.status == status_value:
-            return Response(
-                {
-                    "success": False,
-                    "message": f"{self.role_name} is already {status_value}.",
-                },
-                status=status.HTTP_200_OK,
+            updated_ids.append(user.id)
+            if old_status in ["pending", "inactive"] and new_status == "active":
+                activated_users.append(user)
+
+
+            log_event(
+                event="user.status_changed",
+                description=f"Admin {request.user.email} changed {self.role_name} {user.email} status from {old_status} to {new_status}",
+                user=request.user,
+                entity_type="user",
+                entity_id=user.id,
+                request=request,
             )
 
-        user.status = status_value
-        user.is_active = status_value == "active"
-        user.updated_by = request.user
-        user.updated_at = timezone.now()
-
-        user.save(
-            update_fields=[
-                "status",
-                "is_active",
-                "updated_by",
-                "updated_at",
-            ]
-        )
-
-        if status_value == "active":
-            send_activation_password_setup_email(user)
-
-        log_event(
-            event="user.status_changed",
-            description=f"Admin {request.user.email} changed {self.role_name} {user.email} status to {status_value}",
-            user=request.user,
-            entity_type="user",
-            entity_id=user.id,
-            request=request,
-        )
+        if activated_users:
+            transaction.on_commit(
+                lambda:[
+                    send_activation_password_setup_email(user)
+                    for user in activated_users
+                ]
+            )
 
         return Response(
             {
                 "success": True,
-                "message": f"{self.role_name} status updated to {status_value} successfully.",
+                "message": f"{len(updated_ids)} user(s) updated successfully.",
+                "data":{
+                    "updated_ids":updated_ids,
+                    "skipped_ids":skipped_ids,
+                    "not_found_ids":not_found_ids,
+                },
             },
             status=status.HTTP_200_OK,
         )

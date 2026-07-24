@@ -270,7 +270,12 @@ class BulkUserUploadService:
                 if profile_service:
                     profile_data = profile_service.validate_row(row, profile_masters)
 
-                referral_code = str(row.get("Referral Code", "") or "").strip()
+                # referral_code = str(row.get("Referral Code", "") or "").strip()
+                referral_value = row.get("Referral Code")
+                referral_code = (
+                    ""
+                    if pd.isna(referral_value)
+                    else str(referral_value).strip())
                 referred_by = None
                 if (
                     user_type in [User.Role.STUDENT, User.Role.PROFESSIONAL]
