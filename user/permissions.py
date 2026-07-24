@@ -16,6 +16,35 @@ class IsAdminUser(BasePermission):
             or user.user_type == User.Role.SUPER_ADMIN
         )
 
+def is_admin_user(user):
+    return (
+        user.is_superuser
+        or user.is_staff
+        or user.user_type == User.Role.SUPER_ADMIN
+    )
+
+
+class IsAdminOrProvider(BasePermission):
+    message = "Provider or admin access required."
+
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+        if is_admin_user(user):
+            return True
+        return (
+            user.user_type
+            in [
+                User.Role.INSTITUTE,
+                User.Role.SCHOOL_COLLEGE,
+                User.Role.CORPORATE,
+            ]
+            and user.is_active
+            and user.status == "active"
+            and not user.deleted
+        )
+
 class IsSchoolCollegeOrInstittute(BasePermission):
     message = ("Only School/college or Institute users can manage students")
 
