@@ -8,13 +8,12 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from user.models import AuthGroupPermissionsModel, CustomGroup, RoleFamily, User
+from user.models import (AuthGroupPermissionsModel, CustomGroup, RoleFamily,
+                         User)
 from utils.pagination import Pagination
-from utils.role_permission import (
-    get_group_permission_by_user,
-    get_permission_by_group_ids,
-    get_purticlare_permission,
-)
+from utils.role_permission import (get_group_permission_by_user,
+                                   get_permission_by_group_ids,
+                                   get_purticlare_permission)
 
 from .serializers import CustomGroupSerializers, PermissionSerializers
 
@@ -563,6 +562,38 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
 
         return Response(
             {"success": True, "response": group_data}, status=status.HTTP_200_OK
+        )
+
+    @action(detail=False, methods=["GET"], url_path="get-role-permissions")
+    def get_role_permissions(self, request, *args, **kwargs):
+        group_ids_param = request.query_params.get("group_ids")
+        group_id_param = request.query_params.get("group_id")
+
+        if not group_ids_param and not group_id_param:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Please provide group_id or group_ids",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if group_ids_param:
+            group_ids = [group_id.strip() for group_id in group_ids_param.split(",") if group_id.strip()]
+        else:
+            group_ids = [group_id_param]
+
+        custom_groups = CustomGroup.objects.filter(pk__in=group_ids)
+        if not custom_groups.exists():
+            return Response(
+                {"success": False, "message": "Group not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        response = get_group_permission_by_user(custom_groups, CustomGroup.objects.none())
+
+        return Response(
+            {"success": True, "response": response}, status=status.HTTP_200_OK
         )
 
     @transaction.atomic

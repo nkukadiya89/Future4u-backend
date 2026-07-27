@@ -29,23 +29,28 @@ def fix_ids(apps, schema_editor):
 
         # Recreate with clean sequential IDs
         for plan in PLANS:
-            sub = Subscription.objects.create(
+            sub, _ = Subscription.objects.update_or_create(
                 pk=plan["pk"],
-                package_name=plan["package_name"],
-                description=plan["description"],
-                is_active=True,
-                created_at=now(),
-                updated_at=now(),
+                defaults={
+                    "package_name": plan["package_name"],
+                    "description": plan["description"],
+                    "is_active": True,
+                    "created_at": now(),
+                    "updated_at": now(),
+                },
             )
-            PlanPrice.objects.create(
+
+            PlanPrice.objects.update_or_create(
                 pk=plan["price_pk"],
-                plan=sub,
-                period=plan["price_data"]["period"],
-                price=plan["price_data"]["price"],
-                duration_days=plan["price_data"]["duration_days"],
-                is_active=True,
-                created_at=now(),
-                updated_at=now(),
+                defaults={
+                    "plan": sub,
+                    "period": plan["price_data"]["period"],
+                    "price": plan["price_data"]["price"],
+                    "duration_days": plan["price_data"]["duration_days"],
+                    "is_active": True,
+                    "created_at": now(),
+                    "updated_at": now(),
+                },
             )
 
 
