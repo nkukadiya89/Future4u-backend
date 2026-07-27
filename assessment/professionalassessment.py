@@ -3,6 +3,7 @@ from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from user.permissions import IsIndividualUser
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
@@ -101,7 +102,7 @@ def assessment_status_payload(assessment, user):
 
 
 class ProfessionalAssessmentViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsIndividualUser]
     authentication_classes = [JWTAuthentication]
     pagination_class = Pagination
     serializer_class = ProfessionalAssessmentSerializer

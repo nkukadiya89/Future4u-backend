@@ -1,23 +1,8 @@
 from django.db import transaction
 from django.db.models import F
 
+from subscription.constants import FEATURE_FIELD_MAP as CONSUME_FIELD_MAP, PORTAL_FIELD_MAP
 from subscription.models import FeatureUsage, SubscriptionFeature, UserSubscription
-
-_PORTAL_FIELD_MAP = {
-    "internship": ("internship_access_type", "no_of_internship_access"),
-    "job": ("job_portal_access_type", "no_of_job_portal_access"),
-    "course": ("course_portal_access_type", "no_of_course_portal_access"),
-    "project_topic": ("project_topic_access_type", "no_of_project_topic_access"),
-}
-
-_CONSUME_FIELD_MAP = {
-    "assessment": "no_of_profile_assessment",
-    "monthly_tokens": "no_of_tokens",
-    "internship": "no_of_internship_access",
-    "job": "no_of_job_portal_access",
-    "course": "no_of_course_portal_access",
-    "project_topic": "no_of_project_topic_access",
-}
 
 
 def apply_portal_limit(user, queryset, feature_code):
@@ -44,7 +29,7 @@ def apply_portal_limit(user, queryset, feature_code):
     if not plan:
         return queryset
 
-    mapping = _PORTAL_FIELD_MAP.get(feature_code)
+    mapping = PORTAL_FIELD_MAP.get(feature_code)
     if not mapping:
         return queryset
 
@@ -76,14 +61,10 @@ def consume_feature(user, feature_code, quantity=1):
     plan_price = user_sub.plan_price
     subscription = getattr(plan_price, "plan", None)
 
-    count_field = _CONSUME_FIELD_MAP.get(feature_code)
+    count_field = CONSUME_FIELD_MAP.get(feature_code)
     if count_field:
-        access_field = {
-            "internship": "internship_access_type",
-            "job": "job_portal_access_type",
-            "course": "course_portal_access_type",
-            "project_topic": "project_topic_access_type",
-        }.get(feature_code)
+        portal_fields = PORTAL_FIELD_MAP.get(feature_code)
+        access_field = portal_fields[0] if portal_fields else None
 
         if access_field:
             access_type = getattr(subscription, access_field, "full")

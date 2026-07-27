@@ -17,10 +17,9 @@ class JobGenerationService:
     def generate(self, *, user, validated_input: dict[str, Any]) -> tuple[dict[str, Any], int]:
         if not can_user_generate_jobs(user):
             raise JobGenerationAccessDeniedError(
-                "Job generation is only available for institute and corporate accounts"
+                "Job generation is only available for corporate accounts"
             )
 
-        # Fetch the CorporateProfile for company context
         corporate_id = validated_input.get("corporate")
         if isinstance(corporate_id, CorporateProfile):
             company = corporate_id
@@ -34,7 +33,6 @@ class JobGenerationService:
                 details="The selected company does not exist.",
             )
 
-        # Enrich generation input with company context
         generation_input = {
             **validated_input,
             "company_name": company.company_name or "",
@@ -83,7 +81,6 @@ def _build_response(
     data["education_tags"] = resolved_pks
     data["education_tags_meta"] = enriched_tags
 
-    # Use the CorporateProfile FK ID and company name
     if company:
         data["corporate"] = company.pk
         data["corporate_name"] = company.company_name or ""

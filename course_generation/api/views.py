@@ -4,6 +4,7 @@ import logging
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from user.permissions import IsAdminOrProvider
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -30,7 +31,7 @@ class CourseGenerationAPIView(APIView):
     """
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrProvider]
     throttle_classes = [CourseGenerationRateThrottle]
 
     def post(self, request, *args, **kwargs):
@@ -68,7 +69,7 @@ class CourseGenerationAPIView(APIView):
             return Response(
                 {
                     "success": False,
-                    "message": "Course generation is only available for institute accounts",
+                    "message": "Course generation is only available for institute and school/college accounts",
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )
