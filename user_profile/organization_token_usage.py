@@ -13,6 +13,8 @@ from utils.token_check import (
 
 
 class OrganizationTokenUsageSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    user = serializers.IntegerField()
     organization = serializers.CharField()
     login_type = serializers.CharField()
     status = serializers.CharField()
@@ -81,6 +83,8 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
             rows.append({
+                "id": profile.id,
+                "user": user.id,
                 "organization": org_name,
                 "login_type": user.user_type,
                 "status": user.status or "pending",
