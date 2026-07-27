@@ -3,6 +3,7 @@ from django.db import transaction
 from django.db.models import F
 from django.utils.timezone import now
 
+from subscription.constants import FEATURE_FIELD_MAP
 from subscription.models import FeatureUsage, SubscriptionFeature, UserSubscription
 from user.models import User
 
@@ -18,17 +19,6 @@ FEATURE_NAMES = {
     "job_gen": "Job Generation",
     "resume_enhance": "Resume Builder",
     "monthly_tokens": "Monthly Token Allowance",
-}
-
-_FEATURE_FIELD_MAP = {
-    "ai_chat": "ai_chat_access",
-    "career_compare": "career_compare",
-    "career_roadmap": "career_roadmap",
-    "assessment": "no_of_profile_assessment",
-    "monthly_tokens": "no_of_tokens",
-    "internship_gen": "no_of_internship_access",
-    "course_gen": "no_of_course_portal_access",
-    "job_gen": "no_of_job_portal_access",
 }
 
 MIN_TOKENS_REQUIRED = {
@@ -86,18 +76,15 @@ def _reset_subscription_monthly_tokens(user, user_sub):
     today = now().date()
     if not user_sub.last_reset_at or (today - user_sub.last_reset_at).days >= 30:
         plan_price = user_sub.plan_price
-        # Reset monthly_tokens usage to 0
         FeatureUsage.objects.filter(
             user=user,
             feature_code="monthly_tokens",
             plan_price=plan_price,
         ).update(used=0)
-        # Reset all feature-specific usage counts too
         FeatureUsage.objects.filter(
             user=user,
             plan_price=plan_price,
         ).exclude(feature_code="monthly_tokens").update(used=0)
-        # Update reset timestamp
         UserSubscription.objects.filter(id=user_sub.id).update(last_reset_at=today)
 
 
@@ -115,8 +102,8 @@ def check_token_available(user, feature_code, quantity=1):
 
         _check_org_monthly_reset(profile, user.user_type)
 
-        min_required = MIN_TOKENS_REQUIRED.get(feature_code, 100)
-        if profile.token_limit < min_required:
+        min_required = MIN_TOKENS_REQUIRED.get(feature_code)
+        if min_required is not None and profile.token_limit < min_required:
             raise Exception(
                 f"Insufficient tokens. Need at least {min_required} tokens "
                 f"for {name}. Contact your super admin."
@@ -140,7 +127,6 @@ def check_token_available(user, feature_code, quantity=1):
     if not plan:
         raise Exception("No active subscription plan found.")
 
-    # Check monthly reset before checking limits
     _reset_subscription_monthly_tokens(user, user_sub)
 
     base_limit = plan.no_of_tokens or 0
@@ -150,7 +136,6 @@ def check_token_available(user, feature_code, quantity=1):
             "Please upgrade your plan to continue."
         )
 
-    # Get how many tokens used this month
     usage = FeatureUsage.objects.filter(
         user=user,
         feature_code="monthly_tokens",
@@ -158,8 +143,8 @@ def check_token_available(user, feature_code, quantity=1):
     ).first()
     used = usage.used if usage else 0
 
-    min_required = MIN_TOKENS_REQUIRED.get(feature_code, 100)
-    if used + min_required > base_limit:
+    min_required = MIN_TOKENS_REQUIRED.get(feature_code)
+    if min_required is not None and used + min_required > base_limit:
         raise Exception(
             f"You have used {used} out of {base_limit} monthly tokens. "
             f"At least {min_required} tokens are needed for {name}. "
@@ -169,7 +154,7 @@ def check_token_available(user, feature_code, quantity=1):
     # Verify this specific feature is included in the user's plan
     # recommendation is bundled with assessment — no separate plan feature
     if feature_code not in ("monthly_tokens", "recommendation"):
-        field_name = _FEATURE_FIELD_MAP.get(feature_code)
+        field_name = FEATURE_FIELD_MAP.get(feature_code)
         if field_name:
             value = getattr(plan, field_name, 0)
             if isinstance(value, bool):
@@ -233,7 +218,6 @@ def deduct_monthly_tokens(user, actual_tokens):
     if not plan:
         return
 
-    # Check monthly reset before deducting
     _reset_subscription_monthly_tokens(user, user_sub)
 
     with transaction.atomic():

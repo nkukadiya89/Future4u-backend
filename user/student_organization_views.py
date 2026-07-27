@@ -5,7 +5,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.parsers import FormParser, MultiPartParser
 from user.models import User
 from utils.pagination import Pagination
-from .permissions import IsSchoolCollegeOrInstittute
+from .permissions import IsSchoolCollegeOrInstitute
 from django.db import transaction
 from django.db.models import Q
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -20,7 +20,7 @@ from assessment_career.serializers import CareerRecommendationSerializer, Career
 
 class OrganizationStudentViewSet(BaseModelViewSet):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, IsSchoolCollegeOrInstittute]
+    permission_classes = [IsAuthenticated, IsSchoolCollegeOrInstitute]
     pagination_class = Pagination
     parser_classes = [MultiPartParser, FormParser]
     filter_backends = [SearchFilter, OrderingFilter]

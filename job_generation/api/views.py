@@ -6,6 +6,7 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from user.permissions import IsAdminOrProvider
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -34,7 +35,7 @@ class JobGenerationAPIView(APIView):
     """
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrProvider]
     throttle_classes = [JobGenerationRateThrottle]
 
     def post(self, request, *args, **kwargs):
@@ -74,7 +75,7 @@ class JobGenerationAPIView(APIView):
             return Response(
                 {
                     "success": False,
-                    "message": "Job generation is only available for institute and corporate accounts",
+                    "message": "Job generation is only available for corporate accounts",
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )
@@ -118,7 +119,7 @@ class JobGenerationSaveView(APIView):
     """
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrProvider]
     throttle_classes = [JobGenerationRateThrottle]
 
     @transaction.atomic
@@ -149,7 +150,7 @@ class JobGenerationSaveView(APIView):
             return Response(
                 {
                     "success": False,
-                    "message": "Job generation is only available for institute and corporate accounts",
+                    "message": "Job generation is only available for corporate accounts",
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )
@@ -212,7 +213,6 @@ class JobGenerationSaveView(APIView):
             if fk_value is not None:
                 generated_data[alias] = fk_value
 
-        # Determine save mode: "draft" or "publish"
         save_mode = request.data.get("save_mode", "draft")
         if save_mode not in ("draft", "publish"):
             save_mode = "draft"
@@ -226,7 +226,6 @@ class JobGenerationSaveView(APIView):
                 request.user.id, token_usage, exc,
             )
 
-        # Create the Job record with provider/audit fields
         job = Job.objects.create(
             **generated_data,
             provider=request.user,
@@ -235,11 +234,9 @@ class JobGenerationSaveView(APIView):
             status="active" if save_mode == "publish" else "draft",
         )
 
-        # Set the M2M education_tags relation
         if education_tags_pks:
             job.education_tags.set(education_tags_pks)
 
-        # Return the saved job via the standard JobSerializer
         job_serializer = JobSerializer(job, context={"request": request})
         
         message = "Job saved as draft" if save_mode == "draft" else "Job posted successfully"

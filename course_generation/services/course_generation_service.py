@@ -16,7 +16,7 @@ class CourseGenerationService:
     def generate(self, *, user, validated_input: dict[str, Any]) -> tuple[dict[str, Any], int]:
         if not can_user_generate_courses(user):
             raise CourseGenerationAccessDeniedError(
-                "Course generation is only available for institute accounts"
+                "Course generation is only available for institute and school/college accounts"
             )
 
         payload, token_usage = CourseGenerator.generate(generation_input=validated_input)

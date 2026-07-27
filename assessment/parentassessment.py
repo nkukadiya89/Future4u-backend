@@ -5,6 +5,7 @@ from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from user.permissions import IsIndividualUser
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
@@ -92,7 +93,7 @@ def assessment_status_payload(assessment):
 
 
 class ParentAssessmentViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsIndividualUser]
     authentication_classes = [JWTAuthentication]
     pagination_class = Pagination
     serializer_class = ParentAssessmentSerializer
@@ -236,7 +237,6 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
         partial = kwargs.pop("partial", False)
         instance = self.get_object()
 
-        # Validate child ownership if being updated
         child_id = request.data.get("child")
         if child_id:
             if not ChildProfile.objects.filter(
@@ -275,7 +275,6 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
         GET /api/parent/assessments/dashboard/
         Returns all children with their assessments and progress.
         """
-        # Get all children for this parent
         children = ChildProfile.objects.filter(
             parent_profile__user=request.user,
             deleted=False,
@@ -295,7 +294,6 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
             .order_by("-created_at")
         )
 
-        # Group by child_id in Python
         assessments_by_child = defaultdict(list)
         for a in all_assessments:
             assessments_by_child[a.child_id].append(a)
@@ -309,7 +307,6 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
 
             assessment_list = []
             for assessment in assessments:
-                # Calculate progress
                 if (
                     assessment.is_completed
                     or assessment.current_screen == ParentAssessment.Screen.COMPLETE

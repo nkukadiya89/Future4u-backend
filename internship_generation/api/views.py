@@ -4,6 +4,7 @@ import logging
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from user.permissions import IsAdminOrProvider
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -32,7 +33,7 @@ class InternshipGenerationAPIView(APIView):
     """
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrProvider]
     throttle_classes = [InternshipGenerationRateThrottle]
 
     def post(self, request, *args, **kwargs):
@@ -72,7 +73,7 @@ class InternshipGenerationAPIView(APIView):
                     "success": False,
                     "message": (
                         "Internship generation is only available for "
-                        "corporate and employer accounts"
+                        "institute and corporate accounts"
                     ),
                 },
                 status=status.HTTP_403_FORBIDDEN,

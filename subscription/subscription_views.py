@@ -103,6 +103,11 @@ class UserSubscriptionViewSet(ModelViewSet):
         )
         if not user_sub:
             return Response({"subscription": None})
+
+        # Ensure monthly usage counts are up-to-date before responding
+        from utils.token_check import _reset_subscription_monthly_tokens
+        _reset_subscription_monthly_tokens(request.user, user_sub)
+
         serializer = UserSubscriptionMeSerializer(user_sub, context={"request": request})
         return Response(serializer.data)
 
@@ -133,7 +138,6 @@ class PaymentSubscriptionViewSet(ModelViewSet):
         payment.razorpay_payment_id = request.data.get("payment_id")
         payment.save()
 
-        # activate or renew subscription using plan_price
         plan_price = payment.plan_price
         if not plan_price:
             return Response({"detail": "No plan price associated with payment"}, status=400)
@@ -177,7 +181,6 @@ class PaymentSubscriptionViewSet(ModelViewSet):
             else None
         )
 
-        # Resolve plan_price
         plan_price = None
         if plan_price_id:
             plan_price = PlanPrice.objects.filter(id=plan_price_id, deleted=False).first()
@@ -187,7 +190,6 @@ class PaymentSubscriptionViewSet(ModelViewSet):
             subscription = Subscription.objects.filter(id=subscription_id, deleted=False).first()
             if not subscription:
                 return Response({"success": False, "message": "Invalid subscription"}, status=400)
-            # pick default active price
             plan_price = (
                 PlanPrice.objects.filter(plan=subscription, is_active=True, deleted=False)
                 .order_by("-price")
@@ -339,7 +341,6 @@ def razorpay_webhook(request):
         payment.amount = amount
         payment.save()
 
-        # Activate / renew subscription using plan_price
         plan_price = payment.plan_price
         if not plan_price:
             return HttpResponse(status=400)
