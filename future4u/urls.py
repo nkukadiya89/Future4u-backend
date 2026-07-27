@@ -48,4 +48,5 @@ urlpatterns = [
     path("", include("course_generation.urls")),
     path("", include("internship_generation.urls")),
     path("", include("jobs.urls")),
+    path("", include("project_recommendation.urls")),
 ]
