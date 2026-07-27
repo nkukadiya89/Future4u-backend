@@ -22,7 +22,7 @@ from user_profile.models import (
 )
 from common.serializers import BaseModelSerializer
 from .models import InstituteProfile, SchoolCollegeProfile, CorporateProfile
-from utils.token_check import DEFAULT_ORG_TOKEN_LIMITS
+from utils.token_check import get_org_token_usage
 from user.models import User
 
 
@@ -856,20 +856,15 @@ class InstituteProfileSerializer(BaseModelSerializer):
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
-    token_limit = serializers.IntegerField(read_only=True)
-    token_used = serializers.SerializerMethodField()
-    token_allowed = serializers.SerializerMethodField()
+    remaining_tokens = serializers.IntegerField(source="token_limit", read_only=True)
+    used_tokens = serializers.SerializerMethodField()
+    monthly_limit = serializers.SerializerMethodField()
 
-    def get_token_allowed(self, obj):
-        """Total monthly allowance = config default + admin extra."""
-        base = DEFAULT_ORG_TOKEN_LIMITS.get(User.Role.INSTITUTE, 20000)
-        return base + (obj.extra_token_limit or 0)
+    def get_monthly_limit(self, obj):
+        return get_org_token_usage(obj, User.Role.INSTITUTE)["monthly_limit"]
 
-    def get_token_used(self, obj):
-        """Tokens consumed this month = total allowance - current balance."""
-        allowed = self.get_token_allowed(obj)
-        remaining = obj.token_limit or 0
-        return max(allowed - remaining, 0)
+    def get_used_tokens(self, obj):
+        return get_org_token_usage(obj, User.Role.INSTITUTE)["used_tokens"]
 
     class Meta:
         model = InstituteProfile
@@ -897,9 +892,9 @@ class InstituteProfileSerializer(BaseModelSerializer):
             "institute_name",
             "gallery_images",
             "referral_code",
-            "token_limit",
-            "token_used",
-            "token_allowed",
+            "remaining_tokens",
+            "used_tokens",
+            "monthly_limit",
         ]
 
 
@@ -967,20 +962,15 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
-    token_limit = serializers.IntegerField(read_only=True)
-    token_used = serializers.SerializerMethodField()
-    token_allowed = serializers.SerializerMethodField()
+    remaining_tokens = serializers.IntegerField(source="token_limit", read_only=True)
+    used_tokens = serializers.SerializerMethodField()
+    monthly_limit = serializers.SerializerMethodField()
 
-    def get_token_allowed(self, obj):
-        """Total monthly allowance = config default + admin extra."""
-        base = DEFAULT_ORG_TOKEN_LIMITS.get(User.Role.SCHOOL_COLLEGE, 15000)
-        return base + (obj.extra_token_limit or 0)
+    def get_monthly_limit(self, obj):
+        return get_org_token_usage(obj, User.Role.SCHOOL_COLLEGE)["monthly_limit"]
 
-    def get_token_used(self, obj):
-        """Tokens consumed this month = total allowance - current balance."""
-        allowed = self.get_token_allowed(obj)
-        remaining = obj.token_limit or 0
-        return max(allowed - remaining, 0)
+    def get_used_tokens(self, obj):
+        return get_org_token_usage(obj, User.Role.SCHOOL_COLLEGE)["used_tokens"]
 
     class Meta:
         model = SchoolCollegeProfile
@@ -1012,9 +1002,9 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
             "status",
             "referral_code",
             "gallery_images",
-            "token_limit",
-            "token_used",
-            "token_allowed",
+            "remaining_tokens",
+            "used_tokens",
+            "monthly_limit",
         ]
 
 
@@ -1084,20 +1074,15 @@ class CorporateProfileSerializer(BaseModelSerializer):
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
-    token_limit = serializers.IntegerField(read_only=True)
-    token_used = serializers.SerializerMethodField()
-    token_allowed = serializers.SerializerMethodField()
+    remaining_tokens = serializers.IntegerField(source="token_limit", read_only=True)
+    used_tokens = serializers.SerializerMethodField()
+    monthly_limit = serializers.SerializerMethodField()
 
-    def get_token_allowed(self, obj):
-        """Total monthly allowance = config default + admin extra."""
-        base = DEFAULT_ORG_TOKEN_LIMITS.get(User.Role.CORPORATE, 20000)
-        return base + (obj.extra_token_limit or 0)
+    def get_monthly_limit(self, obj):
+        return get_org_token_usage(obj, User.Role.CORPORATE)["monthly_limit"]
 
-    def get_token_used(self, obj):
-        """Tokens consumed this month = total allowance - current balance."""
-        allowed = self.get_token_allowed(obj)
-        remaining = obj.token_limit or 0
-        return max(allowed - remaining, 0)
+    def get_used_tokens(self, obj):
+        return get_org_token_usage(obj, User.Role.CORPORATE)["used_tokens"]
 
     class Meta:
         model = CorporateProfile
@@ -1124,9 +1109,9 @@ class CorporateProfileSerializer(BaseModelSerializer):
             "referral_code",
             "company_name",
             "gallery_images",
-            "token_limit",
-            "token_used",
-            "token_allowed",
+            "remaining_tokens",
+            "used_tokens",
+            "monthly_limit",
         ]
 
 
