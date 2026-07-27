@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import serializers, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -56,6 +57,19 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
         user_type = self.request.query_params.get("user_type")
         if user_type:
             qs = qs.filter(user_type=user_type)
+
+        user_id = self.request.query_params.get("user")
+        if user_id:
+            qs = qs.filter(id=user_id)
+
+        profile_id = self.request.query_params.get("id")
+        if profile_id:
+            qs = qs.filter(
+                Q(school_college_profile__id=profile_id)
+                | Q(institute_profile__id=profile_id)
+                | Q(corporate_profile__id=profile_id)
+            )
+
         return qs.select_related(
             "school_college_profile",
             "institute_profile",
