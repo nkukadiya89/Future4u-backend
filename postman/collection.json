@@ -9740,17 +9740,42 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/org-token-usage/",
+              "raw": "{{base_url}}/api/org-token-usage/?user_type=institute&search=School",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "api",
-                "org-token-usage",
-                ""
+                "org-token-usage"
+              ],
+              "query": [
+                {
+                  "key": "user_type",
+                  "value": "institute"
+                },
+                {
+                  "key": "search",
+                  "value": "School"
+                },
+                {
+                  "key": "id",
+                  "value": ""
+                },
+                {
+                  "key": "user",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "ordering",
+                  "value": ""
+                }
               ]
             },
-            "description": "List all organization users with token usage stats. Admin only. Supports ?user_type=institute&search=ABC for filtering."
+            "description": "List all organization users with token usage stats. Admin only.\n\nSupports query params:\n- ?user_type=institute|school_college|corporate\n- ?id={profile_id}\n- ?user={user_id}\n- ?search=name\n- ?ordering=monthly_limit|-remaining_tokens\n- ?page=1"
           }
         }
       ]
