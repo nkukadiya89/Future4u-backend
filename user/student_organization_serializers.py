@@ -138,6 +138,7 @@ class OrganizationStudentListSerializer(BaseModelSerializer):
     class Meta:
         model = User
         fields = BaseModelSerializer.Meta.fields+[
+            "id",
             "first_name",
             "last_name",
             "user_type",

@@ -23,17 +23,13 @@ class CoursesViewSet(BaseModelViewSet):
         elif user.user_type in [
             "institute",
             "school_college",
-            "corporate",
         ]:
             base = queryset.filter(provider=user)
         else:
-            # Students/parents: only see active courses
             base = queryset.filter(status="active")
-        # Allow restore/archive actions to access deleted records
         if self.action not in ["restore", "archive_list", "archive", "bulk_archive", "bulk_restore", "destroy"]:
             base = base.filter(deleted=False)
 
-        # Apply subscription plan portal limit (course access)
         from subscription.services.usage import apply_portal_limit
         return apply_portal_limit(user, base, "course")
 
@@ -383,6 +379,15 @@ class CourseInquiryViewSet(BaseModelViewSet):
     queryset = CourseInquiry.objects.all()
     serializer_class = CourseInquirySerializer
 
+    def get_queryset(self):
+        user = self.request.user
+        base = CourseInquiry.objects.select_related("course")
+        if user.is_superuser:
+            return base
+        if user.user_type in ["school_college", "institute"]:
+            return base.filter(course__provider=user)
+        return base.filter(user=user)
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -415,21 +420,6 @@ class CourseInquiryViewSet(BaseModelViewSet):
         return Response(
             {"success": False, "message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    @action(detail=False, methods=["get"], url_path="my-inquiries")
-    def my_inquiries(self, request):
-        inquiries = CourseInquiry.objects.filter(user=request.user).select_related(
-            "course"
-        )
-
-        serializer = self.get_serializer(inquiries, many=True)
-        return Response(
-            {
-                "success": True,
-                "count": inquiries.count(),
-                "data": serializer.data,
-            }
         )
 
     @action(detail=False, methods=["get"], url_path="received-inquiries")

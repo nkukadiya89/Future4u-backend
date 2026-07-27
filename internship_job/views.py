@@ -27,7 +27,6 @@ class InternshipViewSet(BaseModelViewSet):
             base = queryset
         elif user.user_type in [
             "institute",
-            "school_college",
             "corporate",
         ]:
             base = queryset.filter(provider=user)
@@ -404,6 +403,15 @@ class InternshipApplicationViewSet(BaseModelViewSet):
         "applied_at",
     ]
 
+    def get_queryset(self):
+        user = self.request.user
+        base = InternshipApplication.objects.select_related("internship", "applicant")
+        if user.is_superuser:
+            return base
+        if user.user_type in ["institute", "corporate"]:
+            return base.filter(internship__provider=user)
+        return base.filter(applicant=user)
+
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
         internship_id = request.data.get("internship")
@@ -504,23 +512,6 @@ class InternshipApplicationViewSet(BaseModelViewSet):
             {
                 "success": True,
                 "message": "Application updated successfully",
-                "data": serializer.data,
-            },
-            status=status.HTTP_200_OK,
-        )
-
-    @action(detail=False, methods=["get"], url_path="my-inquiries")
-    def my_inquiry(self, request):
-        inquiries = InternshipApplication.objects.filter(
-            applicant=request.user,
-            deleted=False,
-        ).select_related("internship", "applicant")
-
-        serializer = self.get_serializer(inquiries, many=True)
-        return Response(
-            {
-                "success": True,
-                "count": inquiries.count(),
                 "data": serializer.data,
             },
             status=status.HTTP_200_OK,
