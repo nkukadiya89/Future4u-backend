@@ -131,30 +131,9 @@ def check_token_available(user, feature_code, quantity=1):
 
     _reset_subscription_monthly_tokens(user, user_sub)
 
-    base_limit = plan.no_of_tokens or 0
-    if base_limit <= 0:
-        raise Exception(
-            "Monthly tokens are not included in your current plan. "
-            "Please upgrade your plan to continue."
-        )
-
-    usage = FeatureUsage.objects.filter(
-        user=user,
-        feature_code="monthly_tokens",
-        plan_price=user_sub.plan_price,
-    ).first()
-    used = usage.used if usage else 0
-
-    min_required = MIN_TOKENS_REQUIRED.get(feature_code)
-    if min_required is not None and used + min_required > base_limit:
-        raise Exception(
-            f"You have used {used} out of {base_limit} monthly tokens. "
-            f"At least {min_required} tokens are needed for {name}. "
-            f"Please upgrade your plan or wait for your tokens to reset."
-        )
-
-    # Verify this specific feature is included in the user's plan
-    # recommendation is bundled with assessment — no separate plan feature
+    # Verify this specific feature is included in the user's plan FIRST
+    # (Before token checks — non-token features like assessment
+    #  and career_compare should not show token-related errors)
     if feature_code not in ("monthly_tokens", "recommendation"):
         field_name = FEATURE_FIELD_MAP.get(feature_code)
         if field_name:
@@ -184,7 +163,55 @@ def check_token_available(user, feature_code, quantity=1):
                     f"Please upgrade to access this feature."
                 )
 
+    # Token checks — only for LLM-consuming features (those in MIN_TOKENS_REQUIRED)
+    min_required = MIN_TOKENS_REQUIRED.get(feature_code)
+    if min_required is not None:
+        base_limit = plan.no_of_tokens or 0
+        if base_limit <= 0:
+            raise Exception(
+                "Monthly tokens are not included in your current plan. "
+                "Please upgrade your plan to continue."
+            )
+
+        usage = FeatureUsage.objects.filter(
+            user=user,
+            feature_code="monthly_tokens",
+            plan_price=user_sub.plan_price,
+        ).first()
+        used = usage.used if usage else 0
+
+        if used + min_required > base_limit:
+            raise Exception(
+                f"You have used {used} out of {base_limit} monthly tokens. "
+                f"At least {min_required} tokens are needed for {name}. "
+                f"Please upgrade your plan or wait for your tokens to reset."
+            )
+
     return True
+
+
+def get_org_token_usage(profile, user_type):
+    """Compute token usage stats for an org profile.
+
+    Single source of truth. Returns monthly_limit, used_tokens,
+    remaining_tokens, and usage_percentage.
+    """
+    base = DEFAULT_ORG_TOKEN_LIMITS.get(user_type, 20000)
+    extra = profile.extra_token_limit or 0
+    monthly_limit = base + extra
+    remaining_tokens = profile.token_limit or 0
+    used_tokens = max(monthly_limit - remaining_tokens, 0)
+    usage_percentage = (
+        round((used_tokens / monthly_limit) * 100, 1)
+        if monthly_limit > 0
+        else 0
+    )
+    return {
+        "monthly_limit": monthly_limit,
+        "used_tokens": used_tokens,
+        "remaining_tokens": remaining_tokens,
+        "usage_percentage": usage_percentage,
+    }
 
 
 def deduct_monthly_tokens(user, actual_tokens):
