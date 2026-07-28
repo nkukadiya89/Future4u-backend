@@ -36,7 +36,7 @@ def match_courses(ai_skills, ai_education, user, courses_qs):
 
     for course in courses_qs:
 
-        course_levels = course.education_tags or []
+        course_levels = list(course.education_tags.values_list("level_code", flat=True))
 
         if has_education:
             next_level_match = any(level in course_levels for level in next_levels)
