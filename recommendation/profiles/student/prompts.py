@@ -53,11 +53,11 @@ RULES:
 - Distribute {easy_decision_count} cards across the top {easy_decision_career_count} careers — ensure at least 2 different career_index values. career_index: 0 for first career, 1 for second, 2 for third. Reuse career 0 only when 1 or 2 clearly do not fit the category.
 
 MODE:
-__MODE_INSTRUCTIONS__
-
-Return ONLY valid JSON using this shape:
+__MODE_INSTRUCTIONS__Return ONLY valid JSON using this shape:
 {output_shape}
-"""
+
+Previous validation feedback:
+__VALIDATION_FEEDBACK__"""
 
 NORMAL_MODE_INSTRUCTIONS = (
     "Normal career mode: use career/job-readiness roadmap tasks and India INR salary."
@@ -92,10 +92,14 @@ def build_recommendation_prompt() -> ChatPromptTemplate:
     return build_prompt(SYSTEM_PROMPT, USER_PROMPT)
 
 
-def format_prompt_inputs(*, student_assessment: dict[str, Any]) -> dict[str, str]:
+def format_prompt_inputs(
+    *, student_assessment: dict[str, Any], validation_feedback: str = "None"
+) -> dict[str, str]:
     mode = (
         STUDY_ABROAD_MODE_INSTRUCTIONS
         if is_study_abroad_mode(student_assessment)
         else NORMAL_MODE_INSTRUCTIONS
     )
-    return format_inputs("student_assessment", student_assessment, mode)
+    return format_inputs(
+        "student_assessment", student_assessment, mode, validation_feedback
+    )

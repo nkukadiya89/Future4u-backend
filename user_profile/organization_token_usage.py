@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from user.models import User
-from user.permissions import IsAdminUser
+from user.permissions import IsAdminOrProvider, is_admin_user
 from utils.token_check import (
     _check_org_monthly_reset,
     _get_org_profile,
@@ -26,7 +26,7 @@ class OrganizationTokenUsageSerializer(serializers.Serializer):
 
 
 class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdminOrProvider]
     serializer_class = OrganizationTokenUsageSerializer
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = [
@@ -46,31 +46,46 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
     ]
 
     def get_queryset(self):
-        qs = User.objects.filter(
+        if is_admin_user(self.request.user):
+            qs = User.objects.filter(
+                user_type__in=[
+                    User.Role.SCHOOL_COLLEGE,
+                    User.Role.INSTITUTE,
+                    User.Role.CORPORATE,
+                ],
+                deleted=False,
+            )
+            user_type = self.request.query_params.get("user_type")
+            if user_type:
+                qs = qs.filter(user_type=user_type)
+
+            user_id = self.request.query_params.get("user")
+            if user_id:
+                qs = qs.filter(id=user_id)
+
+            profile_id = self.request.query_params.get("id")
+            if profile_id:
+                qs = qs.filter(
+                    Q(school_college_profile__id=profile_id)
+                    | Q(institute_profile__id=profile_id)
+                    | Q(corporate_profile__id=profile_id)
+                )
+
+            return qs.select_related(
+                "school_college_profile",
+                "institute_profile",
+                "corporate_profile",
+            )
+
+        return User.objects.filter(
+            id=self.request.user.id,
             user_type__in=[
                 User.Role.SCHOOL_COLLEGE,
                 User.Role.INSTITUTE,
                 User.Role.CORPORATE,
             ],
             deleted=False,
-        )
-        user_type = self.request.query_params.get("user_type")
-        if user_type:
-            qs = qs.filter(user_type=user_type)
-
-        user_id = self.request.query_params.get("user")
-        if user_id:
-            qs = qs.filter(id=user_id)
-
-        profile_id = self.request.query_params.get("id")
-        if profile_id:
-            qs = qs.filter(
-                Q(school_college_profile__id=profile_id)
-                | Q(institute_profile__id=profile_id)
-                | Q(corporate_profile__id=profile_id)
-            )
-
-        return qs.select_related(
+        ).select_related(
             "school_college_profile",
             "institute_profile",
             "corporate_profile",

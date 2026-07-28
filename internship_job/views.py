@@ -1,17 +1,17 @@
 from django.db import transaction
-from django.shortcuts import render
 from django.utils import timezone
+from django.db.models import Q
+from django.db.models.aggregates import Count
+from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from activity_log.services import log_event
 from assessment_career.models import CareerSuggestion
 from common.master_view import BaseModelViewSet
 from user.permissions import IsAdminOrProvider, is_admin_user
-
 from .models import Internship, InternshipApplication
 from .serializers import InternshipApplicationSerializer, InternshipSerializer
 from .service import match_internships
@@ -427,6 +427,48 @@ class InternshipApplicationViewSet(BaseModelViewSet):
             return base.filter(internship__provider=user)
         return base.filter(applicant=user)
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        summary = queryset.aggregate(
+            total_leads=Count("id"),
+            applied_leads=Count("id", filter=Q(status="applied")),
+            under_review_leads=Count("id", filter=Q(status="under_review")),
+            selected_leads=Count("id", filter=Q(status="selected")),
+            rejected_leads=Count("id", filter=Q(status="rejected")),
+        )
+
+        no_pagination = request.query_params.get("no_pagination")
+        if no_pagination:
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(
+                {
+                    "success": True,
+                    "summary": summary,
+                    "count": queryset.count(),
+                    "data": serializer.data,
+                }
+            )
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                {
+                    "success": True,
+                    "summary": summary,
+                    "data": serializer.data,
+                }
+            )
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(
+            {
+                "success": True,
+                "summary": summary,
+                "count": queryset.count(),
+                "data": serializer.data,
+            }
+        )
+
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
         internship_id = request.data.get("internship")
@@ -475,15 +517,13 @@ class InternshipApplicationViewSet(BaseModelViewSet):
 
         serialzer = self.get_serializer(application)
 
-        return (
-            Response(
-                {
-                    "success": True,
-                    "message": "Internship Applied successfully",
-                    "data": serialzer.data,
-                },
-                status=status.HTTP_201_CREATED,
-            ),
+        return Response(
+            {
+                "success": True,
+                "message": "Internship Applied successfully",
+                "data": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
         )
 
     @transaction.atomic()
@@ -558,6 +598,33 @@ class InternshipApplicationViewSet(BaseModelViewSet):
                 "data": serializer.data,
             },
             status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["get"], url_path="my-applications")
+    def my_applications(self, request):
+        applications = InternshipApplication.objects.filter(
+            applicant=request.user
+        ).select_related("internship")
+
+        no_pagination = request.query_params.get("no_pagination")
+        if no_pagination:
+            serializer = self.get_serializer(applications, many=True)
+            return Response({"success": True, "data": serializer.data})
+
+        page = self.paginate_queryset(applications)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+
+        serializer = self.get_serializer(applications, many=True)
+        return Response(
+            {
+                "success": True,
+                "count": applications.count(),
+                "data": serializer.data,
+            }
         )
 
     @action(detail=True, methods=["patch"], url_path="update-status")

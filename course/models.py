@@ -1,3 +1,6 @@
+from django.db import models
+from assessment_career.models import CareerSuggestion
+from common.models import BaseModule
 from django.conf import settings
 from django.db import models
 
@@ -5,7 +8,7 @@ from city.models import City
 from common.models import BaseModule
 from country.models import Country
 from state.models import State
-
+from education_level.models import EducationLevel
 # Create your models here.
 
 
@@ -40,7 +43,7 @@ class Courses(BaseModule):
     course_type = models.CharField(max_length=20, choices=COURSE_TYPE_CHOICES)
     mode = models.CharField(max_length=20, choices=MODE_CHOICE)
     skills = models.JSONField(default=list, blank=True)
-    education_tags = models.JSONField(default=list, blank=True)
+    education_tags = models.ManyToManyField(EducationLevel, blank=True)
     duration = models.CharField(max_length=100, null=True, blank=True)
     provider = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -106,6 +109,7 @@ class CourseInquiry(BaseModule):
         blank=True,
         related_name="course_inquiries",
     )
+    career_suggestion = models.ForeignKey(CareerSuggestion, on_delete=models.SET_NULL, null=True, blank=True, related_name="course_inquiries")
     name = models.CharField(max_length=200, null=True, blank=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)

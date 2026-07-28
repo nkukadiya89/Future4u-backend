@@ -1,3 +1,5 @@
+from education_level.serializers import EducationLevelDropdownSerializer
+from .models import Internship,InternshipApplication,Job, JobApplication
 from rest_framework import serializers
 
 from common.serializers import BaseModelSerializer
@@ -12,6 +14,7 @@ class InternshipSerializer(BaseModelSerializer):
     state_name = serializers.CharField(source="state.name", read_only=True)
     provider_name = serializers.SerializerMethodField()
     internship_provider_name = serializers.SerializerMethodField()
+    education_tags_name = EducationLevelDropdownSerializer(source="education_tags", many=True, read_only=True)
 
     # Field aliases for the AI generation pipeline / frontend payload
     internship_overview = serializers.CharField(
@@ -89,6 +92,7 @@ class InternshipSerializer(BaseModelSerializer):
             "key_responsibilities",
             "skills",
             "education_tags",
+            "education_tags_name",
             "internship_type",
             "mode",
             "duration",
@@ -153,7 +157,7 @@ class JobSerializer(BaseModelSerializer):
     country_name = serializers.CharField(source="country.name", read_only=True)
     state_name = serializers.CharField(source="state.name", read_only=True)
     provider_name = serializers.SerializerMethodField()
-    education_tags_name = serializers.SerializerMethodField()
+    education_tags_name = EducationLevelDropdownSerializer(source="education_tags", many=True, read_only=True)
 
     class Meta:
         model = Job
@@ -189,10 +193,6 @@ class JobSerializer(BaseModelSerializer):
         if obj.provider:
             return obj.provider.full_name
         return None
-
-    def get_education_tags_name(self, obj):
-        return list(obj.education_tags.values_list("level_code", flat=True))
-
 
 class JobApplicationSerializer(BaseModelSerializer):
     applicant_name = serializers.CharField(source="applicant.full_name", read_only=True)

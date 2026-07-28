@@ -42,8 +42,8 @@ class ProfessionalRecommendationService:
         payload, token_usage = RecommendationPipeline.run(
             structured_assessment=structured_input,
             build_prompt=professional_prompts.build_recommendation_prompt,
-            format_inputs=lambda data: professional_prompts.format_prompt_inputs(
-                professional_assessment=data
+            format_inputs=lambda data, validation_feedback="None": professional_prompts.format_prompt_inputs(
+                professional_assessment=data, validation_feedback=validation_feedback
             ),
         )
 

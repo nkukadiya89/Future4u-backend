@@ -1,4 +1,9 @@
 from django.db import transaction
+from django.db.models import Q
+from django.db.models.aggregates import Count
+from assessment_career.models import CareerSuggestion
+from common.master_view import BaseModelViewSet
+from course.services import match_courses
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -20,7 +25,8 @@ class CoursesViewSet(BaseModelViewSet):
     def get_queryset(self):
         queryset = Courses.objects.select_related(
             "country", "state", "city", "provider"
-        )
+        ).prefetch_related("education_tags")
+        
         user = self.request.user
         if user.is_superuser:
             base = queryset
@@ -300,11 +306,9 @@ class CoursesViewSet(BaseModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="archive-list")
     def archive_list(self, request):
-        queryset = (
-            Courses.objects.select_related("country", "state", "city", "provider")
-            .filter(deleted=True)
-            .order_by("-deleted_at")
-        )
+        queryset = Courses.objects.select_related(
+            "country", "state", "city", "provider"
+        ).prefetch_related("education_tags").filter(deleted=True).order_by("-deleted_at")
 
         queryset = self.filter_queryset(queryset)
 
@@ -402,12 +406,54 @@ class CourseInquiryViewSet(BaseModelViewSet):
             return base
         if user.user_type in ["school_college", "institute"]:
             return base.filter(course__provider=user)
-        return base.filter(user=user)
+        return base.filter(user=user).filter(user=user)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        summary = queryset.aggregate(
+            total_leads=Count("id"),
+            pending_leads=Count("id", filter=Q(status="pending")),
+            responded_leads=Count("id", filter=Q(status="responded")),
+            closed_leads=Count("id", filter=Q(status="closed")),
+        )
+
+        no_pagination = request.query_params.get("no_pagination")
+        if no_pagination:
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(
+                {
+                    "success": True,
+                    "summary": summary,
+                    "count": queryset.count(),
+                    "data": serializer.data,
+                }
+            )
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                {
+                    "success": True,
+                    "summary": summary,
+                    "data": serializer.data,
+                }
+            )
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(
+            {
+                "success": True,
+                "summary": summary,
+                "count": queryset.count(),
+                "data": serializer.data,
+            }
+        )
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             course = serializer.validated_data.get("course")
+            career_suggestion = serializer.validated_data["career_suggestion"]
             if course.deleted or course.status != "active":
                 return Response(
                     {
@@ -416,7 +462,15 @@ class CourseInquiryViewSet(BaseModelViewSet):
                     },
                     status=status.HTTP_404_NOT_FOUND,
                 )
-            if CourseInquiry.objects.filter(user=request.user, course=course).exists():
+            if career_suggestion.recommendation.user != request.user:
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Invalid Career suggestion.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if CourseInquiry.objects.filter(user=request.user, course=course, career_suggestion=career_suggestion).exists():
                 return Response(
                     {
                         "success": False,
@@ -461,6 +515,33 @@ class CourseInquiryViewSet(BaseModelViewSet):
                 "data": serializer.data,
             },
             status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["get"], url_path="my-inquiries")
+    def my_inquiries(self, request):
+        inquiries = CourseInquiry.objects.filter(user=request.user).select_related(
+            "course"
+        )
+
+        no_pagination = request.query_params.get("no_pagination")
+        if no_pagination:
+            serializer = self.get_serializer(inquiries, many=True)
+            return Response({"success": True, "data": serializer.data})
+
+        page = self.paginate_queryset(inquiries)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+
+        serializer = self.get_serializer(inquiries, many=True)
+        return Response(
+            {
+                "success": True,
+                "count": inquiries.count(),
+                "data": serializer.data,
+            }
         )
 
     @action(detail=True, methods=["patch"], url_path="update-status")
