@@ -21173,6 +21173,60 @@
       ]
     },
     {
+      "name": "project-recommendation",
+      "item": [
+        {
+          "name": "generate (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-recommendations/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-recommendations",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "generate-batch (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-recommendations/by-recommendation/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-recommendations",
+                "by-recommendation",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "jobs",
       "item": [
         {
