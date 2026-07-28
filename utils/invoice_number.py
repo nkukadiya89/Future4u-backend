@@ -1,7 +1,7 @@
+from device_transfer.models import PaymentDeviceTransfer
 from django.db import transaction
 from django.utils import timezone
 
-from device_transfer.models import PaymentDeviceTransfer
 from subscription.models import PaymentSubscription, SubscriptionInvoice
 
 

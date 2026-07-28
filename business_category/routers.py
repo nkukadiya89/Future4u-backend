@@ -1,9 +1,10 @@
+from rest_framework.routers import DefaultRouter
+
 from business_category.views import (
     BusinessCategoryArchiveViewSet,
     BusinessCategoryRestoreViewSet,
     BusinessCategoryViewSet,
 )
-from rest_framework.routers import DefaultRouter
 
 bussiness_category_router = DefaultRouter()
 bussiness_category_router.register(

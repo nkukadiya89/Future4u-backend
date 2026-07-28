@@ -17,7 +17,13 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from assessment_career.models import CareerSuggestion
-from jobs.exceptions import LinkedInJobAPIAuthError, LinkedInJobAPIRateLimitError, LinkedInJobAPIError, LinkedInJobAPITimeoutError, LinkedInJobServiceError
+from jobs.exceptions import (
+    LinkedInJobAPIAuthError,
+    LinkedInJobAPIError,
+    LinkedInJobAPIRateLimitError,
+    LinkedInJobAPITimeoutError,
+    LinkedInJobServiceError,
+)
 from jobs.serializers import JobSearchQuerySerializer
 from jobs.services import LinkedInJobService
 from utils.throttles import PerUserBurstRateThrottle
@@ -248,7 +254,11 @@ class RecommendedJobsAPIView(APIView):
 
         try:
             result = service.search_jobs(params=search_params)
-        except (LinkedInJobAPIAuthError, LinkedInJobAPIError, LinkedInJobAPITimeoutError) as exc:
+        except (
+            LinkedInJobAPIAuthError,
+            LinkedInJobAPIError,
+            LinkedInJobAPITimeoutError,
+        ) as exc:
             logger.error("Recommended jobs API error: %s", exc)
             return Response(
                 {

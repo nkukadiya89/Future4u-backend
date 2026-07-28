@@ -2,9 +2,8 @@ import logging
 import threading
 import time
 
-from django.utils import timezone
-
 from device_config.models import DeviceConfiguration
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 

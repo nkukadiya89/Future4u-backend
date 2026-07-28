@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from common.mixins.view_mixins import SuccessEnvelopeMixin
 from language_master.models import Language
 from language_master.permissions import LanguageMasterPermission
 from language_master.serializers import (
@@ -19,7 +20,6 @@ from language_master.serializers import (
     LanguageSerializer,
 )
 from language_master.services import language_service
-from common.mixins.view_mixins import SuccessEnvelopeMixin
 from utils.pagination import Pagination
 
 

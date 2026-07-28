@@ -1,21 +1,22 @@
 import pandas as pd
-from django.db import transaction
-from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from django.db import transaction
+
+from city.models import City
 from country.models import Country
 from state.models import State
-from city.models import City
 from user.models import User
-from user.services.registration_service import setup_web_user_password
-from user.services.bulkupload_profiles.student_bulkupload import StudentBulkUpload
+from user.services.bulkupload_profiles.corporate_bulkupload import CorporateBulkUpload
+from user.services.bulkupload_profiles.institute_bulkupload import InstituteBulkUpload
 from user.services.bulkupload_profiles.school_colleges_bulkupload import (
     SchoolCollegeBulkUpload,
 )
-from user.services.bulkupload_profiles.institute_bulkupload import InstituteBulkUpload
-from user.services.bulkupload_profiles.corporate_bulkupload import CorporateBulkUpload
+from user.services.bulkupload_profiles.student_bulkupload import StudentBulkUpload
 from user.services.bulkupload_profiles.working_professional_bulkupload import (
     WorkingProfessionalBulkUpload,
 )
+from user.services.registration_service import setup_web_user_password
 
 
 class BulkUserUploadService:
@@ -273,9 +274,8 @@ class BulkUserUploadService:
                 # referral_code = str(row.get("Referral Code", "") or "").strip()
                 referral_value = row.get("Referral Code")
                 referral_code = (
-                    ""
-                    if pd.isna(referral_value)
-                    else str(referral_value).strip())
+                    "" if pd.isna(referral_value) else str(referral_value).strip()
+                )
                 referred_by = None
                 if (
                     user_type in [User.Role.STUDENT, User.Role.PROFESSIONAL]

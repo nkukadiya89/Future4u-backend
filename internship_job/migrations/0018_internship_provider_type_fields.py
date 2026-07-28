@@ -8,19 +8,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internship_job', '0017_internship_country_internship_state'),
+        ("internship_job", "0017_internship_country_internship_state"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='internship',
-            name='internship_provider',
-            field=models.ForeignKey(blank=True, help_text='Select the institute or corporate posting this internship.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='internship_provider', to=settings.AUTH_USER_MODEL),
+            model_name="internship",
+            name="internship_provider",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Select the institute or corporate posting this internship.",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="internship_provider",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='internship',
-            name='provider_type',
-            field=models.CharField(blank=True, choices=[('institute', 'Institute'), ('corporate', 'Corporate')], help_text='Select whether this internship is posted by an Institute or a Corporate.', max_length=20, null=True),
+            model_name="internship",
+            name="provider_type",
+            field=models.CharField(
+                blank=True,
+                choices=[("institute", "Institute"), ("corporate", "Corporate")],
+                help_text="Select whether this internship is posted by an Institute or a Corporate.",
+                max_length=20,
+                null=True,
+            ),
         ),
     ]

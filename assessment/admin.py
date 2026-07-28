@@ -1,23 +1,22 @@
 from django.contrib import admin
 
-from domain.models import Domain
-
 from assessment.models import (
     CareerDirection,
     CareerValue,
     Concern,
+    GuidanceReason,
     Option,
     ParentAssessment,
     ParentCareerExpectation,
     ParentConstraint,
+    ProfessionalAssessment,
     Question,
     StudentAssessment,
     UserGoal,
     UserResponse,
-    GuidanceReason,
     WorkConstraint,
-    ProfessionalAssessment,
 )
+from domain.models import Domain
 
 admin.site.register(CareerDirection)
 admin.site.register(CareerValue)

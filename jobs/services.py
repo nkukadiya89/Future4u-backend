@@ -78,7 +78,9 @@ def _get_api_key() -> str:
 
 def _get_api_host() -> str:
     """Return the RapidAPI host from Django settings."""
-    host = getattr(settings, "RAPIDAPI_HOST", "linkedin-job-search-api.p.rapidapi.com").strip()
+    host = getattr(
+        settings, "RAPIDAPI_HOST", "linkedin-job-search-api.p.rapidapi.com"
+    ).strip()
     return host
 
 
@@ -276,7 +278,12 @@ class LinkedInJobService:
                         params,
                     )
                     return {"data": [], "total": 0}
-                if 400 <= response.status_code < 500 and response.status_code not in (401, 403, 404, 429):
+                if 400 <= response.status_code < 500 and response.status_code not in (
+                    401,
+                    403,
+                    404,
+                    429,
+                ):
                     # 400/422 — bad request (invalid params). Log the response body and return empty.
                     try:
                         body = response.text[:500]
@@ -398,7 +405,9 @@ class LinkedInJobService:
                     serializer.errors,
                 )
 
-        total = raw_data.get("total") or raw_data.get("total_count") or len(normalized_jobs)
+        total = (
+            raw_data.get("total") or raw_data.get("total_count") or len(normalized_jobs)
+        )
         total_pages = raw_data.get("total_pages")
         if total_pages is None and isinstance(total, int) and total > 0:
             limit = self._guess_limit(normalized_jobs)

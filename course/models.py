@@ -1,9 +1,11 @@
-from django.db import models
-from common.models import BaseModule
 from django.conf import settings
+from django.db import models
+
 from city.models import City
+from common.models import BaseModule
 from country.models import Country
 from state.models import State
+
 # Create your models here.
 
 
@@ -40,7 +42,13 @@ class Courses(BaseModule):
     skills = models.JSONField(default=list, blank=True)
     education_tags = models.JSONField(default=list, blank=True)
     duration = models.CharField(max_length=100, null=True, blank=True)
-    provider = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,null=True, blank=True, related_name="courses")
+    provider = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="courses",
+    )
     provider_type = models.CharField(
         max_length=20,
         choices=PROVIDER_TYPE_CHOICES,
@@ -56,7 +64,9 @@ class Courses(BaseModule):
         related_name="course_provider",
         help_text="Select the institute or school/college posting this course.",
     )
-    country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True, blank=True)
+    country = models.ForeignKey(
+        Country, on_delete=models.SET_NULL, null=True, blank=True
+    )
     state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True, blank=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True)
     course_overview = models.TextField(null=True, blank=True)

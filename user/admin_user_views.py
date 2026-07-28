@@ -1,57 +1,59 @@
-from activity_log.services import log_event
-from django.utils import timezone
 import os
 import tempfile
+
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
-from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from django.shortcuts import get_object_or_404
+
+from activity_log.services import log_event
 from email_utils.send_email import send_activation_password_setup_email
+from user.admin_corporate_serializers import (
+    AdminCorporateSerializer,
+    AdminCorporateSortSerializer,
+)
+from user.admin_institute_serializers import (
+    AdminInstituteSerializer,
+    AdminInstituteSortSerializer,
+)
+from user.admin_school_colleges_serializers import (
+    AdminSchoolCollegeSortSerializer,
+    AdminSchoolCollegesSerializer,
+)
 from user.admin_user_serializers import (
     AdminStudentSerializer,
     AdminStudentSortSerializer,
     BulkUserUploadSerializer,
+)
+from user.admin_working_professional_serializers import (
+    AdminWorkingProfessionalSerializer,
+    AdminWorkingProfessionalSortSerializer,
 )
 from user.models import User
 from user.permissions import IsAdminUser
 from user.services.bulk_user_upload import BulkUserUploadService
 from user.tasks import bulk_upload_user_task
 from user_profile.models import (
-    InstituteProfile,
-    StudentProfile,
-    SchoolCollegeProfile,
     CorporateProfile,
+    InstituteProfile,
     ProfessionalProfile,
+    SchoolCollegeProfile,
+    StudentProfile,
 )
-from rest_framework.viewsets import ModelViewSet
-from user_profile.serializers import StudentProfileSerializer
 from user_profile.serializers import (
-    SchoolCollegeProfileSerializer,
-    InstituteProfileSerializer,
     CorporateProfileSerializer,
+    InstituteProfileSerializer,
     ProfessionalProfileSerializer,
-)
-from user.admin_school_colleges_serializers import (
-    AdminSchoolCollegesSerializer,
-    AdminSchoolCollegeSortSerializer,
-)
-from user.admin_institute_serializers import (
-    AdminInstituteSerializer,
-    AdminInstituteSortSerializer,
-)
-from user.admin_corporate_serializers import (
-    AdminCorporateSerializer,
-    AdminCorporateSortSerializer,
-)
-from user.admin_working_professional_serializers import (
-    AdminWorkingProfessionalSerializer,
-    AdminWorkingProfessionalSortSerializer,
+    SchoolCollegeProfileSerializer,
+    StudentProfileSerializer,
 )
 
 
@@ -246,10 +248,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
         if not isinstance(ids, list) or not ids:
             return Response(
-                {
-                    "success": False,
-                    "message": "ids must be a non-empty list."
-                },
+                {"success": False, "message": "ids must be a non-empty list."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -284,7 +283,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
             user.updated_at = timezone.now()
 
             user.save(
-                update_fields = [
+                update_fields=[
                     "status",
                     "is_active",
                     "updated_at",
@@ -295,7 +294,6 @@ class BaseAdminProfileViewSet(ModelViewSet):
             updated_ids.append(user.id)
             if old_status in ["pending", "inactive"] and new_status == "active":
                 activated_users.append(user)
-
 
             log_event(
                 event="user.status_changed",
@@ -308,7 +306,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
         if activated_users:
             transaction.on_commit(
-                lambda:[
+                lambda: [
                     send_activation_password_setup_email(user)
                     for user in activated_users
                 ]
@@ -318,10 +316,10 @@ class BaseAdminProfileViewSet(ModelViewSet):
             {
                 "success": True,
                 "message": f"{len(updated_ids)} user(s) updated successfully.",
-                "data":{
-                    "updated_ids":updated_ids,
-                    "skipped_ids":skipped_ids,
-                    "not_found_ids":not_found_ids,
+                "data": {
+                    "updated_ids": updated_ids,
+                    "skipped_ids": skipped_ids,
+                    "not_found_ids": not_found_ids,
                 },
             },
             status=status.HTTP_200_OK,

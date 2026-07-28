@@ -6,14 +6,14 @@ from rest_framework import serializers
 
 from city.models import City
 from country.models import Country
-from state.models import State
 from internship_job.models import Job
-from user_profile.models import CorporateProfile
 from job_generation.constants.job_generation_constants import (
     JOB_OVERVIEW_MAX_LENGTH,
     JOB_OVERVIEW_MIN_LENGTH,
     JOB_TITLE_MAX_LENGTH,
 )
+from state.models import State
+from user_profile.models import CorporateProfile
 
 
 class JobGenerationInputSerializer(serializers.Serializer):

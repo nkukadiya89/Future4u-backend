@@ -15,18 +15,16 @@ from django.conf import settings
 from django.contrib import admin
 from django.shortcuts import render
 
+from ai.config import is_configured
 from city.models import City
 from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from country.models import Country
 from course.models import Courses
-from ai.config import is_configured
 from course_generation.constants.course_generation_constants import (
     COURSE_OVERVIEW_MAX_LENGTH,
     COURSE_TITLE_MAX_LENGTH,
     OPTIONAL_FIELD_MAX_LENGTH,
 )
-from state.models import State
-from user.models import User
 from course_generation.exceptions import (
     CourseGenerationConfigurationError,
     CourseGenerationValidationError,
@@ -34,6 +32,8 @@ from course_generation.exceptions import (
 from course_generation.models import CourseGenerationPanel
 from course_generation.services.course_generation_service import _build_response
 from course_generation.services.course_generator import CourseGenerator
+from state.models import State
+from user.models import User
 
 
 class InstituteUserChoiceField(forms.ModelChoiceField):
@@ -60,6 +60,7 @@ def _pretty_json(value) -> str:
 
 def _provider_status() -> dict:
     from ai.config import llm_provider
+
     configured = is_configured()
     enabled = getattr(settings, "COURSE_GENERATION_ENABLED", True)
     pname = llm_provider()
@@ -143,7 +144,9 @@ class CourseGenerationRunForm(forms.Form):
         queryset=User.objects.filter(
             user_type__in=["school_college", "institute"],
             deleted=False,
-        ).select_related("institute_profile", "school_college_profile").order_by("full_name"),
+        )
+        .select_related("institute_profile", "school_college_profile")
+        .order_by("full_name"),
         label="Course Provider",
         empty_label="Select a course provider",
         help_text="Optional. Select the institute or school/college posting this course.",

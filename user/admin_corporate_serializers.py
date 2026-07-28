@@ -1,13 +1,15 @@
-from datetime import datetime
 import json
+from datetime import datetime
+
 from django.db import transaction
 from rest_framework import serializers
+
 from city.models import City
 from country.models import Country
+from email_utils.send_email import send_email_change_notification
 from state.models import State
 from user.models import User
 from user.services.registration_service import setup_web_user_password
-from email_utils.send_email import send_email_change_notification
 from user_profile.models import CorporateProfile
 
 

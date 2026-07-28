@@ -8,7 +8,6 @@ from pydantic import ValidationError
 
 from ai.config import is_configured
 from ai.provider import ensure_configured, get_chat_model
-
 from course_generation.exceptions import (
     CourseGenerationConfigurationError,
     CourseGenerationValidationError,
@@ -30,7 +29,9 @@ class CourseGenerator:
     """Single LLM invocation: course overview input -> structured course details."""
 
     @classmethod
-    def generate(cls, *, generation_input: dict[str, Any]) -> tuple[CourseGenerationPayload, int]:
+    def generate(
+        cls, *, generation_input: dict[str, Any]
+    ) -> tuple[CourseGenerationPayload, int]:
         if not is_configured():
             raise CourseGenerationConfigurationError(
                 "AI course generation is temporarily unavailable"

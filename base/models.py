@@ -1,7 +1,7 @@
 from django.db import models
+from django.utils import timezone
 
 from common.models import BaseModule
-from django.utils import timezone
 
 
 class MasterBaseModel(BaseModule):

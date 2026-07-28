@@ -4,13 +4,13 @@ from django.db.models import Prefetch
 
 from assessment.models import Option, StudentAssessment, UserResponse
 from assessment_career.models import CareerRecommendation, CareerSuggestion
+from recommendation.engine._shared import is_study_abroad_mode
 from recommendation.engine.recommendation_service import (
     load_recommendation_and_check_cycle,
     normalize_study_abroad_payload,
     save_recommendation,
     serialize_recommendation,
 )
-from recommendation.engine._shared import is_study_abroad_mode
 from recommendation.exceptions import (
     AssessmentAccessDeniedError,
     AssessmentNotFoundError,

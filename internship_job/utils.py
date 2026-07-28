@@ -1,5 +1,6 @@
 from difflib import get_close_matches
-from course.utils import normalize_text, clean, split_skills
+
+from course.utils import clean, normalize_text, split_skills
 
 
 def is_match(ai_value, skill_values):

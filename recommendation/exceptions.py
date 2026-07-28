@@ -20,4 +20,3 @@ class AIConfigurationError(AIRecommendationError):
 
 class AIGenerationError(AIRecommendationError):
     pass
-

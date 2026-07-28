@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-from recommendation.config import (
-    EASY_DECISION_COUNT,
-    TOP_SUGGESTION_COUNT,
-)
+from recommendation.config import EASY_DECISION_COUNT, TOP_SUGGESTION_COUNT
 from recommendation.pipeline.roadmap_normalizer import normalize_career_roadmap
 from recommendation.schemas.recommendation_output import (
     AIRecommendationPayload,

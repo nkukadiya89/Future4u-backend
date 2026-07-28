@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from common.serializers import BaseModelSerializer
 from education_level.models import (
     EducationLevel,
     EducationLevelImportBatch,
@@ -8,7 +9,6 @@ from education_level.models import (
 from education_level.services import education_level_service
 from user.serializers import UserQuickSerializer
 from utils.datetime_formatter import format_datetime
-from common.serializers import BaseModelSerializer
 
 
 class AuditFieldsMixin:

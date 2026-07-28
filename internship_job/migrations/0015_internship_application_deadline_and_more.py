@@ -6,18 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internship_job', '0014_alter_job_status'),
+        ("internship_job", "0014_alter_job_status"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='internship',
-            name='application_deadline',
-            field=models.DateField(blank=True, help_text='Application deadline date', null=True),
+            model_name="internship",
+            name="application_deadline",
+            field=models.DateField(
+                blank=True, help_text="Application deadline date", null=True
+            ),
         ),
         migrations.AddField(
-            model_name='job',
-            name='application_deadline',
-            field=models.DateField(blank=True, help_text='Application deadline date', null=True),
+            model_name="job",
+            name="application_deadline",
+            field=models.DateField(
+                blank=True, help_text="Application deadline date", null=True
+            ),
         ),
     ]

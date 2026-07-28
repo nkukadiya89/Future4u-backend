@@ -59,7 +59,9 @@ def _make_assessment(user: User) -> tuple[CareerRecommendation, CareerSuggestion
         ai_insight="Great match for you.",
         why_this_career=["High demand", "Good salary"],
         required_skills=["Python", "Django"],
-        required_education={"levels": [{"name": "Bachelor", "level_key": "graduation"}]},
+        required_education={
+            "levels": [{"name": "Bachelor", "level_key": "graduation"}]
+        },
         display_order=1,
     )
     return rec, suggestion
@@ -259,7 +261,9 @@ class LinkedInJobServiceTest(SimpleTestCase):
         api_response = {"data": [raw_job], "total": 1}
         mock_get.return_value = _mock_response(json_data=api_response)
         with self._apply_settings():
-            result = self.service.search_jobs({"title": "Python Developer", "location": "Ahmedabad"})
+            result = self.service.search_jobs(
+                {"title": "Python Developer", "location": "Ahmedabad"}
+            )
 
         self.assertTrue(result["success"])
         self.assertEqual(result["count"], 1)
@@ -286,12 +290,16 @@ class LinkedInJobServiceTest(SimpleTestCase):
         mock_get.return_value = _mock_response(json_data=api_response)
 
         with self._apply_settings():
-            result1 = self.service.search_jobs({"title": "Python Developer", "location": "Mumbai"})
+            result1 = self.service.search_jobs(
+                {"title": "Python Developer", "location": "Mumbai"}
+            )
         self.assertTrue(result1["success"])
         self.assertEqual(mock_get.call_count, 1)
 
         with self._apply_settings():
-            result2 = self.service.search_jobs({"title": "Python Developer", "location": "Mumbai"})
+            result2 = self.service.search_jobs(
+                {"title": "Python Developer", "location": "Mumbai"}
+            )
         self.assertTrue(result2["success"])
         self.assertEqual(mock_get.call_count, 1)  # Still 1 — cache hit
         self.assertEqual(result1, result2)
@@ -355,7 +363,9 @@ class LinkedInJobServiceTest(SimpleTestCase):
     @patch("jobs.services.requests.Session.get")
     def test_500_then_success_on_retry(self, mock_get):
         """Server error on first attempt, success on retry."""
-        success_response = _mock_response(json_data={"data": [_sample_raw_job()], "total": 1})
+        success_response = _mock_response(
+            json_data={"data": [_sample_raw_job()], "total": 1}
+        )
         mock_get.side_effect = [
             _mock_response(status_code=502),
             success_response,
@@ -403,7 +413,9 @@ class JobSearchAPIViewTest(TestCase):
         api_response = {"data": [raw_job], "total": 1}
         mock_get.return_value = _mock_response(json_data=api_response)
 
-        request = self.factory.get("/api/jobs/search/?title=Python+Developer&location=Ahmedabad")
+        request = self.factory.get(
+            "/api/jobs/search/?title=Python+Developer&location=Ahmedabad"
+        )
         force_authenticate(request, user=self.user)
         response = JobSearchAPIView.as_view()(request)
 

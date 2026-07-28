@@ -7,10 +7,10 @@ and sends notifications to company, partner company, and superadmin based on met
 import logging
 from datetime import timedelta
 
-from django.utils.timezone import now
 from decouple import config
-
 from device_config.models import DeviceConfiguration, DeviceElectricalParameter
+from django.utils.timezone import now
+
 from company.models import Company
 from email_utils.send_meter_usage_alert import send_meter_usage_alert_email
 

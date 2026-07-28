@@ -8,7 +8,6 @@ from pydantic import ValidationError
 
 from ai.config import is_configured
 from ai.provider import ensure_configured, get_chat_model
-
 from internship_generation.exceptions import (
     InternshipGenerationConfigurationError,
     InternshipGenerationValidationError,

@@ -1,5 +1,12 @@
 from rest_framework.routers import DefaultRouter, path
 
+from user.admin_user_views import (
+    AdminCorporateViewSet,
+    AdminInstituteViewSet,
+    AdminSchoolCollegeViewSet,
+    AdminStudentViewSet,
+    AdminWorkingProfessionalViewSet,
+)
 from user.email_phone_verify import VerifiedOTPViewSet
 from user.group_and_permission import (
     AssignPermissionGroupViewSet,
@@ -11,15 +18,8 @@ from user.group_and_permission import (
     GroupViewSet,
     PermissionViewSet,
 )
-from user.admin_user_views import (
-    AdminStudentViewSet,
-    AdminSchoolCollegeViewSet,
-    AdminCorporateViewSet,
-    AdminInstituteViewSet,
-    AdminWorkingProfessionalViewSet,
-)
-from user.student_organization_views import OrganizationStudentViewSet
 from user.resend_password_reset import ResendPasswordResetViewSet
+from user.student_organization_views import OrganizationStudentViewSet
 from user.user_type_views import AuthViewSet
 from user.views import (
     ForgetPasswordViewSet,

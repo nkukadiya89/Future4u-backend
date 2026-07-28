@@ -7,25 +7,35 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('country', '0003_alter_country_updated_at'),
-        ('internship_job', '0012_remove_job_organization_name_job_corporate'),
-        ('state', '0003_alter_state_updated_at'),
+        ("country", "0003_alter_country_updated_at"),
+        ("internship_job", "0012_remove_job_organization_name_job_corporate"),
+        ("state", "0003_alter_state_updated_at"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='job',
-            name='country',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='country.country'),
+            model_name="job",
+            name="country",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="country.country",
+            ),
         ),
         migrations.AddField(
-            model_name='job',
-            name='job_overview',
+            model_name="job",
+            name="job_overview",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='job',
-            name='state',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='state.state'),
+            model_name="job",
+            name="state",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="state.state",
+            ),
         ),
     ]

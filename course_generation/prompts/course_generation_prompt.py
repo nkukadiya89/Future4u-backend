@@ -165,13 +165,18 @@ def format_prompt_inputs(*, generation_input: dict) -> dict[str, str]:
         if hasattr(course_provider, "institute_profile"):
             name = getattr(course_provider.institute_profile, "institute_name", None)
         if not name and hasattr(course_provider, "school_college_profile"):
-            name = getattr(course_provider.school_college_profile, "institute_name", None)
-        course_provider_str = name or getattr(course_provider, "full_name", None) or str(course_provider)
+            name = getattr(
+                course_provider.school_college_profile, "institute_name", None
+            )
+        course_provider_str = (
+            name or getattr(course_provider, "full_name", None) or str(course_provider)
+        )
     else:
         course_provider_str = ""
 
     return {
-        "course_title": str(generation_input.get("course_title") or "").strip() or "Not provided",
+        "course_title": str(generation_input.get("course_title") or "").strip()
+        or "Not provided",
         "course_overview": str(generation_input.get("course_overview") or "").strip(),
         "course_price": str(generation_input.get("course_price") or "").strip(),
         "course_type": _choice_display(
@@ -183,5 +188,7 @@ def format_prompt_inputs(*, generation_input: dict) -> dict[str, str]:
             Courses.PROVIDER_TYPE_CHOICES, generation_input.get("provider_type")
         ),
         "course_provider": course_provider_str,
-        "validation_feedback": str(generation_input.get("validation_feedback") or "").strip(),
+        "validation_feedback": str(
+            generation_input.get("validation_feedback") or ""
+        ).strip(),
     }

@@ -6,7 +6,7 @@ from typing import Any, Callable
 from ai.config import is_configured
 from ai.provider import ensure_configured
 from recommendation.config import ai_recommendations_enabled
-from recommendation.exceptions import AIGenerationError, AIConfigurationError
+from recommendation.exceptions import AIConfigurationError, AIGenerationError
 from recommendation.generators.ai_recommendation_generator import (
     RecommendationGenerator,
 )

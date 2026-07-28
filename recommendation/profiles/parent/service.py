@@ -4,14 +4,13 @@ import logging
 
 from assessment.models import ParentAssessment
 from assessment_career.models import CareerRecommendation, CareerSuggestion
-
+from recommendation.engine._shared import is_study_abroad_mode
 from recommendation.engine.recommendation_service import (
     load_recommendation_and_check_cycle,
     normalize_study_abroad_payload,
     save_recommendation,
     serialize_recommendation,
 )
-from recommendation.engine._shared import is_study_abroad_mode
 from recommendation.exceptions import (
     AssessmentAccessDeniedError,
     AssessmentNotFoundError,

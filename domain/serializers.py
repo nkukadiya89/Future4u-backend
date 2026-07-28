@@ -1,10 +1,12 @@
-from rest_framework import serializers
 import json
+
+from rest_framework import serializers
+
 from base.serializers import AuditFieldsMixin
 from common.mixins.serializer_mixins import (
     ArchiveStatusMixin,
-    TrackDateMixin,
     ImportDateMixin,
+    TrackDateMixin,
 )
 from domain.models import Domain, DomainImportBatch, DomainImportError
 from domain.services import domain_service

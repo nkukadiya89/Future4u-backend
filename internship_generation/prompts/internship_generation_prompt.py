@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from internship_job.models import Internship
 from internship_generation.constants.internship_generation_constants import (
     ABOUT_INTERNSHIP_MAX_WORDS,
     ABOUT_INTERNSHIP_MIN_WORDS,
@@ -13,6 +12,7 @@ from internship_generation.constants.internship_generation_constants import (
     SKILLS_MAX,
     SKILLS_MIN,
 )
+from internship_job.models import Internship
 
 OUTPUT_SHAPE = """{{
   "internship_title": "",
@@ -161,9 +161,7 @@ def format_prompt_inputs(*, generation_input: dict) -> dict[str, str]:
         deadline_text = str(deadline)
 
     return {
-        "internship_title": str(
-            generation_input.get("internship_title") or ""
-        ).strip()
+        "internship_title": str(generation_input.get("internship_title") or "").strip()
         or "Not provided",
         "internship_overview": str(
             generation_input.get("internship_overview") or ""

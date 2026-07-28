@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from base.serializers import AuditFieldsMixin
-from common.mixins.serializer_mixins import TrackDateMixin, DeletedAtMixin
+from common.mixins.serializer_mixins import DeletedAtMixin, TrackDateMixin
 from user.serializers import UserQuickSerializer
 
 

@@ -1,5 +1,6 @@
-from .utils import is_match
 from django.core.exceptions import ObjectDoesNotExist
+
+from .utils import is_match
 
 
 def match_internships(ai_skills, ai_education, user, internships_qs):

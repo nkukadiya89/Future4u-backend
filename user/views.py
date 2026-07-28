@@ -2,13 +2,11 @@ import json
 import random
 import threading
 
-from django.utils import timezone
-
-from activity_log.services import log_event
 from django.contrib.auth import logout
 from django.core.exceptions import MultipleObjectsReturned
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -17,8 +15,9 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from company.models import Company
+from activity_log.services import log_event
 from common.mixins.view_mixins import RetrieveSuccessEnvelopeMixin
+from company.models import Company
 from email_utils.send_email import decode_token, generate_forget_pass_token, send_mail
 from email_utils.send_success_mail import send_confirm_mail, send_success_mail
 from employee.models import Employee

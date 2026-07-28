@@ -1,13 +1,14 @@
 import os
-import uuid
 import smtplib
+import uuid
 from datetime import datetime, timedelta
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from django.conf import settings
+
 import jwt
 from decouple import config
+from django.conf import settings
 from django.shortcuts import HttpResponse
 from django.template.loader import render_to_string
 

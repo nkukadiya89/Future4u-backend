@@ -6,13 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course', '0010_add_country_state_to_courses'),
+        ("course", "0010_add_country_state_to_courses"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='courses',
-            name='status',
-            field=models.CharField(choices=[('draft', 'Draft'), ('active', 'Active'), ('closed', 'Closed')], default='draft', max_length=20),
+            model_name="courses",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("draft", "Draft"),
+                    ("active", "Active"),
+                    ("closed", "Closed"),
+                ],
+                default="draft",
+                max_length=20,
+            ),
         ),
     ]

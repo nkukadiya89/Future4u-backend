@@ -1,8 +1,9 @@
-from decouple import config
 import os
 import sys
-from django.utils import timezone
+
+from decouple import config
 from django.apps import AppConfig
+from django.utils import timezone
 
 
 class CompanyConfig(AppConfig):

@@ -7,18 +7,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internship_job', '0015_internship_application_deadline_and_more'),
-        ('user_profile', '0066_professionalprofile_referred_by_and_more'),
+        ("internship_job", "0015_internship_application_deadline_and_more"),
+        ("user_profile", "0066_professionalprofile_referred_by_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='internship',
-            name='organization_name',
+            model_name="internship",
+            name="organization_name",
         ),
         migrations.AddField(
-            model_name='internship',
-            name='corporate',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='corporate_internships', to='user_profile.corporateprofile'),
+            model_name="internship",
+            name="corporate",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="corporate_internships",
+                to="user_profile.corporateprofile",
+            ),
         ),
     ]

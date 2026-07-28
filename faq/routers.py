@@ -1,9 +1,6 @@
-from faq.views import (
-    FAQArchiveViewSet,
-    FAQRestoreViewSet,
-    FAQViewSet,
-)
 from rest_framework.routers import DefaultRouter
+
+from faq.views import FAQArchiveViewSet, FAQRestoreViewSet, FAQViewSet
 
 faq_router = DefaultRouter()
 faq_router.register("faq", FAQViewSet, basename="faq")

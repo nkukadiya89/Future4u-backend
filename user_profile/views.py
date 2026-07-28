@@ -1,5 +1,6 @@
 import json
 
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -12,25 +13,23 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from django.core.cache import cache
-from common.master_view import BaseModelViewSet
-from utils.throttles import PerUserBurstRateThrottle
 
 from activity_log.models import ActivityLog
+from common.master_view import BaseModelViewSet
 from common.mixins.view_mixins import ListEnvelopeMixin
 from user_profile.models import (
     BusinessSetting,
     ChildProfile,
     CorporateGallery,
     CorporateProfile,
+    InstituteGallery,
+    InstituteProfile,
     ParentProfile,
     ProfessionalProfile,
     SchoolCollegeGallery,
     SchoolCollegeProfile,
     StudentProfile,
     UserProfile,
-    InstituteProfile,
-    InstituteGallery,
 )
 from user_profile.organization_viewsets import (
     OrganizationGalleryViewSet,
@@ -41,27 +40,27 @@ from user_profile.serializers import (
     BusinessSettingSerializer,
     ChildProfileCreateSerializer,
     ChildProfileSerializer,
+    CorporateGallerySerializer,
+    CorporateProfileSerializer,
+    CorporateProfileUpSerializer,
+    InstituteGallerySerializer,
+    InstituteProfileSerializer,
+    InstituteProfileUpSerializer,
     ParentProfileSerializer,
     ParentProfileUpsertSerializer,
     ProfessionalProfileSerializer,
     ProfessionalProfileUpsertSerializer,
+    SchoolCollegeGallerySerializer,
+    SchoolCollegeProfileSerializer,
+    SchoolCollegeProfileUpSerializer,
     StudentProfileSerializer,
     StudentProfileUpsertSerializer,
     UserProfileSerializer,
     UserProfileUpsertSerializer,
-    InstituteProfileUpSerializer,
-    InstituteProfileSerializer,
-    InstituteGallerySerializer,
-    SchoolCollegeProfileSerializer,
-    SchoolCollegeProfileUpSerializer,
-    SchoolCollegeGallerySerializer,
-    CorporateProfileSerializer,
-    CorporateProfileUpSerializer,
-    CorporateGallerySerializer,
 )
+from utils.cache_keys import recommendation_key
 from utils.generate_ip_address import get_client_ip
 from utils.pagination import Pagination
-from utils.cache_keys import recommendation_key
 from utils.throttles import PerUserBurstRateThrottle
 
 
@@ -637,9 +636,17 @@ class StudentProfileViewSet(ModelViewSet):
     ]
 
     def get_queryset(self):
-        return StudentProfile.objects.filter(user__deleted=False).select_related(
-            "user__country", "user__states", "user__city", "education_level", "stream"
-        ).prefetch_related("language")
+        return (
+            StudentProfile.objects.filter(user__deleted=False)
+            .select_related(
+                "user__country",
+                "user__states",
+                "user__city",
+                "education_level",
+                "stream",
+            )
+            .prefetch_related("language")
+        )
 
     def get_profile_object(self, request):
         queryset = self.get_queryset()
@@ -989,12 +996,9 @@ class ParentProfileViewSet(ModelViewSet):
     ]
 
     def get_queryset(self):
-        qs = (
-            ParentProfile.objects.select_related(
-                "user__country", "user__states", "user__city"
-            )
-            .prefetch_related("language")
-        )
+        qs = ParentProfile.objects.select_related(
+            "user__country", "user__states", "user__city"
+        ).prefetch_related("language")
         if (
             self.request.user.is_superuser
             or self.request.user.user_type == self.request.user.Role.SUPER_ADMIN
@@ -1253,13 +1257,19 @@ class CorporateDropdownView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        companies = CorporateProfile.objects.filter(
-            deleted=False,
-        ).exclude(
-            company_name__isnull=True,
-        ).exclude(
-            company_name__exact="",
-        ).values("id", "company_name").order_by("company_name")
+        companies = (
+            CorporateProfile.objects.filter(
+                deleted=False,
+            )
+            .exclude(
+                company_name__isnull=True,
+            )
+            .exclude(
+                company_name__exact="",
+            )
+            .values("id", "company_name")
+            .order_by("company_name")
+        )
 
         return Response(
             {

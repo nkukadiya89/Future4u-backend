@@ -1,6 +1,7 @@
-from email_utils.send_email import send_mail
 from rest_framework import status
 from rest_framework.response import Response
+
+from email_utils.send_email import send_mail
 
 
 class ListEnvelopeMixin:

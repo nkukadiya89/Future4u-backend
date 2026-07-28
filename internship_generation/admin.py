@@ -15,17 +15,14 @@ from django.conf import settings
 from django.contrib import admin
 from django.shortcuts import render
 
+from ai.config import is_configured
 from city.models import City
 from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from country.models import Country
-from ai.config import is_configured
 from internship_generation.constants.internship_generation_constants import (
     INTERNSHIP_OVERVIEW_INPUT_MAX_LENGTH,
     OPTIONAL_FIELD_MAX_LENGTH,
 )
-from internship_job.models import Internship
-from state.models import State
-from user.models import User
 from internship_generation.exceptions import (
     InternshipGenerationConfigurationError,
     InternshipGenerationValidationError,
@@ -33,6 +30,9 @@ from internship_generation.exceptions import (
 from internship_generation.models import InternshipGenerationPanel
 from internship_generation.services.internship_generation_service import _build_response
 from internship_generation.services.internship_generator import InternshipGenerator
+from internship_job.models import Internship
+from state.models import State
+from user.models import User
 
 
 class InternshipProviderUserChoiceField(forms.ModelChoiceField):
@@ -58,6 +58,7 @@ def _pretty_json(value) -> str:
 
 def _provider_status() -> dict:
     from ai.config import llm_provider
+
     configured = is_configured()
     enabled = getattr(settings, "INTERNSHIP_GENERATION_ENABLED", True)
     pname = llm_provider()
@@ -150,7 +151,9 @@ class InternshipGenerationRunForm(forms.Form):
         queryset=User.objects.filter(
             user_type__in=["institute", "corporate"],
             deleted=False,
-        ).select_related("institute_profile", "corporate_profile").order_by("full_name"),
+        )
+        .select_related("institute_profile", "corporate_profile")
+        .order_by("full_name"),
         label="Internship Provider",
         empty_label="Select an internship provider",
         help_text="Optional. Select the institute or corporate posting this internship.",
@@ -193,7 +196,9 @@ class InternshipGenerationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                 "state": state,
                 "city": city,
                 "application_deadline": form.cleaned_data.get("application_deadline"),
-                "certificate_provided": form.cleaned_data.get("certificate_provided", True),
+                "certificate_provided": form.cleaned_data.get(
+                    "certificate_provided", True
+                ),
                 "provider_type": form.cleaned_data.get("provider_type", ""),
                 "internship_provider": form.cleaned_data.get("internship_provider"),
             }

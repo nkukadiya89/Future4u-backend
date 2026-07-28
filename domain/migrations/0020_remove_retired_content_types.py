@@ -1,6 +1,5 @@
 from django.db import migrations
 
-
 RETIRED_APP_LABELS = [
     "career",
     "domain_career_mapping",

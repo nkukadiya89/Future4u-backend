@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from .models import Courses, CourseInquiry
+
 from common.serializers import BaseModelSerializer
 from user.models import User
 
+from .models import CourseInquiry, Courses
 
 
 class CoursesSerializer(BaseModelSerializer):
@@ -92,19 +93,17 @@ class CoursesSerializer(BaseModelSerializer):
         return None
 
     def validate(self, attrs):
-            if self.instance:
-                # PATCH request
-                name = attrs.get("name", self.instance.name)
-            else:
-                # POST request
-                name = attrs.get("name")
+        if self.instance:
+            # PATCH request
+            name = attrs.get("name", self.instance.name)
+        else:
+            # POST request
+            name = attrs.get("name")
 
-            if not name:
-                raise serializers.ValidationError({
-                      "name": "Course name is required."
-                })
+        if not name:
+            raise serializers.ValidationError({"name": "Course name is required."})
 
-            return attrs
+        return attrs
 
 
 class CourseInquirySerializer(BaseModelSerializer):

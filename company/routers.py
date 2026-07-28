@@ -1,3 +1,5 @@
+from rest_framework.routers import DefaultRouter
+
 from company.views import (
     CompanyArchiveViewSet,
     CompanyPhotoArchiveViewSet,
@@ -9,7 +11,6 @@ from company.views import (
     EnquiryViewSet,
     GovtDocumentVerification,
 )
-from rest_framework.routers import DefaultRouter
 
 company_router = DefaultRouter()
 company_router.register("company", CompanyViewSet, basename="company")

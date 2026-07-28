@@ -1,6 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 
-from .utils import is_match, get_next_levels
+from .utils import get_next_levels, is_match
 
 
 def _get_user_education_level(user):
