@@ -48,8 +48,8 @@ class StudentRecommendationService:
         payload, token_usage = RecommendationPipeline.run(
             structured_assessment=structured_input,
             build_prompt=student_prompts.build_recommendation_prompt,
-            format_inputs=lambda data: student_prompts.format_prompt_inputs(
-                student_assessment=data
+            format_inputs=lambda data, validation_feedback="None": student_prompts.format_prompt_inputs(
+                student_assessment=data, validation_feedback=validation_feedback
             ),
         )
         if is_study_abroad_mode(structured_input):

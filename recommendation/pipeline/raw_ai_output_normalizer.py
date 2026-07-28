@@ -44,7 +44,17 @@ def coerce_string_list(value: Any) -> list[str]:
         text = value.strip()
         if not text:
             return []
-        for sep in ("\n", ";", "|"):
+        if "\n" in text:
+            # Bulleted/numbered lists: "1. reason\n2. reason" or "- reason\n- reason"
+            lines = text.split("\n")
+            parts = []
+            for line in lines:
+                line = line.strip().lstrip("0123456789.)- ")
+                if line:
+                    parts.append(line)
+            if parts:
+                return parts
+        for sep in (";", "|"):
             if sep in text:
                 return [p.strip() for p in text.split(sep) if p.strip()]
         if "," in text:

@@ -61,11 +61,11 @@ RULES:
 - Distribute {easy_decision_count} cards across the top {easy_decision_career_count} careers — ensure at least 2 different career_index values. career_index: 0 for first career, 1 for second, 2 for third. Reuse career 0 only when 1 or 2 clearly do not fit the category.
 
 MODE:
-__MODE_INSTRUCTIONS__
-
-Return ONLY valid JSON using this shape:
+__MODE_INSTRUCTIONS__Return ONLY valid JSON using this shape:
 {output_shape}
-"""
+
+Previous validation feedback:
+__VALIDATION_FEEDBACK__"""
 
 PARENT_NORMAL_MODE = (
     "Parent career mode: recommend careers for the parent's child. "
@@ -102,10 +102,14 @@ def build_parent_recommendation_prompt() -> ChatPromptTemplate:
     return build_prompt(SYSTEM_PROMPT, USER_PROMPT)
 
 
-def format_parent_prompt_inputs(*, parent_assessment: dict[str, Any]) -> dict[str, str]:
+def format_parent_prompt_inputs(
+    *, parent_assessment: dict[str, Any], validation_feedback: str = "None"
+) -> dict[str, str]:
     mode = (
         PARENT_STUDY_ABROAD_MODE_INSTRUCTIONS
         if is_study_abroad_mode(parent_assessment)
         else PARENT_NORMAL_MODE
     )
-    return format_inputs("parent_assessment", parent_assessment, mode)
+    return format_inputs(
+        "parent_assessment", parent_assessment, mode, validation_feedback
+    )

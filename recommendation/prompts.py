@@ -20,6 +20,7 @@ from recommendation.schemas.recommendation_output import (
     WHY_CAREER_MIN_WORDS,
 )
 
+
 OUTPUT_SHAPE = """{
   "top_suggestions": [
     {
@@ -80,6 +81,9 @@ def build_prompt(system_text: str, user_prompt_template: str) -> ChatPromptTempl
     system_message = _escape_langchain_template(system_text).replace(
         "__MODE_INSTRUCTIONS__",
         "{mode_instructions}",
+    ).replace(
+        "__VALIDATION_FEEDBACK__",
+        "{validation_feedback}",
     )
     return ChatPromptTemplate.from_messages(
         [
@@ -93,6 +97,7 @@ def format_inputs(
     data_key: str,
     assessment_data: dict[str, Any],
     mode_instructions: str,
+    validation_feedback: str = "None",
 ) -> dict[str, str]:
     return {
         data_key: json.dumps(
@@ -102,4 +107,5 @@ def format_inputs(
             default=str,
         ),
         "mode_instructions": mode_instructions,
+        "validation_feedback": validation_feedback,
     }

@@ -105,6 +105,15 @@ _WORK_LIFE_BALANCE_ALIASES: dict[str, WorkLifeBalanceLevel] = {
     "strong": "Excellent",
     "very good": "Excellent",
     "variable": "Fair",
+    "flexible": "Good",
+    "mixed": "Fair",
+    "decent": "Good",
+    "fine": "Fair",
+    "better": "Good",
+    "best": "Excellent",
+    "manageable": "Good",
+    "reasonable": "Good",
+    "not bad": "Fair",
 }
 
 
