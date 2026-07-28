@@ -1,23 +1,24 @@
-from datetime import timedelta
 import json
+from datetime import timedelta
 
-from activity_log.services import log_event
-from utils.auth import is_web_source, validate_password_strength
 from django.contrib.auth import logout
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework_simplejwt.authentication import JWTAuthentication
+
+from activity_log.services import log_event
+from email_utils.send_email import decode_token, generate_token, send_mail
 from user.models import User
-from email_utils.send_email import generate_token, send_mail, decode_token
 from user.services.registration_service import (
     send_registration_email,
     send_verify_email,
 )
 from user.user_type_serializers import RegisterSerializer
+from utils.auth import is_web_source, validate_password_strength
 
 
 class AuthViewSet(viewsets.ViewSet):

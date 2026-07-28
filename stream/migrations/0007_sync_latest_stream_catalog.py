@@ -4,7 +4,6 @@ from io import StringIO
 from django.db import migrations
 from django.utils import timezone
 
-
 # Snapshot of stream_master_sample.csv for populated databases.
 STREAM_CATALOG = """stream_code,stream_name,sequence_order,description,education_level
 science_pcm,Science (PCM),1,Physics Chemistry Mathematics,higher_secondary

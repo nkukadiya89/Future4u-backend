@@ -1,3 +1,7 @@
+from recommendation.engine.chat_service import (
+    CAREER_SCOPE_REFUSAL_PREFIX,
+    BaseAIChatService,
+)
 from recommendation.engine.recommendation_service import (
     AI_RECOMMENDATION_DISCLAIMER,
     load_recommendation_and_check_cycle,
@@ -5,10 +9,6 @@ from recommendation.engine.recommendation_service import (
     public_career_factors,
     save_recommendation,
     serialize_recommendation,
-)
-from recommendation.engine.chat_service import (
-    BaseAIChatService,
-    CAREER_SCOPE_REFUSAL_PREFIX,
 )
 
 __all__ = [

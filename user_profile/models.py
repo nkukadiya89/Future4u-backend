@@ -1,15 +1,16 @@
 import os
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
-from common.models import BaseModule
+
 from city.models import City
+from common.models import BaseModule
 from company.models import Company
 from country.models import Country
-from state.models import State
 from education_level.models import EducationLevel
+from state.models import State
 from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
-from django.core.exceptions import ValidationError
 
 
 class UserProfile(models.Model):

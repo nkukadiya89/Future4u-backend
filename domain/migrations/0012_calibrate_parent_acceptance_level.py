@@ -10,7 +10,6 @@ Based on Indian parent mindset, especially Gujarat context.
 
 from django.db import migrations
 
-
 # domain_code -> parent_acceptance_level
 # Scale: 1=Low (risky), 2=Moderate (acceptable), 3=High (respected), 4=Very High, 5=Extremely High
 PARENT_ACCEPTANCE = {

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from assessment.models import ProfessionalAssessment
 from assessment_career.models import CareerRecommendation, CareerSuggestion
-
 from recommendation.engine.recommendation_service import (
     load_recommendation_and_check_cycle,
     save_recommendation,

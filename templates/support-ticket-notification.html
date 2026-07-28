@@ -140,10 +140,10 @@
             <h1>Support Ticket Notification</h1>
             <p>New Support Ticket Created</p>
         </div>
-        
+
         <div class="content">
             <p class="greeting">Hello {% if name %}{{ name }}{% else %}User{% endif %},</p>
-            
+
             {% if custom_content %}
                 <div class="custom-content">
                     {{ custom_content|safe }}
@@ -151,59 +151,59 @@
             {% else %}
                 <p>A new support ticket has been created and requires your attention.</p>
             {% endif %}
-            
+
             <div class="ticket-info">
                 <div class="ticket-number">Ticket #{{ ticket_number|default:"N/A" }}</div>
-                
+
                 <div class="info-row">
                     <span class="info-label">Status:</span>
                     <span class="info-value">
                         <span class="status {{ status|default:'open' }}">{{ status|default:"open"|title }}</span>
                     </span>
                 </div>
-                
+
                 {% if description %}
                 <div class="info-row">
                     <span class="info-label">Description:</span>
                     <span class="info-value">{{ description|linebreaks }}</span>
                 </div>
                 {% endif %}
-                
+
                 {% if company_name %}
                 <div class="info-row">
                     <span class="info-label">Company:</span>
                     <span class="info-value">{{ company_name }}</span>
                 </div>
                 {% endif %}
-                
+
                 {% if partner_company_name %}
                 <div class="info-row">
                     <span class="info-label">Partner Company:</span>
                     <span class="info-value">{{ partner_company_name }}</span>
                 </div>
                 {% endif %}
-                
+
                 {% if end_client_name %}
                 <div class="info-row">
                     <span class="info-label">End Client:</span>
                     <span class="info-value">{{ end_client_name }}</span>
                 </div>
                 {% endif %}
-                
+
                 {% if created_by_name %}
                 <div class="info-row">
                     <span class="info-label">Created By:</span>
                     <span class="info-value">{{ created_by_name }}</span>
                 </div>
                 {% endif %}
-                
+
                 {% if created_at %}
                 <div class="info-row">
                     <span class="info-label">Created At:</span>
                     <span class="info-value">{{ created_at }}</span>
                 </div>
                 {% endif %}
-                
+
                 {% if ticket_topic_name %}
                 <div class="info-row">
                     <span class="info-label">Category:</span>
@@ -211,16 +211,16 @@
                 </div>
                 {% endif %}
             </div>
-            
+
             <div class="btn-container">
                 <a href="{{ admin_url|default:'#' }}" class="btn">View Ticket Details</a>
             </div>
-            
+
             <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
-            
+
             <p>Best regards,<br>Future4U Support Team</p>
         </div>
-        
+
         <div class="footer">
             <p>&copy; 2024 Future4U. All rights reserved.</p>
             <p>This is an automated message. Please do not reply to this email.</p>

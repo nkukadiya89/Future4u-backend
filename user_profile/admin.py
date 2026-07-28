@@ -1,8 +1,8 @@
 from django import forms
 from django.contrib import admin
-from domain.models import Domain
 
 from common.mixins.admin_mixins import ProfileReadonlyFieldsAdminMixin
+from domain.models import Domain
 from user_profile.models import (
     BusinessSetting,
     ChildProfile,
@@ -381,32 +381,53 @@ class SchoolCollegeProfileAdmin(admin.ModelAdmin):
         "extra_token_limit",
         "last_token_reset_at",
     )
-    search_fields = ("user__email", "user__first_name", "user__last_name", "institute_name")
-    readonly_fields = ("user", "token_limit", "last_token_reset_at", "created_at", "updated_at")
+    search_fields = (
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+        "institute_name",
+    )
+    readonly_fields = (
+        "user",
+        "token_limit",
+        "last_token_reset_at",
+        "created_at",
+        "updated_at",
+    )
     raw_id_fields = ("user",)
 
     fieldsets = (
         ("Identity", {"fields": ("user",)}),
-        ("Institute Info", {"fields": ("institute_name", "board", "about_us", "website")}),
-        ("Token Limits", {
-            "fields": (
-                "extra_token_limit",
-                "token_limit",
-                "last_token_reset_at",
-            ),
-            "description": (
-                "extra (editable) adds to token_limit on save. "
-                "Monthly reset sets token_limit to config default only. "
-                "Extra does NOT carry forward to next month."
-            ),
-        }),
+        (
+            "Institute Info",
+            {"fields": ("institute_name", "board", "about_us", "website")},
+        ),
+        (
+            "Token Limits",
+            {
+                "fields": (
+                    "extra_token_limit",
+                    "token_limit",
+                    "last_token_reset_at",
+                ),
+                "description": (
+                    "extra (editable) adds to token_limit on save. "
+                    "Monthly reset sets token_limit to config default only. "
+                    "Extra does NOT carry forward to next month."
+                ),
+            },
+        ),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
 
     def save_model(self, request, obj, form, change):
         if change and "extra_token_limit" in form.changed_data:
             try:
-                old = self.model.objects.only("extra_token_limit").get(id=obj.id).extra_token_limit
+                old = (
+                    self.model.objects.only("extra_token_limit")
+                    .get(id=obj.id)
+                    .extra_token_limit
+                )
             except self.model.DoesNotExist:
                 old = 0
             increase = (obj.extra_token_limit or 0) - (old or 0)
@@ -424,32 +445,50 @@ class InstituteProfileAdmin(admin.ModelAdmin):
         "extra_token_limit",
         "last_token_reset_at",
     )
-    search_fields = ("user__email", "user__first_name", "user__last_name", "institute_name")
-    readonly_fields = ("user", "token_limit", "last_token_reset_at", "created_at", "updated_at")
+    search_fields = (
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+        "institute_name",
+    )
+    readonly_fields = (
+        "user",
+        "token_limit",
+        "last_token_reset_at",
+        "created_at",
+        "updated_at",
+    )
     raw_id_fields = ("user",)
 
     fieldsets = (
         ("Identity", {"fields": ("user",)}),
         ("Institute Info", {"fields": ("institute_name", "about_us", "website")}),
-        ("Token Limits", {
-            "fields": (
-                "extra_token_limit",
-                "token_limit",
-                "last_token_reset_at",
-            ),
-            "description": (
-                "extra (editable) adds to token_limit on save. "
-                "Monthly reset sets token_limit to config default only. "
-                "Extra does NOT carry forward to next month."
-            ),
-        }),
+        (
+            "Token Limits",
+            {
+                "fields": (
+                    "extra_token_limit",
+                    "token_limit",
+                    "last_token_reset_at",
+                ),
+                "description": (
+                    "extra (editable) adds to token_limit on save. "
+                    "Monthly reset sets token_limit to config default only. "
+                    "Extra does NOT carry forward to next month."
+                ),
+            },
+        ),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
 
     def save_model(self, request, obj, form, change):
         if change and "extra_token_limit" in form.changed_data:
             try:
-                old = self.model.objects.only("extra_token_limit").get(id=obj.id).extra_token_limit
+                old = (
+                    self.model.objects.only("extra_token_limit")
+                    .get(id=obj.id)
+                    .extra_token_limit
+                )
             except self.model.DoesNotExist:
                 old = 0
             increase = (obj.extra_token_limit or 0) - (old or 0)
@@ -467,32 +506,50 @@ class CorporateProfileAdmin(admin.ModelAdmin):
         "extra_token_limit",
         "last_token_reset_at",
     )
-    search_fields = ("user__email", "user__first_name", "user__last_name", "company_name")
-    readonly_fields = ("user", "token_limit", "last_token_reset_at", "created_at", "updated_at")
+    search_fields = (
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+        "company_name",
+    )
+    readonly_fields = (
+        "user",
+        "token_limit",
+        "last_token_reset_at",
+        "created_at",
+        "updated_at",
+    )
     raw_id_fields = ("user",)
 
     fieldsets = (
         ("Identity", {"fields": ("user",)}),
         ("Company Info", {"fields": ("company_name", "about_us", "website")}),
-        ("Token Limits", {
-            "fields": (
-                "extra_token_limit",
-                "token_limit",
-                "last_token_reset_at",
-            ),
-            "description": (
-                "extra (editable) adds to token_limit on save. "
-                "Monthly reset sets token_limit to config default only. "
-                "Extra does NOT carry forward to next month."
-            ),
-        }),
+        (
+            "Token Limits",
+            {
+                "fields": (
+                    "extra_token_limit",
+                    "token_limit",
+                    "last_token_reset_at",
+                ),
+                "description": (
+                    "extra (editable) adds to token_limit on save. "
+                    "Monthly reset sets token_limit to config default only. "
+                    "Extra does NOT carry forward to next month."
+                ),
+            },
+        ),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
 
     def save_model(self, request, obj, form, change):
         if change and "extra_token_limit" in form.changed_data:
             try:
-                old = self.model.objects.only("extra_token_limit").get(id=obj.id).extra_token_limit
+                old = (
+                    self.model.objects.only("extra_token_limit")
+                    .get(id=obj.id)
+                    .extra_token_limit
+                )
             except self.model.DoesNotExist:
                 old = 0
             increase = (obj.extra_token_limit or 0) - (old or 0)

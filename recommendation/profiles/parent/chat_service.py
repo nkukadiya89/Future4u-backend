@@ -1,19 +1,19 @@
 from __future__ import annotations
 
 from assessment_career.models import (
-    ChatMessage,
-    ChatSession,
     CareerRecommendation,
     CareerSuggestion,
-)
-from recommendation.engine.chat_service import (
-    BaseAIChatService,
-    CAREER_SCOPE_REFUSAL_PREFIX,
+    ChatMessage,
+    ChatSession,
 )
 from recommendation.engine.chat_helpers import (
     as_list,
     format_education,
     format_other_suggestions,
+)
+from recommendation.engine.chat_service import (
+    CAREER_SCOPE_REFUSAL_PREFIX,
+    BaseAIChatService,
 )
 
 

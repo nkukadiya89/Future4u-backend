@@ -1,7 +1,8 @@
 from django.db import transaction
 from django.db.models import F
 
-from subscription.constants import FEATURE_FIELD_MAP as CONSUME_FIELD_MAP, PORTAL_FIELD_MAP
+from subscription.constants import FEATURE_FIELD_MAP as CONSUME_FIELD_MAP
+from subscription.constants import PORTAL_FIELD_MAP
 from subscription.models import FeatureUsage, SubscriptionFeature, UserSubscription
 
 
@@ -87,7 +88,10 @@ def consume_feature(user, feature_code, quantity=1):
 
     with transaction.atomic():
         usage, _ = FeatureUsage.objects.select_for_update().get_or_create(
-            user=user, feature_code=feature_code, plan_price=plan_price, defaults={"used": 0}
+            user=user,
+            feature_code=feature_code,
+            plan_price=plan_price,
+            defaults={"used": 0},
         )
 
         if usage.used + quantity > limit:

@@ -16,12 +16,9 @@ class IsAdminUser(BasePermission):
             or user.user_type == User.Role.SUPER_ADMIN
         )
 
+
 def is_admin_user(user):
-    return (
-        user.is_superuser
-        or user.is_staff
-        or user.user_type == User.Role.SUPER_ADMIN
-    )
+    return user.is_superuser or user.is_staff or user.user_type == User.Role.SUPER_ADMIN
 
 
 class IsAdminOrProvider(BasePermission):
@@ -45,19 +42,18 @@ class IsAdminOrProvider(BasePermission):
             and not user.deleted
         )
 
+
 class IsSchoolCollegeOrInstitute(BasePermission):
-    message = (
-        "This feature is available for School/College or Institute users only."
-    )
+    message = "This feature is available for School/College or Institute users only."
 
     def has_permission(self, request, view):
         user = request.user
         if not user or not user.is_authenticated:
             return False
-        
+
         return (
-            user.user_type 
-            in[
+            user.user_type
+            in [
                 User.Role.SCHOOL_COLLEGE,
                 User.Role.INSTITUTE,
             ]
@@ -90,4 +86,3 @@ class IsIndividualUser(BasePermission):
             and user.status == "active"
             and not user.deleted
         )
-     

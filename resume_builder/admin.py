@@ -7,15 +7,13 @@ to generate/preview a resume PDF for any user directly from admin.
 URL:  /admin/resume_builder/resumebuilder/
 """
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db import models
 from django.http import HttpResponse, JsonResponse
-from django.urls import path, reverse
 from django.shortcuts import render
-from django.contrib import messages
+from django.urls import path, reverse
 
 from common.mixins.admin_mixins import ReadOnlyAdminMixin
-
 
 # ── Unmanaged proxy model (no DB table needed) ───────────────────────────────
 
@@ -102,12 +100,13 @@ class ResumeBuilderAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     # ── Generate PDF view ─────────────────────────────────────────────────────
     def generate_view(self, request, user_id):
         from django.contrib.auth import get_user_model
-        from resume_builder.views import _get_profile
+
         from resume_builder.services import (
-            build_student_resume_data,
             build_professional_resume_data,
+            build_student_resume_data,
             generate_resume_pdf,
         )
+        from resume_builder.views import _get_profile
 
         User = get_user_model()
         try:
@@ -157,11 +156,12 @@ class ResumeBuilderAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     # ── Preview JSON view ─────────────────────────────────────────────────────
     def preview_view(self, request, user_id):
         from django.contrib.auth import get_user_model
-        from resume_builder.views import _get_profile
+
         from resume_builder.services import (
-            build_student_resume_data,
             build_professional_resume_data,
+            build_student_resume_data,
         )
+        from resume_builder.views import _get_profile
 
         User = get_user_model()
         try:

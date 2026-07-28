@@ -1,7 +1,6 @@
 from django.db import migrations, transaction
 from django.utils.timezone import now
 
-
 PLANS = [
     {
         "package_name": "Free",

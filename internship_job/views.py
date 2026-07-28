@@ -1,18 +1,20 @@
-from django.shortcuts import render
-from .models import Internship, InternshipApplication
-from .serializers import InternshipSerializer, InternshipApplicationSerializer
-from common.master_view import BaseModelViewSet
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django.utils import timezone
 from django.db import transaction
-from rest_framework.decorators import action
+from django.shortcuts import render
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from assessment_career.models import CareerSuggestion
-from .service import match_internships
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 from activity_log.services import log_event
+from assessment_career.models import CareerSuggestion
+from common.master_view import BaseModelViewSet
 from user.permissions import IsAdminOrProvider, is_admin_user
+
+from .models import Internship, InternshipApplication
+from .serializers import InternshipApplicationSerializer, InternshipSerializer
+from .service import match_internships
 
 # Create your views here.
 
@@ -34,11 +36,19 @@ class InternshipViewSet(BaseModelViewSet):
             # Students/parents: only see active internships
             base = queryset.filter(status="active")
         # Allow restore/archive actions to access deleted records
-        if self.action not in ["restore", "archive_list", "archive", "bulk_archive", "bulk_restore", "destroy"]:
+        if self.action not in [
+            "restore",
+            "archive_list",
+            "archive",
+            "bulk_archive",
+            "bulk_restore",
+            "destroy",
+        ]:
             base = base.filter(deleted=False)
 
         # Apply subscription plan portal limit (internship access)
         from subscription.services.usage import apply_portal_limit
+
         return apply_portal_limit(user, base, "internship")
 
     serializer_class = InternshipSerializer
@@ -303,9 +313,14 @@ class InternshipViewSet(BaseModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="archive-list")
     def archive_list(self, request):
-        queryset = Internship.objects.select_related(
-            "country", "state", "city", "provider", "internship_provider"
-        ).prefetch_related("education_tags").filter(deleted=True).order_by("-deleted_at")
+        queryset = (
+            Internship.objects.select_related(
+                "country", "state", "city", "provider", "internship_provider"
+            )
+            .prefetch_related("education_tags")
+            .filter(deleted=True)
+            .order_by("-deleted_at")
+        )
 
         queryset = self.filter_queryset(queryset)
 

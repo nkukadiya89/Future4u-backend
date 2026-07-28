@@ -1,4 +1,5 @@
 from django.urls import path
+
 from resume_builder.views import ResumeGenerateView, ResumePreviewView
 
 urlpatterns = [

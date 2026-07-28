@@ -2,23 +2,17 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
-from user.permissions import IsIndividualUser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from common.master_view import BaseModelViewSet
+from user.permissions import IsIndividualUser
 from utils.pagination import Pagination
 from utils.token_check import check_token_available
 
-from .models import (
-    CareerRecommendation,
-    CareerSuggestion,
-)
-from .serializers import (
-    CareerRecommendationSerializer,
-    CareerSuggestionSerializer,
-)
+from .models import CareerRecommendation, CareerSuggestion
+from .serializers import CareerRecommendationSerializer, CareerSuggestionSerializer
 
 
 class CareerSuggestionViewSet(ModelViewSet):

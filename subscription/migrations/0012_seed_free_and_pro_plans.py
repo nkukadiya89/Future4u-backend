@@ -1,6 +1,5 @@
 from django.db import migrations, transaction
 
-
 DELETE_PACKAGE_NAMES = ["Explorer", "Career Builder", "Career Pro"]
 CREATE_PLANS = [
     {
@@ -53,7 +52,10 @@ def reverse_seed(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("subscription", "0011_subscriptionplan_remove_featureusage_subscription_and_more"),
+        (
+            "subscription",
+            "0011_subscriptionplan_remove_featureusage_subscription_and_more",
+        ),
     ]
 
     operations = [

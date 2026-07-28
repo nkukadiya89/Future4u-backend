@@ -110,14 +110,21 @@ class RegisterSerializer(serializers.ModelSerializer):
         if not isinstance(profile_data, dict):
             errors["profile"] = "Profile must be an object."
             profile_data = {}
-        elif is_web and user_type in [
-            User.Role.SCHOOL_COLLEGE,
-            User.Role.INSTITUTE,
-        ] and not (profile_data.get("institute_name") or "").strip():
+        elif (
+            is_web
+            and user_type
+            in [
+                User.Role.SCHOOL_COLLEGE,
+                User.Role.INSTITUTE,
+            ]
+            and not (profile_data.get("institute_name") or "").strip()
+        ):
             errors["profile.institute_name"] = "This field is required."
-        elif is_web and user_type == User.Role.CORPORATE and not (
-            profile_data.get("company_name") or ""
-        ).strip():
+        elif (
+            is_web
+            and user_type == User.Role.CORPORATE
+            and not (profile_data.get("company_name") or "").strip()
+        ):
             errors["profile.company_name"] = "This field is required."
 
         referred_by = None

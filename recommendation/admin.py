@@ -14,16 +14,15 @@ import json
 from django import forms
 from django.conf import settings
 from django.contrib import admin
-
-from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from django.shortcuts import render
 
+from ai.config import groq_api_key, is_configured
 from assessment.models import (
     ParentAssessment,
     ProfessionalAssessment,
     StudentAssessment,
 )
-from ai.config import groq_api_key, is_configured
+from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from recommendation.config import ai_recommendations_enabled
 from recommendation.exceptions import (
     AIConfigurationError,
@@ -38,7 +37,6 @@ from recommendation.profiles.professional.service import (
     ProfessionalRecommendationService,
 )
 from recommendation.profiles.student.service import StudentRecommendationService
-
 
 ASSESSMENT_TYPE_CHOICES = [
     ("student", "Student"),

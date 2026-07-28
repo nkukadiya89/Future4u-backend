@@ -294,7 +294,6 @@ LOGGING = {
             "propagate": False,
         },
     },
-
 }
 
 SIMPLE_JWT = {

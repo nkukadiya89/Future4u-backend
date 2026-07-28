@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from langchain_core.prompts import ChatPromptTemplate
 
-
 SYSTEM_PROMPT = """You are Future4U's career assistant.
 Help the student understand and act on the selected career recommendation.
 Use the saved recommendation context below; do not invent guaranteed outcomes.

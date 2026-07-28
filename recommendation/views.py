@@ -2,11 +2,15 @@ import logging
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from user.permissions import IsIndividualUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from assessment.models import (
+    ParentAssessment,
+    ProfessionalAssessment,
+    StudentAssessment,
+)
 from recommendation.engine.dispatch import (
     resolve_chat_service,
     resolve_recommendation_service,
@@ -18,9 +22,9 @@ from recommendation.exceptions import (
     AssessmentNotFoundError,
     AssessmentNotReadyError,
 )
+from user.permissions import IsIndividualUser
 from utils.throttles import AIChatRateThrottle, RecommendationRateThrottle
 from utils.token_check import check_token_available, deduct_monthly_tokens
-from assessment.models import ParentAssessment, ProfessionalAssessment, StudentAssessment
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +43,7 @@ def _resolve_assessment_type(
     ]
     for Model, ptype in checks:
         try:
-            assessment = Model.objects.get(
-                id=assessment_id, user=user, deleted=False
-            )
+            assessment = Model.objects.get(id=assessment_id, user=user, deleted=False)
             return assessment, ptype
         except Model.DoesNotExist:
             continue
@@ -73,9 +75,7 @@ class RecommendationAPIView(APIView):
             )
 
         try:
-            profile_type = (
-                request.query_params.get("profile_type") or determined_type
-            )
+            profile_type = request.query_params.get("profile_type") or determined_type
             result = resolve_recommendation_service(
                 assessment_id, profile_type=profile_type
             )
@@ -100,7 +100,9 @@ class RecommendationAPIView(APIView):
             except Exception as exc:
                 logger.error(
                     "TOKEN_RECONCILE user=%s feature=recommendation cost=%s err=%s",
-                    request.user.id, token_usage, exc,
+                    request.user.id,
+                    token_usage,
+                    exc,
                 )
 
             return Response(
@@ -180,9 +182,7 @@ class RecommendationChatAPIView(APIView):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-            profile_type = (
-                request.query_params.get("profile_type") or determined_type
-            )
+            profile_type = request.query_params.get("profile_type") or determined_type
             result = resolve_chat_service(assessment_id, profile_type=profile_type)
             data = result.service.context(
                 user=request.user,
@@ -233,9 +233,7 @@ class RecommendationChatAPIView(APIView):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-            profile_type = (
-                request.query_params.get("profile_type") or determined_type
-            )
+            profile_type = request.query_params.get("profile_type") or determined_type
             result = resolve_chat_service(assessment_id, profile_type=profile_type)
             data = result.service.ask(
                 user=request.user,
@@ -250,7 +248,9 @@ class RecommendationChatAPIView(APIView):
             except Exception as exc:
                 logger.error(
                     "TOKEN_RECONCILE user=%s feature=ai_chat cost=%s err=%s",
-                    request.user.id, token_usage, exc,
+                    request.user.id,
+                    token_usage,
+                    exc,
                 )
 
             return Response(

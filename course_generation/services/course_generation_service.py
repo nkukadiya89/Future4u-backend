@@ -13,13 +13,17 @@ from course_generation.services.course_generator import CourseGenerator
 class CourseGenerationService:
     """Orchestrates AI course detail generation for institute users."""
 
-    def generate(self, *, user, validated_input: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    def generate(
+        self, *, user, validated_input: dict[str, Any]
+    ) -> tuple[dict[str, Any], int]:
         if not can_user_generate_courses(user):
             raise CourseGenerationAccessDeniedError(
                 "Course generation is only available for institute and school/college accounts"
             )
 
-        payload, token_usage = CourseGenerator.generate(generation_input=validated_input)
+        payload, token_usage = CourseGenerator.generate(
+            generation_input=validated_input
+        )
         return _build_response(payload, validated_input), token_usage
 
 
@@ -63,9 +67,15 @@ def _build_response(
     course_provider_name = None
     if course_provider:
         if hasattr(course_provider, "institute_profile"):
-            course_provider_name = getattr(course_provider.institute_profile, "institute_name", None)
-        if not course_provider_name and hasattr(course_provider, "school_college_profile"):
-            course_provider_name = getattr(course_provider.school_college_profile, "institute_name", None)
+            course_provider_name = getattr(
+                course_provider.institute_profile, "institute_name", None
+            )
+        if not course_provider_name and hasattr(
+            course_provider, "school_college_profile"
+        ):
+            course_provider_name = getattr(
+                course_provider.school_college_profile, "institute_name", None
+            )
         if not course_provider_name:
             course_provider_name = getattr(course_provider, "full_name", None) or ""
     data["course_provider_name"] = course_provider_name or ""

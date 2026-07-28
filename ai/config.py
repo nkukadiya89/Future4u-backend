@@ -19,7 +19,10 @@ def is_configured() -> bool:
 
 
 def model_name() -> str:
-    return getattr(settings, "GROQ_MODEL", "openai/gpt-oss-120b").strip() or "openai/gpt-oss-120b"
+    return (
+        getattr(settings, "GROQ_MODEL", "openai/gpt-oss-120b").strip()
+        or "openai/gpt-oss-120b"
+    )
 
 
 def default_temperature() -> float:

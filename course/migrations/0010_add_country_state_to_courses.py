@@ -7,20 +7,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('country', '0003_alter_country_updated_at'),
-        ('course', '0009_add_course_overview_field'),
-        ('state', '0003_alter_state_updated_at'),
+        ("country", "0003_alter_country_updated_at"),
+        ("course", "0009_add_course_overview_field"),
+        ("state", "0003_alter_state_updated_at"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='courses',
-            name='country',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='country.country'),
+            model_name="courses",
+            name="country",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="country.country",
+            ),
         ),
         migrations.AddField(
-            model_name='courses',
-            name='state',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='state.state'),
+            model_name="courses",
+            name="state",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="state.state",
+            ),
         ),
     ]

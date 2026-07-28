@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internship_job', '0021_remove_internship_corporate'),
+        ("internship_job", "0021_remove_internship_corporate"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='internship',
-            name='internship_overview',
-            field=models.TextField(blank=True, help_text='Employer-provided internship overview used as AI generation context.', null=True),
+            model_name="internship",
+            name="internship_overview",
+            field=models.TextField(
+                blank=True,
+                help_text="Employer-provided internship overview used as AI generation context.",
+                null=True,
+            ),
         ),
     ]

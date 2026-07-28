@@ -13,13 +13,17 @@ from internship_generation.services.internship_generator import InternshipGenera
 class InternshipGenerationService:
     """Orchestrates AI internship detail generation for institute and corporate users."""
 
-    def generate(self, *, user, validated_input: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    def generate(
+        self, *, user, validated_input: dict[str, Any]
+    ) -> tuple[dict[str, Any], int]:
         if not can_user_generate_internships(user):
             raise InternshipGenerationAccessDeniedError(
                 "Internship generation is only available for institute and corporate accounts"
             )
 
-        payload, token_usage = InternshipGenerator.generate(generation_input=validated_input)
+        payload, token_usage = InternshipGenerator.generate(
+            generation_input=validated_input
+        )
         return _build_response(payload, validated_input), token_usage
 
 
@@ -28,8 +32,15 @@ def _build_response(
 ) -> dict[str, Any]:
     data = payload.model_dump()
     for field in (
-        "internship_overview", "department", "stipend", "duration", "mode",
-        "application_deadline", "country", "state", "city",
+        "internship_overview",
+        "department",
+        "stipend",
+        "duration",
+        "mode",
+        "application_deadline",
+        "country",
+        "state",
+        "city",
         "certificate_provided",
     ):
         if field not in validated_input:
@@ -47,7 +58,9 @@ def _build_response(
     data["provider_type"] = validated_input.get("provider_type") or None
 
     internship_provider = validated_input.get("internship_provider")
-    data["internship_provider"] = internship_provider.pk if internship_provider else None
+    data["internship_provider"] = (
+        internship_provider.pk if internship_provider else None
+    )
 
     internship_provider_name = None
     if internship_provider:
@@ -55,12 +68,16 @@ def _build_response(
             internship_provider_name = getattr(
                 internship_provider.institute_profile, "institute_name", None
             )
-        if not internship_provider_name and hasattr(internship_provider, "corporate_profile"):
+        if not internship_provider_name and hasattr(
+            internship_provider, "corporate_profile"
+        ):
             internship_provider_name = getattr(
                 internship_provider.corporate_profile, "company_name", None
             )
         if not internship_provider_name:
-            internship_provider_name = getattr(internship_provider, "full_name", None) or ""
+            internship_provider_name = (
+                getattr(internship_provider, "full_name", None) or ""
+            )
     data["internship_provider_name"] = internship_provider_name or ""
     data["status"] = "draft"
 

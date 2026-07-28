@@ -4,19 +4,18 @@ from assessment.models import (
     CareerDirection,
     CareerValue,
     Concern,
+    GuidanceReason,
     Option,
     ParentAssessment,
     ParentCareerExpectation,
     ParentConstraint,
+    ProfessionalAssessment,
     Question,
     StudentAssessment,
     UserGoal,
     UserResponse,
-    GuidanceReason,
     WorkConstraint,
-    ProfessionalAssessment,
 )
-
 from assessment.validators import validate_domain_category_and_domain
 from common.serializers import BaseModelSerializer
 from domain.models import Domain

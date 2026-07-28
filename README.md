@@ -5,7 +5,7 @@
 2. create a virtual environment
 ``` python -m venv env ```
 3. Activate the virtual environment
-    for mac / linux 
+    for mac / linux
     ``` source env/bin/activate ```
     for windows
     ``` env/Scripts/activate    ```
@@ -17,11 +17,11 @@
 ``` pytest -s ```
     this will make the data available till all the test cases are executed
 ``` pytest --reuse-db    ```
-7. Run the server using command 
+7. Run the server using command
 ``` python manage.py runserver  ```
 8. Run the celery and celery beat to run the scheduled tasks
 ``` celery -A future4u worker -l info --pool=threads --concurrency=4   ```
-  to run the celery beat process 
+  to run the celery beat process
 ```For develop celery restart : sudo systemctl restart celery ```
 9. To format all the files use below command
 ``` black . ```
@@ -33,6 +33,5 @@
 11. To remove unused import from all the files
 ``` pip install autoflake   ```
 ```
- autoflake --remove-all-unused-imports --recursive --remove-unused-variables --in-place .    
+ autoflake --remove-all-unused-imports --recursive --remove-unused-variables --in-place .
 ```
-

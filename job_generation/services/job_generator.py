@@ -4,13 +4,11 @@ import json
 import logging
 from typing import Any
 
-from pydantic import ValidationError
-
 from django.conf import settings
+from pydantic import ValidationError
 
 from ai.config import is_configured
 from ai.provider import ensure_configured, get_chat_model
-
 from job_generation.exceptions import (
     JobGenerationConfigurationError,
     JobGenerationValidationError,
@@ -32,7 +30,9 @@ class JobGenerator:
     """Single LLM invocation: summary input -> structured job posting."""
 
     @classmethod
-    def generate(cls, *, generation_input: dict[str, Any]) -> tuple[JobGenerationPayload, int]:
+    def generate(
+        cls, *, generation_input: dict[str, Any]
+    ) -> tuple[JobGenerationPayload, int]:
         if not is_configured():
             raise JobGenerationConfigurationError(
                 "AI job generation is temporarily unavailable"
@@ -40,7 +40,9 @@ class JobGenerator:
         ensure_configured()
 
         prompt = build_job_generation_prompt()
-        llm = get_chat_model(max_tokens=getattr(settings, "JOB_GENERATION_MAX_TOKENS", 1000))
+        llm = get_chat_model(
+            max_tokens=getattr(settings, "JOB_GENERATION_MAX_TOKENS", 1000)
+        )
         last_error: JobGenerationValidationError | None = None
         validation_feedback = "None"
 

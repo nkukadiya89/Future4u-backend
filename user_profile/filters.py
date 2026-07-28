@@ -1,9 +1,6 @@
 import django_filters
 
-from user_profile.models import (
-    ParentProfile,
-    Profile,
-)
+from user_profile.models import ParentProfile, Profile
 
 
 class ProfileFilter(django_filters.FilterSet):

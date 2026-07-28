@@ -1,29 +1,31 @@
 from rest_framework import serializers
-from language_master.models import Language
-from education_level.models import EducationLevel
+
 from common.mixins.serializer_mixins import (
     ProfileLanguageMixin,
     ProfileLanguageSaveMixin,
     ProfileLanguageSaveWithTimeMixin,
     ProfileUpdateTimestampMixin,
 )
+from common.serializers import BaseModelSerializer
+from education_level.models import EducationLevel
+from language_master.models import Language
+from user.models import User
 from user.serializers import UserQuickSerializer
 from user_profile.models import (
     BusinessSetting,
     ChildProfile,
-    InstituteGallery,
-    SchoolCollegeGallery,
     CorporateGallery,
+    InstituteGallery,
     ParentProfile,
-    Profile,
     ProfessionalProfile,
+    Profile,
+    SchoolCollegeGallery,
     StudentProfile,
     UserProfile,
 )
-from common.serializers import BaseModelSerializer
-from .models import InstituteProfile, SchoolCollegeProfile, CorporateProfile
 from utils.token_check import get_org_token_usage
-from user.models import User
+
+from .models import CorporateProfile, InstituteProfile, SchoolCollegeProfile
 
 
 def validate_json_choices(value, valid_set, field_name):
@@ -123,7 +125,9 @@ class StudentProfileSerializer(
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
-    subscription = serializers.JSONField(source="user.subscription_info", read_only=True)
+    subscription = serializers.JSONField(
+        source="user.subscription_info", read_only=True
+    )
 
     class Meta:
         model = StudentProfile
@@ -332,7 +336,9 @@ class ProfessionalProfileSerializer(
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
-    subscription = serializers.JSONField(source="user.subscription_info", read_only=True)
+    subscription = serializers.JSONField(
+        source="user.subscription_info", read_only=True
+    )
 
     class Meta:
         model = ProfessionalProfile
@@ -569,7 +575,9 @@ class ParentProfileSerializer(
     updated_by = UserQuickSerializer(read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
-    subscription = serializers.JSONField(source="user.subscription_info", read_only=True)
+    subscription = serializers.JSONField(
+        source="user.subscription_info", read_only=True
+    )
 
     class Meta:
         model = ParentProfile

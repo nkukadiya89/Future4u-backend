@@ -1,4 +1,5 @@
 import pandas as pd
+
 from user_profile.models import CorporateProfile
 
 

@@ -15,26 +15,27 @@ Endpoints:
 from __future__ import annotations
 
 import logging
-import tempfile
 import os
+import tempfile
 
-from rest_framework.permissions import IsAuthenticated
-from user.permissions import IsIndividualUser
-from rest_framework.response import Response
+from django.http import HttpResponse
 from rest_framework import status
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from django.http import HttpResponse
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from activity_log.services import log_event
-from utils.token_check import check_token_available, deduct_monthly_tokens
 from resume_builder.services import (
-    build_student_resume_data,
-    build_professional_resume_data,
     build_child_resume_data,
+    build_professional_resume_data,
+    build_student_resume_data,
     generate_resume_pdf,
 )
+from user.permissions import IsIndividualUser
+from utils.token_check import check_token_available, deduct_monthly_tokens
+
 logger = logging.getLogger(__name__)
 
 
@@ -44,10 +45,10 @@ def _get_profile(user, child_id=None):
     Supports student, working_professional, and parent (via child_id).
     """
     from user_profile.models import (
-        StudentProfile,
-        ProfessionalProfile,
         ChildProfile,
         ParentProfile,
+        ProfessionalProfile,
+        StudentProfile,
     )
 
     role = getattr(user, "user_type", None)
@@ -187,7 +188,9 @@ class ResumeGenerateView(APIView):
             except Exception as exc:
                 logger.error(
                     "TOKEN_RECONCILE user=%s feature=resume_enhance cost=%s err=%s",
-                    request.user.id, token_usage, exc,
+                    request.user.id,
+                    token_usage,
+                    exc,
                 )
         except ValueError as exc:
             logger.error("Resume generation error: %s", exc)

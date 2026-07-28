@@ -14,18 +14,27 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from subscription.models import FeatureUsage
-from subscription.serializers_new import (PaymentSubscriptionSerializer,
-                                          SubscriptionAPISerializer,
-                                          SubscriptionCreateSerializer,
-                                          SubscriptionInvoiceSerializer,
-                                          SubscriptionSerializer,
-                                          UserSubscriptionMeSerializer,
-                                          UserSubscriptionSerializer)
-from subscription.services.pricing import calculate_price
 from common.models import FinancialYearModel
-from .models import (PaymentSubscription, PlanPrice, PromoCode, Subscription,
-                     SubscriptionInvoice, UserSubscription)
+from subscription.models import FeatureUsage
+from subscription.serializers_new import (
+    PaymentSubscriptionSerializer,
+    SubscriptionAPISerializer,
+    SubscriptionCreateSerializer,
+    SubscriptionInvoiceSerializer,
+    SubscriptionSerializer,
+    UserSubscriptionMeSerializer,
+    UserSubscriptionSerializer,
+)
+from subscription.services.pricing import calculate_price
+
+from .models import (
+    PaymentSubscription,
+    PlanPrice,
+    PromoCode,
+    Subscription,
+    SubscriptionInvoice,
+    UserSubscription,
+)
 
 
 class SubscriptionViewSet(ModelViewSet):
@@ -46,7 +55,11 @@ class SubscriptionViewSet(ModelViewSet):
         instance = create_ser.save()
         resp_ser = SubscriptionAPISerializer(instance)
         return Response(
-            {"success": True, "message": "Subscription package created successfully", "data": resp_ser.data},
+            {
+                "success": True,
+                "message": "Subscription package created successfully",
+                "data": resp_ser.data,
+            },
             status=201,
         )
 
@@ -59,7 +72,11 @@ class SubscriptionViewSet(ModelViewSet):
         instance = create_ser.save()
         resp_ser = SubscriptionAPISerializer(instance)
         return Response(
-            {"success": True, "message": "Subscription package updated successfully", "data": resp_ser.data},
+            {
+                "success": True,
+                "message": "Subscription package updated successfully",
+                "data": resp_ser.data,
+            },
         )
 
     def partial_update(self, request, *args, **kwargs):
@@ -71,7 +88,11 @@ class SubscriptionViewSet(ModelViewSet):
         instance = create_ser.save()
         resp_ser = SubscriptionAPISerializer(instance)
         return Response(
-            {"success": True, "message": "Subscription package updated successfully", "data": resp_ser.data},
+            {
+                "success": True,
+                "message": "Subscription package updated successfully",
+                "data": resp_ser.data,
+            },
         )
 
     def perform_destroy(self, instance):
@@ -106,9 +127,12 @@ class UserSubscriptionViewSet(ModelViewSet):
 
         # Ensure monthly usage counts are up-to-date before responding
         from utils.token_check import _reset_subscription_monthly_tokens
+
         _reset_subscription_monthly_tokens(request.user, user_sub)
 
-        serializer = UserSubscriptionMeSerializer(user_sub, context={"request": request})
+        serializer = UserSubscriptionMeSerializer(
+            user_sub, context={"request": request}
+        )
         return Response(serializer.data)
 
 
@@ -140,7 +164,9 @@ class PaymentSubscriptionViewSet(ModelViewSet):
 
         plan_price = payment.plan_price
         if not plan_price:
-            return Response({"detail": "No plan price associated with payment"}, status=400)
+            return Response(
+                {"detail": "No plan price associated with payment"}, status=400
+            )
 
         duration = plan_price.duration_days
 
@@ -183,20 +209,33 @@ class PaymentSubscriptionViewSet(ModelViewSet):
 
         plan_price = None
         if plan_price_id:
-            plan_price = PlanPrice.objects.filter(id=plan_price_id, deleted=False).first()
+            plan_price = PlanPrice.objects.filter(
+                id=plan_price_id, deleted=False
+            ).first()
             if not plan_price:
-                return Response({"success": False, "message": "Invalid plan_price_id"}, status=400)
+                return Response(
+                    {"success": False, "message": "Invalid plan_price_id"}, status=400
+                )
         elif subscription_id:
-            subscription = Subscription.objects.filter(id=subscription_id, deleted=False).first()
+            subscription = Subscription.objects.filter(
+                id=subscription_id, deleted=False
+            ).first()
             if not subscription:
-                return Response({"success": False, "message": "Invalid subscription"}, status=400)
+                return Response(
+                    {"success": False, "message": "Invalid subscription"}, status=400
+                )
             plan_price = (
-                PlanPrice.objects.filter(plan=subscription, is_active=True, deleted=False)
+                PlanPrice.objects.filter(
+                    plan=subscription, is_active=True, deleted=False
+                )
                 .order_by("-price")
                 .first()
             )
             if not plan_price:
-                return Response({"success": False, "message": "No active prices for subscription"}, status=400)
+                return Response(
+                    {"success": False, "message": "No active prices for subscription"},
+                    status=400,
+                )
 
         try:
             pricing = calculate_price(plan_price, promocode)

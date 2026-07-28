@@ -3,19 +3,19 @@ from __future__ import annotations
 from typing import Any
 
 from assessment_career.models import (
-    ChatMessage,
-    ChatSession,
     CareerRecommendation,
     CareerSuggestion,
+    ChatMessage,
+    ChatSession,
 )
-from recommendation.engine.chat_service import BaseAIChatService
 from recommendation.engine.chat_helpers import (
-    education_label,
     as_list,
     compact_text,
+    education_label,
     format_education,
     format_other_suggestions,
 )
+from recommendation.engine.chat_service import BaseAIChatService
 
 
 def _format_career_factors(value: Any) -> str:

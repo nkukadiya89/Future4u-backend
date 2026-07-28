@@ -5,26 +5,26 @@ from typing import Any, Callable
 from django.db import transaction
 
 from ai.provider import get_chat_model
+from recommendation.engine.ai_chat_prompt import build_ai_chat_prompt
+from recommendation.engine.chat_helpers import (
+    CHAT_MAX_TOKENS,
+    MAX_QUESTION_LENGTH,
+    as_list,
+    format_chat_error,
+    format_education,
+    format_other_suggestions,
+    format_summary,
+    parse_suggestion_id,
+    serialize_messages,
+    update_summary,
+)
 from recommendation.exceptions import (
     AIConfigurationError,
     AIGenerationError,
     AssessmentAccessDeniedError,
     AssessmentNotFoundError,
 )
-from recommendation.engine.ai_chat_prompt import build_ai_chat_prompt
 from utils.token_usage import extract_token_usage
-from recommendation.engine.chat_helpers import (
-    as_list,
-    format_education,
-    format_summary,
-    update_summary,
-    parse_suggestion_id,
-    serialize_messages,
-    format_other_suggestions,
-    format_chat_error,
-    MAX_QUESTION_LENGTH,
-    CHAT_MAX_TOKENS,
-)
 
 CAREER_SCOPE_REFUSAL_PREFIX = (
     "I can only answer questions related to this career recommendation."

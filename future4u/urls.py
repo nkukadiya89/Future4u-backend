@@ -16,10 +16,11 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
-from user.user_auth import CustomTokenObtainPairView
+from django.urls import include, path
+
 from future4u.routers import future4u_router
 from recommendation.views import RecommendationAPIView, RecommendationChatAPIView
+from user.user_auth import CustomTokenObtainPairView
 from user_profile.views import CorporateDropdownView
 
 urlpatterns = [

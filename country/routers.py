@@ -1,9 +1,6 @@
-from country.views import (
-    CountryArchiveViewSet,
-    CountryRestoreViewSet,
-    CountryViewSet,
-)
 from rest_framework.routers import DefaultRouter
+
+from country.views import CountryArchiveViewSet, CountryRestoreViewSet, CountryViewSet
 
 country_router = DefaultRouter()
 country_router.register("country", CountryViewSet, basename="country")

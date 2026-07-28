@@ -15,11 +15,10 @@ from django.conf import settings
 from django.contrib import admin
 from django.shortcuts import render
 
-from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from ai.config import is_configured
 from city.models import City
+from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from country.models import Country
-from state.models import State
 from internship_job.models import Job
 from job_generation.constants.job_generation_constants import (
     JOB_OVERVIEW_MAX_LENGTH,
@@ -32,6 +31,7 @@ from job_generation.exceptions import (
 from job_generation.models import JobGenerationPanel
 from job_generation.services.job_generation_service import _build_response
 from job_generation.services.job_generator import JobGenerator
+from state.models import State
 from user_profile.models import CorporateProfile
 
 
@@ -44,6 +44,7 @@ def _pretty_json(value) -> str:
 
 def _provider_status() -> dict:
     from ai.config import llm_provider
+
     configured = is_configured()
     enabled = getattr(settings, "JOB_GENERATION_ENABLED", True)
     pname = llm_provider()
@@ -170,9 +171,15 @@ class JobGenerationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                 "job_title": form.cleaned_data.get("job_title", ""),
                 "job_overview": form.cleaned_data["job_overview"],
                 "corporate": corporate_profile.pk if corporate_profile else None,
-                "company_name": corporate_profile.company_name if corporate_profile else "",
-                "company_website": corporate_profile.website if corporate_profile else "",
-                "company_about_us": corporate_profile.about_us if corporate_profile else "",
+                "company_name": (
+                    corporate_profile.company_name if corporate_profile else ""
+                ),
+                "company_website": (
+                    corporate_profile.website if corporate_profile else ""
+                ),
+                "company_about_us": (
+                    corporate_profile.about_us if corporate_profile else ""
+                ),
                 "country": country,
                 "state": state,
                 "city": city,
@@ -195,7 +202,9 @@ class JobGenerationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
             }
             try:
                 payload = JobGenerator.generate(generation_input=generation_input)
-                result = _build_response(payload, generation_input, company=corporate_profile)
+                result = _build_response(
+                    payload, generation_input, company=corporate_profile
+                )
             except JobGenerationConfigurationError as exc:
                 error = f"AI not configured: {exc}"
             except JobGenerationValidationError as exc:

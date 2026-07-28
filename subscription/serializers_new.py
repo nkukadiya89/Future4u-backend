@@ -1,5 +1,10 @@
 from rest_framework import serializers
 
+from subscription.services.feature_service import FeatureService
+from subscription.services.pricing import PricingService, calculate_price
+from user.serializers import UserQuickSerializer
+from utils.datetime_formatter import format_datetime
+
 from .models import (
     PaymentSubscription,
     PlanPrice,
@@ -8,10 +13,6 @@ from .models import (
     SubscriptionInvoice,
     UserSubscription,
 )
-from subscription.services.pricing import PricingService, calculate_price
-from subscription.services.feature_service import FeatureService
-from user.serializers import UserQuickSerializer
-from utils.datetime_formatter import format_datetime
 
 
 class SubscriptionFeatureSerializer(serializers.ModelSerializer):
@@ -89,8 +90,16 @@ class SubscriptionWriteSerializer(serializers.ModelSerializer):
         pairs = [
             ("internship_access_type", "no_of_internship_access", "Internship"),
             ("job_portal_access_type", "no_of_job_portal_access", "Job Portal"),
-            ("course_portal_access_type", "no_of_course_portal_access", "Course Portal"),
-            ("project_topic_access_type", "no_of_project_topic_access", "Project Topic"),
+            (
+                "course_portal_access_type",
+                "no_of_course_portal_access",
+                "Course Portal",
+            ),
+            (
+                "project_topic_access_type",
+                "no_of_project_topic_access",
+                "Project Topic",
+            ),
         ]
         for type_field, count_field, label in pairs:
             if type_field in data and data[type_field] == "limited":
@@ -110,14 +119,24 @@ class SubscriptionWriteSerializer(serializers.ModelSerializer):
 
         if instance is None:
             # Remove pricing-only fields before create
-            for key in ("subscription_price", "subscription_discount",
-                        "subscription_sell_price", "plan_price", "duration_days"):
+            for key in (
+                "subscription_price",
+                "subscription_discount",
+                "subscription_sell_price",
+                "plan_price",
+                "duration_days",
+            ):
                 validated_data.pop(key, None)
             instance = Subscription.objects.create(**validated_data, created_by=user)
         else:
             for attr, value in validated_data.items():
-                if attr not in ("subscription_price", "subscription_discount",
-                                "subscription_sell_price", "plan_price", "duration_days"):
+                if attr not in (
+                    "subscription_price",
+                    "subscription_discount",
+                    "subscription_sell_price",
+                    "plan_price",
+                    "duration_days",
+                ):
                     setattr(instance, attr, value)
             instance.updated_by = user
             instance.save()
@@ -135,9 +154,7 @@ class SubscriptionWriteSerializer(serializers.ModelSerializer):
             instance.save()
 
         PricingService.save(instance, price_data, user, update=is_update)
-        FeatureService.sync_custom_features(
-            instance, subs_features, user
-        )
+        FeatureService.sync_custom_features(instance, subs_features, user)
 
         return instance
 
@@ -169,8 +186,14 @@ class UserSubscriptionMeSerializer(serializers.Serializer):
 
     class Meta:
         fields = [
-            "subscription", "period", "start_date", "end_date",
-            "is_active", "core_features", "limits", "subscription_feature",
+            "subscription",
+            "period",
+            "start_date",
+            "end_date",
+            "is_active",
+            "core_features",
+            "limits",
+            "subscription_feature",
         ]
 
     def get_subscription(self, obj):
@@ -195,6 +218,7 @@ class UserSubscriptionMeSerializer(serializers.Serializer):
             return {}
 
         from subscription.models import FeatureUsage
+
         usage_qs = FeatureUsage.objects.filter(
             user=getattr(obj, "user", None),
             plan_price=obj.plan_price,
@@ -389,9 +413,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         return format_datetime(obj.updated_at)
 
     def get_subscription_feature(self, obj):
-        features = obj.features.filter(
-            deleted=False
-        ).order_by("id")
+        features = obj.features.filter(deleted=False).order_by("id")
         return [
             {
                 "feature_name": f.feature_name,

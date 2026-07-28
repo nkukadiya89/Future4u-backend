@@ -5,8 +5,9 @@ class FeatureService:
     """Handles creation and update of SubscriptionFeature records."""
 
     @staticmethod
-    def upsert(subscription, feature_code, *, feature_name=None,
-               is_enabled=None, user=None):
+    def upsert(
+        subscription, feature_code, *, feature_name=None, is_enabled=None, user=None
+    ):
         if feature_code:
             existing = SubscriptionFeature.objects.filter(
                 subscription=subscription,
@@ -41,15 +42,12 @@ class FeatureService:
             deleted=False,
         )
         existing_by_name = {
-            (f.feature_name or "").strip().lower(): f
-            for f in existing_features
+            (f.feature_name or "").strip().lower(): f for f in existing_features
         }
 
         for f in custom_features_data:
             name = f.get("feature_name") or f.get("feature", "")
-            enabled = bool(
-                f.get("feature_status", f.get("is_enabled", True))
-            )
+            enabled = bool(f.get("feature_status", f.get("is_enabled", True)))
 
             key = name.strip().lower()
             existing = existing_by_name.get(key)
@@ -60,7 +58,9 @@ class FeatureService:
                 continue
 
             cls.upsert(
-                subscription, None,
-                feature_name=name, is_enabled=enabled,
+                subscription,
+                None,
+                feature_name=name,
+                is_enabled=enabled,
                 user=user,
             )

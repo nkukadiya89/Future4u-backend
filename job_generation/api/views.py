@@ -6,14 +6,12 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from user.permissions import IsAdminOrProvider
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from internship_job.models import Job
 from internship_job.serializers import JobSerializer
-
 from job_generation.exceptions import (
     JobGenerationAccessDeniedError,
     JobGenerationConfigurationError,
@@ -21,6 +19,7 @@ from job_generation.exceptions import (
 )
 from job_generation.serializers.job_generation_input import JobGenerationInputSerializer
 from job_generation.services.job_generation_service import JobGenerationService
+from user.permissions import IsAdminOrProvider
 from utils.throttles import JobGenerationRateThrottle
 from utils.token_check import check_token_available, deduct_monthly_tokens
 
@@ -67,7 +66,9 @@ class JobGenerationAPIView(APIView):
             except Exception as exc:
                 logger.error(
                     "TOKEN_RECONCILE user=%s feature=job_gen cost=%s err=%s",
-                    request.user.id, token_usage, exc,
+                    request.user.id,
+                    token_usage,
+                    exc,
                 )
             return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
 
@@ -97,7 +98,8 @@ class JobGenerationAPIView(APIView):
             return Response(
                 {
                     "success": False,
-                    "message": str(exc) or "Unable to generate job details. Please try again.",
+                    "message": str(exc)
+                    or "Unable to generate job details. Please try again.",
                     "error": exc.error,
                     "details": exc.details,
                 },
@@ -172,7 +174,8 @@ class JobGenerationSaveView(APIView):
             return Response(
                 {
                     "success": False,
-                    "message": str(exc) or "Unable to generate job details. Please try again.",
+                    "message": str(exc)
+                    or "Unable to generate job details. Please try again.",
                     "error": exc.error,
                     "details": exc.details,
                 },
@@ -216,14 +219,16 @@ class JobGenerationSaveView(APIView):
         save_mode = request.data.get("save_mode", "draft")
         if save_mode not in ("draft", "publish"):
             save_mode = "draft"
-        
+
         # Deduct actual LLM token usage after successful AI call
         try:
             deduct_monthly_tokens(request.user, token_usage)
         except Exception as exc:
             logger.error(
                 "TOKEN_RECONCILE user=%s feature=job_gen_save cost=%s err=%s",
-                request.user.id, token_usage, exc,
+                request.user.id,
+                token_usage,
+                exc,
             )
 
         job = Job.objects.create(
@@ -238,9 +243,11 @@ class JobGenerationSaveView(APIView):
             job.education_tags.set(education_tags_pks)
 
         job_serializer = JobSerializer(job, context={"request": request})
-        
-        message = "Job saved as draft" if save_mode == "draft" else "Job posted successfully"
-        
+
+        message = (
+            "Job saved as draft" if save_mode == "draft" else "Job posted successfully"
+        )
+
         return Response(
             {
                 "success": True,

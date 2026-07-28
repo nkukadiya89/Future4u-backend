@@ -1,9 +1,6 @@
 from common.serializers import BaseModelSerializer
 
-from .models import (
-    CareerRecommendation,
-    CareerSuggestion,
-)
+from .models import CareerRecommendation, CareerSuggestion
 
 
 class CareerSuggestionSortSerializer(BaseModelSerializer):
