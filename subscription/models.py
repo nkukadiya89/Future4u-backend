@@ -215,46 +215,6 @@ class UserSubscription(models.Model):
             plan_name = self.plan_price.plan.package_name
         return f"{getattr(self.user, 'first_name', '') or getattr(self.user, 'email', '')} - {plan_name or ''}"
 
-    def can_consume(self, feature_code, quantity=1):
-        """Return True if the user can consume `quantity` of `feature_code`.
-
-        For known features (assessment, monthly_tokens), reads from plan model fields.
-        For custom features, checks SubscriptionFeature existence + is_enabled.
-        """
-        from subscription.models import FeatureUsage
-
-        if not self.is_active:
-            return False
-
-        plan = getattr(self.plan_price, "plan", None)
-        if not plan:
-            return False
-
-        # Check model field first (for known features)
-        from subscription.services.usage import _CONSUME_FIELD_MAP
-        field_name = _CONSUME_FIELD_MAP.get(feature_code)
-        if field_name:
-            limit = getattr(plan, field_name, 0) or 0
-            if limit <= 0:
-                return False
-            usage = FeatureUsage.objects.filter(
-                user=self.user, feature_code=feature_code, plan_price=self.plan_price
-            ).first()
-            used = usage.used if usage else 0
-            return (used + quantity) <= limit
-
-        # Fallback for custom features with feature_code
-        from subscription.models import SubscriptionFeature
-        feature = SubscriptionFeature.objects.filter(
-            subscription=plan,
-            feature_code=feature_code,
-            is_enabled=True,
-            deleted=False,
-        ).first()
-        if not feature:
-            return False
-        return True  # Custom features have no limit — just existence + enabled
-
     def consume(self, feature_code, quantity=1):
         """Consume `quantity` of `feature_code` for the user using atomic service.
 

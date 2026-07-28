@@ -3,6 +3,7 @@ from django.db import transaction
 from django.db.models import F
 from django.utils.timezone import now
 
+from subscription.constants import FEATURE_FIELD_MAP
 from subscription.models import FeatureUsage, SubscriptionFeature, UserSubscription
 from user.models import User
 
@@ -18,17 +19,6 @@ FEATURE_NAMES = {
     "job_gen": "Job Generation",
     "resume_enhance": "Resume Builder",
     "monthly_tokens": "Monthly Token Allowance",
-}
-
-_FEATURE_FIELD_MAP = {
-    "ai_chat": "ai_chat_access",
-    "career_compare": "career_compare",
-    "career_roadmap": "career_roadmap",
-    "assessment": "no_of_profile_assessment",
-    "monthly_tokens": "no_of_tokens",
-    "internship_gen": "no_of_internship_access",
-    "course_gen": "no_of_course_portal_access",
-    "job_gen": "no_of_job_portal_access",
 }
 
 MIN_TOKENS_REQUIRED = {
@@ -86,18 +76,15 @@ def _reset_subscription_monthly_tokens(user, user_sub):
     today = now().date()
     if not user_sub.last_reset_at or (today - user_sub.last_reset_at).days >= 30:
         plan_price = user_sub.plan_price
-        # Reset monthly_tokens usage to 0
         FeatureUsage.objects.filter(
             user=user,
             feature_code="monthly_tokens",
             plan_price=plan_price,
         ).update(used=0)
-        # Reset all feature-specific usage counts too
         FeatureUsage.objects.filter(
             user=user,
             plan_price=plan_price,
         ).exclude(feature_code="monthly_tokens").update(used=0)
-        # Update reset timestamp
         UserSubscription.objects.filter(id=user_sub.id).update(last_reset_at=today)
 
 
@@ -115,8 +102,8 @@ def check_token_available(user, feature_code, quantity=1):
 
         _check_org_monthly_reset(profile, user.user_type)
 
-        min_required = MIN_TOKENS_REQUIRED.get(feature_code, 100)
-        if profile.token_limit < min_required:
+        min_required = MIN_TOKENS_REQUIRED.get(feature_code)
+        if min_required is not None and profile.token_limit < min_required:
             raise Exception(
                 f"Insufficient tokens. Need at least {min_required} tokens "
                 f"for {name}. Contact your super admin."
@@ -140,36 +127,13 @@ def check_token_available(user, feature_code, quantity=1):
     if not plan:
         raise Exception("No active subscription plan found.")
 
-    # Check monthly reset before checking limits
     _reset_subscription_monthly_tokens(user, user_sub)
 
-    base_limit = plan.no_of_tokens or 0
-    if base_limit <= 0:
-        raise Exception(
-            "Monthly tokens are not included in your current plan. "
-            "Please upgrade your plan to continue."
-        )
-
-    # Get how many tokens used this month
-    usage = FeatureUsage.objects.filter(
-        user=user,
-        feature_code="monthly_tokens",
-        plan_price=user_sub.plan_price,
-    ).first()
-    used = usage.used if usage else 0
-
-    min_required = MIN_TOKENS_REQUIRED.get(feature_code, 100)
-    if used + min_required > base_limit:
-        raise Exception(
-            f"You have used {used} out of {base_limit} monthly tokens. "
-            f"At least {min_required} tokens are needed for {name}. "
-            f"Please upgrade your plan or wait for your tokens to reset."
-        )
-
-    # Verify this specific feature is included in the user's plan
-    # recommendation is bundled with assessment — no separate plan feature
+    # Verify this specific feature is included in the user's plan FIRST
+    # (Before token checks — non-token features like assessment
+    #  and career_compare should not show token-related errors)
     if feature_code not in ("monthly_tokens", "recommendation"):
-        field_name = _FEATURE_FIELD_MAP.get(feature_code)
+        field_name = FEATURE_FIELD_MAP.get(feature_code)
         if field_name:
             value = getattr(plan, field_name, 0)
             if isinstance(value, bool):
@@ -197,7 +161,55 @@ def check_token_available(user, feature_code, quantity=1):
                     f"Please upgrade to access this feature."
                 )
 
+    # Token checks — only for LLM-consuming features (those in MIN_TOKENS_REQUIRED)
+    min_required = MIN_TOKENS_REQUIRED.get(feature_code)
+    if min_required is not None:
+        base_limit = plan.no_of_tokens or 0
+        if base_limit <= 0:
+            raise Exception(
+                "Monthly tokens are not included in your current plan. "
+                "Please upgrade your plan to continue."
+            )
+
+        usage = FeatureUsage.objects.filter(
+            user=user,
+            feature_code="monthly_tokens",
+            plan_price=user_sub.plan_price,
+        ).first()
+        used = usage.used if usage else 0
+
+        if used + min_required > base_limit:
+            raise Exception(
+                f"You have used {used} out of {base_limit} monthly tokens. "
+                f"At least {min_required} tokens are needed for {name}. "
+                f"Please upgrade your plan or wait for your tokens to reset."
+            )
+
     return True
+
+
+def get_org_token_usage(profile, user_type):
+    """Compute token usage stats for an org profile.
+
+    Single source of truth. Returns monthly_limit, used_tokens,
+    remaining_tokens, and usage_percentage.
+    """
+    base = DEFAULT_ORG_TOKEN_LIMITS.get(user_type, 20000)
+    extra = profile.extra_token_limit or 0
+    monthly_limit = base + extra
+    remaining_tokens = profile.token_limit or 0
+    used_tokens = max(monthly_limit - remaining_tokens, 0)
+    usage_percentage = (
+        round((used_tokens / monthly_limit) * 100, 1)
+        if monthly_limit > 0
+        else 0
+    )
+    return {
+        "monthly_limit": monthly_limit,
+        "used_tokens": used_tokens,
+        "remaining_tokens": remaining_tokens,
+        "usage_percentage": usage_percentage,
+    }
 
 
 def deduct_monthly_tokens(user, actual_tokens):
@@ -233,7 +245,6 @@ def deduct_monthly_tokens(user, actual_tokens):
     if not plan:
         return
 
-    # Check monthly reset before deducting
     _reset_subscription_monthly_tokens(user, user_sub)
 
     with transaction.atomic():

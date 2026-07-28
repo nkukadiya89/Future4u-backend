@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
+from user.permissions import IsIndividualUser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -171,7 +172,7 @@ class CareerSuggestionViewSet(ModelViewSet):
 class CareerSuggestionDetailViewSet(BaseModelViewSet):
     serializer_class = CareerSuggestionSerializer
     profile_type = None
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsIndividualUser]
 
     def get_queryset(self):
         queryset = CareerSuggestion.objects.filter(

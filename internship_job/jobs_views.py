@@ -21,8 +21,6 @@ class JobViewSet(BaseModelViewSet):
         if user.is_superuser:
             base = queryset
         elif user.user_type in [
-            "institute",
-            "school_college",
             "corporate",
         ]:
             base = queryset.filter(provider=user)
@@ -417,6 +415,15 @@ class JobApplicationViewSet(BaseModelViewSet):
         "applied_at",
     ]
 
+    def get_queryset(self):
+        user = self.request.user
+        base = JobApplication.objects.select_related("applicant", "job")
+        if user.is_superuser:
+            return base
+        if user.user_type in ["corporate"]:
+            return base.filter(job__provider=user)
+        return base.filter(applicant=user)
+
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
         job_id = request.data.get("job")
@@ -524,23 +531,6 @@ class JobApplicationViewSet(BaseModelViewSet):
             {
                 "success": True,
                 "message": "Application updated successfully",
-                "data": serializer.data,
-            },
-            status=status.HTTP_200_OK,
-        )
-
-    @action(detail=False, methods=["get"], url_path="my-inquiries")
-    def my_inquiries(self, request):
-        inquiries = JobApplication.objects.filter(
-            applicant=request.user,
-            deleted=False,
-        ).select_related("applicant", "job")
-
-        serializer = self.get_serializer(inquiries, many=True)
-        return Response(
-            {
-                "success": True,
-                "count": inquiries.count(),
                 "data": serializer.data,
             },
             status=status.HTTP_200_OK,

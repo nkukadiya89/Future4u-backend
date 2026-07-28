@@ -12,6 +12,7 @@ from user_profile.views import (
     StudentProfileViewSet,
     UserProfileViewSet,
 )
+from user_profile.organization_token_usage import OrganizationTokenUsageViewSet
 from rest_framework.routers import DefaultRouter
 
 user_profile_router = DefaultRouter()
@@ -64,4 +65,9 @@ user_profile_router.register(
     "api/institute-profile",
     InstituteProfileViewSet,
     basename="institute_profile",
+)
+user_profile_router.register(
+    "api/org-token-usage",
+    OrganizationTokenUsageViewSet,
+    basename="org-token-usage",
 )

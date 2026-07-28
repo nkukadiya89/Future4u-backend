@@ -19,6 +19,7 @@ import tempfile
 import os
 
 from rest_framework.permissions import IsAuthenticated
+from user.permissions import IsIndividualUser
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -108,7 +109,7 @@ class ResumeGenerateView(APIView):
       - photo: image file (jpg/png)
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsIndividualUser]
     authentication_classes = [JWTAuthentication]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
@@ -251,7 +252,7 @@ class ResumePreviewView(APIView):
       - template: standard | professional  (default: professional)
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsIndividualUser]
     authentication_classes = [JWTAuthentication]
 
     def get(self, request, *args, **kwargs):

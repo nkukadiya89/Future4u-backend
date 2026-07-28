@@ -2,6 +2,7 @@ import logging
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from user.permissions import IsIndividualUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -49,7 +50,7 @@ def _resolve_assessment_type(
 
 class RecommendationAPIView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsIndividualUser]
     throttle_classes = [RecommendationRateThrottle]
 
     def get(self, request, assessment_id, *args, **kwargs):
@@ -165,7 +166,7 @@ class RecommendationChatAPIView(APIView):
     """
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsIndividualUser]
     throttle_classes = [AIChatRateThrottle]
 
     def get(self, request, assessment_id, *args, **kwargs):

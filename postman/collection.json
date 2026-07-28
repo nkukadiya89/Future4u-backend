@@ -9723,6 +9723,64 @@
       ]
     },
     {
+      "name": "Organization Token Usage",
+      "item": [
+        {
+          "name": "List Organization Token Usage (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/org-token-usage/?user_type=institute&search=School",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "org-token-usage"
+              ],
+              "query": [
+                {
+                  "key": "user_type",
+                  "value": "institute"
+                },
+                {
+                  "key": "search",
+                  "value": "School"
+                },
+                {
+                  "key": "id",
+                  "value": ""
+                },
+                {
+                  "key": "user",
+                  "value": ""
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "ordering",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "List all organization users with token usage stats. Admin only.\n\nSupports query params:\n- ?user_type=institute|school_college|corporate\n- ?id={profile_id}\n- ?user={user_id}\n- ?search=name\n- ?ordering=monthly_limit|-remaining_tokens\n- ?page=1"
+          }
+        }
+      ]
+    },
+    {
       "name": "user_profile",
       "item": [
         {
@@ -18991,35 +19049,6 @@
           ]
         },
         {
-          "name": "my-inquiries (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/course-inquiry/my-inquiries/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "course-inquiry",
-                "my-inquiries",
-                ""
-              ]
-            },
-            "description": "Returns course inquiries submitted by the authenticated user.\n\nResponse: { success, count, data }"
-          },
-          "response": []
-        },
-        {
           "name": "received-inquiries (GET)",
           "request": {
             "method": "GET",
@@ -20335,35 +20364,6 @@
           ]
         },
         {
-          "name": "my-inquiries (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/job_application/my-inquiries/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "job_application",
-                "my-inquiries",
-                ""
-              ]
-            },
-            "description": "Returns job applications submitted by the authenticated user.\n\nResponse: { success, count, data }"
-          },
-          "response": []
-        },
-        {
           "name": "received-inquiries (GET)",
           "request": {
             "method": "GET",
@@ -20742,35 +20742,6 @@
               }
             }
           ]
-        },
-        {
-          "name": "my-inquiries (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/internship_application/my-inquiries/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "internship_application",
-                "my-inquiries",
-                ""
-              ]
-            },
-            "description": "Returns internship applications submitted by the authenticated user.\n\nResponse: { success, count, data }"
-          },
-          "response": []
         },
         {
           "name": "received-inquiries (GET)",

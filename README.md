@@ -20,9 +20,9 @@
 7. Run the server using command 
 ``` python manage.py runserver  ```
 8. Run the celery and celery beat to run the scheduled tasks
-``` celery -A hasten_erp -l info   ```
+``` celery -A future4u worker -l info --pool=threads --concurrency=4   ```
   to run the celery beat process 
-``` celery -A hasten_erp beat -l info   ``` 
+```For develop celery restart : sudo systemctl restart celery ```
 9. To format all the files use below command
 ``` black . ```
 10. To check for issue give below command
