@@ -1,6 +1,7 @@
 # user/services/bulkupload_profiles/institute_bulkupload.py
 
 import pandas as pd
+
 from user_profile.models import InstituteProfile
 
 

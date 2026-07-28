@@ -11,9 +11,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
-from recommendation.exceptions import (
-    AssessmentNotFoundError,
-)
+from recommendation.exceptions import AssessmentNotFoundError
 
 logger = logging.getLogger(__name__)
 

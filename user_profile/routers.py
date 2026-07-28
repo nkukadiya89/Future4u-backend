@@ -1,3 +1,6 @@
+from rest_framework.routers import DefaultRouter
+
+from user_profile.organization_token_usage import OrganizationTokenUsageViewSet
 from user_profile.views import (
     BusinessSettingViewSet,
     ChildProfileViewSet,
@@ -12,8 +15,6 @@ from user_profile.views import (
     StudentProfileViewSet,
     UserProfileViewSet,
 )
-from user_profile.organization_token_usage import OrganizationTokenUsageViewSet
-from rest_framework.routers import DefaultRouter
 
 user_profile_router = DefaultRouter()
 user_profile_router.register("api/profile", UserProfileViewSet, basename="profile")

@@ -8,19 +8,6 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now
 
-from business_category.models import BusinessCategory
-from city.models import City
-from country.models import Country
-from education_level.serializers import EducationLevelSerializer
-from education_level.services import education_level_service
-from language_master.serializers import LanguageSerializer
-from language_master.services import language_service
-
-from state.models import State
-from stream.serializers import StreamSerializer
-from stream.services import stream_service
-
-from user.models import CustomGroup, RoleFamily, User
 from assessment.models import (
     CareerDirection,
     CareerValue,
@@ -31,6 +18,17 @@ from assessment.models import (
     UserGoal,
     WorkConstraint,
 )
+from business_category.models import BusinessCategory
+from city.models import City
+from country.models import Country
+from education_level.serializers import EducationLevelSerializer
+from education_level.services import education_level_service
+from language_master.serializers import LanguageSerializer
+from language_master.services import language_service
+from state.models import State
+from stream.serializers import StreamSerializer
+from stream.services import stream_service
+from user.models import CustomGroup, RoleFamily, User
 
 try:
     from city_areas.models import CityArea  # type: ignore
@@ -58,6 +56,7 @@ class Command(BaseCommand):
 
         parser.add_argument("--groups", type=bool, help="Create Groups")
         parser.add_argument("--user", type=bool, help="Create Super User")
+
     def handle(self, *args, **kwargs):
         self.stdout.write("Initialise..")
         # Handle specific flags
@@ -122,12 +121,11 @@ class Command(BaseCommand):
             self.load_assessment_questions()
             self.load_assessment_masters()
             self.load_language_master()
+
     # Super User Create
     def create_super_user(self):
         self.stdout.write("Creating Super User.......")
-        exist_superuser = User.objects.filter(
-            is_superuser = True
-        ).first()
+        exist_superuser = User.objects.filter(is_superuser=True).first()
         if exist_superuser:
             self.stdout.write(
                 self.style.WARNING("Super User already exists, skipping creation.")
@@ -874,4 +872,3 @@ class Command(BaseCommand):
             serializer_class=LanguageSerializer,
             importer=language_service.bulk_import_languages,
         )
-

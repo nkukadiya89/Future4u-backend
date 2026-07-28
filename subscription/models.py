@@ -32,12 +32,16 @@ class Subscription(BaseModel):
     course_portal_access_type = models.CharField(
         max_length=10, choices=AccessType.choices, default=AccessType.FULL
     )
-    no_of_course_portal_access = models.IntegerField(null=True, blank=True, default=None)
+    no_of_course_portal_access = models.IntegerField(
+        null=True, blank=True, default=None
+    )
 
     project_topic_access_type = models.CharField(
         max_length=10, choices=AccessType.choices, default=AccessType.FULL
     )
-    no_of_project_topic_access = models.IntegerField(null=True, blank=True, default=None)
+    no_of_project_topic_access = models.IntegerField(
+        null=True, blank=True, default=None
+    )
 
     career_compare = models.BooleanField(default=False)
     career_roadmap = models.BooleanField(default=False)
@@ -56,8 +60,16 @@ class Subscription(BaseModel):
         pairs = [
             ("internship_access_type", "no_of_internship_access", "Internship"),
             ("job_portal_access_type", "no_of_job_portal_access", "Job Portal"),
-            ("course_portal_access_type", "no_of_course_portal_access", "Course Portal"),
-            ("project_topic_access_type", "no_of_project_topic_access", "Project Topic"),
+            (
+                "course_portal_access_type",
+                "no_of_course_portal_access",
+                "Course Portal",
+            ),
+            (
+                "project_topic_access_type",
+                "no_of_project_topic_access",
+                "Project Topic",
+            ),
         ]
         for type_field, count_field, label in pairs:
             access_type = getattr(self, type_field, AccessType.FULL)

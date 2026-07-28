@@ -5,21 +5,20 @@ from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from user.permissions import IsIndividualUser
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from activity_log.services import log_event
-from user_profile.models import ChildProfile
-from subscription.services.usage import consume_feature
-from utils.token_check import check_token_available
-
 from assessment.models import ParentAssessment
 from assessment.serializers import (
     ParentAssessmentSerializer,
     ParentAssessmentWriteSerializer,
 )
+from subscription.services.usage import consume_feature
+from user.permissions import IsIndividualUser
+from user_profile.models import ChildProfile
 from utils.pagination import Pagination
+from utils.token_check import check_token_available
 
 
 def calculate_parent_screen(assessment):

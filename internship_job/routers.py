@@ -1,7 +1,7 @@
 from rest_framework.routers import DefaultRouter
-from .views import InternshipViewSet, InternshipApplicationViewSet
-from .jobs_views import JobViewSet, JobApplicationViewSet
 
+from .jobs_views import JobApplicationViewSet, JobViewSet
+from .views import InternshipApplicationViewSet, InternshipViewSet
 
 internship_job_router = DefaultRouter()
 

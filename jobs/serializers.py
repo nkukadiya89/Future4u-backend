@@ -92,9 +92,15 @@ class JobSearchQuerySerializer(serializers.Serializer):
         """Ensure salary_min <= salary_max when both are provided."""
         salary_min = attrs.get("salary_min")
         salary_max = attrs.get("salary_max")
-        if salary_min is not None and salary_max is not None and salary_min > salary_max:
+        if (
+            salary_min is not None
+            and salary_max is not None
+            and salary_min > salary_max
+        ):
             raise serializers.ValidationError(
-                {"salary_max": "salary_max must be greater than or equal to salary_min."}
+                {
+                    "salary_max": "salary_max must be greater than or equal to salary_min."
+                }
             )
         return attrs
 
@@ -125,7 +131,9 @@ class JobNormalizedSerializer(serializers.Serializer):
     currency = serializers.CharField(default="INR", allow_blank=True)
     remote_type = serializers.CharField(default="", allow_blank=True)
     description = serializers.CharField(default="", allow_blank=True)
-    skills = serializers.ListField(child=serializers.CharField(), default=list, allow_null=True)
+    skills = serializers.ListField(
+        child=serializers.CharField(), default=list, allow_null=True
+    )
     posted_at = serializers.CharField(default="", allow_blank=True)
     apply_url = serializers.CharField(default="", allow_blank=True)
     source = serializers.CharField(default="linkedin", allow_blank=True)

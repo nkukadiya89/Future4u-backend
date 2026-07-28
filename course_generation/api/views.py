@@ -4,7 +4,6 @@ import logging
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from user.permissions import IsAdminOrProvider
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -18,6 +17,7 @@ from course_generation.serializers.course_generation_input import (
     CourseGenerationInputSerializer,
 )
 from course_generation.services.course_generation_service import CourseGenerationService
+from user.permissions import IsAdminOrProvider
 from utils.throttles import CourseGenerationRateThrottle
 from utils.token_check import check_token_available, deduct_monthly_tokens
 
@@ -62,7 +62,9 @@ class CourseGenerationAPIView(APIView):
             except Exception as exc:
                 logger.error(
                     "TOKEN_RECONCILE user=%s feature=course_gen cost=%s err=%s",
-                    request.user.id, token_usage, exc,
+                    request.user.id,
+                    token_usage,
+                    exc,
                 )
             return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
         except CourseGenerationAccessDeniedError:
@@ -91,7 +93,8 @@ class CourseGenerationAPIView(APIView):
             return Response(
                 {
                     "success": False,
-                    "message": str(exc) or "Unable to generate course details. Please try again.",
+                    "message": str(exc)
+                    or "Unable to generate course details. Please try again.",
                     "error": exc.error,
                     "details": exc.details,
                 },

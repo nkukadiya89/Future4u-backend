@@ -6,7 +6,6 @@ from common.mixins.serializer_mixins import (
     OtpEmailValidationMixin,
     UserNameMixin,
 )
-
 from user.models import ContentTypeModel, CustomGroup, RoleFamily, User
 from user.user_auth import get_user_groups, get_user_permissions
 from utils.datetime_formatter import format_datetime

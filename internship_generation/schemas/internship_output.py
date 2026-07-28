@@ -15,9 +15,9 @@ from internship_generation.constants.internship_generation_constants import (
     RESPONSIBILITIES_MAX,
     RESPONSIBILITIES_MIN,
     RESPONSIBILITY_ITEM_MAX_LENGTH,
+    SKILL_ITEM_MAX_LENGTH,
     SKILLS_MAX,
     SKILLS_MIN,
-    SKILL_ITEM_MAX_LENGTH,
 )
 from internship_generation.utils import (
     clip,

@@ -1,4 +1,5 @@
 from rest_framework.routers import DefaultRouter
+
 from activity_log.views import ActivityLogViewSet
 
 activity_log_router = DefaultRouter()

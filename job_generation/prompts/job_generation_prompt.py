@@ -21,14 +21,14 @@ from job_generation.constants.job_generation_constants import (
 # Goes through .format() once (constants), then LangChain template parsing.
 # Quadruple braces survive both passes as literal { } in the final prompt.
 _OUTPUT_SHAPE = (
-    '{{{{\n'
+    "{{{{\n"
     '  "name": "",\n'
     '  "description": "",\n'
     '  "responsibilities": [],\n'
     '  "skills": [],\n'
     '  "education_tags": [],\n'
     '  "why_this_match": ""\n'
-    '}}}}'
+    "}}}}"
 )
 
 # Build the system prompt as a plain string (no f-string) so that
@@ -213,18 +213,27 @@ def format_prompt_inputs(*, generation_input: dict) -> dict[str, str]:
     city = generation_input.get("city")
     city_text = city.name if city is not None else "Not provided"
     return {
-        "job_title": str(generation_input.get("job_title") or "").strip() or "Not provided",
-        "job_overview": str(generation_input.get("job_overview") or "").strip() or "Not provided",
-        "company_name": str(generation_input.get("company_name") or "").strip() or "Not provided",
-        "company_website": str(generation_input.get("company_website") or "").strip() or "Not provided",
-        "company_about_us": str(generation_input.get("company_about_us") or "").strip() or "Not provided",
+        "job_title": str(generation_input.get("job_title") or "").strip()
+        or "Not provided",
+        "job_overview": str(generation_input.get("job_overview") or "").strip()
+        or "Not provided",
+        "company_name": str(generation_input.get("company_name") or "").strip()
+        or "Not provided",
+        "company_website": str(generation_input.get("company_website") or "").strip()
+        or "Not provided",
+        "company_about_us": str(generation_input.get("company_about_us") or "").strip()
+        or "Not provided",
         "city": city_text,
         "salary_range": _format_salary(generation_input),
-        "job_type": _choice_display(Job.JOB_TYPE_CHOICE, generation_input.get("job_type")),
+        "job_type": _choice_display(
+            Job.JOB_TYPE_CHOICE, generation_input.get("job_type")
+        ),
         "experience_level": _choice_display(
             Job.EXPERIENCE_CHOICES, generation_input.get("experience_level")
         ),
         "mode": _choice_display(Job.MODE_CHOICES, generation_input.get("mode")),
         "application_deadline": deadline_text,
-        "validation_feedback": str(generation_input.get("validation_feedback") or "None").strip(),
+        "validation_feedback": str(
+            generation_input.get("validation_feedback") or "None"
+        ).strip(),
     }

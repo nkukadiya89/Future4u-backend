@@ -13,9 +13,11 @@ logger = logging.getLogger(__name__)
 
 
 def _call_llm(prompt: str, max_tokens: int) -> tuple[str, int]:
-    chat_template = ChatPromptTemplate.from_messages([
-        ("user", "{input}"),
-    ])
+    chat_template = ChatPromptTemplate.from_messages(
+        [
+            ("user", "{input}"),
+        ]
+    )
     chain = chat_template | get_chat_model(max_tokens=max_tokens, temperature=0.7)
     response = chain.invoke({"input": prompt})
     token_usage = extract_token_usage(response)

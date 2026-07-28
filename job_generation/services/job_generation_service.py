@@ -14,7 +14,9 @@ from user_profile.models import CorporateProfile
 class JobGenerationService:
     """Orchestrates AI job posting generation for institute and corporate users."""
 
-    def generate(self, *, user, validated_input: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    def generate(
+        self, *, user, validated_input: dict[str, Any]
+    ) -> tuple[dict[str, Any], int]:
         if not can_user_generate_jobs(user):
             raise JobGenerationAccessDeniedError(
                 "Job generation is only available for corporate accounts"
@@ -24,9 +26,12 @@ class JobGenerationService:
         if isinstance(corporate_id, CorporateProfile):
             company = corporate_id
         else:
-            company = CorporateProfile.objects.filter(id=corporate_id, deleted=False).first()
+            company = CorporateProfile.objects.filter(
+                id=corporate_id, deleted=False
+            ).first()
         if not company:
             from job_generation.exceptions import JobGenerationValidationError
+
             raise JobGenerationValidationError(
                 "CorporateProfile not found",
                 error="Invalid corporate ID",
@@ -42,7 +47,6 @@ class JobGenerationService:
 
         payload, token_usage = JobGenerator.generate(generation_input=generation_input)
         return _build_response(payload, validated_input, company), token_usage
-
 
 
 def _build_response(
@@ -98,13 +102,19 @@ def _build_response(
     city = validated_input.get("city")
     data["city"] = city.pk if city else None
     data["city_name"] = city.name if city else ""
-    data["salary_min"] = float(validated_input["salary_min"]) if validated_input.get("salary_min") is not None else None
-    data["salary_max"] = float(validated_input["salary_max"]) if validated_input.get("salary_max") is not None else None
+    data["salary_min"] = (
+        float(validated_input["salary_min"])
+        if validated_input.get("salary_min") is not None
+        else None
+    )
+    data["salary_max"] = (
+        float(validated_input["salary_max"])
+        if validated_input.get("salary_max") is not None
+        else None
+    )
     data["job_type"] = validated_input.get("job_type", "")
     data["experience_level"] = validated_input.get("experience_level", "")
     data["mode"] = validated_input.get("mode", "")
     deadline = validated_input.get("application_deadline")
     data["application_deadline"] = deadline.isoformat() if deadline else None
     return data
-
-

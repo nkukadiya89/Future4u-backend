@@ -1,7 +1,6 @@
 from django.db import migrations, models
 from django.db.models import Q
 
-
 SPORTS_KEYWORDS = (
     "physical activity",
     "physically active",

@@ -1,6 +1,5 @@
-
 def extract_token_usage(result) -> int:
-    
+
     # LangChain usage_metadata (most common for chain.invoke())
     metadata = getattr(result, "usage_metadata", None)
     if metadata and isinstance(metadata, dict):

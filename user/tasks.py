@@ -3,8 +3,9 @@ import os
 
 from celery import shared_task
 from django.contrib.auth import get_user_model
-from user.services.bulk_user_upload import BulkUserUploadService
+
 from email_utils.send_email import send_admin_summary_email, send_mail
+from user.services.bulk_user_upload import BulkUserUploadService
 
 User = get_user_model()
 logger = logging.getLogger(__name__)

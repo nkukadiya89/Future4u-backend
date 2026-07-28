@@ -7,12 +7,12 @@ DEFAULT_API_BASE_URL: str = "https://linkedin-job-search-api.p.rapidapi.com"
 DEFAULT_SEARCH_ENDPOINT: str = "/active-jb"
 
 # ── HTTP / Network ────────────────────────────────────────────────────────────
-REQUEST_TIMEOUT_SECONDS: int = 15       # per‑request timeout
-MAX_RETRIES: int = 2                    # how many times to retry on failure
+REQUEST_TIMEOUT_SECONDS: int = 15  # per‑request timeout
+MAX_RETRIES: int = 2  # how many times to retry on failure
 RETRYABLE_STATUSES: set[int] = {429, 500, 502, 503, 504}
 
 # ── Caching ───────────────────────────────────────────────────────────────────
-CACHE_TTL_SECONDS: int = 3600           # 1 hour
+CACHE_TTL_SECONDS: int = 3600  # 1 hour
 CACHE_KEY_PREFIX: str = "jobs:search"
 
 # ── Pagination ────────────────────────────────────────────────────────────────

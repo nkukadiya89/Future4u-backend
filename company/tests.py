@@ -180,9 +180,9 @@ class CompanyCustomActionsTests(BaseAPITest):
         url = reverse("company-update-company-basic-info", args=[c.id])
         import json as _json
 
+        from city.models import City
         from country.models import Country
         from state.models import State
-        from city.models import City
 
         country = Country.objects.create(
             name="India",

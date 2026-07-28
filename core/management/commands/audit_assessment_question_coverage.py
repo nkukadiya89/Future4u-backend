@@ -9,7 +9,6 @@ from django.core.management.base import BaseCommand
 from assessment.models import Question
 from domain.models import Domain
 
-
 DIMENSIONS = ("interest", "aptitude", "personality", "work_style")
 
 

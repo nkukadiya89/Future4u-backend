@@ -1,6 +1,5 @@
 from django.db import migrations
 
-
 SQL_FORWARD = """
 -- 1. Drop FK from career_chat_message that references career_chat_session
 DO $$

@@ -1,15 +1,17 @@
 import json
+from datetime import datetime
+
 from django.db import transaction
 from rest_framework import serializers
+
 from city.models import City
-from state.models import State
 from country.models import Country
 from education_level.models import EducationLevel
 from email_utils.send_email import send_email_change_notification
+from state.models import State
 from user.models import User
 from user.services.registration_service import setup_web_user_password
 from user_profile.models import SchoolCollegeProfile
-from datetime import datetime
 
 
 class AdminSchoolCollegesSerializer(serializers.ModelSerializer):

@@ -1,4 +1,3 @@
-
 from django.db import transaction
 from django.db.models import F
 from django.utils.timezone import now
@@ -6,7 +5,6 @@ from django.utils.timezone import now
 from subscription.constants import FEATURE_FIELD_MAP
 from subscription.models import FeatureUsage, SubscriptionFeature, UserSubscription
 from user.models import User
-
 
 FEATURE_NAMES = {
     "ai_chat": "AI Chat",
@@ -61,12 +59,17 @@ def _check_org_monthly_reset(profile, user_type):
     extra_token_limit is a one-time per-month grant — it resets to 0
     so the new month starts cleanly with just the config default."""
     today = now().date()
-    if not profile.last_token_reset_at or (today - profile.last_token_reset_at).days >= 30:
+    if (
+        not profile.last_token_reset_at
+        or (today - profile.last_token_reset_at).days >= 30
+    ):
         base = DEFAULT_ORG_TOKEN_LIMITS.get(user_type, 20000)
         profile.token_limit = base
         profile.extra_token_limit = 0
         profile.last_token_reset_at = today
-        profile.save(update_fields=["token_limit", "extra_token_limit", "last_token_reset_at"])
+        profile.save(
+            update_fields=["token_limit", "extra_token_limit", "last_token_reset_at"]
+        )
 
 
 def _reset_subscription_monthly_tokens(user, user_sub):
@@ -84,7 +87,9 @@ def _reset_subscription_monthly_tokens(user, user_sub):
         FeatureUsage.objects.filter(
             user=user,
             plan_price=plan_price,
-        ).exclude(feature_code="monthly_tokens").update(used=0)
+        ).exclude(
+            feature_code="monthly_tokens"
+        ).update(used=0)
         UserSubscription.objects.filter(id=user_sub.id).update(last_reset_at=today)
 
 
@@ -111,17 +116,17 @@ def check_token_available(user, feature_code, quantity=1):
         return True
 
     # ── SUBSCRIPTION USERS (existing flow unchanged) ──
-    user_sub = UserSubscription.objects.filter(
-        user=user, is_active=True
-    ).select_related("plan_price__plan").first()
+    user_sub = (
+        UserSubscription.objects.filter(user=user, is_active=True)
+        .select_related("plan_price__plan")
+        .first()
+    )
 
     if not user_sub:
         raise Exception("No active subscription. Please subscribe to a plan.")
 
     if user_sub.end_date < now().date():
-        raise Exception(
-            "Your subscription has expired. Please renew your plan."
-        )
+        raise Exception("Your subscription has expired. Please renew your plan.")
 
     plan = getattr(user_sub.plan_price, "plan", None)
     if not plan:
@@ -200,9 +205,7 @@ def get_org_token_usage(profile, user_type):
     remaining_tokens = profile.token_limit or 0
     used_tokens = max(monthly_limit - remaining_tokens, 0)
     usage_percentage = (
-        round((used_tokens / monthly_limit) * 100, 1)
-        if monthly_limit > 0
-        else 0
+        round((used_tokens / monthly_limit) * 100, 1) if monthly_limit > 0 else 0
     )
     return {
         "monthly_limit": monthly_limit,
@@ -226,7 +229,9 @@ def deduct_monthly_tokens(user, actual_tokens):
         _check_org_monthly_reset(profile, user.user_type)
 
         with transaction.atomic():
-            locked_profile = type(profile).objects.select_for_update().get(id=profile.id)
+            locked_profile = (
+                type(profile).objects.select_for_update().get(id=profile.id)
+            )
             deduction = min(actual_tokens, locked_profile.token_limit)
             type(profile).objects.filter(id=locked_profile.id).update(
                 token_limit=F("token_limit") - deduction
@@ -234,9 +239,11 @@ def deduct_monthly_tokens(user, actual_tokens):
         return
 
     # ── SUBSCRIPTION USERS (existing flow unchanged) ──
-    user_sub = UserSubscription.objects.filter(
-        user=user, is_active=True
-    ).select_related("plan_price__plan").first()
+    user_sub = (
+        UserSubscription.objects.filter(user=user, is_active=True)
+        .select_related("plan_price__plan")
+        .first()
+    )
 
     if not user_sub:
         return

@@ -1,6 +1,9 @@
 import json
+from datetime import datetime
 
+from django.db import transaction
 from rest_framework import serializers
+
 from city.models import City
 from country.models import Country
 from education_level.models import EducationLevel
@@ -11,8 +14,6 @@ from stream.models import Stream
 from user.models import User
 from user.services.registration_service import setup_web_user_password
 from user_profile.models import StudentProfile
-from django.db import transaction
-from datetime import datetime
 
 
 class AdminStudentSerializer(serializers.ModelSerializer):
@@ -277,13 +278,28 @@ class AdminStudentSortSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(source="user.last_name", read_only=True)
     phone = serializers.CharField(source="user.phone", read_only=True)
     email = serializers.CharField(source="user.email", read_only=True)
-    country = serializers.IntegerField(source="user.country.id", default=None, read_only=True)
-    country_name = serializers.CharField(source="user.country.name", default=None, read_only=True)
-    state = serializers.IntegerField(source="user.states.id", default=None, read_only=True)
-    state_name = serializers.CharField(source="user.states.name", default=None, read_only=True)
+    country = serializers.IntegerField(
+        source="user.country.id", default=None, read_only=True
+    )
+    country_name = serializers.CharField(
+        source="user.country.name", default=None, read_only=True
+    )
+    state = serializers.IntegerField(
+        source="user.states.id", default=None, read_only=True
+    )
+    state_name = serializers.CharField(
+        source="user.states.name", default=None, read_only=True
+    )
     city = serializers.IntegerField(source="user.city.id", default=None, read_only=True)
-    city_name = serializers.CharField(source="user.city.name", default=None, read_only=True)
-    referral_code = serializers.CharField(source="referred_by.referral_code", default=None, allow_null=True, read_only=True)
+    city_name = serializers.CharField(
+        source="user.city.name", default=None, read_only=True
+    )
+    referral_code = serializers.CharField(
+        source="referred_by.referral_code",
+        default=None,
+        allow_null=True,
+        read_only=True,
+    )
 
     class Meta:
         model = StudentProfile
@@ -306,6 +322,7 @@ class AdminStudentSortSerializer(serializers.ModelSerializer):
             "city_name",
             "referral_code",
         ]
+
 
 class BulkUserUploadSerializer(serializers.Serializer):
     file = serializers.FileField()

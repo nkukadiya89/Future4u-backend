@@ -1,9 +1,6 @@
-from city.views import (
-    CityArchiveViewSet,
-    CityRestoreViewSet,
-    CityViewSet,
-)
 from rest_framework.routers import DefaultRouter
+
+from city.views import CityArchiveViewSet, CityRestoreViewSet, CityViewSet
 
 city_router = DefaultRouter()
 city_router.register("city", CityViewSet, basename="city")

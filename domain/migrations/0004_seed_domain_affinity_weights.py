@@ -2,7 +2,6 @@
 
 from django.db import migrations
 
-
 # One-time seed from the previously hardcoded affinity map.
 # This keeps recommendation scoring consistent after moving weights to the DB.
 DOMAIN_AFFINITY = {

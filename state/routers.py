@@ -1,9 +1,6 @@
-from state.views import (
-    StateArchiveViewSet,
-    StateRestoreViewSet,
-    StateViewSet,
-)
 from rest_framework.routers import DefaultRouter
+
+from state.views import StateArchiveViewSet, StateRestoreViewSet, StateViewSet
 
 state_router = DefaultRouter()
 state_router.register("state", StateViewSet, basename="state")

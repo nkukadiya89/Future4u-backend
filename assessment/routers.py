@@ -1,16 +1,16 @@
 from rest_framework.routers import DefaultRouter
 
 from assessment.parentassessment import ParentAssessmentViewSet
+from assessment.professionalassessment import ProfessionalAssessmentViewSet
 from assessment.studentassessment import (
     AssessmentResponseViewSet,
+    CareerDirectionViewSet,
+    CareerValueViewSet,
+    ConcernViewSet,
     NextQuestionViewSet,
     StudentAssessmentViewSet,
-    ConcernViewSet,
     UserGoalViewSet,
-    CareerValueViewSet,
-    CareerDirectionViewSet,
 )
-from assessment.professionalassessment import ProfessionalAssessmentViewSet
 
 assessment_router = DefaultRouter()
 

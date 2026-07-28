@@ -1,8 +1,8 @@
 from django.db.models import Q
 from rest_framework import serializers, viewsets
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.filters import SearchFilter, OrderingFilter
 
 from user.models import User
 from user.permissions import IsAdminUser
@@ -81,7 +81,7 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
         page = self.paginate_queryset(queryset)
 
         rows = []
-        for user in (page or queryset):
+        for user in page or queryset:
             profile = _get_org_profile(user)
             if not profile:
                 continue
@@ -96,17 +96,19 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
                 or ""
             )
 
-            rows.append({
-                "id": profile.id,
-                "user": user.id,
-                "organization": org_name,
-                "login_type": user.user_type,
-                "status": user.status or "pending",
-                "monthly_limit": usage["monthly_limit"],
-                "used_tokens": usage["used_tokens"],
-                "remaining_tokens": usage["remaining_tokens"],
-                "usage_percentage": usage["usage_percentage"],
-            })
+            rows.append(
+                {
+                    "id": profile.id,
+                    "user": user.id,
+                    "organization": org_name,
+                    "login_type": user.user_type,
+                    "status": user.status or "pending",
+                    "monthly_limit": usage["monthly_limit"],
+                    "used_tokens": usage["used_tokens"],
+                    "remaining_tokens": usage["remaining_tokens"],
+                    "usage_percentage": usage["usage_percentage"],
+                }
+            )
 
         serializer = self.get_serializer(rows, many=True)
         if page is not None:

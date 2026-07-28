@@ -3,22 +3,21 @@ from __future__ import annotations
 import logging
 from typing import Any, Callable
 
+from django.conf import settings
 from pydantic import ValidationError
 
-from django.conf import settings
-
 from ai.provider import get_chat_model
-from recommendation.exceptions import AIGenerationError
-from utils.token_usage import extract_token_usage
 from recommendation.engine._shared import (
     format_llm_error,
     is_invalid_model_output,
     is_retryable_generation_error,
     payload_gaps,
 )
-from recommendation.pipeline.validated_payload_normalizer import normalize_payload
+from recommendation.exceptions import AIGenerationError
 from recommendation.pipeline.payload_validator import parse_ai_payload
+from recommendation.pipeline.validated_payload_normalizer import normalize_payload
 from recommendation.schemas.recommendation_output import AIRecommendationPayload
+from utils.token_usage import extract_token_usage
 
 logger = logging.getLogger(__name__)
 

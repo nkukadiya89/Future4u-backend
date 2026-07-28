@@ -4,13 +4,13 @@ from rest_framework import serializers
 
 from city.models import City
 from country.models import Country
-from state.models import State
-from internship_job.models import Internship
 from internship_generation.constants.internship_generation_constants import (
     INTERNSHIP_OVERVIEW_INPUT_MAX_LENGTH,
     INTERNSHIP_OVERVIEW_INPUT_MIN_LENGTH,
     OPTIONAL_FIELD_MAX_LENGTH,
 )
+from internship_job.models import Internship
+from state.models import State
 from user.models import User
 
 
@@ -101,7 +101,13 @@ class InternshipGenerationInputSerializer(serializers.Serializer):
     )
 
     def validate(self, attrs):
-        for field_name in ("department", "stipend", "duration", "mode", "provider_type"):
+        for field_name in (
+            "department",
+            "stipend",
+            "duration",
+            "mode",
+            "provider_type",
+        ):
             if attrs.get(field_name) == "":
                 attrs.pop(field_name, None)
 

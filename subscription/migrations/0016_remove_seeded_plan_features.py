@@ -2,9 +2,7 @@ from django.db import migrations
 
 
 def remove_seeded_features(apps, schema_editor):
-    """Remove all SubscriptionFeature records seeded by migration 0015.
-
-    """
+    """Remove all SubscriptionFeature records seeded by migration 0015."""
     SubscriptionFeature = apps.get_model("subscription", "SubscriptionFeature")
     deleted, _ = SubscriptionFeature.objects.filter(
         subscription__package_name__in=["Free", "Pro"],

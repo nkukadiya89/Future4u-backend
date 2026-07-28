@@ -190,9 +190,12 @@ class User(AbstractUser):
     @property
     def subscription_info(self):
         from subscription.models import UserSubscription
-        us = UserSubscription.objects.filter(
-            user=self, is_active=True, deleted=False
-        ).select_related("plan_price__plan").first()
+
+        us = (
+            UserSubscription.objects.filter(user=self, is_active=True, deleted=False)
+            .select_related("plan_price__plan")
+            .first()
+        )
         if not us or not us.plan_price or not us.plan_price.plan:
             return None
         return {

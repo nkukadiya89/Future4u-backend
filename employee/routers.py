@@ -1,3 +1,5 @@
+from rest_framework.routers import DefaultRouter
+
 from employee.views import (
     AddEmployeeViewSet,
     BulkEmployeeViewSet,
@@ -5,7 +7,6 @@ from employee.views import (
     EmployeeRestoreViewSet,
     EmployeeStatusViewSet,
 )
-from rest_framework.routers import DefaultRouter
 
 employee_router = DefaultRouter()
 employee_router.register("employee", AddEmployeeViewSet, basename="employee")

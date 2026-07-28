@@ -4,7 +4,6 @@ import logging
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from user.permissions import IsAdminOrProvider
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -20,6 +19,7 @@ from internship_generation.serializers.internship_generation_input import (
 from internship_generation.services.internship_generation_service import (
     InternshipGenerationService,
 )
+from user.permissions import IsAdminOrProvider
 from utils.throttles import InternshipGenerationRateThrottle
 from utils.token_check import check_token_available, deduct_monthly_tokens
 
@@ -64,7 +64,9 @@ class InternshipGenerationAPIView(APIView):
             except Exception as exc:
                 logger.error(
                     "TOKEN_RECONCILE user=%s feature=internship_gen cost=%s err=%s",
-                    request.user.id, token_usage, exc,
+                    request.user.id,
+                    token_usage,
+                    exc,
                 )
             return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
         except InternshipGenerationAccessDeniedError:
@@ -96,7 +98,8 @@ class InternshipGenerationAPIView(APIView):
             return Response(
                 {
                     "success": False,
-                    "message": str(exc) or "Unable to generate internship details. Please try again.",
+                    "message": str(exc)
+                    or "Unable to generate internship details. Please try again.",
                     "error": exc.error,
                     "details": exc.details,
                 },

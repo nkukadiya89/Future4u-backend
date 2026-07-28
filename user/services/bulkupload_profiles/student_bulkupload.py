@@ -1,8 +1,9 @@
 import pandas as pd
 from django.core.exceptions import ValidationError
+
 from education_level.models import EducationLevel
-from stream.models import Stream
 from language_master.models import Language
+from stream.models import Stream
 from user_profile.models import StudentProfile
 
 
@@ -53,11 +54,7 @@ class StudentBulkUpload:
     def validate_row(cls, row, masters):
         medium_raw = row.get("Medium")
 
-        medium = (
-            ""
-            if pd.isna(medium_raw)
-            else str(medium_raw).strip().lower()
-        )
+        medium = "" if pd.isna(medium_raw) else str(medium_raw).strip().lower()
         if medium and medium not in cls.VALID_MEDIUMS:
             raise ValidationError(
                 f"Invalid medium '{medium}'. Allowed: "
@@ -65,7 +62,7 @@ class StudentBulkUpload:
             )
 
         education_level = None
-        education_level_raw =row.get("Education Level")
+        education_level_raw = row.get("Education Level")
 
         education_level_value = (
             ""
@@ -77,17 +74,17 @@ class StudentBulkUpload:
 
             if not education_level:
                 raise ValidationError(
-                    f"Invalid Education Level "
-                    f"'{row.get('Education Level')}'"
+                    f"Invalid Education Level " f"'{row.get('Education Level')}'"
                 )
-            
+
         stream = None
         stream_value = row.get("Stream")
         stream_code = "" if pd.isna(stream_value) else str(stream_value).strip().lower()
 
-        if(
+        if (
             education_level
-            and education_level.level_code in cls.STREAM_REQUIRED_LEVEL_CODES and not stream_code
+            and education_level.level_code in cls.STREAM_REQUIRED_LEVEL_CODES
+            and not stream_code
         ):
             raise ValidationError(
                 f"Stream is required for education level '{education_level.display_name}'."

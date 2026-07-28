@@ -1,12 +1,8 @@
 from django.contrib import admin
 
 from common.mixins.admin_mixins import ReadOnlyAdminMixin
-from .models import (
-    CareerRecommendation,
-    CareerSuggestion,
-    ChatMessage,
-    ChatSession,
-)
+
+from .models import CareerRecommendation, CareerSuggestion, ChatMessage, ChatSession
 
 
 class CareerSuggestionInline(admin.TabularInline):

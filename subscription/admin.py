@@ -1,10 +1,17 @@
 from django.contrib import admin
 
 from common.mixins.admin_mixins import RelatedDataAdminMixin
-from subscription.models import (Discount, FeatureUsage, PaymentSubscription,
-                                 PlanPrice, PromoCode, Subscription,
-                                 SubscriptionFeature, SubscriptionInvoice,
-                                 UserSubscription)
+from subscription.models import (
+    Discount,
+    FeatureUsage,
+    PaymentSubscription,
+    PlanPrice,
+    PromoCode,
+    Subscription,
+    SubscriptionFeature,
+    SubscriptionInvoice,
+    UserSubscription,
+)
 
 
 class PlanPriceInline(admin.TabularInline):

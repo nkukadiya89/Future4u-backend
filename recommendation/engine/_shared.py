@@ -6,7 +6,6 @@ from recommendation.config import EASY_DECISION_COUNT, TOP_SUGGESTION_COUNT
 from recommendation.exceptions import AIGenerationError
 from recommendation.schemas.recommendation_output import AIRecommendationPayload
 
-
 # ── Study Abroad mode detection ─────────────────────────────────────
 
 

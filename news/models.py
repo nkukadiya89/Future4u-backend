@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import os
 import uuid
 from typing import Any
 
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+
+from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
 
 
 class NewsManager(models.Manager):
@@ -21,7 +24,7 @@ class News(models.Model):
     short_description = models.CharField(max_length=512, blank=True)
     content = models.TextField()
     category = models.CharField(max_length=100, db_index=True)
-    image = models.ImageField(upload_to="news/images/", null=True, blank=True)
+    image = models.CharField(max_length=500, null=True, blank=True)
     is_published = models.BooleanField(default=False, db_index=True)
     is_deleted = models.BooleanField(default=False, db_index=True)
     created_by = models.ForeignKey(
@@ -62,6 +65,37 @@ class News(models.Model):
         # Optionally unpublish on delete
         self.is_published = False
         self.save(update_fields=["is_deleted", "is_published", "updated_at"])
+
+    def upload_news_image(self, image_file):
+        """Upload news image to AWS S3 following the same pattern as Domain model"""
+        allowed_types = [".jpg", ".jpeg", ".png"]
+
+        file_extension = os.path.splitext(image_file.name)[1].lower()
+        if file_extension not in allowed_types:
+            raise ValueError(
+                f"Invalid file type: {file_extension}. Allowed types are {', '.join(allowed_types)}."
+            )
+
+        current_value = getattr(self, "image", None)
+
+        try:
+            if current_value:
+                delete_uploaded_file(current_value)
+
+            aws_file_url, presigned_url = upload_file_to_bucket(
+                image_file,
+                allowed_types,
+                "NewsImages/",
+                str(self.id),
+                None,
+            )
+            self.image = aws_file_url
+            self.save(update_fields=["image"])
+            return aws_file_url
+        except ValueError:
+            raise
+        except Exception as e:
+            raise Exception(f"Failed to upload news image: {str(e)}")
 
     def __str__(self) -> str:  # pragma: no cover - trivial
         return self.title

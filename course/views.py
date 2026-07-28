@@ -1,22 +1,26 @@
-from assessment_career.models import CareerSuggestion
-from common.master_view import BaseModelViewSet
-from course.services import match_courses
+from django.db import transaction
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db import transaction
+from rest_framework.response import Response
+
+from activity_log.services import log_event
+from assessment_career.models import CareerSuggestion
+from common.master_view import BaseModelViewSet
+from course.services import match_courses
 from user.permissions import IsAdminOrProvider, is_admin_user
+
 from .models import CourseInquiry, Courses
 from .serializers import CourseInquirySerializer, CoursesSerializer
-from activity_log.services import log_event
 
 
 class CoursesViewSet(BaseModelViewSet):
     def get_queryset(self):
-        queryset = Courses.objects.select_related("country", "state", "city", "provider")
+        queryset = Courses.objects.select_related(
+            "country", "state", "city", "provider"
+        )
         user = self.request.user
         if user.is_superuser:
             base = queryset
@@ -27,10 +31,18 @@ class CoursesViewSet(BaseModelViewSet):
             base = queryset.filter(provider=user)
         else:
             base = queryset.filter(status="active")
-        if self.action not in ["restore", "archive_list", "archive", "bulk_archive", "bulk_restore", "destroy"]:
+        if self.action not in [
+            "restore",
+            "archive_list",
+            "archive",
+            "bulk_archive",
+            "bulk_restore",
+            "destroy",
+        ]:
             base = base.filter(deleted=False)
 
         from subscription.services.usage import apply_portal_limit
+
         return apply_portal_limit(user, base, "course")
 
     serializer_class = CoursesSerializer
@@ -125,7 +137,9 @@ class CoursesViewSet(BaseModelViewSet):
 
         found_ids = set(courses.values_list("id", flat=True))
         not_found_ids = list(set(ids) - found_ids)
-        skipped_ids = list(courses.filter(status=new_status).values_list("id", flat=True))
+        skipped_ids = list(
+            courses.filter(status=new_status).values_list("id", flat=True)
+        )
         updated_ids = list(
             courses.exclude(status=new_status).values_list("id", flat=True)
         )
@@ -286,9 +300,11 @@ class CoursesViewSet(BaseModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="archive-list")
     def archive_list(self, request):
-        queryset = Courses.objects.select_related(
-            "country", "state", "city", "provider"
-        ).filter(deleted=True).order_by("-deleted_at")
+        queryset = (
+            Courses.objects.select_related("country", "state", "city", "provider")
+            .filter(deleted=True)
+            .order_by("-deleted_at")
+        )
 
         queryset = self.filter_queryset(queryset)
 
@@ -394,7 +410,10 @@ class CourseInquiryViewSet(BaseModelViewSet):
             course = serializer.validated_data.get("course")
             if course.deleted or course.status != "active":
                 return Response(
-                    {"success": False, "message": "Course is not available for inquiries."},
+                    {
+                        "success": False,
+                        "message": "Course is not available for inquiries.",
+                    },
                     status=status.HTTP_404_NOT_FOUND,
                 )
             if CourseInquiry.objects.filter(user=request.user, course=course).exists():
