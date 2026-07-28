@@ -17,6 +17,7 @@ from user_profile.routers import user_profile_router
 
 from assessment_career.routers import assessment_career_router
 from course.routers import courses_router
+from news.routers import router as news_router
 
 # from subscription.routers import subscription_router
 
@@ -49,4 +50,5 @@ future4u_router.registry.extend(user_profile_router.registry)
 future4u_router.registry.extend(user_router.registry)
 future4u_router.registry.extend(courses_router.registry)
 future4u_router.registry.extend(internship_job_router.registry)
+future4u_router.registry.extend(news_router.registry)
 # future4u_router.registry.extend(subscription_router.registry)
