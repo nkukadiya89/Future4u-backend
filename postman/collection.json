@@ -21173,60 +21173,6 @@
       ]
     },
     {
-      "name": "project-recommendation",
-      "item": [
-        {
-          "name": "generate (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/project-recommendations/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "project-recommendations",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "generate-batch (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/project-recommendations/by-recommendation/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "project-recommendations",
-                "by-recommendation",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
       "name": "jobs",
       "item": [
         {
@@ -21304,6 +21250,43 @@
             }
           },
           "response": []
+        }
+      ]
+    },
+    {
+      "name": "project-recommendation",
+      "item": [
+        {
+          "name": "generate (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-recommendations/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-recommendations",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assessment_id\": 123\n}"
+            },
+            "description": "Generates 3 AI-powered portfolio project ideas using assessment_id. Resolves domain and domain_category from the assessment."
+          }
         }
       ]
     }

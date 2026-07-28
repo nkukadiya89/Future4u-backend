@@ -10,7 +10,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from ai.exceptions import AIConfigurationError as AIProviderConfigError
 from project_recommendation.exceptions import (
     ProjectRecommendationAccessDeniedError,
     ProjectRecommendationConfigurationError,
@@ -27,156 +26,86 @@ _service = ProjectRecommendationService()
 
 class ProjectRecommendationAPIView(APIView):
     """
-    GET /api/project-recommendations/{suggestion_id}/
+    POST /api/project-recommendations/
 
-    Generates AI-powered personal project ideas based on a selected career
-    suggestion from the student's career recommendation.
+    Generates 3 AI-powered portfolio project ideas based on the user's
+    completed assessment. Resolves domain and domain_category from
+    the assessment.
+
+    Request body:
+    {
+        "assessment_id": 123
+    }
     """
 
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated, IsIndividualUser]
     throttle_classes = [ProjectRecommendationRateThrottle]
 
-    def get(self, request, suggestion_id, *args, **kwargs):
-        # Check token availability bef
-        # /
-        # ore AI call
+    def post(self, request, *args, **kwargs):
+        try:
+            assessment_id = int(request.data.get("assessment_id", ""))
+        except (TypeError, ValueError):
+            return Response(
+                {
+                    "success": False,
+                    "message": "assessment_id is required and must be an integer",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
             check_token_available(request.user, "project_gen")
         except Exception as exc:
             logger.warning(
                 "Token check failed for user=%s feature=project_gen: %s",
-                request.user.id, exc,
+                request.user.id,
+                exc,
             )
-            if not settings.DEBUG:
-                return Response(
-                    {"success": False, "message": str(exc)},
-                    status=status.HTTP_402_PAYMENT_REQUIRED,
-                )
+            return Response(
+                {"success": False, "message": str(exc)},
+                status=status.HTTP_402_PAYMENT_REQUIRED,
+            )
 
-        token_usage = 0 
+        if not getattr(settings, "PROJECT_RECOMMENDATION_ENABLED", True):
+            return Response(
+                {
+                    "success": False,
+                    "message": "Project recommendations are currently disabled",
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        token_usage = 0
         try:
             data, token_usage = _service.generate(
                 user=request.user,
-                suggestion_id=suggestion_id,
+                assessment_id=assessment_id,
             )
-            # Deduct actual LLM token usage after successful AI call
-            if not settings.DEBUG:
-                try:
-                    deduct_monthly_tokens(request.user, token_usage)
-                except Exception as exc:
-                    logger.error(
-                        "TOKEN_RECONCILE user=%s feature=project_gen cost=%s err=%s",
-                        request.user.id, token_usage, exc,
-                    )
-            return Response(
-                {"success": True, "data": data},
-                status=status.HTTP_200_OK,
-            )
-        except ProjectRecommendationAccessDeniedError:
-            return Response(
-                {
-                    "success": False,
-                    "message": "Career suggestion not found or access denied",
-                },
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except (ProjectRecommendationConfigurationError, AIProviderConfigError) as exc:
-            logger.error("Project recommendation configuration error: %s", exc)
-            return Response(
-                {
-                    "success": False,
-                    "message": "AI project recommendation is temporarily unavailable",
-                },
-                status=status.HTTP_503_SERVICE_UNAVAILABLE,
-            )
-        except ProjectRecommendationValidationError as exc:
-            logger.warning(
-                "Project recommendation validation failed error=%s details=%s",
-                exc.error,
-                exc.details,
-            )
-            return Response(
-                {
-                    "success": False,
-                    "message": str(exc)
-                    or "Unable to generate project ideas. Please try again.",
-                    "error": exc.error,
-                    "details": exc.details,
-                },
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            )
-        except Exception:
-            logger.exception("Unexpected project recommendation error")
-            return Response(
-                {
-                    "success": False,
-                    "message": "Unable to generate project ideas",
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-
-class ProjectRecommendationBatchAPIView(APIView):
-    """
-    GET /api/project-recommendations/by-recommendation/{recommendation_id}/
-
-    Generates AI-powered personal project ideas for ALL career suggestions
-    in a single recommendation. Returns projects grouped by career.
-    """
-
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, IsIndividualUser]
-    throttle_classes = [ProjectRecommendationRateThrottle]
-
-    def get(self, request, recommendation_id, *args, **kwargs):
-        # Check token availability before AI call
-        try:
-            check_token_available(request.user, "project_gen")
-        except Exception as exc:
-            logger.warning(
-                "Token check failed for user=%s feature=project_gen: %s",
-                request.user.id, exc,
-            )
-            if not settings.DEBUG:
-                return Response(
-                    {"success": False, "message": str(exc)},
-                    status=status.HTTP_402_PAYMENT_REQUIRED,
+            try:
+                deduct_monthly_tokens(request.user, token_usage)
+            except Exception as exc:
+                logger.error(
+                    "TOKEN_RECONCILE user=%s feature=project_gen cost=%s err=%s",
+                    request.user.id,
+                    token_usage,
+                    exc,
                 )
-
-        total_token_usage = 0
-        try:
-            data, total_token_usage = _service.generate_batch(
-                user=request.user,
-                recommendation_id=recommendation_id,
-            )
-            # Deduct actual LLM token usage after successful AI call
-            if not settings.DEBUG:
-                try:
-                    deduct_monthly_tokens(request.user, total_token_usage)
-                except Exception as exc:
-                    logger.error(
-                        "TOKEN_RECONCILE user=%s feature=project_gen cost=%s err=%s",
-                        request.user.id, total_token_usage, exc,
-                    )
             return Response(
                 {"success": True, "data": data},
                 status=status.HTTP_200_OK,
             )
-        except ProjectRecommendationAccessDeniedError:
+        except ProjectRecommendationAccessDeniedError as exc:
             return Response(
-                {
-                    "success": False,
-                    "message": "Career recommendation not found or access denied",
-                },
+                {"success": False, "message": str(exc)},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        except (ProjectRecommendationConfigurationError, AIProviderConfigError) as exc:
+        except ProjectRecommendationConfigurationError as exc:
             logger.error("Project recommendation configuration error: %s", exc)
             return Response(
                 {
                     "success": False,
-                    "message": "AI project recommendation is temporarily unavailable",
+                    "message": "AI project recommendations are temporarily unavailable",
                 },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
@@ -190,7 +119,7 @@ class ProjectRecommendationBatchAPIView(APIView):
                 {
                     "success": False,
                     "message": str(exc)
-                    or "Unable to generate project ideas. Please try again.",
+                    or "Unable to generate project recommendations. Please try again.",
                     "error": exc.error,
                     "details": exc.details,
                 },
@@ -201,7 +130,7 @@ class ProjectRecommendationBatchAPIView(APIView):
             return Response(
                 {
                     "success": False,
-                    "message": "Unable to generate project ideas",
+                    "message": "Unable to generate project recommendations",
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

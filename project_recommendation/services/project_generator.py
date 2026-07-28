@@ -6,6 +6,8 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from django.conf import settings
+
 from ai.config import is_configured
 from ai.provider import ensure_configured, get_chat_model
 
@@ -22,20 +24,20 @@ from utils.token_usage import extract_token_usage
 
 logger = logging.getLogger(__name__)
 
-_MAX_GENERATION_ATTEMPTS = 2
+_MAX_GENERATION_ATTEMPTS = 1
 
 
 class ProjectGenerator:
-    """Single LLM invocation: career info -> structured project recommendations."""
+    """Single LLM invocation: domain/career input -> structured projects."""
 
     @classmethod
     def generate(
         cls,
         *,
+        domain: str,
+        domain_category: str,
         career_name: str,
-        match_percentage: int,
-        required_skills: str,
-        career_insight: str,
+        education_level: str = "",
     ) -> tuple[ProjectRecommendationPayload, int]:
         if not is_configured():
             raise ProjectRecommendationConfigurationError(
@@ -44,18 +46,18 @@ class ProjectGenerator:
         ensure_configured()
 
         prompt = build_project_prompt()
-        llm = get_chat_model()
+        llm = get_chat_model(max_tokens=2000)
         last_error: ProjectRecommendationValidationError | None = None
         validation_feedback = "None"
 
         for attempt in range(_MAX_GENERATION_ATTEMPTS):
             try:
                 inputs = format_prompt_inputs(
+                    domain=domain,
+                    domain_category=domain_category,
                     career_name=career_name,
-                    match_percentage=match_percentage,
-                    required_skills=required_skills,
-                    career_insight=career_insight,
                     validation_feedback=validation_feedback,
+                    education_level=education_level,
                 )
                 return cls._invoke_once(
                     prompt=prompt,
@@ -104,19 +106,22 @@ class ProjectGenerator:
                 )
 
             parsed = json.loads(raw_text)
-            if not isinstance(parsed, dict):
+            # If AI returns a list of projects directly, wrap it
+            if isinstance(parsed, list):
+                parsed = {"projects": parsed}
+            elif not isinstance(parsed, dict):
                 raise ProjectRecommendationValidationError(
                     "Response is not a valid JSON object",
                     error="Generation failed",
                     details="AI response root must be a JSON object",
                 )
 
-            payload = _parse_ai_payload(parsed)
+            payload = _normalize_payload(parsed)
             return payload, token_usage
         except json.JSONDecodeError as exc:
             logger.warning("Project generation JSON parse failed: %s", exc)
             raise ProjectRecommendationValidationError(
-                "Unable to generate project ideas. Please try again.",
+                "Unable to generate project recommendations. Please try again.",
                 error="Generation failed",
                 details="AI response could not be parsed as valid JSON",
             ) from exc
@@ -138,35 +143,22 @@ class ProjectGenerator:
             ) from exc
 
 
-def _parse_ai_payload(payload: Any) -> ProjectRecommendationPayload:
-    if isinstance(payload, ProjectRecommendationPayload):
-        return payload
-    if isinstance(payload, dict):
-        return ProjectRecommendationPayload.model_validate(_normalize_payload(payload))
-    raise ValueError("AI response must be a JSON object")
-
-
-def _normalize_payload(data: dict[str, Any]) -> dict[str, Any]:
-    aliases = {
-        "project_list": "projects",
-        "projectList": "projects",
-        "suggestions": "projects",
-        "items": "projects",
-    }
-    normalized: dict[str, Any] = {}
-    for key, value in data.items():
-        target = aliases.get(key, key)
-        if target in normalized and normalized[target] not in (None, "", []):
-            continue
-        normalized[target] = value
-    return normalized
-
-
 def _extract_text_content(result: Any) -> str:
     if isinstance(result, str):
         return result
-
     content = getattr(result, "content", None)
+    if isinstance(content, str):
+        # Strip markdown code fences if present
+        content = content.strip()
+        if content.startswith("```"):
+            # Remove opening fence (```json, ```python, or just ```)
+            first_newline = content.find("\n")
+            if first_newline != -1:
+                content = content[first_newline + 1:]
+            # Remove closing fence
+            if content.endswith("```"):
+                content = content[:-3].rstrip()
+        return content
     if isinstance(content, str):
         return content
     if isinstance(content, list):
@@ -187,7 +179,7 @@ def _format_llm_error(exc: Exception) -> str:
     lowered = message.lower()
     if "insufficient_quota" in lowered or "quota" in lowered or "429" in lowered:
         return "Project generation is busy right now. Please try again shortly."
-    return "Unable to generate project ideas right now. Please try again."
+    return "Unable to generate project recommendations right now. Please try again."
 
 
 def _is_retryable_generation_error(exc: ProjectRecommendationValidationError) -> bool:
@@ -199,3 +191,49 @@ def _clip_feedback(message: str) -> str:
     if len(text) <= 240:
         return text
     return text[:237].rstrip() + "..."
+
+
+def _normalize_payload(raw: dict[str, Any]) -> ProjectRecommendationPayload:
+    """Normalize AI response keys and validate via Pydantic."""
+    if "projects" not in raw:
+        # Check for numbered keys like project1, project2, project3
+        numbered_keys = [k for k in raw if k.startswith("project") and k[7:].isdigit()]
+        if numbered_keys:
+            sorted_keys = sorted(numbered_keys, key=lambda k: int(k[7:]))
+            raw["projects"] = [raw.pop(k) for k in sorted_keys]
+        else:
+            for alt_key in ("recommendations", "project_list", "portfolio_projects"):
+                if alt_key in raw and isinstance(raw[alt_key], list):
+                    raw["projects"] = raw.pop(alt_key)
+                    break
+
+    projects = raw.get("projects", [])
+    if isinstance(projects, list):
+        for item in projects:
+            _rename_key(item, "recommendation_name", "project_name")
+            _rename_key(item, "name", "project_name")
+            _rename_key(item, "title", "project_name")
+            _rename_key(item, "description", "short_description")
+            _rename_key(item, "skills", "skills_gained")
+            _rename_key(item, "key_skills", "skills_gained")
+            _rename_key(item, "key_outcomes", "deliverables")
+            _rename_key(item, "features", "deliverables")
+            _rename_key(item, "deliverable", "deliverables")
+            _rename_key(item, "duration", "estimated_duration")
+            _rename_key(item, "project_duration", "estimated_duration")
+            _rename_key(item, "portfolio_impact", "portfolio_value")
+            _rename_key(item, "why_build_this", "why_this_project")
+            for dep_key in (
+                "career_match_percentage",
+                "technology_stack",
+                "resume_impact",
+                "key_features",
+            ):
+                item.pop(dep_key, None)
+
+    return ProjectRecommendationPayload(**raw)
+
+
+def _rename_key(d: dict, old: str, new: str) -> None:
+    if old in d and old != new:
+        d[new] = d.pop(old)

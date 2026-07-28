@@ -338,12 +338,6 @@ INTERNSHIP_GENERATION_ENABLED = config(
     cast=bool,
 )
 
-PROJECT_RECOMMENDATION_ENABLED = config(
-    "PROJECT_RECOMMENDATION_ENABLED",
-    default=True,
-    cast=bool,
-)
-
 OPENAI_API_KEY = config("OPENAI_API_KEY", default="").strip()
 OPENAI_MODEL = config("OPENAI_MODEL", default="gpt-4o-mini").strip()
 GEMINI_API_KEY = config("GEMINI_API_KEY", default="").strip()
@@ -399,6 +393,12 @@ RAPIDAPI_BASE_URL = config(
 # Feature toggle for the LinkedIn job search
 JOBS_LINKEDIN_SEARCH_ENABLED = config(
     "JOBS_LINKEDIN_SEARCH_ENABLED",
+    default=True,
+    cast=bool,
+)
+
+PROJECT_RECOMMENDATION_ENABLED = config(
+    "PROJECT_RECOMMENDATION_ENABLED",
     default=True,
     cast=bool,
 )
