@@ -33,9 +33,7 @@ class InternshipViewSet(BaseModelViewSet):
         ]:
             base = queryset.filter(provider=user)
         else:
-            # Students/parents: only see active internships
             base = queryset.filter(status="active")
-        # Allow restore/archive actions to access deleted records
         if self.action not in [
             "restore",
             "archive_list",
@@ -46,7 +44,6 @@ class InternshipViewSet(BaseModelViewSet):
         ]:
             base = base.filter(deleted=False)
 
-        # Apply subscription plan portal limit (internship access)
         from subscription.services.usage import apply_portal_limit
 
         return apply_portal_limit(user, base, "internship")
@@ -515,7 +512,7 @@ class InternshipApplicationViewSet(BaseModelViewSet):
         if resume_file:
             application.upload_resume(resume_file)
 
-        serialzer = self.get_serializer(application)
+        serializer = self.get_serializer(application)
 
         return Response(
             {
