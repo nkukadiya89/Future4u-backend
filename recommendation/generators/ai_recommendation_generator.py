@@ -34,17 +34,24 @@ class RecommendationGenerator:
         format_inputs: Callable,
     ) -> tuple[AIRecommendationPayload, int]:
         prompt = build_prompt()
-        inputs = format_inputs(structured_assessment)
         llm = get_chat_model(max_tokens=getattr(settings, "GROQ_MAX_TOKENS", 4400))
         last_error: AIGenerationError | None = None
+        validation_feedback = None
         for attempt in range(2):
             try:
+                inputs = format_inputs(
+                    structured_assessment,
+                    validation_feedback=validation_feedback,
+                )
                 return cls._invoke_once(prompt=prompt, inputs=inputs, llm=llm)
             except AIGenerationError as exc:
                 last_error = exc
                 if not is_retryable_generation_error(exc) or attempt == 1:
                     raise
-                logger.warning("Retrying AI recommendation after invalid response")
+                validation_feedback = _clip_feedback(str(exc))
+                logger.warning(
+                    "Retrying AI recommendation after: %s", validation_feedback
+                )
 
         raise last_error or AIGenerationError("AI recommendation failed")
 
@@ -65,7 +72,10 @@ class RecommendationGenerator:
             result = AIRecommendationPayload.model_validate_json(raw_text)
         except ValidationError as exc:
             logger.warning("LLM output validation failed: %s", exc)
-            raise AIGenerationError("AI response failed validation") from exc
+            raise AIGenerationError(
+                "AI response did not meet the required recommendation schema. "
+                f"Details: {exc}"
+            ) from exc
         except Exception as exc:
             logger.exception("LLM recommendation generation failed")
             if is_invalid_model_output(exc):
@@ -77,7 +87,10 @@ class RecommendationGenerator:
             payload = normalize_payload(raw)
         except ValidationError as exc:
             logger.warning("LLM output validation failed: %s", exc)
-            raise AIGenerationError("AI response failed validation") from exc
+            raise AIGenerationError(
+                "AI response did not meet the required recommendation schema. "
+                f"Details: {exc}"
+            ) from exc
 
         gaps = payload_gaps(payload)
         if gaps:
@@ -87,3 +100,10 @@ class RecommendationGenerator:
                 f"Details: {'; '.join(gaps)}"
             )
         return payload, token_usage
+
+
+def _clip_feedback(message: str) -> str:
+    text = " ".join(message.split())
+    if len(text) <= 240:
+        return text
+    return text[:237].rstrip() + "..."

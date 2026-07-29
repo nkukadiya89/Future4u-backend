@@ -24,7 +24,9 @@ class News(models.Model):
     short_description = models.CharField(max_length=512, blank=True)
     content = models.TextField()
     category = models.CharField(max_length=100, db_index=True)
-    image = models.CharField(max_length=500, null=True, blank=True)
+    image = models.ImageField(
+        upload_to="news/images/", null=True, blank=True, max_length=500
+    )
     is_published = models.BooleanField(default=False, db_index=True)
     is_deleted = models.BooleanField(default=False, db_index=True)
     created_by = models.ForeignKey(
@@ -66,8 +68,8 @@ class News(models.Model):
         self.is_published = False
         self.save(update_fields=["is_deleted", "is_published", "updated_at"])
 
-    def upload_news_image(self, image_file):
-        """Upload news image to AWS S3 following the same pattern as Domain model"""
+    def upload_image_to_s3(self, image_file):
+        """Upload image to AWS S3 and return the S3 URL"""
         allowed_types = [".jpg", ".jpeg", ".png"]
 
         file_extension = os.path.splitext(image_file.name)[1].lower()
@@ -76,12 +78,7 @@ class News(models.Model):
                 f"Invalid file type: {file_extension}. Allowed types are {', '.join(allowed_types)}."
             )
 
-        current_value = getattr(self, "image", None)
-
         try:
-            if current_value:
-                delete_uploaded_file(current_value)
-
             aws_file_url, presigned_url = upload_file_to_bucket(
                 image_file,
                 allowed_types,
@@ -89,8 +86,6 @@ class News(models.Model):
                 str(self.id),
                 None,
             )
-            self.image = aws_file_url
-            self.save(update_fields=["image"])
             return aws_file_url
         except ValueError:
             raise

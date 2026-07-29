@@ -18605,9 +18605,9 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Python for Data Science\",\n  \"course_type\": \"certification\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\", \"Data Analysis\"],\n  \"education_tags\": [\"higher_secondary\"],\n  \"duration\": \"8 weeks\",\n  \"city\": {{city_id}},\n  \"course_overview\": \"Learn Python from basics to ML.\",\n  \"why_this_course\": [\"High demand skills\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\", \"Pandas\", \"ML basics\"]\n}"
+              "raw": "{\n  \"name\": \"Python for Data Science\",\n  \"course_type\": \"certification\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\", \"Data Analysis\"],\n  \"education_tags\": [\"<education_level_id>\"],\n  \"duration\": \"8 weeks\",\n  \"city\": {{city_id}},\n  \"course_overview\": \"Learn Python from basics to ML.\",\n  \"why_this_course\": [\"High demand skills\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\", \"Pandas\", \"ML basics\"]\n}"
             },
-            "description": "Create a course. provider and created_by are set from the authenticated user.\n\ncourse_type: higher_secondary | diploma | degree | certification | training\nmode: online | offline"
+            "description": "Create a course. provider and created_by are set from the authenticated user.\n\ncourse_type: higher_secondary | diploma | degree | certification | training\nmode: online | offline\neducation_tags: array of EducationLevel ids"
           },
           "response": []
         },
@@ -18666,7 +18666,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Python for Data Science Updated\",\n  \"course_type\": \"degree\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\"],\n  \"education_tags\": [\"higher_secondary\"],\n  \"duration\": \"10 weeks\",\n  \"city\": {{city_id}},\n  \"course_overview\": \"Updated overview\",\n  \"why_this_course\": [\"Updated\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\"]\n}"
+              "raw": "{\n  \"name\": \"Python for Data Science Updated\",\n  \"course_type\": \"degree\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\"],\n  \"education_tags\": [\"<education_level_id>\"],\n  \"duration\": \"10 weeks\",\n  \"city\": {{city_id}},\n  \"course_overview\": \"Updated overview\",\n  \"why_this_course\": [\"Updated\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\"]\n}"
             }
           },
           "response": []
@@ -18929,7 +18929,7 @@
                 }
               ]
             },
-            "description": "List course inquiries. Optional: course filter via search params if configured on the viewset."
+            "description": "List course inquiries with lead summary (total/pending/responded/closed).\n\n- Superusers: all inquiries\n- Providers (school_college/institute): inquiries for their courses\n- Students: all inquiries (use my-inquiries for own data)\n\nSupports pagination via page & pagesize.\nUse ?no_pagination=1 to return all."
           },
           "response": [],
           "event": [
@@ -19081,6 +19081,35 @@
               ]
             },
             "description": "Returns inquiries received for courses owned by the authenticated provider.\n\nRequires course_id.\n\nResponse: { success, count, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "my-inquiries (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiry/my-inquiries/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiry",
+                "my-inquiries",
+                ""
+              ]
+            },
+            "description": "Returns course inquiries created by the authenticated user (student).\n\nIncludes career_name and assessment_score fields from the linked career suggestion.\n\nSupports pagination via page & pagesize query params.\nUse ?no_pagination=1 to return all results.\n\nResponse: { success, count, data }"
           },
           "response": []
         },
@@ -20400,6 +20429,35 @@
           "response": []
         },
         {
+          "name": "my-applications (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job_application/my-applications/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job_application",
+                "my-applications",
+                ""
+              ]
+            },
+            "description": "Returns job applications submitted by the authenticated user.\n\nSupports pagination via page & pagesize query params.\nUse ?no_pagination=1 to return all results.\n\nResponse: { success, count, data } or paginated DRF response"
+          },
+          "response": []
+        },
+        {
           "name": "retrieve (GET)",
           "request": {
             "method": "GET",
@@ -20776,6 +20834,35 @@
               ]
             },
             "description": "Returns applications received for internships owned by the authenticated provider.\n\nRequires internship_id.\n\nResponse: { success, count, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "my-applications (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship_application/my-applications/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship_application",
+                "my-applications",
+                ""
+              ]
+            },
+            "description": "Returns internship applications submitted by the authenticated user.\n\nSupports pagination via page & pagesize query params.\nUse ?no_pagination=1 to return all results.\n\nResponse: { success, count, data } or paginated DRF response"
           },
           "response": []
         },

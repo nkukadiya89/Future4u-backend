@@ -47,8 +47,8 @@ class ParentRecommendationService:
         payload, token_usage = RecommendationPipeline.run(
             structured_assessment=structured_input,
             build_prompt=parent_prompts.build_parent_recommendation_prompt,
-            format_inputs=lambda data: parent_prompts.format_parent_prompt_inputs(
-                parent_assessment=data
+            format_inputs=lambda data, validation_feedback="None": parent_prompts.format_parent_prompt_inputs(
+                parent_assessment=data, validation_feedback=validation_feedback
             ),
         )
         if is_study_abroad_mode(structured_input):

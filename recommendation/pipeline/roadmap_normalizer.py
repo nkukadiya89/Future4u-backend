@@ -62,6 +62,21 @@ def normalize_career_roadmap(
     roadmap: dict[str, Any],
 ) -> dict[str, list[dict[str, str]]]:
     """Ensure four 3-month phases; accept legacy 18-month keys from older AI output."""
+    # Normalize common phase key typos from LLM output.
+    _PHASE_KEY_TYPOS: dict[str, str] = {
+        "next_6_to 9_months": "next_6_to_9_months",
+        "next_6 to_9_months": "next_6_to_9_months",
+        "next_6_to9_months": "next_6_to_9_months",
+        "next6_to_9_months": "next_6_to_9_months",
+        "next_9_to 12_months": "next_9_to_12_months",
+        "next_9 to_12_months": "next_9_to_12_months",
+        "next_3_to 6_months": "next_3_to_6_months",
+        "next_3 to_6_months": "next_3_to_6_months",
+    }
+    for typo, correct in _PHASE_KEY_TYPOS.items():
+        if typo in roadmap:
+            roadmap[correct] = roadmap.pop(typo)
+
     if all(roadmap.get(key) for key in CAREER_ROADMAP_PHASE_KEYS):
         return {
             key: _clip_phase_tasks(list(roadmap.get(key) or []))

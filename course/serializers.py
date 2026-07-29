@@ -1,10 +1,9 @@
 from rest_framework import serializers
-
+from education_level.serializers import EducationLevelDropdownSerializer
+from .models import Courses, CourseInquiry
 from common.serializers import BaseModelSerializer
 from user.models import User
-
 from .models import CourseInquiry, Courses
-
 
 class CoursesSerializer(BaseModelSerializer):
 
@@ -13,7 +12,7 @@ class CoursesSerializer(BaseModelSerializer):
     state_name = serializers.CharField(source="state.name", read_only=True)
     city_name = serializers.CharField(source="city.name", read_only=True)
     course_provider_name = serializers.SerializerMethodField()
-
+    education_tags_name = EducationLevelDropdownSerializer(source="education_tags", many=True, read_only=True)
     # Accept AI-generated course_title as the course name
     course_title = serializers.CharField(
         source="name",
@@ -50,6 +49,7 @@ class CoursesSerializer(BaseModelSerializer):
             "mode",
             "skills",
             "education_tags",
+            "education_tags_name",
             "duration",
             "provider",
             "provider_name",
@@ -109,6 +109,8 @@ class CoursesSerializer(BaseModelSerializer):
 class CourseInquirySerializer(BaseModelSerializer):
     course_name = serializers.CharField(source="course.name", read_only=True)
     user_name = serializers.CharField(source="user.full_name", read_only=True)
+    career_name = serializers.CharField(source="career_suggestion.career_name", read_only=True)
+    assessment_score = serializers.CharField(source="career_suggestion.match_percentage", read_only=True)
 
     class Meta:
         model = CourseInquiry
@@ -123,4 +125,7 @@ class CourseInquirySerializer(BaseModelSerializer):
             "email",
             "message",
             "status",
+            "career_suggestion",
+            "career_name",
+            "assessment_score",
         ]
