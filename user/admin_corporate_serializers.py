@@ -280,6 +280,7 @@ class AdminCorporateSortSerializer(serializers.ModelSerializer):
     city_name = serializers.CharField(source="user.city.name")
     referral_code = serializers.CharField(source="user.referral_code")
     address = serializers.CharField(source="user.address")
+    status = serializers.CharField(source="user.status", default=None, read_only=True)
 
     class Meta:
         model = CorporateProfile
@@ -304,4 +305,5 @@ class AdminCorporateSortSerializer(serializers.ModelSerializer):
             "years_in_business",
             "about_us",
             "website",
+            "status",
         ]

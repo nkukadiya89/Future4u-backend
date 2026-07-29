@@ -300,6 +300,7 @@ class AdminStudentSortSerializer(serializers.ModelSerializer):
         allow_null=True,
         read_only=True,
     )
+    status = serializers.CharField(source="user.status", default=None, read_only=True)
 
     class Meta:
         model = StudentProfile
@@ -321,6 +322,7 @@ class AdminStudentSortSerializer(serializers.ModelSerializer):
             "city",
             "city_name",
             "referral_code",
+            "status",
         ]
 
 
