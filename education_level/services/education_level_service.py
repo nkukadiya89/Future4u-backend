@@ -309,6 +309,15 @@ def bulk_import_rows(
     imported = 0
     errors: list[EducationLevelImportError] = []
     seen_codes: set[str] = set()
+
+    codes = [(r.get("level_code") or "").strip().lower() for r in rows if r.get("level_code")]
+    if codes:
+        existing_codes = set(
+            EducationLevel.objects.filter(level_code__in=codes)
+            .values_list("level_code", flat=True)
+        )
+        rows = sorted(rows, key=lambda r: (r.get("level_code") or "").strip().lower() not in existing_codes)
+
     for idx, raw_row in enumerate(rows, start=1):
         row = dict(raw_row)
         try:
