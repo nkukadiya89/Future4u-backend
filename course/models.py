@@ -45,13 +45,6 @@ class Courses(BaseModule):
     skills = models.JSONField(default=list, blank=True)
     education_tags = models.ManyToManyField(EducationLevel, blank=True)
     duration = models.CharField(max_length=100, null=True, blank=True)
-    provider = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="courses",
-    )
     provider_type = models.CharField(
         max_length=20,
         choices=PROVIDER_TYPE_CHOICES,

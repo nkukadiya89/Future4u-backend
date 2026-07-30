@@ -24,7 +24,7 @@ from .serializers import CourseInquirySerializer, CoursesSerializer
 class CoursesViewSet(BaseModelViewSet):
     def get_queryset(self):
         queryset = Courses.objects.select_related(
-            "country", "state", "city", "provider"
+            "country", "state", "city", "created_by"
         ).prefetch_related("education_tags")
         
         user = self.request.user
@@ -34,7 +34,7 @@ class CoursesViewSet(BaseModelViewSet):
             "institute",
             "school_college",
         ]:
-            base = queryset.filter(provider=user)
+            base = queryset.filter(course_provider=user)
         else:
             base = queryset.filter(status="active")
         if self.action not in [
@@ -76,13 +76,13 @@ class CoursesViewSet(BaseModelViewSet):
         "why_this_course",
         "certification_info",
         "course_price",
-        "provider__full_name",
+        "created_by__full_name",
     ]
     ordering_fields = BaseModelViewSet.ordering_fields + [
         "name",
         "course_type",
         "mode",
-        "provider",
+        "created_by",
         "city",
         "duration",
     ]
@@ -91,11 +91,14 @@ class CoursesViewSet(BaseModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(
-                created_by=request.user,
-                provider=request.user,
-                created_at=timezone.now(),
-            )
+            save_kwargs = {
+                'created_by': request.user,
+                'created_at': timezone.now(),
+            }
+            # Auto-set course_provider when school/institute creates their own course
+            if request.user.user_type in ['school_college', 'institute'] and 'course_provider' not in serializer.validated_data:
+                save_kwargs['course_provider'] = request.user
+            serializer.save(**save_kwargs)
             return Response(
                 {
                     "success": True,
@@ -139,7 +142,7 @@ class CoursesViewSet(BaseModelViewSet):
 
         courses = Courses.objects.filter(id__in=ids, deleted=False)
         if not is_admin:
-            courses = courses.filter(provider=request.user)
+            courses = courses.filter(course_provider=request.user)
 
         found_ids = set(courses.values_list("id", flat=True))
         not_found_ids = list(set(ids) - found_ids)
@@ -307,7 +310,7 @@ class CoursesViewSet(BaseModelViewSet):
     @action(detail=False, methods=["get"], url_path="archive-list")
     def archive_list(self, request):
         queryset = Courses.objects.select_related(
-            "country", "state", "city", "provider"
+            "country", "state", "city", "created_by"
         ).prefetch_related("education_tags").filter(deleted=True).order_by("-deleted_at")
 
         queryset = self.filter_queryset(queryset)
@@ -405,7 +408,7 @@ class CourseInquiryViewSet(BaseModelViewSet):
         if user.is_superuser:
             return base
         if user.user_type in ["school_college", "institute"]:
-            return base.filter(course__provider=user)
+            return base.filter(course__course_provider=user)
         return base.filter(user=user).filter(user=user)
 
     def list(self, request, *args, **kwargs):
@@ -497,7 +500,7 @@ class CourseInquiryViewSet(BaseModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="received-inquiries")
     def received_inquiries(self, request):
-        inquiries = CourseInquiry.objects.filter(course__provider=request.user)
+        inquiries = CourseInquiry.objects.filter(course__course_provider=request.user)
 
         course_id = request.query_params.get("course_id")
         if not course_id:
@@ -548,11 +551,11 @@ class CourseInquiryViewSet(BaseModelViewSet):
     def update_status(self, request, pk=None):
         inquiries = self.get_object()
 
-        if inquiries.course.provider != request.user:
+        if inquiries.course.course_provider != request.user:
             return Response(
                 {
                     "success": False,
-                    "message": "You are not allowed to update this course inquirie status",
+                    "message": "You are not allowed to update this course inquiry status",
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )

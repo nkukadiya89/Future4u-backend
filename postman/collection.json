@@ -18528,7 +18528,7 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"closed\",\n  \"ids\": [{{course_id}}]\n}"
             },
-            "description": "Admins can update any course. Institute, school/college, and corporate providers can update only courses they own. Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."
+            "description": "Admins can update any course. Institute, school/college providers can update only courses they own (course_provider). Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."
           },
           "response": []
         },
@@ -18575,7 +18575,7 @@
                 }
               ]
             },
-            "description": "List archived internships (deleted=true)."
+            "description": "List archived courses (deleted=true)."
           },
           "response": []
         },
@@ -18605,9 +18605,9 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Python for Data Science\",\n  \"course_type\": \"certification\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\", \"Data Analysis\"],\n  \"education_tags\": [\"<education_level_id>\"],\n  \"duration\": \"8 weeks\",\n  \"city\": {{city_id}},\n  \"course_overview\": \"Learn Python from basics to ML.\",\n  \"why_this_course\": [\"High demand skills\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\", \"Pandas\", \"ML basics\"]\n}"
+              "raw": "{\n  \"name\": \"BTECH TIT\",\n  \"course_overview\": \"nothing to say you dude\",\n  \"course_price\": \"6000\",\n  \"course_type\": \"degree\",\n  \"mode\": \"offline\",\n  \"duration\": \"10\",\n  \"provider_type\": \"school_college\",\n  \"country\": 1,\n  \"state\": 1,\n  \"city\": 2,\n  \"education_tags\": [\n    \"9645fa40-c307-497b-8c3e-3eb98a297087\",\n    \"3f192448-b63b-4f33-a703-5b85e95bbf0c\",\n    \"74b6acd9-eca6-4a14-8b48-0032683fdb86\",\n    \"e68bdaff-f2ad-4e02-a328-0d51555fb339\"\n  ],\n  \"course_description\": \"Betch vasuli course\",\n  \"skills\": [\n    \"Python\",\n    \"JAvascript\",\n    \"Css\",\n    \"darshak\",\n    \"aiml\"\n  ],\n  \"course_content\": [],\n  \"why_this_course\": \"\",\n  \"certification_info\": \"\",\n  \"status\": \"active\"\n}"
             },
-            "description": "Create a course. provider and created_by are set from the authenticated user.\n\ncourse_type: higher_secondary | diploma | degree | certification | training\nmode: online | offline\neducation_tags: array of EducationLevel ids"
+            "description": "Create a course. created_by is set from the authenticated user. course_provider auto-sets to the creator if user is school_college or institute.\n\ncourse_type: higher_secondary | diploma | degree | certification | training\nmode: online | offline\nprovider_type: school_college | institute\neducation_tags: array of EducationLevel ids\nstatus: draft | active | closed (defaults to draft)"
           },
           "response": []
         },
@@ -18666,7 +18666,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Python for Data Science Updated\",\n  \"course_type\": \"degree\",\n  \"mode\": \"online\",\n  \"skills\": [\"Python\"],\n  \"education_tags\": [\"<education_level_id>\"],\n  \"duration\": \"10 weeks\",\n  \"city\": {{city_id}},\n  \"course_overview\": \"Updated overview\",\n  \"why_this_course\": [\"Updated\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\"]\n}"
+              "raw": "{\n  \"name\": \"Python for Data Science Updated\",\n  \"course_type\": \"degree\",\n  \"mode\": \"online\",\n  \"provider_type\": \"institute\",\n  \"course_provider\": {{school_college_user_id}},\n  \"skills\": [\"Python\"],\n  \"education_tags\": [\"<education_level_id>\"],\n  \"duration\": \"10 weeks\",\n  \"country\": {{country_id}},\n  \"state\": {{state_id}},\n  \"city\": {{city_id}},\n  \"course_overview\": \"Updated overview\",\n  \"course_description\": \"Updated description\",\n  \"why_this_course\": [\"Updated\"],\n  \"certification_info\": \"Certificate included\",\n  \"course_content\": [\"Intro\"],\n  \"course_price\": \"6000\",\n  \"status\": \"active\"\n}"
             }
           },
           "response": []
@@ -18757,7 +18757,7 @@
                 ""
               ]
             },
-            "description": "Restore an archived course (sets deleted=false). Only the provider (creator) can restore."
+            "description": "Restore an archived course (sets deleted=false). Only the course_provider (owner) can restore."
           },
           "response": []
         },
@@ -19076,7 +19076,7 @@
                 {
                   "key": "course_id",
                   "value": "{{course_id}}",
-                  "description": "Required. Course id where the authenticated user is the provider."
+                  "description": "Required. Course id where the authenticated user is the course_provider."
                 }
               ]
             },
@@ -19445,7 +19445,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Frontend Developer Internship\",\n  \"city\": {{city_id}},\n  \"organization_name\": \"Future4u Labs\",\n  \"description\": \"Hands-on internship for students.\",\n  \"responsibilities\": [\"Build UI components\", \"Write unit tests\"],\n  \"skills\": [\"JavaScript\", \"React\"],\n  \"education_tags\": [1],\n  \"why_this_match\": \"Matches your career path in web development.\",\n  \"internship_type\": \"stipend\",\n  \"mode\": \"online\",\n  \"duration\": \"3 months\",\n  \"fees_amount\": null,\n  \"stipend_amount\": 15000,\n  \"certificate_provided\": true\n}"
+              "raw": "{\n  \"name\": \"Python Backend Development Internship\",\n  \"internship_overview\": \"Gain practical experience in backend development using Python and Django while working on live projects.\",\n  \"department\": \"Software Development\",\n  \"country\": 1,\n  \"state\": 1,\n  \"city\": 2,\n  \"description\": \"This internship provides students with hands-on experience in designing, developing, and maintaining backend applications using Django and REST APIs.\",\n  \"responsibilities\": [\n    \"Develop REST APIs using Django REST Framework\",\n    \"Write clean and maintainable Python code\",\n    \"Collaborate with frontend developers\",\n    \"Debug and resolve application issues\",\n    \"Participate in daily team meetings\"\n  ],\n  \"skills\": [\n    \"Python\",\n    \"Django\",\n    \"Django REST Framework\",\n    \"PostgreSQL\",\n    \"Git\"\n  ],\n  \"education_tags\": [\n    \"9645fa40-c307-497b-8c3e-3eb98a297087\",\n    \"3f192448-b63b-4f33-a703-5b85e95bbf0c\"\n  ],\n  \"why_this_match\": \"Ideal for students interested in backend engineering and API development.\",\n  \"internship_type\": \"free\",\n  \"mode\": \"offline\",\n  \"duration\": \"2 Months\",\n  \"fees_amount\": 0,\n  \"stipend_amount\": null,\n  \"certificate_provided\": true,\n  \"provider_type\": \"institute\",\n  \"application_deadline\": \"2026-09-15\",\n  \"status\": \"active\"\n}"
             },
             "description": "Create an internship. provider and created_by are set from the authenticated user.\n\ninternship_type: free | paid | stipend\nmode: online | offline\neducation_tags: array of EducationLevel ids"
           },

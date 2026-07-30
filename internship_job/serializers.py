@@ -12,7 +12,7 @@ class InternshipSerializer(BaseModelSerializer):
     city_name = serializers.CharField(source="city.name", read_only=True)
     country_name = serializers.CharField(source="country.name", read_only=True)
     state_name = serializers.CharField(source="state.name", read_only=True)
-    provider_name = serializers.SerializerMethodField()
+    created_by_name = serializers.SerializerMethodField()
     internship_provider_name = serializers.SerializerMethodField()
     education_tags_name = EducationLevelDropdownSerializer(source="education_tags", many=True, read_only=True)
 
@@ -100,8 +100,8 @@ class InternshipSerializer(BaseModelSerializer):
             "stipend_amount",
             "stipend",
             "certificate_provided",
-            "provider",
-            "provider_name",
+            "created_by",
+            "created_by_name",
             "provider_type",
             "internship_provider",
             "internship_provider_name",
@@ -109,9 +109,9 @@ class InternshipSerializer(BaseModelSerializer):
             "status",
         ]
 
-    def get_provider_name(self, obj):
-        if obj.provider:
-            return obj.provider.full_name
+    def get_created_by_name(self, obj):
+        if obj.created_by:
+            return obj.created_by.full_name
         return None
 
     def get_internship_provider_name(self, obj):

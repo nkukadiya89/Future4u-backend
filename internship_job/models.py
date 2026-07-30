@@ -73,13 +73,6 @@ class Internship(BaseModule):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     certificate_provided = models.BooleanField(default=True)
-    provider = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="internships",
-    )
     provider_type = models.CharField(
         max_length=20,
         choices=PROVIDER_TYPE_CHOICES,
