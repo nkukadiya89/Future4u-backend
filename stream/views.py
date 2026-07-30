@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from activity_log.services import log_event
 from common.mixins.view_mixins import SuccessEnvelopeMixin
 from stream.models import Stream
 from stream.permissions import StreamMasterPermission
@@ -81,6 +82,15 @@ class StreamViewSet(SuccessEnvelopeMixin, ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            log_event(
+                event="stream.created",
+                description=f"Created stream {serializer.instance.stream_name}",
+                user=request.user,
+                entity_type="stream",
+                entity_id=serializer.instance.id,
+                metadata={"stream_name": serializer.instance.stream_name},
+                request=request,
+            )
             return Response(
                 {"success": True, "message": "Stream created", "data": serializer.data},
                 status=status.HTTP_201_CREATED,
@@ -99,6 +109,15 @@ class StreamViewSet(SuccessEnvelopeMixin, ModelViewSet):
                 {"success": False, "message": e.detail},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        log_event(
+            event="stream.archived",
+            description=f"Archived stream {instance.stream_name}",
+            user=request.user,
+            entity_type="stream",
+            entity_id=instance.id,
+            metadata={"stream_name": instance.stream_name},
+            request=request,
+        )
         return Response(
             {"success": True, "message": "Archived Successfully"},
             status=status.HTTP_200_OK,
@@ -137,6 +156,15 @@ class StreamViewSet(SuccessEnvelopeMixin, ModelViewSet):
             is_active=ser.validated_data["is_active"],
         )
         instance.refresh_from_db()
+        log_event(
+            event="stream.status_changed",
+            description=f"Changed stream {instance.stream_name} active={ser.validated_data['is_active']}",
+            user=request.user,
+            entity_type="stream",
+            entity_id=instance.id,
+            metadata={"stream_name": instance.stream_name, "is_active": ser.validated_data["is_active"]},
+            request=request,
+        )
         return Response(
             {
                 "success": True,
@@ -187,6 +215,15 @@ class StreamViewSet(SuccessEnvelopeMixin, ModelViewSet):
                 {"success": False, "message": e.detail},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        log_event(
+            event="stream.bulk_archived",
+            description=f"Bulk archived {n} stream(s)",
+            user=request.user,
+            entity_type="stream",
+            entity_id=None,
+            metadata={"stream_ids": list(ser.validated_data["ids"]), "count": n},
+            request=request,
+        )
         return Response(
             {"success": True, "message": "Bulk archived successfully", "count": n}
         )
@@ -201,6 +238,15 @@ class StreamViewSet(SuccessEnvelopeMixin, ModelViewSet):
             )
         n = stream_service.bulk_restore(
             ids=list(ser.validated_data["ids"]), user=request.user
+        )
+        log_event(
+            event="stream.bulk_restored",
+            description=f"Bulk restored {n} stream(s)",
+            user=request.user,
+            entity_type="stream",
+            entity_id=None,
+            metadata={"stream_ids": list(ser.validated_data["ids"]), "count": n},
+            request=request,
         )
         return Response(
             {"success": True, "message": "Bulk restored successfully", "count": n}

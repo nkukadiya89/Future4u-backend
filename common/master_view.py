@@ -85,7 +85,7 @@ class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
         event = event_map.get(action.upper(), f"master.{action.lower()}")
         log_event(
             event=event,
-            description=f"{model_name} {action.lower()}d by {request.user.email}",
+            description=f"{action.lower().capitalize()}d {model_name.lower()}: {instance}",
             user=request.user,
             entity_type=model_name.lower(),
             entity_id=getattr(instance, "id", None),

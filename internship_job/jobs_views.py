@@ -16,6 +16,8 @@ from assessment_career.models import CareerSuggestion
 from common.master_view import BaseModelViewSet
 from user.permissions import IsAdminOrProvider, is_admin_user
 
+from user_profile.models import CorporateProfile
+
 from .models import Job, JobApplication
 from .serializers import JobApplicationSerializer, JobSerializer
 from .service import match_jobs
@@ -97,7 +99,17 @@ class JobViewSet(BaseModelViewSet):
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        # Auto-fill corporate from logged-in user's profile if not provided
+        if "corporate" not in data:
+            try:
+                cp = request.user.corporate_profile
+                if not cp.deleted:
+                    data["corporate"] = cp.id
+            except CorporateProfile.DoesNotExist:
+                pass
+
+        serializer = self.get_serializer(data=data)
         if serializer.is_valid():
             serializer.save(
                 provider=request.user,
@@ -165,7 +177,7 @@ class JobViewSet(BaseModelViewSet):
             log_event(
                 event="job.bulk_status_changed",
                 description=(
-                    f"{request.user.email} changed {len(updated_ids)} job(s) "
+                    f"Changed {len(updated_ids)} job(s) "
                     f"to {new_status}"
                 ),
                 user=request.user,
@@ -248,7 +260,7 @@ class JobViewSet(BaseModelViewSet):
 
         log_event(
             event="job.bulk_archive",
-            description=f"Admin {request.user.email} bulk archived {records.count()} job(s)",
+            description=f"Bulk archived {records.count()} job(s)",
             user=request.user,
             entity_type="job",
             entity_id=None,
@@ -297,7 +309,7 @@ class JobViewSet(BaseModelViewSet):
 
         log_event(
             event="job.bulk_restore",
-            description=f"Admin {request.user.email} bulk restored {records.count()} job(s)",
+            description=f"Bulk restored {records.count()} job(s)",
             user=request.user,
             entity_type="job",
             entity_id=None,

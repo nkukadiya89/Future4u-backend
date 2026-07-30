@@ -1,6 +1,9 @@
+import os
+import tempfile
+
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
-from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -9,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from activity_log.services import log_event
 from assessment.models import StudentAssessment
 from assessment.serializers import StudentAssessmentSerializer
 from assessment_career.models import CareerRecommendation, CareerSuggestion
@@ -17,7 +21,10 @@ from assessment_career.serializers import (
     CareerSuggestionSerializer,
 )
 from common.master_view import BaseModelViewSet
+from user.admin_user_serializers import BulkUserUploadSerializer
 from user.models import User
+from user.services.bulk_user_upload import BulkUserUploadService
+from user.tasks import bulk_upload_user_task
 from utils.pagination import Pagination
 
 from .permissions import IsSchoolCollegeOrInstitute
@@ -67,7 +74,7 @@ class OrganizationStudentViewSet(BaseModelViewSet):
         "is_active",
         "status",
     ]
-    http_method_names = ["get", "post", "delete", "head", "options"]
+    http_method_names = ["get", "post", "head", "options"]
 
     def get_queryset(self):
         user = self.request.user
@@ -108,6 +115,15 @@ class OrganizationStudentViewSet(BaseModelViewSet):
         )
         if serializer.is_valid(raise_exception=True):
             student = serializer.save()
+            log_event(
+                event="student.created",
+                description=f"Created student {student.email}",
+                user=request.user,
+                entity_type="user",
+                entity_id=student.id,
+                metadata={"student_name": f"{student.first_name} {student.last_name}"},
+                request=request,
+            )
             return Response(
                 {
                     "success": True,
@@ -151,52 +167,18 @@ class OrganizationStudentViewSet(BaseModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @transaction.atomic
-    def destroy(self, request, *args, **kwargs):
-        student = User.objects.filter(
-            pk=kwargs.get("pk"), deleted=False, user_type=User.Role.STUDENT
-        ).first()
-
-        if student.created_by_id != request.user.id:
-            return Response(
-                {
-                    "success": False,
-                    "message": "You can archive students created by you",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        if student.deleted:
-            return Response(
-                {
-                    "success": False,
-                    "message": "Student alredy archived",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        if student.status == "active":
-            return Response(
-                {
-                    "success": False,
-                    "message": "Active student can not archive. Please inactive this student first.",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        student.deleted = True
-        student.deleted_at = timezone.now()
-        student.deleted_by = request.user
-        student.save(update_fields=["deleted", "deleted_at", "deleted_by"])
-        return Response(
-            {
-                "success": True,
-                "message": "Student archived successfully",
-            },
-            status=status.HTTP_200_OK,
-        )
 
     @action(detail=True, methods=["get"], url_path="assessments")
     def student_assessment(self, request, pk=None):
         student = self.get_object()
+        log_event(
+            event="student.assessment_viewed",
+            description=f"Viewed {student.email}'s assessments",
+            user=request.user,
+            entity_type="user",
+            entity_id=student.id,
+            request=request,
+        )
         queryset = StudentAssessment.objects.filter(
             user=student, deleted=False
         ).order_by("-created_at")
@@ -240,6 +222,14 @@ class OrganizationStudentViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         student = self.get_object()
+        log_event(
+            event="student.recommendation_viewed",
+            description=f"Viewed {student.email}'s recommendation",
+            user=request.user,
+            entity_type="user",
+            entity_id=student.id,
+            request=request,
+        )
         assessment = StudentAssessment.objects.filter(
             id=assessment_id, user=student, deleted=False
         ).first()
@@ -275,6 +265,65 @@ class OrganizationStudentViewSet(BaseModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+    @action(detail=False, methods=["post"], url_path="bulk-upload")
+    def bulk_upload(self, request, *args, **kwargs):
+        serializer = BulkUserUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            uploaded_file = serializer.validated_data["file"]
+
+            df = BulkUserUploadService._read_file(uploaded_file)
+            required_columns = BulkUserUploadService.get_required_columns(
+                User.Role.STUDENT
+            )
+            BulkUserUploadService._validate_headers(df, required_columns)
+
+            uploaded_file.seek(0)
+
+            suffix = os.path.splitext(uploaded_file.name)[1]
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+                for chunk in uploaded_file.chunks():
+                    tmp.write(chunk)
+
+            bulk_upload_user_task.delay(
+                tmp.name,
+                request.user.id,
+                User.Role.STUDENT,
+                forced_referred_by=request.user.id,
+            )
+
+            log_event(
+                event="student.bulk_upload",
+                description=f"Started bulk upload: {uploaded_file.name}",
+                user=request.user,
+                entity_type="user",
+                entity_id=None,
+                metadata={"filename": uploaded_file.name},
+                request=request,
+            )
+
+            return Response(
+                {
+                    "success": True,
+                    "message": (
+                        f"Bulk Upload Started. Your file '{uploaded_file.name}' "
+                        "has started processing."
+                    ),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except ValidationError as e:
+            return Response(
+                {
+                    "success": False,
+                    "message": "".join(e.message) if hasattr(e, "message") else str(e),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     @action(detail=True, methods=["get"], url_path="suggestion")
     def student_suggestion(self, request, pk=None):

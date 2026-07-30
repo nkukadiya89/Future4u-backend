@@ -26,7 +26,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from activity_log.services import log_event
 from resume_builder.services import (
     build_child_resume_data,
     build_professional_resume_data,

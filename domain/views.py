@@ -12,6 +12,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from common.mixins.view_mixins import SuccessEnvelopeMixin
+from activity_log.services import log_event
 from domain.models import Domain
 from domain.permissions import DomainMasterPermission
 from domain.serializers import (
@@ -83,6 +84,15 @@ class DomainViewSet(SuccessEnvelopeMixin, ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            log_event(
+                event="domain.created",
+                description=f"Created domain {serializer.instance.domain_name}",
+                user=request.user,
+                entity_type="domain",
+                entity_id=serializer.instance.id,
+                metadata={"domain_name": serializer.instance.domain_name},
+                request=request,
+            )
             return Response(
                 {"success": True, "message": "Domain created", "data": serializer.data},
                 status=status.HTTP_201_CREATED,
@@ -101,6 +111,15 @@ class DomainViewSet(SuccessEnvelopeMixin, ModelViewSet):
                 {"success": False, "message": e.detail},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        log_event(
+            event="domain.archived",
+            description=f"Archived domain {instance.domain_name}",
+            user=request.user,
+            entity_type="domain",
+            entity_id=instance.id,
+            metadata={"domain_name": instance.domain_name},
+            request=request,
+        )
         return Response(
             {"success": True, "message": "Archived Successfully"},
             status=status.HTTP_200_OK,
@@ -139,6 +158,15 @@ class DomainViewSet(SuccessEnvelopeMixin, ModelViewSet):
             is_active=ser.validated_data["is_active"],
         )
         instance.refresh_from_db()
+        log_event(
+            event="domain.status_changed",
+            description=f"Changed domain {instance.domain_name} active={ser.validated_data['is_active']}",
+            user=request.user,
+            entity_type="domain",
+            entity_id=instance.id,
+            metadata={"domain_name": instance.domain_name, "is_active": ser.validated_data["is_active"]},
+            request=request,
+        )
         return Response(
             {
                 "success": True,
@@ -197,6 +225,15 @@ class DomainViewSet(SuccessEnvelopeMixin, ModelViewSet):
                 {"success": False, "message": e.detail},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        log_event(
+            event="domain.bulk_archived",
+            description=f"Bulk archived {n} domain(s)",
+            user=request.user,
+            entity_type="domain",
+            entity_id=None,
+            metadata={"domain_ids": list(ser.validated_data["ids"]), "count": n},
+            request=request,
+        )
         return Response(
             {"success": True, "message": "Bulk archived successfully", "count": n}
         )
@@ -211,6 +248,15 @@ class DomainViewSet(SuccessEnvelopeMixin, ModelViewSet):
             )
         n = domain_service.bulk_restore(
             ids=list(ser.validated_data["ids"]), user=request.user
+        )
+        log_event(
+            event="domain.bulk_restored",
+            description=f"Bulk restored {n} domain(s)",
+            user=request.user,
+            entity_type="domain",
+            entity_id=None,
+            metadata={"domain_ids": list(ser.validated_data["ids"]), "count": n},
+            request=request,
         )
         return Response(
             {"success": True, "message": "Bulk restored successfully", "count": n}

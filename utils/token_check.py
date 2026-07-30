@@ -16,6 +16,7 @@ FEATURE_NAMES = {
     "internship_gen": "Internship Generation",
     "job_gen": "Job Generation",
     "resume_enhance": "Resume Builder",
+    "project_gen": "Project Recommendations",
     "monthly_tokens": "Monthly Token Allowance",
 }
 
@@ -26,6 +27,7 @@ MIN_TOKENS_REQUIRED = {
     "internship_gen": 2000,
     "job_gen": 2000,
     "resume_enhance": 500,
+    "project_gen": 2000,
 }
 
 ORGANIZATION_TYPES = (

@@ -300,6 +300,7 @@ class AdminStudentSortSerializer(serializers.ModelSerializer):
         allow_null=True,
         read_only=True,
     )
+    status = serializers.CharField(source="user.status", default=None, read_only=True)
 
     class Meta:
         model = StudentProfile
@@ -321,12 +322,13 @@ class AdminStudentSortSerializer(serializers.ModelSerializer):
             "city",
             "city_name",
             "referral_code",
+            "status",
         ]
 
 
 class BulkUserUploadSerializer(serializers.Serializer):
     file = serializers.FileField()
-    user_type = serializers.ChoiceField(choices=User.Role.choices)
+    user_type = serializers.ChoiceField(choices=User.Role.choices, required=False)
 
     def validate_file(self, value):
         allowed_extensions = [".csv", ".xlsx", ".xls"]

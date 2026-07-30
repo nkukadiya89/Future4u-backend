@@ -28,8 +28,6 @@ class StreamAPITests(TestCase):
             level_code="sec",
             display_name="Secondary",
             sequence_order=9998,
-            min_age=13,
-            max_age=16,
             is_active=True,
             created_by=self.user,
         )
@@ -121,8 +119,6 @@ class StreamAPITests(TestCase):
             level_code="high",
             display_name="Higher",
             sequence_order=9997,
-            min_age=16,
-            max_age=18,
             is_active=True,
             created_by=self.user,
         )

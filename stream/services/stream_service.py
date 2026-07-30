@@ -406,24 +406,8 @@ def sample_csv_bytes() -> bytes:
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(SAMPLE_CSV_HEADERS)
-    w.writerow(
-        [
-            "science",
-            "Science",
-            "1",
-            "Physics/Chemistry/Biology path",
-            "secondary",
-            "1",
-        ]
-    )
-    w.writerow(
-        [
-            "commerce",
-            "Commerce",
-            "2",
-            "Accounts/Economics path",
-            "higher_secondary",
-            "1",
-        ]
-    )
+    w.writerow(["science", "Science", "1", "Physics/Chemistry/Biology path", "secondary", "1"])
+    w.writerow(["commerce", "Commerce", "2", "Accounts/Economics path", "higher_secondary", "1"])
+    w.writerow(["higher_secondary_11_science_pcm", "Science (PCM)", "7", "Physics Chemistry Mathematics", "higher_secondary_11", "1"])
+    w.writerow(["higher_secondary_11_commerce", "Commerce", "9", "Accountancy Business Studies Economics", "higher_secondary_11", "1"])
     return buf.getvalue().encode("utf-8")

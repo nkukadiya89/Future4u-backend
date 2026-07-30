@@ -18,15 +18,7 @@ class EducationLevelAdminForm(forms.ModelForm):
         model = EducationLevel
         fields = "__all__"
 
-    def clean(self):
-        cleaned = super().clean()
-        min_age = cleaned.get("min_age")
-        max_age = cleaned.get("max_age")
-        if min_age is not None and max_age is not None and min_age > max_age:
-            self.add_error(
-                "max_age", "max_age must be greater than or equal to min_age."
-            )
-        return cleaned
+
 
 
 @admin.register(EducationLevel)
@@ -40,8 +32,6 @@ class EducationLevelAdmin(
         "level_code",
         "display_name",
         "sequence_order",
-        "min_age",
-        "max_age",
         "is_active",
         "deleted",
         "created_at",
@@ -75,8 +65,6 @@ class EducationLevelAdmin(
                     "level_code",
                     "display_name",
                     "sequence_order",
-                    "min_age",
-                    "max_age",
                     "is_active",
                 )
             },

@@ -22,7 +22,7 @@ from .service import match_internships
 class InternshipViewSet(BaseModelViewSet):
     def get_queryset(self):
         queryset = Internship.objects.select_related(
-            "country", "state", "city", "provider", "internship_provider"
+            "country", "state", "city", "created_by", "internship_provider"
         ).prefetch_related("education_tags")
         user = self.request.user
         if user.is_superuser:
@@ -31,7 +31,7 @@ class InternshipViewSet(BaseModelViewSet):
             "institute",
             "corporate",
         ]:
-            base = queryset.filter(provider=user)
+            base = queryset.filter(internship_provider=user)
         else:
             base = queryset.filter(status="active")
         if self.action not in [
@@ -73,7 +73,7 @@ class InternshipViewSet(BaseModelViewSet):
         "state__name",
         "city__name",
         "internship_type",
-        "provider__full_name",
+        "created_by__full_name",
     ]
     ordering_fields = BaseModelViewSet.ordering_fields + [
         "name",
@@ -82,7 +82,7 @@ class InternshipViewSet(BaseModelViewSet):
         "city",
         "internship_type",
         "mode",
-        "provider",
+        "created_by",
         "duration",
         "fees_amount",
         "stipend_amount",
@@ -93,10 +93,22 @@ class InternshipViewSet(BaseModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(
-                provider=request.user,
-                created_by=request.user,
-                created_at=timezone.now(),
+            save_kwargs = {
+                'created_by': request.user,
+                'created_at': timezone.now(),
+            }
+            # Auto-set internship_provider when institute/corporate creates their own internship
+            if request.user.user_type in ['institute', 'corporate'] and 'internship_provider' not in serializer.validated_data:
+                save_kwargs['internship_provider'] = request.user
+            serializer.save(**save_kwargs)
+            log_event(
+                event="internship.created",
+                description=f"Created internship {serializer.data.get('name')}",
+                user=request.user,
+                entity_type="internship",
+                entity_id=serializer.instance.id if serializer.instance else None,
+                metadata={"internship_name": serializer.data.get("name")},
+                request=request,
             )
             return Response(
                 {"success": True, "data": serializer.data},
@@ -143,7 +155,7 @@ class InternshipViewSet(BaseModelViewSet):
             deleted=False,
         )
         if not is_admin:
-            internships = internships.filter(provider=request.user)
+            internships = internships.filter(internship_provider=request.user)
 
         found_ids = set(internships.values_list("id", flat=True))
         not_found_ids = list(set(ids) - found_ids)
@@ -163,7 +175,7 @@ class InternshipViewSet(BaseModelViewSet):
             log_event(
                 event="internship.bulk_status_changed",
                 description=(
-                    f"{request.user.email} changed {len(updated_ids)} "
+                    f"Changed {len(updated_ids)} "
                     f"internship(s) to {new_status}"
                 ),
                 user=request.user,
@@ -207,6 +219,15 @@ class InternshipViewSet(BaseModelViewSet):
         if hasattr(instance, "updated_at"):
             instance.updated_at = timezone.now()
         instance.save()
+        log_event(
+            event="internship.restored",
+            description=f"Restored internship {instance.name}",
+            user=request.user,
+            entity_type="internship",
+            entity_id=instance.id,
+            metadata={"internship_name": instance.name},
+            request=request,
+        )
         return Response(
             {"success": True, "message": "Internship restored successfully"},
             status=status.HTTP_200_OK,
@@ -246,7 +267,7 @@ class InternshipViewSet(BaseModelViewSet):
 
         log_event(
             event="internship.bulk_archive",
-            description=f"Admin {request.user.email} bulk archived {records.count()} internship(s)",
+            description=f"Bulk archived {records.count()} internship(s)",
             user=request.user,
             entity_type="internship",
             entity_id=None,
@@ -295,7 +316,7 @@ class InternshipViewSet(BaseModelViewSet):
 
         log_event(
             event="internship.bulk_restore",
-            description=f"Admin {request.user.email} bulk restored {records.count()} internship(s)",
+            description=f"Bulk restored {records.count()} internship(s)",
             user=request.user,
             entity_type="internship",
             entity_id=None,
@@ -312,12 +333,19 @@ class InternshipViewSet(BaseModelViewSet):
     def archive_list(self, request):
         queryset = (
             Internship.objects.select_related(
-                "country", "state", "city", "provider", "internship_provider"
+                "country", "state", "city", "created_by", "internship_provider"
             )
             .prefetch_related("education_tags")
             .filter(deleted=True)
             .order_by("-deleted_at")
         )
+
+        user = request.user
+        if not user.is_superuser:
+            if user.user_type in ["institute", "corporate"]:
+                queryset = queryset.filter(internship_provider=user)
+            else:
+                queryset = queryset.none()
 
         queryset = self.filter_queryset(queryset)
 
@@ -421,7 +449,7 @@ class InternshipApplicationViewSet(BaseModelViewSet):
         if user.is_superuser:
             return base
         if user.user_type in ["institute", "corporate"]:
-            return base.filter(internship__provider=user)
+            return base.filter(internship__internship_provider=user)
         return base.filter(applicant=user)
 
     def list(self, request, *args, **kwargs):
@@ -572,7 +600,7 @@ class InternshipApplicationViewSet(BaseModelViewSet):
     @action(detail=False, methods=["get"], url_path="received-inquiries")
     def receive_inquiries(self, request):
         inquiries = InternshipApplication.objects.filter(
-            internship__provider=request.user,
+            internship__internship_provider=request.user,
             deleted=False,
         ).select_related("internship", "applicant")
 
@@ -628,7 +656,7 @@ class InternshipApplicationViewSet(BaseModelViewSet):
     def update_status(self, request, pk=None):
         application = self.get_object()
 
-        if application.internship.provider != request.user:
+        if application.internship.internship_provider != request.user:
             return Response(
                 {
                     "success": False,
@@ -651,7 +679,15 @@ class InternshipApplicationViewSet(BaseModelViewSet):
         application.updated_by = request.user
         application.updated_at = timezone.now()
         application.save(update_fields=["status"])
-
+        log_event(
+            event="internship_application.status_changed",
+            description=f"Changed application #{application.id} status to {application_status}",
+            user=request.user,
+            entity_type="internship_application",
+            entity_id=application.id,
+            metadata={"internship_id": application.internship_id, "status": application_status},
+            request=request,
+        )
         return Response(
             {
                 "success": True,

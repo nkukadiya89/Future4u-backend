@@ -7,7 +7,7 @@ from .models import CourseInquiry, Courses
 
 class CoursesSerializer(BaseModelSerializer):
 
-    provider_name = serializers.SerializerMethodField()
+    created_by_name = serializers.SerializerMethodField()
     country_name = serializers.CharField(source="country.name", read_only=True)
     state_name = serializers.CharField(source="state.name", read_only=True)
     city_name = serializers.CharField(source="city.name", read_only=True)
@@ -51,8 +51,8 @@ class CoursesSerializer(BaseModelSerializer):
             "education_tags",
             "education_tags_name",
             "duration",
-            "provider",
-            "provider_name",
+            "created_by",
+            "created_by_name",
             "provider_type",
             "course_provider",
             "course_provider_name",
@@ -74,9 +74,9 @@ class CoursesSerializer(BaseModelSerializer):
             "name": {"required": False},
         }
 
-    def get_provider_name(self, obj):
-        if obj.provider:
-            return obj.provider.full_name
+    def get_created_by_name(self, obj):
+        if obj.created_by:
+            return obj.created_by.full_name
         return None
 
     def get_course_provider_name(self, obj):

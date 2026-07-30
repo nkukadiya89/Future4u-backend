@@ -269,6 +269,7 @@ class AdminInstituteSortSerializer(serializers.ModelSerializer):
     city_name = serializers.CharField(source="user.city.name")
     referral_code = serializers.CharField(source="user.referral_code")
     address = serializers.CharField(source="user.address")
+    status = serializers.CharField(source="user.status", default=None, read_only=True)
 
     class Meta:
         model = InstituteProfile
@@ -293,4 +294,5 @@ class AdminInstituteSortSerializer(serializers.ModelSerializer):
             "about_us",
             "courses_offered",
             "website",
+            "status",
         ]

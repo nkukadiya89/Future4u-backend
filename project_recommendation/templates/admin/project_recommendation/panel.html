@@ -1,0 +1,326 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  .prp-section {
+    background: var(--body-bg, #fff);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    margin-bottom: 20px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .prp-section h2 {
+    margin: 0 0 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--body-fg, #333);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color, #eee);
+  }
+  .prp-status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .prp-status-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .prp-status-item .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--body-quiet-color, #666);
+    font-weight: 600;
+  }
+  .prp-status-item .value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--body-fg, #333);
+  }
+  .prp-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  .prp-badge-enabled  { background: #ecfdf5; color: #065f46; }
+  .prp-badge-disabled { background: #fef2f2; color: #991b1b; }
+  .prp-badge-yes      { background: #ecfdf5; color: #065f46; }
+  .prp-badge-no       { background: #fef3c7; color: #92400e; }
+  .prp-badge-provider { background: #eff6ff; color: #1e40af; }
+
+  .prp-form-row {
+    margin-bottom: 14px;
+  }
+  .prp-form-row label {
+    display: block;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: var(--body-fg, #333);
+  }
+  .prp-form-row textarea,
+  .prp-form-row input[type="text"],
+  .prp-form-row select {
+    width: 100%;
+    max-width: 600px;
+    box-sizing: border-box;
+  }
+  .prp-form-row .helptext {
+    font-size: 11px;
+    color: var(--body-quiet-color, #666);
+    margin-top: 2px;
+    display: block;
+  }
+  .prp-submit-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .prp-submit-row .spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border-color, #ddd);
+    border-top-color: var(--accent, #447e9b);
+    border-radius: 50%;
+    animation: prp-spin 0.7s linear infinite;
+  }
+  .prp-submit-row.processing .spinner { display: inline-block; }
+  .prp-submit-row.processing .default  { opacity: 0.7; pointer-events: none; }
+
+  @keyframes prp-spin { to { transform: rotate(360deg); } }
+
+  .prp-json-block {
+    position: relative;
+    background: #f8f9fa;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 5px;
+    padding: 14px;
+    margin-top: 6px;
+  }
+  .prp-json-block pre {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 500px;
+    overflow-y: auto;
+    color: #1f2937;
+  }
+  .prp-copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 10px;
+    font-size: 11px;
+    background: var(--body-bg, #fff);
+    border: 1px solid var(--border-color, #d1d5db);
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--body-fg, #374151);
+    transition: background 0.15s;
+  }
+  .prp-copy-btn:hover { background: #e5e7eb; }
+  .prp-copy-btn.copied { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+
+  .prp-error {
+    padding: 12px 16px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 5px;
+    color: #991b1b;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .prp-success {
+    padding: 12px 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 5px;
+    color: #166534;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .prp-section { background: var(--darkened-bg, #1b1e20); border-color: var(--border-color, #333); }
+    .prp-json-block { background: var(--darkened-bg, #1b1e20); }
+    .prp-json-block pre { color: var(--body-fg, #ddd); }
+    .prp-copy-btn { background: var(--darkened-bg, #2b2e30); color: var(--body-fg, #ccc); }
+    .prp-badge-enabled  { background: #064e3b; color: #6ee7b7; }
+    .prp-badge-disabled { background: #7f1d1d; color: #fca5a5; }
+    .prp-badge-yes      { background: #064e3b; color: #6ee7b7; }
+    .prp-badge-no       { background: #78350f; color: #fcd34d; }
+    .prp-badge-provider { background: #1e3a5f; color: #93c5fd; }
+    .prp-error { background: #3b1a1a; border-color: #7f1d1d; color: #fca5a5; }
+    .prp-success { background: #1a3b2a; border-color: #166534; color: #6ee7b7; }
+  }
+</style>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Copy-to-clipboard
+    document.querySelectorAll('.prp-copy-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var code = this.parentElement.querySelector('pre');
+        if (!code) return;
+        navigator.clipboard.writeText(code.textContent).then(function() {
+          var orig = btn.textContent;
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(function() {
+            btn.textContent = orig;
+            btn.classList.remove('copied');
+          }, 1800);
+        });
+      });
+    });
+
+    // Loading spinner on submit
+    var form = document.getElementById('prp-form');
+    var submitRow = document.getElementById('prp-submit-row');
+    if (form && submitRow) {
+      form.addEventListener('submit', function() {
+        submitRow.classList.add('processing');
+      });
+    }
+  });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="content" style="max-width:960px;">
+
+  <h1>{% translate "AI Project Recommendation" %}</h1>
+  <p style="color:var(--body-quiet-color,#666);margin-bottom:20px;">
+    Test the AI project recommendation pipeline. Select a user and assessment ID
+    to generate 3 AI-powered portfolio project ideas based on the user's completed assessment.
+    The AI will generate project name, description, difficulty, duration, skills gained, deliverables, and portfolio value.
+  </p>
+
+  {# ── Provider Status ── #}
+  <div class="prp-section">
+    <h2>{% translate "Provider Status" %}</h2>
+    <div class="prp-status-grid">
+      <div class="prp-status-item">
+        <span class="label">{% translate "Mode" %}</span>
+        <span class="prp-badge prp-badge-provider">{{ provider.mode }}</span>
+      </div>
+      <div class="prp-status-item">
+        <span class="label">{% translate "Project Recommendation" %}</span>
+        <span class="prp-badge {% if provider.project_recommendation_enabled %}prp-badge-enabled{% else %}prp-badge-disabled{% endif %}">
+          {% if provider.project_recommendation_enabled %}{% translate "Enabled" %}{% else %}{% translate "Disabled" %}{% endif %}
+        </span>
+      </div>
+      <div class="prp-status-item">
+        <span class="label">{% translate "Provider" %}</span>
+        <span class="value">{{ provider.provider_name }}</span>
+      </div>
+      <div class="prp-status-item">
+        <span class="label">{% translate "Provider Configured" %}</span>
+        <span class="prp-badge {% if provider.provider_configured %}prp-badge-yes{% else %}prp-badge-no{% endif %}">
+          {% if provider.provider_configured %}{% translate "Yes" %}{% else %}{% translate "No" %}{% endif %}
+        </span>
+      </div>
+      <div class="prp-status-item">
+        <span class="label">{% translate "AI LLM" %}</span>
+        <span class="prp-badge {% if provider.ai_llm_enabled %}prp-badge-yes{% else %}prp-badge-no{% endif %}">
+          {% if provider.ai_llm_enabled %}{% translate "Ready" %}{% else %}{% translate "Not ready" %}{% endif %}
+        </span>
+      </div>
+      <div class="prp-status-item">
+        <span class="label">{% translate "AI Tracing" %}</span>
+        <span class="prp-badge {% if provider.ai_tracing_enabled %}prp-badge-yes{% else %}prp-badge-no{% endif %}">
+          {% if provider.ai_tracing_enabled %}{% translate "Enabled" %}{% else %}{% translate "Disabled" %}{% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  {# ── Form ── #}
+  <div class="prp-section">
+    <h2>{% translate "Generate Project Recommendations" %}</h2>
+    <form id="prp-form" method="post">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="prp-form-row">
+          {{ field.errors }}
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}
+            <span class="helptext">{{ field.help_text }}</span>
+          {% endif %}
+        </div>
+      {% endfor %}
+      <div id="prp-submit-row" class="prp-submit-row">
+        <input type="submit" class="default" value="{% translate 'Generate project recommendations' %}" />
+        <span class="spinner"></span>
+      </div>
+    </form>
+  </div>
+
+  {# ── Form errors ── #}
+  {% if form.errors %}
+    <div class="prp-error">
+      <strong>{% translate "Form errors:" %}</strong>
+      <ul style="margin:4px 0 0 16px;padding:0;">
+        {% for field_errors in form.errors.values %}
+          {% for message in field_errors %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {# ── Pipeline error ── #}
+  {% if error %}
+    <div class="prp-error">
+      <strong>{% translate "Generation error:" %}</strong> {{ error }}
+    </div>
+  {% endif %}
+
+  {# ── Success message ── #}
+  {% if result_pretty and not error %}
+    <div class="prp-success">
+      {% translate "Project recommendations generated successfully." %}
+    </div>
+  {% endif %}
+
+  {# ── Run context (diagnostics) ── #}
+  {% if diagnostics_pretty %}
+    <div class="prp-section">
+      <h2>{% translate "Run Context" %}</h2>
+      <div class="prp-json-block">
+        <button type="button" class="prp-copy-btn">{% translate "Copy" %}</button>
+        <pre>{{ diagnostics_pretty }}</pre>
+      </div>
+    </div>
+  {% endif %}
+
+  {# ── AI output ── #}
+  {% if result_pretty %}
+    <div class="prp-section">
+      <h2>{% translate "AI Output" %}</h2>
+      <div class="prp-json-block">
+        <button type="button" class="prp-copy-btn">{% translate "Copy" %}</button>
+        <pre>{{ result_pretty }}</pre>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

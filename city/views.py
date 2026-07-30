@@ -7,6 +7,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from activity_log.models import ActivityLog
+from activity_log.services import log_event
 from city.models import City
 from city.serializers import (
     CityArchiveListSerializer,
@@ -68,6 +69,15 @@ class CityViewSet(ListEnvelopeMixin, ModelViewSet):
                 instance = serializer.save()
                 ip_address = get_client_ip(request)
                 ActivityLog.log.city_create(instance, ip_address, request.user)
+                log_event(
+                    event="city.created",
+                    description=f"Created city {instance.name}",
+                    user=request.user,
+                    entity_type="city",
+                    entity_id=instance.id,
+                    metadata={"city_name": instance.name},
+                    request=request,
+                )
                 return Response(
                     {
                         "success": True,
@@ -111,6 +121,15 @@ class CityViewSet(ListEnvelopeMixin, ModelViewSet):
                 instance = serializer.save()
                 ip_address = get_client_ip(request)
                 ActivityLog.log.city_update(instance, ip_address, request.user)
+                log_event(
+                    event="city.updated",
+                    description=f"Updated city {instance.name}",
+                    user=request.user,
+                    entity_type="city",
+                    entity_id=instance.id,
+                    metadata={"city_name": instance.name},
+                    request=request,
+                )
                 return Response(
                     {
                         "success": True,
@@ -145,6 +164,15 @@ class CityViewSet(ListEnvelopeMixin, ModelViewSet):
         instance.save()
         ip_address = get_client_ip(request)
         ActivityLog.log.city_archive(instance, ip_address, request.user)
+        log_event(
+            event="city.archived",
+            description=f"Archived city {instance.name}",
+            user=request.user,
+            entity_type="city",
+            entity_id=instance.id,
+            metadata={"city_name": instance.name},
+            request=request,
+        )
         return Response(
             {"success": True, "message": "City Deleted"},
             status=status.HTTP_204_NO_CONTENT,
@@ -237,7 +265,15 @@ class CityArchiveViewSet(ModelViewSet):
             ActivityLog.log.city_archive(
                 instance, ip_address=ip_address, user=request.user
             )
-
+            log_event(
+                event="city.bulk_archived",
+                description=f"Bulk archived {count} city(s)",
+                user=request.user,
+                entity_type="city",
+                entity_id=None,
+                metadata={"city_ids": deleted_ids, "count": count},
+                request=request,
+            )
             message = (
                 "City archived successfully"
                 if count == 1
@@ -276,6 +312,15 @@ class CityRestoreViewSet(ModelViewSet):
             ip_address = get_client_ip(request)
             ActivityLog.log.city_restore(
                 instance, ip_address=ip_address, user=request.user
+            )
+            log_event(
+                event="city.restored",
+                description=f"Restored {count} city(s)",
+                user=request.user,
+                entity_type="city",
+                entity_id=None,
+                metadata={"city_ids": deleted_ids, "count": count},
+                request=request,
             )
             message = (
                 "City restored successfully"

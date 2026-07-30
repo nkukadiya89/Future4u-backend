@@ -8,7 +8,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from activity_log.services import log_event
 from assessment.models import ParentAssessment
 from assessment.serializers import (
     ParentAssessmentSerializer,

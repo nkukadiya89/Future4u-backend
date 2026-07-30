@@ -25,8 +25,6 @@ class EducationLevelSerializer(BaseModelSerializer):
             "level_code",
             "display_name",
             "sequence_order",
-            "min_age",
-            "max_age",
             "is_active",
             "is_archived",
         ]
@@ -47,15 +45,6 @@ class EducationLevelSerializer(BaseModelSerializer):
                 "Level code must be unique (case-insensitive)."
             )
         return value
-
-    def validate(self, attrs):
-        min_age = attrs.get("min_age", getattr(self.instance, "min_age", None))
-        max_age = attrs.get("max_age", getattr(self.instance, "max_age", None))
-        if min_age is not None and max_age is not None and int(min_age) > int(max_age):
-            raise serializers.ValidationError(
-                {"max_age": "max_age must be greater than or equal to min_age."}
-            )
-        return attrs
 
     def create(self, validated_data):
         user = self.context["request"].user

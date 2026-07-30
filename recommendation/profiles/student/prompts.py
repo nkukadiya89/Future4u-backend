@@ -31,7 +31,7 @@ RULES:
 - required_education.levels: an array of objects with EXACT keys: type, level_key, name.
 - Each required_education.levels item describes one level only; do not combine bachelor/master/diploma/certification alternatives.
 - required_education.levels.level_key MUST be one of:
-  secondary, higher_secondary, diploma, graduation, post_graduation, doctorate, professional, certification
+  secondary, higher_secondary_11, higher_secondary, diploma, graduation, post_graduation, doctorate, professional, certification
 - If you do not know levels, return required_education.levels as [] (empty array). Never use null.
 - career_roadmap must include EXACT phase keys: next_3_months, next_3_to_6_months, next_6_to_9_months, next_9_to_12_months.
 - Each career_roadmap phase contains task_title + task_description ({roadmap_min_words}-{roadmap_max_words} words each).

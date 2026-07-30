@@ -263,6 +263,7 @@ class AdminWorkingProfessionalSortSerializer(serializers.ModelSerializer):
         allow_null=True,
         default=None,
     )
+    status = serializers.CharField(source="user.status", default=None, read_only=True)
 
     class Meta:
         model = ProfessionalProfile
@@ -283,4 +284,5 @@ class AdminWorkingProfessionalSortSerializer(serializers.ModelSerializer):
             "referral_code",
             "years_of_experience",
             "employment_type",
+            "status",
         ]

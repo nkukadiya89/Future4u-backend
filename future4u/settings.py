@@ -112,6 +112,7 @@ INSTALLED_APPS = [
     "course_generation",
     "internship_generation",
     "jobs",
+    "project_recommendation",
 ]
 
 MIDDLEWARE = [
@@ -231,6 +232,7 @@ REST_FRAMEWORK = {
         "job_generation": "10/min",
         "course_generation": "10/min",
         "internship_generation": "10/min",
+        "project_recommendation": "10/min",
     },
 }
 
@@ -282,6 +284,11 @@ LOGGING = {
             "propagate": False,
         },
         "internship_generation": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "project_recommendation": {
             "handlers": ["console"],
             "level": "INFO",
             "propagate": False,
@@ -386,6 +393,12 @@ RAPIDAPI_BASE_URL = config(
 # Feature toggle for the LinkedIn job search
 JOBS_LINKEDIN_SEARCH_ENABLED = config(
     "JOBS_LINKEDIN_SEARCH_ENABLED",
+    default=True,
+    cast=bool,
+)
+
+PROJECT_RECOMMENDATION_ENABLED = config(
+    "PROJECT_RECOMMENDATION_ENABLED",
     default=True,
     cast=bool,
 )

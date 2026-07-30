@@ -7,7 +7,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from activity_log.services import log_event
 from assessment.models import (
     CareerDirection,
     CareerValue,
@@ -37,6 +36,7 @@ from utils.pagination import Pagination
 from utils.token_check import check_token_available
 
 STREAM_REQUIRED_LEVEL_CODES = {
+    "higher_secondary_11",
     "higher_secondary",
     "iti",
     "diploma",

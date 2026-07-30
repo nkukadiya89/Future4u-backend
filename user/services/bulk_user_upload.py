@@ -53,7 +53,7 @@ class BulkUserUploadService:
         return required_columns
 
     @classmethod
-    def process(cls, file, request_user, user_type):
+    def process(cls, file, request_user, user_type, forced_referred_by=None):
         df = cls._read_file(file)
 
         valid_roles = [role.value for role in User.Role]
@@ -277,7 +277,9 @@ class BulkUserUploadService:
                     "" if pd.isna(referral_value) else str(referral_value).strip()
                 )
                 referred_by = None
-                if (
+                if forced_referred_by:
+                    referred_by = forced_referred_by
+                elif (
                     user_type in [User.Role.STUDENT, User.Role.PROFESSIONAL]
                     and referral_code
                 ):
@@ -300,6 +302,8 @@ class BulkUserUploadService:
                             }
                         )
                         continue
+                else:
+                    referred_by = None
                 if user_type in [User.Role.STUDENT, User.Role.PROFESSIONAL]:
                     profile_data["referred_by"] = referred_by
                 with transaction.atomic():
@@ -356,9 +360,9 @@ class BulkUserUploadService:
         }
 
     @classmethod
-    def process_file_path(cls, file_path, request_user, user_type):
+    def process_file_path(cls, file_path, request_user, user_type, **kwargs):
         with open(file_path, "rb") as file:
-            return cls.process(file, request_user, user_type)
+            return cls.process(file, request_user, user_type, **kwargs)
 
     @classmethod
     def _read_file(cls, file):

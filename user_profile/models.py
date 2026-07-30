@@ -35,6 +35,22 @@ class UserProfile(models.Model):
         db_table = "user_profile"
 
 
+MEDIUM_CHOICES = [
+    ("english", "English"),
+    ("hindi", "Hindi"),
+    ("gujarati", "Gujarati"),
+    ("marathi", "Marathi"),
+    ("tamil", "Tamil"),
+    ("telugu", "Telugu"),
+    ("kannada", "Kannada"),
+    ("bengali", "Bengali"),
+    ("punjabi", "Punjabi"),
+    ("odia", "Odia"),
+    ("malayalam", "Malayalam"),
+    ("urdu", "Urdu"),
+]
+
+
 class StudentProfile(models.Model):
     """Student-specific profile with common and educational details"""
 
@@ -54,20 +70,7 @@ class StudentProfile(models.Model):
 
     medium = models.CharField(
         max_length=20,
-        choices=[
-            ("english", "English"),
-            ("hindi", "Hindi"),
-            ("gujarati", "Gujarati"),
-            ("marathi", "Marathi"),
-            ("tamil", "Tamil"),
-            ("telugu", "Telugu"),
-            ("kannada", "Kannada"),
-            ("bengali", "Bengali"),
-            ("punjabi", "Punjabi"),
-            ("odia", "Odia"),
-            ("malayalam", "Malayalam"),
-            ("urdu", "Urdu"),
-        ],
+        choices=MEDIUM_CHOICES,
         null=True,
         blank=True,
         help_text="Instruction medium of student's school",

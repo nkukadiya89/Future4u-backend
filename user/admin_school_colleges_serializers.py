@@ -273,6 +273,7 @@ class AdminSchoolCollegeSortSerializer(serializers.ModelSerializer):
     referral_code = serializers.CharField(source="user.referral_code")
     address = serializers.CharField(source="user.address")
     education_name = serializers.ReadOnlyField(source="get_education_names")
+    status = serializers.CharField(source="user.status", default=None, read_only=True)
 
     class Meta:
         model = SchoolCollegeProfile
@@ -298,4 +299,5 @@ class AdminSchoolCollegeSortSerializer(serializers.ModelSerializer):
             "website",
             "education",
             "education_name",
+            "status",
         ]
