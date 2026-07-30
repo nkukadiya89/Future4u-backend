@@ -312,11 +312,18 @@ def bulk_import_rows(
 
     codes = [(r.get("level_code") or "").strip().lower() for r in rows if r.get("level_code")]
     if codes:
-        existing_codes = set(
-            EducationLevel.objects.filter(level_code__in=codes)
-            .values_list("level_code", flat=True)
-        )
-        rows = sorted(rows, key=lambda r: (r.get("level_code") or "").strip().lower() not in existing_codes)
+        existing = {
+            obj.level_code: obj.sequence_order
+            for obj in EducationLevel.objects.filter(level_code__in=codes)
+            .only("level_code", "sequence_order")
+        }
+        def _import_sort_key(row):
+            code = (row.get("level_code") or "").strip().lower()
+            current_seq = existing.get(code)
+            if current_seq is not None:
+                return (0, -current_seq)  # updates first, highest existing seq first
+            return (1, 0)  # inserts after all updates
+        rows = sorted(rows, key=_import_sort_key)
 
     for idx, raw_row in enumerate(rows, start=1):
         row = dict(raw_row)
