@@ -192,6 +192,7 @@ class JobSerializer(BaseModelSerializer):
             "city_name",
             "salary_min",
             "salary_max",
+            "created_by",
             "provider",
             "provider_name",
             "why_this_match",

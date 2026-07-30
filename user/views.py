@@ -5,6 +5,7 @@ import threading
 from django.contrib.auth import logout
 from django.core.exceptions import MultipleObjectsReturned
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -715,6 +716,14 @@ class UserListViewSet(ModelViewSet):
         created_by = self.request.query_params.get("created_by")
         if created_by:
             queryset = queryset.filter(created_by_id=created_by)
+
+        organization = self.request.query_params.get("organization")
+        if organization:
+            queryset = queryset.filter(
+                Q(created_by_id=organization)
+                | Q(student_profile__referred_by=organization)
+            )
+
         return queryset
 
     def list(self, request, *args, **kwargs):
