@@ -26,7 +26,7 @@ from .service import match_jobs
 class JobViewSet(BaseModelViewSet):
     def get_queryset(self):
         queryset = Job.objects.select_related(
-            "city", "country", "state", "provider"
+            "city", "country", "state", "created_by", "provider"
         ).prefetch_related("education_tags")
         user = self.request.user
         if user.is_superuser:
@@ -100,7 +100,6 @@ class JobViewSet(BaseModelViewSet):
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
-        # Auto-fill corporate from logged-in user's profile if not provided
         if "corporate" not in data:
             try:
                 cp = request.user.corporate_profile
@@ -111,10 +110,21 @@ class JobViewSet(BaseModelViewSet):
 
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
-            serializer.save(
-                provider=request.user,
-                created_by=request.user,
-                created_at=timezone.now(),
+            save_kwargs = {
+                'created_by': request.user,
+                'created_at': timezone.now(),
+            }
+            if request.user.user_type in ['corporate'] and 'provider' not in serializer.validated_data:
+                save_kwargs['provider'] = request.user
+            serializer.save(**save_kwargs)
+            log_event(
+                event="job.created",
+                description=f"Created job {serializer.data.get('name')}",
+                user=request.user,
+                entity_type="job",
+                entity_id=serializer.instance.id if serializer.instance else None,
+                metadata={"job_name": serializer.data.get("name")},
+                request=request,
             )
             return Response(
                 {
@@ -221,6 +231,15 @@ class JobViewSet(BaseModelViewSet):
         if hasattr(instance, "updated_at"):
             instance.updated_at = timezone.now()
         instance.save()
+        log_event(
+            event="job.restored",
+            description=f"Restored job {instance.name}",
+            user=request.user,
+            entity_type="job",
+            entity_id=instance.id,
+            metadata={"job_name": instance.name},
+            request=request,
+        )
         return Response(
             {"success": True, "message": "Job restored successfully"},
             status=status.HTTP_200_OK,
@@ -325,7 +344,7 @@ class JobViewSet(BaseModelViewSet):
     @action(detail=False, methods=["get"], url_path="archive-list")
     def archive_list(self, request):
         queryset = (
-            Job.objects.select_related("city", "country", "state", "provider")
+            Job.objects.select_related("city", "country", "state", "created_by", "provider")
             .prefetch_related("education_tags")
             .filter(deleted=True)
             .order_by("-deleted_at")
@@ -690,6 +709,15 @@ class JobApplicationViewSet(BaseModelViewSet):
         application.updated_by = request.user
         application.updated_at = timezone.now()
         application.save(update_fields=["status"])
+        log_event(
+            event="job_application.status_changed",
+            description=f"Changed application #{application.id} status to {application_status}",
+            user=request.user,
+            entity_type="job_application",
+            entity_id=application.id,
+            metadata={"job_id": application.job_id, "status": application_status},
+            request=request,
+        )
         return Response(
             {
                 "success": True,
