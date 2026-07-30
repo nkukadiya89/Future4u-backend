@@ -21,16 +21,12 @@ SAMPLE_CSV_HEADERS = (
     "level_code",
     "display_name",
     "sequence_order",
-    "min_age",
-    "max_age",
     "is_active",
 )
 REQUIRED_IMPORT_HEADERS = {
     "level_code",
     "display_name",
     "sequence_order",
-    "min_age",
-    "max_age",
 }
 HEADER_ALIASES = {
     "code": "level_code",
@@ -40,8 +36,6 @@ HEADER_ALIASES = {
     "education_level_name": "display_name",
     "order": "sequence_order",
     "sequence": "sequence_order",
-    "minage": "min_age",
-    "maxage": "max_age",
     "active": "is_active",
     "status": "is_active",
 }
@@ -110,30 +104,11 @@ def validate_level_data(
     sequence_order = data.get("sequence_order")
     if sequence_order is None:
         raise ValidationError({"sequence_order": "This field is required."})
-    min_age = data.get("min_age")
-    if min_age is None:
-        raise ValidationError({"min_age": "This field is required."})
-    max_age = data.get("max_age")
-    if max_age is None:
-        raise ValidationError({"max_age": "This field is required."})
 
     try:
         sequence_order = int(sequence_order)
     except (TypeError, ValueError):
         raise ValidationError({"sequence_order": "A valid integer is required."})
-    try:
-        min_age = int(min_age)
-    except (TypeError, ValueError):
-        raise ValidationError({"min_age": "A valid integer is required."})
-    try:
-        max_age = int(max_age)
-    except (TypeError, ValueError):
-        raise ValidationError({"max_age": "A valid integer is required."})
-
-    if min_age > max_age:
-        raise ValidationError(
-            {"max_age": "max_age must be greater than or equal to min_age."}
-        )
 
     exclude_pk = instance.pk if instance and instance.pk else None
     if case_insensitive_code_exists(code=code, exclude_pk=exclude_pk):
@@ -147,8 +122,6 @@ def validate_level_data(
         "level_code": code,
         "display_name": name,
         "sequence_order": sequence_order,
-        "min_age": min_age,
-        "max_age": max_age,
         "is_active": bool(data.get("is_active", True)),
     }
 
@@ -312,7 +285,7 @@ def normalize_import_row(row: dict[str, Any]) -> dict[str, Any]:
             continue
         key = HEADER_ALIASES.get(kk.lower(), kk.lower())
         out[key] = v
-    for k in ("sequence_order", "min_age", "max_age"):
+    for k in ("sequence_order",):
         if k in out and out[k] not in ("", None):
             if isinstance(out[k], int):
                 continue
@@ -496,7 +469,8 @@ def sample_csv_bytes() -> bytes:
     buf = io.StringIO()
     w = csv.writer(buf)
     w.writerow(SAMPLE_CSV_HEADERS)
-    w.writerow(["primary", "Primary School", "1", "6", "12", "1"])
-    w.writerow(["secondary", "Secondary School (10th)", "2", "13", "16", "1"])
-    w.writerow(["higher_secondary", "Higher Secondary (12th)", "3", "16", "18", "1"])
+    w.writerow(["primary", "Primary School", "1", "1"])
+    w.writerow(["secondary", "Secondary School (10th)", "2", "1"])
+    w.writerow(["higher_secondary_11", "Higher Secondary (11th)", "3", "1"])
+    w.writerow(["higher_secondary", "Higher Secondary (12th)", "4", "1"])
     return buf.getvalue().encode("utf-8")

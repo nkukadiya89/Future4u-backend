@@ -13,25 +13,7 @@ class EducationLevel(BaseModule):
     level_code = models.CharField(max_length=64)
     display_name = models.CharField(max_length=255)
     sequence_order = models.PositiveIntegerField(unique=True)
-    min_age = models.PositiveIntegerField()
-    max_age = models.PositiveIntegerField()
     is_active = models.BooleanField(default=True)
-    fallback_insight = models.TextField(
-        blank=True,
-        help_text="Shown when user has insufficient responses for this level",
-    )
-    fallback_action = models.TextField(
-        blank=True, help_text="Action prompt shown alongside fallback insight"
-    )
-    next_step_1 = models.TextField(
-        blank=True, help_text="First recommended next step for this level"
-    )
-    next_step_2 = models.TextField(
-        blank=True, help_text="Second recommended next step for this level"
-    )
-    next_step_3 = models.TextField(
-        blank=True, help_text="Third recommended next step for this level"
-    )
 
     class Meta:
         db_table = "education_level"

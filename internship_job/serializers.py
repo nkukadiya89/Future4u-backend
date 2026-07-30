@@ -6,6 +6,7 @@ from common.serializers import BaseModelSerializer
 from user.models import User
 
 from .models import Internship, InternshipApplication, Job, JobApplication
+from user_profile.models import CorporateProfile
 
 
 class InternshipSerializer(BaseModelSerializer):
@@ -157,7 +158,15 @@ class JobSerializer(BaseModelSerializer):
     country_name = serializers.CharField(source="country.name", read_only=True)
     state_name = serializers.CharField(source="state.name", read_only=True)
     provider_name = serializers.SerializerMethodField()
+    corporate_name = serializers.SerializerMethodField()
     education_tags_name = EducationLevelDropdownSerializer(source="education_tags", many=True, read_only=True)
+
+    # Corporate profile (company) posting this job
+    corporate = serializers.PrimaryKeyRelatedField(
+        queryset=CorporateProfile.objects.filter(deleted=False),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = Job
@@ -165,6 +174,7 @@ class JobSerializer(BaseModelSerializer):
             "id",
             "name",
             "corporate",
+            "corporate_name",
             "job_overview",
             "description",
             "responsibilities",
@@ -192,6 +202,11 @@ class JobSerializer(BaseModelSerializer):
     def get_provider_name(self, obj):
         if obj.provider:
             return obj.provider.full_name
+        return None
+
+    def get_corporate_name(self, obj):
+        if obj.corporate:
+            return obj.corporate.company_name
         return None
 
 class JobApplicationSerializer(BaseModelSerializer):

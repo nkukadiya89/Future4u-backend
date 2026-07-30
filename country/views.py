@@ -7,6 +7,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from activity_log.models import ActivityLog
+from activity_log.services import log_event
 from country.models import Country
 from country.serializers import (
     CountryArchiveListSerializer,
@@ -68,6 +69,15 @@ class CountryViewSet(ModelViewSet):
             instance = serializer.save()
             ip_address = get_client_ip(request)
             ActivityLog.log.country_create(instance, ip_address, request.user)
+            log_event(
+                event="country.created",
+                description=f"Created country {instance.name}",
+                user=request.user,
+                entity_type="country",
+                entity_id=instance.id,
+                metadata={"country_name": instance.name},
+                request=request,
+            )
             return Response(
                 {
                     "success": True,
@@ -89,6 +99,15 @@ class CountryViewSet(ModelViewSet):
             serializer.save()
             ip_address = get_client_ip(request)
             ActivityLog.log.country_update(instance, ip_address, request.user)
+            log_event(
+                event="country.updated",
+                description=f"Updated country {instance.name}",
+                user=request.user,
+                entity_type="country",
+                entity_id=instance.id,
+                metadata={"country_name": instance.name},
+                request=request,
+            )
             return Response(
                 {
                     "success": True,
@@ -109,6 +128,15 @@ class CountryViewSet(ModelViewSet):
         ip_address = get_client_ip(request)
         ActivityLog.log.country_archive(instance, ip_address, request.user)
         instance.save()
+        log_event(
+            event="country.archived",
+            description=f"Archived country {instance.name}",
+            user=request.user,
+            entity_type="country",
+            entity_id=instance.id,
+            metadata={"country_name": instance.name},
+            request=request,
+        )
         return Response(
             {"success": True, "message": "Country Deleted"},
             status=status.HTTP_204_NO_CONTENT,
@@ -197,6 +225,15 @@ class CountryArchiveViewSet(ModelViewSet):
             ActivityLog.log.country_archive(
                 instance, ip_address=ip_address, user=request.user
             )
+            log_event(
+                event="country.bulk_archived",
+                description=f"Bulk archived {count} country(s)",
+                user=request.user,
+                entity_type="country",
+                entity_id=None,
+                metadata={"country_ids": deleted_ids, "count": count},
+                request=request,
+            )
             message = (
                 "Country archived successfully"
                 if count == 1
@@ -236,6 +273,15 @@ class CountryRestoreViewSet(ModelViewSet):
             ip_address = get_client_ip(request)
             ActivityLog.log.country_restore(
                 instance, user=request.user, ip_address=ip_address
+            )
+            log_event(
+                event="country.restored",
+                description=f"Restored {count} country(s)",
+                user=request.user,
+                entity_type="country",
+                entity_id=None,
+                metadata={"country_ids": deleted_ids, "count": count},
+                request=request,
             )
             message = (
                 "Country restored successfully"

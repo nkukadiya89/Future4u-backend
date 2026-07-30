@@ -9397,7 +9397,7 @@
     },
     {
       "name": "Organization Students",
-      "description": "School / College / Institute endpoints for managing students created by the authenticated organization user. Requires Bearer {{access_token}} and a user_type of school, college or institute. Base path: /organization-students/\n\nCreate students with multipart form-data, list with pagination/search/ordering, retrieve a single student, and soft-delete (archive) a student. Students must be inactive before archiving.",
+      "description": "School / College / Institute endpoints for managing students created by the authenticated organization user. Requires Bearer {{access_token}} and a user_type of school, college or institute. Base path: /organization-students/\n\nCreate students with multipart form-data, list with pagination/search/ordering, retrieve a single student, and bulk upload students. Students can be viewed and created only — no deletion.",
       "item": [
         {
           "name": "list organization students (GET)",
@@ -9534,35 +9534,6 @@
               ]
             },
             "description": "Retrieve a single student created by the authenticated organization user.\n\nGET /organization-students/{organization_student_id}/\n\nSet {{organization_student_id}} from create response or list response.\n\n200 response: success, data (student object)\n404 if student not found or not created by this user."
-          },
-          "response": []
-        },
-        {
-          "name": "delete organization student (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/organization-students/{{organization_student_id}}/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "organization-students",
-                "{{organization_student_id}}",
-                ""
-              ]
-            },
-            "description": "Soft-delete (archive) a student created by the authenticated organization user.\n\nDELETE /organization-students/{organization_student_id}/\n\nSet {{organization_student_id}} from create response or list response.\n\nStudent must be inactive before delete. Active students return 400. Already-archived students return 400.\n\n200 response: success, message\n400 response: success, message (active student / already archived / not created by you)\n404 if student not found."
           },
           "response": []
         },
@@ -9719,6 +9690,58 @@
             "description": "Get full details of a particular career suggestion for a student.\n\nGET /organization-students/{organization_student_id}/suggestion/?suggestion_id={suggestion_id}\n\nSet {{organization_student_id}} and {{organization_student_suggestion_id}}. Run the `student recommendation (GET)` request first to auto-set the suggestion id.\n\nReturns career_name, match_percentage, ai_insight, why_this_career, required_skills, required_education, career_factors, career_roadmap."
           },
           "response": []
+        },
+        {
+          "name": "bulk upload organization students (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-students/bulk-upload/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-students",
+                "bulk-upload",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "CSV, XLS, or XLSX file with student records"
+                }
+              ]
+            },
+            "description": "School/College/Institute: bulk create student users.\n\nPOST /organization-students/bulk-upload/\n\nMultipart form-data: `file` (CSV, XLS, or XLSX).\n\nRequired CSV columns: First Name, Last Name, Email, Phone, Referral Code, Country, State, City\nOptional: Address, Medium, Education Level, Stream, Language\n\nAll students are auto-linked to the uploading School/College user (created_by + referred_by).\nPassword setup link emailed per user. Uploader receives summary email when processing completes.\n\n200 response: success, message (processing started)\n400 response: success, message (validation error)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Bulk upload started', () => pm.expect(json.success).to.eql(true));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -10853,6 +10876,33 @@
                 "gallery",
                 "{{corporate_gallery_id}}",
                 ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "medium-choices list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/medium-choices/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "medium-choices"
               ]
             }
           },

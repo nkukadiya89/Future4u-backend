@@ -328,7 +328,7 @@ class AdminStudentSortSerializer(serializers.ModelSerializer):
 
 class BulkUserUploadSerializer(serializers.Serializer):
     file = serializers.FileField()
-    user_type = serializers.ChoiceField(choices=User.Role.choices)
+    user_type = serializers.ChoiceField(choices=User.Role.choices, required=False)
 
     def validate_file(self, value):
         allowed_extensions = [".csv", ".xlsx", ".xls"]

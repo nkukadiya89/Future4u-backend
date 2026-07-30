@@ -11,6 +11,7 @@ class StudentBulkUpload:
     REQUIRED_COLUMNS = []
 
     STREAM_REQUIRED_LEVEL_CODES = {
+        "higher_secondary_11",
         "higher_secondary",
         "iti",
         "diploma",

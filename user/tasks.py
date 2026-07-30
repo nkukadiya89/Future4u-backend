@@ -42,13 +42,19 @@ def send_password_setup_link_task(name, email, token):
 
 
 @shared_task
-def bulk_upload_user_task(file_path, admin_id, user_type):
+def bulk_upload_user_task(file_path, admin_id, user_type, **kwargs):
     try:
         admin_user = User.objects.get(id=admin_id)
+        forced_referred_by_id = kwargs.get("forced_referred_by")
+        if forced_referred_by_id is not None:
+            kwargs["forced_referred_by"] = User.objects.get(
+                id=forced_referred_by_id
+            )
         result = BulkUserUploadService.process_file_path(
             file_path,
             admin_user,
             user_type,
+            **kwargs,
         )
         serialized = _serialize_bulk_upload_result(result)
         logger.info("Sending bulk upload summary to %s", admin_user.email)

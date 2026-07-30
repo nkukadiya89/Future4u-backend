@@ -18,6 +18,7 @@ from activity_log.models import ActivityLog
 from common.master_view import BaseModelViewSet
 from common.mixins.view_mixins import ListEnvelopeMixin
 from user_profile.models import (
+    MEDIUM_CHOICES,
     BusinessSetting,
     ChildProfile,
     CorporateGallery,
@@ -580,6 +581,7 @@ class UserProfileViewSet(ModelViewSet):
 
 
 class StudentProfileViewSet(ModelViewSet):
+    serializer_class = StudentProfileSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
@@ -778,6 +780,7 @@ class StudentProfileViewSet(ModelViewSet):
 
 
 class ProfessionalProfileViewSet(ModelViewSet):
+    serializer_class = ProfessionalProfileSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
@@ -967,6 +970,7 @@ class ProfessionalProfileViewSet(ModelViewSet):
 
 
 class ParentProfileViewSet(ModelViewSet):
+    serializer_class = ParentProfileSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     filter_backends = [SearchFilter, OrderingFilter]
@@ -1275,6 +1279,26 @@ class CorporateDropdownView(APIView):
             {
                 "success": True,
                 "data": list(companies),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class MediumChoicesView(APIView):
+    """
+    GET /api/medium-choices/
+    Response: {"success": true, "data": [{"value": "english", "label": "English"}, ...]}
+    """
+
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        data = [{"value": value, "label": label} for value, label in MEDIUM_CHOICES]
+        return Response(
+            {
+                "success": True,
+                "data": data,
             },
             status=status.HTTP_200_OK,
         )

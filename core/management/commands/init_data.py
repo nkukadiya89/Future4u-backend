@@ -823,21 +823,7 @@ class Command(BaseCommand):
             serializer_class=EducationLevelSerializer,
             importer=education_level_service.bulk_import_levels,
         )
-        # Seed fallback messages and next steps from the same CSV
-        from core.management.commands._master_import_utils import load_csv_rows
-        from education_level.models import EducationLevel
 
-        for row in load_csv_rows(file_path):
-            code = (row.get("level_code") or "").strip().lower()
-            if not code:
-                continue
-            EducationLevel.objects.filter(level_code=code).update(
-                fallback_insight=(row.get("fallback_insight") or "").strip(),
-                fallback_action=(row.get("fallback_action") or "").strip(),
-                next_step_1=(row.get("next_step_1") or "").strip(),
-                next_step_2=(row.get("next_step_2") or "").strip(),
-                next_step_3=(row.get("next_step_3") or "").strip(),
-            )
 
     def load_streams(self):
         self.stdout.write("Loading Streams...")

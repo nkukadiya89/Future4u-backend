@@ -466,7 +466,7 @@ class VerifyEmailOtpAndGiveTokenViewset(ModelViewSet):
 
                     log_event(
                         event="user.otp_verified",
-                        description=f"User {user.email} verified OTP for login",
+                        description="Verified OTP for login",
                         user=user,
                         entity_type="user",
                         entity_id=user.id,

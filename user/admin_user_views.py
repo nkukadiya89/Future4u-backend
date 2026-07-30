@@ -118,7 +118,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
             user = serializer.save()
             log_event(
                 event="user.created",
-                description=f"Admin {request.user.email} created {self.role_name} {user.email}",
+                description=f"Created {self.role_name} {user.email}",
                 user=request.user,
                 entity_type="user",
                 entity_id=user.id,
@@ -165,7 +165,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
             user = serializer.save()
             log_event(
                 event="user.updated",
-                description=f"Admin {request.user.email} updated {self.role_name} {user.email}",
+                description=f"Updated {self.role_name} {user.email}",
                 user=request.user,
                 entity_type="user",
                 entity_id=user.id,
@@ -225,7 +225,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
         log_event(
             event="user.deleted",
-            description=f"Admin {request.user.email} deleted {self.role_name} {user.email}",
+            description=f"Deleted {self.role_name} {user.email}",
             user=request.user,
             entity_type="user",
             entity_id=user.id,
@@ -297,7 +297,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
             log_event(
                 event="user.status_changed",
-                description=f"Admin {request.user.email} changed {self.role_name} {user.email} status from {old_status} to {new_status}",
+                description=f"Changed {self.role_name} {user.email} status from {old_status} to {new_status}",
                 user=request.user,
                 entity_type="user",
                 entity_id=user.id,
@@ -379,7 +379,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
         log_event(
             event="user.bulk_archive",
-            description=f"Admin {request.user.email} bulk archived {users.count()} {self.role_name}(s)",
+            description=f"Bulk archived {users.count()} {self.role_name}(s)",
             user=request.user,
             entity_type="user",
             entity_id=None,
@@ -483,7 +483,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
         log_event(
             event="user.bulk_restore",
-            description=f"Admin {request.user.email} bulk restored {users.count()} {self.role_name}(s)",
+            description=f"Bulk restored {users.count()} {self.role_name}(s)",
             user=request.user,
             entity_type="user",
             entity_id=None,
@@ -546,7 +546,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
         log_event(
             event="user.tokens_updated",
             description=(
-                f"Admin {request.user.email} added {extra} extra tokens "
+                f"Added {extra} extra tokens "
                 f"to {self.role_name} {user.email}"
             ),
             user=request.user,
@@ -597,7 +597,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
             log_event(
                 event="user.bulk_upload",
-                description=f"Admin {request.user.email} started bulk upload for {user_type}: {uploaded_file.name}",
+                description=f"Started bulk upload for {user_type}: {uploaded_file.name}",
                 user=request.user,
                 entity_type="user",
                 entity_id=None,

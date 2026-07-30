@@ -39,8 +39,6 @@ class EducationLevelViewSet(SuccessEnvelopeMixin, ModelViewSet):
         "level_code",
         "display_name",
         "sequence_order",
-        "min_age",
-        "max_age",
         "created_at",
         "updated_at",
     ]
@@ -63,12 +61,6 @@ class EducationLevelViewSet(SuccessEnvelopeMixin, ModelViewSet):
                 queryset = queryset.filter(is_active=True)
             elif v in ("false", "0", "no"):
                 queryset = queryset.filter(is_active=False)
-        min_age = req.get("min_age")
-        max_age = req.get("max_age")
-        if min_age not in (None, ""):
-            queryset = queryset.filter(max_age__gte=min_age)
-        if max_age not in (None, ""):
-            queryset = queryset.filter(min_age__lte=max_age)
         return queryset
 
     def get_object(self):

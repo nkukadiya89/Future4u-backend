@@ -5,8 +5,14 @@ commerce,Commerce,3,Accountancy Business Studies Economics,1,higher_secondary
 arts,Arts & Humanities,4,History Political Science Psychology Sociology,1,higher_secondary
 vocational,Vocational / Skill-Based,5,Practical job-oriented skill-based programs,1,higher_secondary
 higher_secondary_other,Other / Not Listed,6,Stream not listed above,1,higher_secondary
+higher_secondary_11_science_pcm,Science (PCM),7,Physics Chemistry Mathematics,1,higher_secondary_11
+higher_secondary_11_science_pcb,Science (PCB),8,Physics Chemistry Biology,1,higher_secondary_11
+higher_secondary_11_commerce,Commerce,9,Accountancy Business Studies Economics,1,higher_secondary_11
+higher_secondary_11_arts,Arts & Humanities,10,History Political Science Psychology Sociology,1,higher_secondary_11
+higher_secondary_11_vocational,Vocational / Skill-Based,11,Practical job-oriented skill-based programs,1,higher_secondary_11
+higher_secondary_11_other,Other / Not Listed,12,Stream not listed above,1,higher_secondary_11
 iti_electrician,Electrician / Wireman,101,Electrical wiring installation repair and maintenance,1,iti
-iti_fitter,Fitter / Machinist,102,Fitting machining and workshop practice,1,iti
+
 iti_welder,Welder / Fabricator,103,Welding fabrication and metalwork,1,iti
 iti_electronics,Electronics Technician,104,Electronic circuits devices and repair,1,iti
 iti_computer_it,Computer Hardware & IT Support,105,Computer hardware networking and IT support,1,iti

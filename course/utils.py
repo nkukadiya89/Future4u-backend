@@ -73,7 +73,8 @@ def is_match(ai_value, course_values):
 
 def get_next_levels(user_edu):
     mapping = {
-        "secondary": ["higher_secondary", "diploma", "iti"],
+        "secondary": ["higher_secondary_11", "higher_secondary", "diploma", "iti"],
+        "higher_secondary_11": ["higher_secondary", "diploma"],
         "higher_secondary": ["graduation", "diploma"],
         "iti": ["diploma", "graduation"],
         "diploma": ["graduation"],

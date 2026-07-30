@@ -34,6 +34,7 @@ LearningCurveLevel = Literal["Low", "Medium", "High"]
 
 EducationLevelKey = Literal[
     "secondary",
+    "higher_secondary_11",
     "higher_secondary",
     "diploma",
     "graduation",

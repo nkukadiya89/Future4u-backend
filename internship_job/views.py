@@ -101,6 +101,15 @@ class InternshipViewSet(BaseModelViewSet):
             if request.user.user_type in ['institute', 'corporate'] and 'internship_provider' not in serializer.validated_data:
                 save_kwargs['internship_provider'] = request.user
             serializer.save(**save_kwargs)
+            log_event(
+                event="internship.created",
+                description=f"Created internship {serializer.data.get('name')}",
+                user=request.user,
+                entity_type="internship",
+                entity_id=serializer.instance.id if serializer.instance else None,
+                metadata={"internship_name": serializer.data.get("name")},
+                request=request,
+            )
             return Response(
                 {"success": True, "data": serializer.data},
                 status=status.HTTP_201_CREATED,
@@ -166,7 +175,7 @@ class InternshipViewSet(BaseModelViewSet):
             log_event(
                 event="internship.bulk_status_changed",
                 description=(
-                    f"{request.user.email} changed {len(updated_ids)} "
+                    f"Changed {len(updated_ids)} "
                     f"internship(s) to {new_status}"
                 ),
                 user=request.user,
@@ -210,6 +219,15 @@ class InternshipViewSet(BaseModelViewSet):
         if hasattr(instance, "updated_at"):
             instance.updated_at = timezone.now()
         instance.save()
+        log_event(
+            event="internship.restored",
+            description=f"Restored internship {instance.name}",
+            user=request.user,
+            entity_type="internship",
+            entity_id=instance.id,
+            metadata={"internship_name": instance.name},
+            request=request,
+        )
         return Response(
             {"success": True, "message": "Internship restored successfully"},
             status=status.HTTP_200_OK,
@@ -249,7 +267,7 @@ class InternshipViewSet(BaseModelViewSet):
 
         log_event(
             event="internship.bulk_archive",
-            description=f"Admin {request.user.email} bulk archived {records.count()} internship(s)",
+            description=f"Bulk archived {records.count()} internship(s)",
             user=request.user,
             entity_type="internship",
             entity_id=None,
@@ -298,7 +316,7 @@ class InternshipViewSet(BaseModelViewSet):
 
         log_event(
             event="internship.bulk_restore",
-            description=f"Admin {request.user.email} bulk restored {records.count()} internship(s)",
+            description=f"Bulk restored {records.count()} internship(s)",
             user=request.user,
             entity_type="internship",
             entity_id=None,
@@ -321,6 +339,13 @@ class InternshipViewSet(BaseModelViewSet):
             .filter(deleted=True)
             .order_by("-deleted_at")
         )
+
+        user = request.user
+        if not user.is_superuser:
+            if user.user_type in ["institute", "corporate"]:
+                queryset = queryset.filter(internship_provider=user)
+            else:
+                queryset = queryset.none()
 
         queryset = self.filter_queryset(queryset)
 
@@ -654,7 +679,15 @@ class InternshipApplicationViewSet(BaseModelViewSet):
         application.updated_by = request.user
         application.updated_at = timezone.now()
         application.save(update_fields=["status"])
-
+        log_event(
+            event="internship_application.status_changed",
+            description=f"Changed application #{application.id} status to {application_status}",
+            user=request.user,
+            entity_type="internship_application",
+            entity_id=application.id,
+            metadata={"internship_id": application.internship_id, "status": application_status},
+            request=request,
+        )
         return Response(
             {
                 "success": True,

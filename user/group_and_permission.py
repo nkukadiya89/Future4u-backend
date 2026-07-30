@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from activity_log.services import log_event
 from user.models import AuthGroupPermissionsModel, CustomGroup, RoleFamily, User
 from utils.pagination import Pagination
 from utils.role_permission import (
@@ -81,7 +82,15 @@ class GroupViewSet(ModelViewSet):
         if serializer.is_valid():
             serializer.validated_data["created_by"] = request.user
             serializer.save()
-
+            log_event(
+                event="group.created",
+                description=f"Created group {serializer.data.get('name')}",
+                user=request.user,
+                entity_type="group",
+                entity_id=serializer.instance.id if serializer.instance else None,
+                metadata={"group_name": serializer.data.get("name")},
+                request=request,
+            )
             return Response(
                 {"success": True, "data": serializer.data},
                 status=status.HTTP_201_CREATED,
@@ -129,6 +138,15 @@ class GroupViewSet(ModelViewSet):
 
         if serializer.is_valid():
             instance.save()
+            log_event(
+                event="group.updated",
+                description=f"Updated group {instance.name}",
+                user=request.user,
+                entity_type="group",
+                entity_id=instance.id,
+                metadata={"group_name": instance.name},
+                request=request,
+            )
             return Response(
                 {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
             )

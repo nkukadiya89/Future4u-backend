@@ -188,6 +188,14 @@ class AuthViewSet(viewsets.ViewSet):
     )
     def logout(self, request):
         try:
+            log_event(
+                event="auth.logout",
+                description="Logged out",
+                user=request.user,
+                entity_type="user",
+                entity_id=request.user.id,
+                request=request,
+            )
             logout(request)
             return Response(
                 {"success": True, "message": "Logout successfully"},

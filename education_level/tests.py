@@ -29,8 +29,6 @@ class EducationLevelAPITests(TestCase):
             "level_code": code or f"level_{uuid.uuid4().hex[:8]}",
             "display_name": "Test Level",
             "sequence_order": sequence_order or 1000,
-            "min_age": 14,
-            "max_age": 16,
             "is_active": True,
             **extra,
         }
@@ -73,15 +71,6 @@ class EducationLevelAPITests(TestCase):
         )
         r = self.client.post(
             url, self._payload(code="12th", sequence_order=1), format="json"
-        )
-        self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_validation_age_range(self):
-        url = reverse("education-level-list")
-        r = self.client.post(
-            url,
-            self._payload(code="bad_age", sequence_order=3, min_age=20, max_age=10),
-            format="json",
         )
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -156,9 +145,9 @@ class EducationLevelAPITests(TestCase):
 
     def test_bulk_upload_csv_file(self):
         csv_body = (
-            "level_code,display_name,sequence_order,min_age,max_age\n"
-            "l_csv_1,CSV One,101,14,16\n"
-            "l_csv_1,CSV Dup,102,14,16\n"
+            "level_code,display_name,sequence_order\n"
+            "l_csv_1,CSV One,101\n"
+            "l_csv_1,CSV Dup,102\n"
         )
         f = SimpleUploadedFile(
             "education_level.csv", csv_body.encode("utf-8"), content_type="text/csv"
@@ -177,15 +166,11 @@ class EducationLevelAPITests(TestCase):
                 "level_code": "import_ok",
                 "display_name": "Import Ok",
                 "sequence_order": 100,
-                "min_age": 14,
-                "max_age": 16,
             },
             {
                 "level_code": "import_ok",
                 "display_name": "Import Dup",
                 "sequence_order": 101,
-                "min_age": 14,
-                "max_age": 16,
             },
         ]
         r = self.client.post(

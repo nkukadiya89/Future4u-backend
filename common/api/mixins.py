@@ -24,7 +24,7 @@ class ArchiveMixin(ModelViewSet):
             if instance:
                 log_event(
                     event=event,
-                    description=f"{instance.__class__.__name__} {action.lower()}d by {request.user.email}",
+                    description=f"{action.lower().capitalize()}d {instance.__class__.__name__.lower()}: {instance}",
                     user=request.user,
                     entity_type=instance.__class__.__name__.lower(),
                     entity_id=getattr(instance, "id", None),
@@ -34,7 +34,7 @@ class ArchiveMixin(ModelViewSet):
                 for obj in queryset:
                     log_event(
                         event=event,
-                        description=f"{obj.__class__.__name__} {action.lower()}d by {request.user.email}",
+                        description=f"{action.lower().capitalize()}d {obj.__class__.__name__.lower()}: {obj}",
                         user=request.user,
                         entity_type=obj.__class__.__name__.lower(),
                         entity_id=getattr(obj, "id", None),

@@ -99,6 +99,15 @@ class CoursesViewSet(BaseModelViewSet):
             if request.user.user_type in ['school_college', 'institute'] and 'course_provider' not in serializer.validated_data:
                 save_kwargs['course_provider'] = request.user
             serializer.save(**save_kwargs)
+            log_event(
+                event="course.created",
+                description=f"Created course {serializer.data.get('name')}",
+                user=request.user,
+                entity_type="course",
+                entity_id=serializer.instance.id if serializer.instance else None,
+                metadata={"course_name": serializer.data.get("name")},
+                request=request,
+            )
             return Response(
                 {
                     "success": True,
@@ -162,7 +171,7 @@ class CoursesViewSet(BaseModelViewSet):
             log_event(
                 event="course.bulk_status_changed",
                 description=(
-                    f"{request.user.email} changed {len(updated_ids)} course(s) "
+                    f"Changed {len(updated_ids)} course(s) "
                     f"to {new_status}"
                 ),
                 user=request.user,
@@ -206,6 +215,15 @@ class CoursesViewSet(BaseModelViewSet):
         if hasattr(instance, "updated_at"):
             instance.updated_at = timezone.now()
         instance.save()
+        log_event(
+            event="course.restored",
+            description=f"Restored course {instance.name}",
+            user=request.user,
+            entity_type="course",
+            entity_id=instance.id,
+            metadata={"course_name": instance.name},
+            request=request,
+        )
         return Response(
             {"success": True, "message": "Course restored successfully"},
             status=status.HTTP_200_OK,
@@ -245,7 +263,7 @@ class CoursesViewSet(BaseModelViewSet):
 
         log_event(
             event="course.bulk_archive",
-            description=f"Admin {request.user.email} bulk archived {records.count()} course(s)",
+            description=f"Bulk archived {records.count()} course(s)",
             user=request.user,
             entity_type="course",
             entity_id=None,
@@ -294,7 +312,7 @@ class CoursesViewSet(BaseModelViewSet):
 
         log_event(
             event="course.bulk_restore",
-            description=f"Admin {request.user.email} bulk restored {records.count()} course(s)",
+            description=f"Bulk restored {records.count()} course(s)",
             user=request.user,
             entity_type="course",
             entity_id=None,
@@ -312,6 +330,13 @@ class CoursesViewSet(BaseModelViewSet):
         queryset = Courses.objects.select_related(
             "country", "state", "city", "created_by"
         ).prefetch_related("education_tags").filter(deleted=True).order_by("-deleted_at")
+
+        user = request.user
+        if not user.is_superuser:
+            if user.user_type in ["institute", "school_college"]:
+                queryset = queryset.filter(course_provider=user)
+            else:
+                queryset = queryset.none()
 
         queryset = self.filter_queryset(queryset)
 
@@ -570,6 +595,15 @@ class CourseInquiryViewSet(BaseModelViewSet):
             )
         inquiries.status = inquiries_status
         inquiries.save(update_fields=["status"])
+        log_event(
+            event="course_inquiry.status_changed",
+            description=f"Changed inquiry #{inquiries.id} status to {inquiries_status}",
+            user=request.user,
+            entity_type="course_inquiry",
+            entity_id=inquiries.id,
+            metadata={"course_id": inquiries.course_id, "status": inquiries_status},
+            request=request,
+        )
         return Response(
             {
                 "success": True,

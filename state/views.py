@@ -7,6 +7,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from activity_log.models import ActivityLog
+from activity_log.services import log_event
 from common.mixins.view_mixins import ListEnvelopeMixin
 from utils.generate_ip_address import get_client_ip
 from utils.pagination import Pagination
@@ -60,6 +61,15 @@ class StateViewSet(ListEnvelopeMixin, ModelViewSet):
                 instance = serializer.save()
                 ip_address = get_client_ip(request)
                 ActivityLog.log.state_create(instance, ip_address, request.user)
+                log_event(
+                    event="state.created",
+                    description=f"Created state {instance.name}",
+                    user=request.user,
+                    entity_type="state",
+                    entity_id=instance.id,
+                    metadata={"state_name": instance.name},
+                    request=request,
+                )
                 return Response(
                     {
                         "success": True,
@@ -103,6 +113,15 @@ class StateViewSet(ListEnvelopeMixin, ModelViewSet):
                 instance = serializer.save()
                 ip_address = get_client_ip(request)
                 ActivityLog.log.state_update(instance, ip_address, request.user)
+                log_event(
+                    event="state.updated",
+                    description=f"Updated state {instance.name}",
+                    user=request.user,
+                    entity_type="state",
+                    entity_id=instance.id,
+                    metadata={"state_name": instance.name},
+                    request=request,
+                )
                 return Response(
                     {
                         "success": True,
@@ -137,6 +156,15 @@ class StateViewSet(ListEnvelopeMixin, ModelViewSet):
         instance.save()
         ip_address = get_client_ip(request)
         ActivityLog.log.state_archive(instance, ip_address, request.user)
+        log_event(
+            event="state.archived",
+            description=f"Archived state {instance.name}",
+            user=request.user,
+            entity_type="state",
+            entity_id=instance.id,
+            metadata={"state_name": instance.name},
+            request=request,
+        )
         return Response(
             {"success": True, "message": "State Deleted"},
             status=status.HTTP_204_NO_CONTENT,
@@ -218,6 +246,15 @@ class StateArchiveViewSet(ModelViewSet):
             ActivityLog.log.state_archive(
                 instance, ip_address=ip_address, user=request.user
             )
+            log_event(
+                event="state.bulk_archived",
+                description=f"Bulk archived {count} state(s)",
+                user=request.user,
+                entity_type="state",
+                entity_id=None,
+                metadata={"state_ids": deleted_ids, "count": count},
+                request=request,
+            )
             message = (
                 "State archived successfully"
                 if count == 1
@@ -256,6 +293,15 @@ class StateRestoreViewSet(ModelViewSet):
             ip_address = get_client_ip(request)
             ActivityLog.log.state_restore(
                 instance, ip_address=ip_address, user=request.user
+            )
+            log_event(
+                event="state.restored",
+                description=f"Restored {count} state(s)",
+                user=request.user,
+                entity_type="state",
+                entity_id=None,
+                metadata={"state_ids": deleted_ids, "count": count},
+                request=request,
             )
             message = (
                 "State restored successfully"
