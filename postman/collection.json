@@ -19177,7 +19177,8 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"closed\",\n  \"ids\": [{{job_id}}]\n}"
             },
-            "description": "Admins can update any job. Corporate job_provider can update only jobs they own. Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."          },
+            "description": "Admins can update any job. Corporate job_provider can update only jobs they own. Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."
+          },
           "response": []
         },
         {
