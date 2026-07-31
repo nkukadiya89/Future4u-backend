@@ -16,8 +16,6 @@ from assessment_career.models import CareerSuggestion
 from common.master_view import BaseModelViewSet
 from user.permissions import IsAdminOrProvider, is_admin_user
 
-from user_profile.models import CorporateProfile
-
 from .models import Job, JobApplication
 from .serializers import JobApplicationSerializer, JobSerializer
 from .service import match_jobs
@@ -26,7 +24,7 @@ from .service import match_jobs
 class JobViewSet(BaseModelViewSet):
     def get_queryset(self):
         queryset = Job.objects.select_related(
-            "city", "country", "state", "created_by", "provider"
+            "city", "country", "state", "created_by", "job_provider"
         ).prefetch_related("education_tags")
         user = self.request.user
         if user.is_superuser:
@@ -34,11 +32,9 @@ class JobViewSet(BaseModelViewSet):
         elif user.user_type in [
             "corporate",
         ]:
-            base = queryset.filter(provider=user)
+            base = queryset.filter(job_provider=user)
         else:
-            # Students/parents: only see active jobs
             base = queryset.filter(status="active")
-        # Allow restore/archive actions to access deleted records
         if self.action not in [
             "restore",
             "archive_list",
@@ -49,7 +45,6 @@ class JobViewSet(BaseModelViewSet):
         ]:
             base = base.filter(deleted=False)
 
-        # Apply subscription plan portal limit (job access)
         from subscription.services.usage import apply_portal_limit
 
         return apply_portal_limit(user, base, "job")
@@ -69,7 +64,7 @@ class JobViewSet(BaseModelViewSet):
 
     search_fields = BaseModelViewSet.searching_fields + [
         "name",
-        "corporate__company_name",
+        "job_provider__corporate_profile__company_name",
         "description",
         "job_overview",
         "education_tags__display_name",
@@ -79,12 +74,11 @@ class JobViewSet(BaseModelViewSet):
         "city__name",
         "state__name",
         "country__name",
-        "provider__full_name",
+        "job_provider__full_name",
         "why_this_match",
     ]
     ordering_fields = BaseModelViewSet.ordering_fields + [
         "name",
-        "corporate",
         "description",
         "education_tags",
         "experience_level",
@@ -93,29 +87,20 @@ class JobViewSet(BaseModelViewSet):
         "city",
         "salary_min",
         "salary_max",
-        "provider",
+        "job_provider",
         "why_this_match",
     ]
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
-        data = request.data.copy()
-        if "corporate" not in data:
-            try:
-                cp = request.user.corporate_profile
-                if not cp.deleted:
-                    data["corporate"] = cp.id
-            except CorporateProfile.DoesNotExist:
-                pass
-
-        serializer = self.get_serializer(data=data)
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             save_kwargs = {
                 'created_by': request.user,
                 'created_at': timezone.now(),
             }
-            if request.user.user_type in ['corporate'] and 'provider' not in serializer.validated_data:
-                save_kwargs['provider'] = request.user
+            if request.user.user_type in ['corporate'] and 'job_provider' not in serializer.validated_data:
+                save_kwargs['job_provider'] = request.user
             serializer.save(**save_kwargs)
             log_event(
                 event="job.created",
@@ -171,7 +156,7 @@ class JobViewSet(BaseModelViewSet):
 
         jobs = Job.objects.filter(id__in=ids, deleted=False)
         if not is_admin:
-            jobs = jobs.filter(provider=request.user)
+            jobs = jobs.filter(job_provider=request.user)
 
         found_ids = set(jobs.values_list("id", flat=True))
         not_found_ids = list(set(ids) - found_ids)
@@ -257,6 +242,11 @@ class JobViewSet(BaseModelViewSet):
             )
 
         records = Job.objects.filter(id__in=ids)
+        if not request.user.is_superuser:
+            if request.user.user_type in ["corporate"]:
+                records = records.filter(job_provider=request.user)
+            else:
+                records = Job.objects.none()
 
         if not records.exists():
             return Response(
@@ -304,6 +294,11 @@ class JobViewSet(BaseModelViewSet):
             )
 
         records = Job.objects.filter(id__in=ids)
+        if not request.user.is_superuser:
+            if request.user.user_type in ["corporate"]:
+                records = records.filter(job_provider=request.user)
+            else:
+                records = Job.objects.none()
 
         if not records.exists():
             return Response(
@@ -344,11 +339,20 @@ class JobViewSet(BaseModelViewSet):
     @action(detail=False, methods=["get"], url_path="archive-list")
     def archive_list(self, request):
         queryset = (
-            Job.objects.select_related("city", "country", "state", "created_by", "provider")
+            Job.objects.select_related(
+                "city", "country", "state", "created_by", "job_provider"
+            )
             .prefetch_related("education_tags")
             .filter(deleted=True)
             .order_by("-deleted_at")
         )
+
+        user = request.user
+        if not user.is_superuser:
+            if user.user_type in ["corporate"]:
+                queryset = queryset.filter(job_provider=user)
+            else:
+                queryset = queryset.none()
 
         queryset = self.filter_queryset(queryset)
 
@@ -467,7 +471,7 @@ class JobApplicationViewSet(BaseModelViewSet):
         if user.is_superuser:
             return base
         if user.user_type in ["corporate"]:
-            return base.filter(job__provider=user)
+            return base.filter(job__job_provider=user)
         return base.filter(applicant=user)
 
     def list(self, request, *args, **kwargs):
@@ -620,7 +624,7 @@ class JobApplicationViewSet(BaseModelViewSet):
     @action(detail=False, methods=["get"], url_path="received-inquiries")
     def receive_inquiries(self, request):
         inquiries = JobApplication.objects.filter(
-            job__provider=request.user,
+            job__job_provider=request.user,
             deleted=False,
         ).select_related("job", "applicant")
 
@@ -676,7 +680,8 @@ class JobApplicationViewSet(BaseModelViewSet):
     def update_status(self, request, pk=None):
         application = self.get_object()
 
-        if application.job.provider != request.user:
+        job = application.job
+        if job.job_provider != request.user:
             return Response(
                 {
                     "success": False,

@@ -86,11 +86,8 @@ def _build_response(
     data["education_tags_meta"] = enriched_tags
 
     if company:
-        data["corporate"] = company.pk
         data["corporate_name"] = company.company_name or ""
     else:
-        corporate = validated_input.get("corporate")
-        data["corporate"] = corporate.pk if hasattr(corporate, "pk") else corporate
         data["corporate_name"] = ""
     data["job_overview"] = validated_input.get("job_overview", "")
     country = validated_input.get("country")

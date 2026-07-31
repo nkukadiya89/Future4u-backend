@@ -206,7 +206,6 @@ class JobGenerationSaveView(APIView):
 
         # Convert FK PK values to *_id format for Django ORM create()
         fk_aliases = {
-            "corporate": "corporate_id",
             "country": "country_id",
             "state": "state_id",
             "city": "city_id",
@@ -233,7 +232,7 @@ class JobGenerationSaveView(APIView):
 
         job = Job.objects.create(
             **generated_data,
-            provider=request.user,
+            job_provider=request.user,
             created_by=request.user,
             created_at=timezone.now(),
             status="active" if save_mode == "publish" else "draft",

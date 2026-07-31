@@ -9,7 +9,6 @@ from country.models import Country
 from education_level.models import EducationLevel
 from state.models import State
 from user.models import User
-from user_profile.models import CorporateProfile
 from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
 
 
@@ -195,13 +194,6 @@ class Job(BaseModule):
     )
 
     name = models.CharField(max_length=250, null=True, blank=True)
-    corporate = models.ForeignKey(
-        CorporateProfile,
-        on_delete=models.CASCADE,
-        related_name="jobs",
-        null=True,
-        blank=True,
-    )
     job_overview = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     responsibilities = models.JSONField(default=list, blank=True)
@@ -225,7 +217,7 @@ class Job(BaseModule):
     salary_max = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
-    provider = models.ForeignKey(
+    job_provider = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
