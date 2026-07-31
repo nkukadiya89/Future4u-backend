@@ -5,7 +5,6 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from activity_log.services import log_event
@@ -136,7 +135,6 @@ class JobViewSet(BaseModelViewSet):
         detail=False,
         methods=["patch"],
         url_path="update-status",
-        permission_classes=[IsAuthenticated, IsAdminOrProvider],
     )
     @transaction.atomic
     def bulk_update_status(self, request, *args, **kwargs):
@@ -244,12 +242,7 @@ class JobViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        records = Job.objects.filter(id__in=ids)
-        if not request.user.is_superuser:
-            if request.user.user_type in ["corporate"]:
-                records = records.filter(job_provider=request.user)
-            else:
-                records = Job.objects.none()
+        records = self.get_queryset().filter(id__in=ids)
 
         if not records.exists():
             return Response(
@@ -296,12 +289,7 @@ class JobViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        records = Job.objects.filter(id__in=ids)
-        if not request.user.is_superuser:
-            if request.user.user_type in ["corporate"]:
-                records = records.filter(job_provider=request.user)
-            else:
-                records = Job.objects.none()
+        records = self.get_queryset().filter(id__in=ids)
 
         if not records.exists():
             return Response(

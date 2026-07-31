@@ -1,5 +1,5 @@
 from django.db.models import Q
-from rest_framework import serializers, viewsets
+from rest_framework import serializers, status, viewsets
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -13,12 +13,30 @@ from utils.token_check import (
 )
 
 
+# Usage-percentage range buckets used by the ?usage= filter.
+# Boundaries are lower-exclusive except the first bucket, so a value
+# like 25.1% falls into 26-50, 50.1% into 51-75, etc. (no gaps/overlaps).
+USAGE_RANGES = {
+    "0-25": (None, 25),
+    "26-50": (25, 50),
+    "51-75": (50, 75),
+    "76-100": (75, 100),
+}
+
+
+def _matches_usage_range(percentage, usage_key):
+    """Return True if usage_percentage falls inside the given range key."""
+    low, high = USAGE_RANGES[usage_key]
+    if low is None:
+        return percentage <= high
+    return low < percentage <= high
+
+
 class OrganizationTokenUsageSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     user = serializers.IntegerField()
     organization = serializers.CharField()
     login_type = serializers.CharField()
-    status = serializers.CharField()
     monthly_limit = serializers.IntegerField()
     used_tokens = serializers.IntegerField()
     remaining_tokens = serializers.IntegerField()
@@ -39,7 +57,6 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
     ]
     ordering_fields = [
         "user_type",
-        "status",
         "school_college_profile__token_limit",
         "institute_profile__token_limit",
         "corporate_profile__token_limit",
@@ -93,10 +110,22 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
+
+        usage_range = request.query_params.get("usage")
+        if usage_range is not None and usage_range not in USAGE_RANGES:
+            return Response(
+                {
+                    "success": False,
+                    "message": (
+                        "Invalid usage filter. Allowed values: "
+                        + ", ".join(USAGE_RANGES.keys())
+                    ),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         rows = []
-        for user in page or queryset:
+        for user in queryset:
             profile = _get_org_profile(user)
             if not profile:
                 continue
@@ -105,27 +134,30 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
 
             usage = get_org_token_usage(profile, user.user_type)
 
+            if usage_range is not None and not _matches_usage_range(
+                usage["usage_percentage"], usage_range
+            ):
+                continue
+
             org_name = (
                 getattr(profile, "institute_name", None)
                 or getattr(profile, "company_name", None)
                 or ""
             )
 
-            rows.append(
-                {
-                    "id": profile.id,
-                    "user": user.id,
-                    "organization": org_name,
-                    "login_type": user.user_type,
-                    "status": user.status or "pending",
-                    "monthly_limit": usage["monthly_limit"],
-                    "used_tokens": usage["used_tokens"],
-                    "remaining_tokens": usage["remaining_tokens"],
-                    "usage_percentage": usage["usage_percentage"],
-                }
-            )
+            rows.append({
+                "id": profile.id,
+                "user": user.id,
+                "organization": org_name,
+                "login_type": user.user_type,
+                "monthly_limit": usage["monthly_limit"],
+                "used_tokens": usage["used_tokens"],
+                "remaining_tokens": usage["remaining_tokens"],
+                "usage_percentage": usage["usage_percentage"],
+            })
 
-        serializer = self.get_serializer(rows, many=True)
+        page = self.paginate_queryset(rows)
+        serializer = self.get_serializer(page or rows, many=True)
         if page is not None:
             return self.get_paginated_response(serializer.data)
         return Response({"success": True, "data": serializer.data})

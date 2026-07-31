@@ -5,7 +5,6 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from activity_log.services import log_event
@@ -13,7 +12,7 @@ from assessment_career.models import CareerSuggestion
 from common.master_view import BaseModelViewSet
 from common.note_views import BaseLeadNoteViewSet
 from course.services import match_courses
-from user.permissions import IsAdminOrProvider, is_admin_user
+from user.permissions import is_admin_user
 
 from .models import CourseInquiry, CourseInquiryNote, Courses
 from .serializers import (
@@ -131,7 +130,6 @@ class CoursesViewSet(BaseModelViewSet):
         detail=False,
         methods=["patch"],
         url_path="update-status",
-        permission_classes=[IsAuthenticated, IsAdminOrProvider],
     )
     @transaction.atomic
     def bulk_update_status(self, request, *args, **kwargs):
@@ -245,7 +243,7 @@ class CoursesViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        records = Courses.objects.filter(id__in=ids)
+        records = self.get_queryset().filter(id__in=ids)
 
         if not records.exists():
             return Response(
@@ -292,7 +290,7 @@ class CoursesViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        records = Courses.objects.filter(id__in=ids)
+        records = self.get_queryset().filter(id__in=ids)
 
         if not records.exists():
             return Response(

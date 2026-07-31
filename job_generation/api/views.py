@@ -19,7 +19,7 @@ from job_generation.exceptions import (
 )
 from job_generation.serializers.job_generation_input import JobGenerationInputSerializer
 from job_generation.services.job_generation_service import JobGenerationService
-from user.permissions import IsAdminOrProvider
+from user.permissions import HasPerm
 from utils.throttles import JobGenerationRateThrottle
 from utils.token_check import check_token_available, deduct_monthly_tokens
 
@@ -34,7 +34,8 @@ class JobGenerationAPIView(APIView):
     """
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, IsAdminOrProvider]
+    permission_classes = [IsAuthenticated, HasPerm]
+    required_permission = "job_generation.generate_job"
     throttle_classes = [JobGenerationRateThrottle]
 
     def post(self, request, *args, **kwargs):
@@ -121,7 +122,11 @@ class JobGenerationSaveView(APIView):
     """
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, IsAdminOrProvider]
+    permission_classes = [IsAuthenticated, HasPerm]
+    required_permission = [
+        "job_generation.generate_job",
+        "internship_job.add_job",
+    ]
     throttle_classes = [JobGenerationRateThrottle]
 
     @transaction.atomic

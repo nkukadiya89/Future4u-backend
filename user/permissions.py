@@ -86,3 +86,32 @@ class IsIndividualUser(BasePermission):
             and user.status == "active"
             and not user.deleted
         )
+
+
+class HasPerm(BasePermission):
+    """
+    Require one or more Django permissions for the request.
+
+    The view must set a ``required_permission`` attribute, e.g.::
+
+        class CourseGenerationAPIView(APIView):
+            required_permission = "course_generation.generate_course"
+            permission_classes = [IsAuthenticated, HasPerm]
+
+    Pass a list to require ALL of the listed permissions::
+
+        class JobGenerationSaveView(APIView):
+            required_permission = [
+                "job_generation.generate_job",
+                "internship_job.add_job",
+            ]
+            permission_classes = [IsAuthenticated, HasPerm]
+    """
+
+    def has_permission(self, request, view):
+        permission = getattr(view, "required_permission", None)
+        if not permission:
+            return False
+        if isinstance(permission, (list, tuple)):
+            return request.user.has_perms(permission)
+        return request.user.has_perm(permission)

@@ -1,13 +1,7 @@
 from __future__ import annotations
 
-from user.models import User
-
 
 def can_user_generate_courses(user) -> bool:
     if not user or not getattr(user, "is_authenticated", False):
         return False
-    return user.user_type in (
-        User.Role.INSTITUTE,
-        User.Role.SCHOOL_COLLEGE,
-        User.Role.SUPER_ADMIN,
-    )
+    return user.has_perm("course_generation.generate_course")

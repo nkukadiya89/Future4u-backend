@@ -19,7 +19,7 @@ from internship_generation.serializers.internship_generation_input import (
 from internship_generation.services.internship_generation_service import (
     InternshipGenerationService,
 )
-from user.permissions import IsAdminOrProvider
+from user.permissions import HasPerm
 from utils.throttles import InternshipGenerationRateThrottle
 from utils.token_check import check_token_available, deduct_monthly_tokens
 
@@ -33,7 +33,8 @@ class InternshipGenerationAPIView(APIView):
     """
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, IsAdminOrProvider]
+    permission_classes = [IsAuthenticated, HasPerm]
+    required_permission = "internship_generation.generate_internship"
     throttle_classes = [InternshipGenerationRateThrottle]
 
     def post(self, request, *args, **kwargs):

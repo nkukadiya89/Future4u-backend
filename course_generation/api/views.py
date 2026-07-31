@@ -17,7 +17,7 @@ from course_generation.serializers.course_generation_input import (
     CourseGenerationInputSerializer,
 )
 from course_generation.services.course_generation_service import CourseGenerationService
-from user.permissions import IsAdminOrProvider
+from user.permissions import HasPerm
 from utils.throttles import CourseGenerationRateThrottle
 from utils.token_check import check_token_available, deduct_monthly_tokens
 
@@ -31,7 +31,8 @@ class CourseGenerationAPIView(APIView):
     """
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, IsAdminOrProvider]
+    permission_classes = [IsAuthenticated, HasPerm]
+    required_permission = "course_generation.generate_course"
     throttle_classes = [CourseGenerationRateThrottle]
 
     def post(self, request, *args, **kwargs):

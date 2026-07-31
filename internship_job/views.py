@@ -5,7 +5,6 @@ from django.db.models.aggregates import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from activity_log.services import log_event
 from assessment_career.models import CareerSuggestion
@@ -129,7 +128,6 @@ class InternshipViewSet(BaseModelViewSet):
         detail=False,
         methods=["patch"],
         url_path="update-status",
-        permission_classes=[IsAuthenticated, IsAdminOrProvider],
     )
     @transaction.atomic
     def bulk_update_status(self, request, *args, **kwargs):
@@ -249,7 +247,7 @@ class InternshipViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        records = Internship.objects.filter(id__in=ids)
+        records = self.get_queryset().filter(id__in=ids)
 
         if not records.exists():
             return Response(
@@ -296,7 +294,7 @@ class InternshipViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        records = Internship.objects.filter(id__in=ids)
+        records = self.get_queryset().filter(id__in=ids)
 
         if not records.exists():
             return Response(

@@ -9763,7 +9763,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/org-token-usage/?user_type=institute&search=School",
+              "raw": "{{base_url}}/api/org-token-usage/?user_type=institute&usage=0-25&search=School",
               "host": [
                 "{{base_url}}"
               ],
@@ -9795,10 +9795,15 @@
                 {
                   "key": "ordering",
                   "value": ""
+                },
+                {
+                  "key": "usage",
+                  "value": "0-25",
+                  "description": "Usage percentage range filter: 0-25, 26-50, 51-75, 76-100"
                 }
               ]
             },
-            "description": "List all organization users with token usage stats. Admin only.\n\nSupports query params:\n- ?user_type=institute|school_college|corporate\n- ?id={profile_id}\n- ?user={user_id}\n- ?search=name\n- ?ordering=monthly_limit|-remaining_tokens\n- ?page=1"
+            "description": "List all organization users with token usage stats. Super admin only.\n\nSupports query params:\n- ?user_type=institute|school_college|corporate\n- ?id={profile_id}\n- ?user={user_id}\n- ?search=name\n- ?usage=0-25|26-50|51-75|76-100 (filters by usage_percentage range)\n- ?ordering=user_type|school_college_profile__token_limit|institute_profile__token_limit|corporate_profile__token_limit\n- ?page=1\n\nResponse item fields: id, user, organization, login_type, monthly_limit, used_tokens, remaining_tokens, usage_percentage. (status field was removed.)"
           }
         }
       ]
@@ -19576,7 +19581,7 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"closed\",\n  \"ids\": [{{internship_id}}]\n}"
             },
-            "description": "Admins can update any internship. Institute, school/college, and corporate providers can update only internships they own. Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."
+            "description": "Admins can update any internship. Institute and corporate providers can update only internships they own. Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."
           },
           "response": []
         },
@@ -20039,8 +20044,7 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"closed\",\n  \"ids\": [{{job_id}}]\n}"
             },
-            "description": "Admins can update any job. Corporate job_provider can update only jobs they own. Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."
-          },
+            "description": "Admins can update any job. Corporate job_provider can update only jobs they own. Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."          },
           "response": []
         },
         {
