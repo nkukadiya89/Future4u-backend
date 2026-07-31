@@ -19823,7 +19823,7 @@
                 {
                   "key": "search",
                   "value": "",
-                  "description": "Search by name, organization, skills, city, provider, etc."
+                  "description": "Search by name, organization, skills, city, job_provider, etc."
                 },
                 {
                   "key": "ordering",
@@ -19881,7 +19881,7 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"closed\",\n  \"ids\": [{{job_id}}]\n}"
             },
-            "description": "Admins can update any job. Institute, school/college, and corporate providers can update only jobs they own. Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."
+            "description": "Admins can update any job. Corporate job_provider can update only jobs they own. Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."
           },
           "response": []
         },
@@ -19958,9 +19958,9 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Frontend Developer\",\n  \"city\": {{city_id}},\n  \"organization_name\": \"Future4u Labs\",\n  \"description\": \"Full-time role for building modern web applications.\",\n  \"responsibilities\": [\"Build UI components\", \"Collaborate with backend team\"],\n  \"skills\": [\"JavaScript\", \"React\"],\n  \"education_tags\": [1],\n  \"experience_level\": \"fresher\",\n  \"job_type\": \"full_time\",\n  \"mode\": \"remote\",\n  \"salary_min\": 400000,\n  \"salary_max\": 600000,\n  \"why_this_match\": \"Matches your career path in web development.\"\n}"
+              "raw": "{\n  \"name\": \"Python Developer\",\n  \"job_overview\": \"Test\",\n  \"country\": 1,\n  \"state\": 1,\n  \"city\": 4,\n  \"job_type\": \"part_time\",\n  \"experience_level\": \"1_3\",\n  \"mode\": \"onsite\",\n  \"salary_min\": \"15000\",\n  \"salary_max\": \"25000\",\n  \"application_deadline\": \"2026-08-01\",\n  \"description\": \"Python Developer\",\n  \"responsibilities\": [\n    \"Handle apis\",\n    \"oddo functionality\"\n  ],\n  \"skills\": [\n    \"python\",\n    \"React\",\n    \"Django\"\n  ],\n  \"education_tags\": [\n    \"40d1adf5-65cc-4ff0-81b1-c095a1a517c6\",\n    \"ad58a6cc-4b7a-4d27-921c-0e4d969df8b8\",\n    \"9645fa40-c307-497b-8c3e-3eb98a297087\"\n  ],\n  \"why_this_match\": \"Nothing to match there records\",\n  \"status\": \"active\"\n}"
             },
-            "description": "Create a job listing. provider, created_by, and created_at are set from the authenticated user.\n\nexperience_level: fresher | 0_1 | 1_3 | 3_5 | 5_10 | 10_plus\njob_type: part_time | full_time | freelance\nmode: remote | onsite | hybrid\neducation_tags: array of EducationLevel ids\n\nResponse: { success, data }"
+            "description": "Create a job listing. If the authenticated user is a corporate account and job_provider is omitted, job_provider is auto-set to that user. Admins must explicitly pass job_provider (a corporate user id) to attribute the job to a company. created_by and created_at are set from the authenticated user.\n\nexperience_level: fresher | 0_1 | 1_3 | 3_5 | 5_10 | 10_plus\njob_type: part_time | full_time | freelance\nmode: remote | onsite | hybrid\neducation_tags: array of EducationLevel ids\njob_provider: optional corporate user id (see note above)\n\nResponse: { success, data }"
           },
           "response": [],
           "event": [
@@ -20036,9 +20036,9 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Frontend Developer (Updated)\",\n  \"city\": {{city_id}},\n  \"organization_name\": \"Future4u Labs\",\n  \"description\": \"Updated job description.\",\n  \"responsibilities\": [\"Build UI components\"],\n  \"skills\": [\"JavaScript\", \"React\", \"TypeScript\"],\n  \"education_tags\": [1],\n  \"experience_level\": \"1_3\",\n  \"job_type\": \"full_time\",\n  \"mode\": \"hybrid\",\n  \"salary_min\": 500000,\n  \"salary_max\": 700000,\n  \"why_this_match\": \"Updated match reason.\"\n}"
+              "raw": "{\n  \"name\": \"Frontend Developer (Updated)\",\n  \"city\": {{city_id}},\n  \"description\": \"Updated job description.\",\n  \"responsibilities\": [\"Build UI components\"],\n  \"skills\": [\"JavaScript\", \"React\", \"TypeScript\"],\n  \"education_tags\": [1],\n  \"experience_level\": \"1_3\",\n  \"job_type\": \"full_time\",\n  \"mode\": \"hybrid\",\n  \"salary_min\": 500000,\n  \"salary_max\": 700000,\n  \"why_this_match\": \"Updated match reason.\"\n}"
             },
-            "description": "Update a job. Only the provider (creator) can update.\n\nReturns 403 if the authenticated user is not the job provider."
+            "description": "Update a job. Only the job_provider (or admin) can update.\n\nReturns 403 if the authenticated user is not the job's job_provider."
           },
           "response": []
         },
@@ -20071,7 +20071,7 @@
               "mode": "raw",
               "raw": "{\n  \"salary_max\": 750000,\n  \"mode\": \"remote\"\n}"
             },
-            "description": "Partial update. Only the provider (creator) can update.\n\nReturns 403 if the authenticated user is not the job provider."
+            "description": "Partial update. Only the job_provider (or admin) can update.\n\nReturns 403 if the authenticated user is not the job's job_provider."
           },
           "response": []
         },
@@ -20100,7 +20100,7 @@
                 ""
               ]
             },
-            "description": "Soft-deletes (archives) the job record. Only the provider (creator) can delete.\n\nReturns 403 if the authenticated user is not the job provider."
+            "description": "Soft-deletes (archives) the job record. Only the job_provider (or admin) can delete.\n\nReturns 403 if the authenticated user is not the job's job_provider."
           },
           "response": []
         },
@@ -20192,7 +20192,7 @@
                 ""
               ]
             },
-            "description": "Restore an archived job (sets deleted=false). Only the provider (creator) can restore."
+            "description": "Restore an archived job (sets deleted=false). Only the job_provider (or admin) can restore."
           },
           "response": []
         },
