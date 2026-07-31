@@ -9,3 +9,6 @@ class JobGenerationPanel(models.Model):
         managed = False
         verbose_name = "AI Job Generation"
         verbose_name_plural = "AI Job Generation"
+        permissions = [
+            ("generate_job", "Can generate AI job posting details"),
+        ]

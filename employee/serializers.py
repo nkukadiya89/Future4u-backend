@@ -195,6 +195,7 @@ class AddEmployeeSerializer(
 
     def update(self, instance, validated_data):
         request = self.context.get("request")
+        permission_provided = "permission" in validated_data
         permission_ids = validated_data.pop("permission", [])
         assign_role = validated_data.pop("role", [])
 
@@ -299,19 +300,20 @@ class AddEmployeeSerializer(
                         {"success": False, "message": "Group Not Found"}
                     )
 
-        user.user_permissions.clear()
-        if permission_ids:
-            # Get all permissions that exist from the provided IDs
-            existing_permissions = Permission.objects.filter(id__in=permission_ids)
-            # Add only the existing permissions
-            for permission in existing_permissions:
-                user.user_permissions.add(permission)
+        if permission_provided:
+            user.user_permissions.clear()
+            if permission_ids:
+                # Get all permissions that exist from the provided IDs
+                existing_permissions = Permission.objects.filter(id__in=permission_ids)
+                # Add only the existing permissions
+                for permission in existing_permissions:
+                    user.user_permissions.add(permission)
 
-            # Log if any permissions were not found
-            found_ids = set(existing_permissions.values_list("id", flat=True))
-            not_found = set(permission_ids) - found_ids
-            if not_found:
-                pass
+                # Log if any permissions were not found
+                found_ids = set(existing_permissions.values_list("id", flat=True))
+                not_found = set(permission_ids) - found_ids
+                if not_found:
+                    pass
 
         # Update designation similar to company creation when role is updated
         if assign_role:
