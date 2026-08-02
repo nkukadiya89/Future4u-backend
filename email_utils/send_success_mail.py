@@ -8,6 +8,7 @@ from decouple import config
 from django.shortcuts import HttpResponse
 from django.template.loader import render_to_string
 
+from company.models import Company
 from user.models import User
 
 
@@ -59,11 +60,11 @@ def send_success_mail(subject, template, data):
 
     user = User.objects.filter(email=email).first()
 
-    # Remove employee reference since User model doesn't have employee field
+    # User has no company field; companies are linked to users via the
+    # email-based lookup used across the codebase.
+    company = Company.objects.filter(email=email).first()
     created_by_company = (
-        user.company.created_by.email
-        if user.company and user.company.created_by
-        else None
+        company.created_by.email if company and company.created_by else None
     )
 
     context = {

@@ -17,9 +17,15 @@ User = get_user_model()
 
 
 def _create_organization_profile(profile_model, user):
+    defaults = {"created_by": user}
+    if user.is_org_staff:
+        # Staff must not inherit the org's default monthly allowance.
+        # Zero is made durable by _check_org_monthly_reset in utils/token_check.py.
+        defaults["token_limit"] = 0
+        defaults["extra_token_limit"] = 0
     profile_model.objects.get_or_create(
         user=user,
-        defaults={"created_by": user},
+        defaults=defaults,
     )
 
 

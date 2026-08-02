@@ -56,16 +56,30 @@ def _get_org_profile(user):
     return None
 
 
+def _is_org_staff_profile(profile):
+    """Return True when the profile belongs to an organization staff user."""
+    return bool(getattr(getattr(profile, "user", None), "is_org_staff", False))
+
+
+def _org_base_token_limit(profile, user_type):
+    """Monthly base token allowance for an org profile.
+    Staff always get 0 — they never auto-receive the org default."""
+    if _is_org_staff_profile(profile):
+        return 0
+    return DEFAULT_ORG_TOKEN_LIMITS.get(user_type, 20000)
+
+
 def _check_org_monthly_reset(profile, user_type):
     """Reset token_limit to base default only.
     extra_token_limit is a one-time per-month grant — it resets to 0
-    so the new month starts cleanly with just the config default."""
+    so the new month starts cleanly with just the config default.
+    Staff users reset to 0 (their base is always 0)."""
     today = now().date()
     if (
         not profile.last_token_reset_at
         or (today - profile.last_token_reset_at).days >= 30
     ):
-        base = DEFAULT_ORG_TOKEN_LIMITS.get(user_type, 20000)
+        base = _org_base_token_limit(profile, user_type)
         profile.token_limit = base
         profile.extra_token_limit = 0
         profile.last_token_reset_at = today
@@ -201,7 +215,7 @@ def get_org_token_usage(profile, user_type):
     Single source of truth. Returns monthly_limit, used_tokens,
     remaining_tokens, and usage_percentage.
     """
-    base = DEFAULT_ORG_TOKEN_LIMITS.get(user_type, 20000)
+    base = _org_base_token_limit(profile, user_type)
     extra = profile.extra_token_limit or 0
     monthly_limit = base + extra
     remaining_tokens = profile.token_limit or 0

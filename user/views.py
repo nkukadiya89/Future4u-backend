@@ -23,6 +23,7 @@ from email_utils.send_email import decode_token, generate_forget_pass_token, sen
 from email_utils.send_success_mail import send_confirm_mail, send_success_mail
 from employee.models import Employee
 from user.models import RoleFamily, User
+from user.permissions import IsAdminOrProvider
 from user.serializers import (
     LoginWithEmailOtpSerializer,
     RoleFamilySerializer,
@@ -347,6 +348,18 @@ class ForgotPasswordViewSet(ModelViewSet):
                 status=status.HTTP_200_OK,
             )
 
+        else:
+            context = {"name": user.first_name, "email": user.email}
+            send_confirm_mail(
+                "OutdoorX Password Change Notification",
+                "password-changed-confirmation.html",
+                context,
+            )
+            return Response(
+                {"success": True, "message": "Password changed successfully"},
+                status=status.HTTP_200_OK,
+            )
+
 
 class LoginWithEmailOtpViewset(ModelViewSet):
     permission_classes = [AllowAny]
@@ -554,6 +567,15 @@ class RoleFamilyViewSet(RetrieveSuccessEnvelopeMixin, ModelViewSet):
     pagination_class = Pagination
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+
+    def get_permissions(self):
+        perms = super().get_permissions()
+        # Role-family management is owner-only, same boundary as role/group
+        # management: org staff are managed users and must not create or alter
+        # role families. Read actions stay open.
+        if self.action in ("create", "update", "partial_update", "destroy"):
+            perms = perms + [IsAdminOrProvider()]
+        return perms
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

@@ -20,6 +20,7 @@ from user.group_and_permission import (
     PermissionViewSet,
 )
 from user.resend_password_reset import ResendPasswordResetViewSet
+from user.organization_staff_views import OrganizationStaffViewSet
 from user.student_organization_views import OrganizationStudentViewSet
 from user.user_type_views import AuthViewSet
 from user.views import (
@@ -120,5 +121,10 @@ user_router.register(
     "organization-students",
     OrganizationStudentViewSet,
     basename="organization_students",
+)
+user_router.register(
+    "organization-staff",
+    OrganizationStaffViewSet,
+    basename="organization_staff",
 )
 user_router.register("users", UserListViewSet, basename="users")

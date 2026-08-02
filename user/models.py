@@ -79,6 +79,11 @@ class User(AbstractUser):
     is_active = models.BooleanField(default=False)
     status = models.CharField(choices=STATUS_CHOICES, default="pending", max_length=25)
     user_type = models.CharField(max_length=30, choices=Role.choices)
+    is_org_staff = models.BooleanField(
+        default=False,
+        help_text="True for staff users created by an organization admin. "
+        "Staff never receive an automatic monthly token allowance.",
+    )
     email_verified = models.BooleanField(default=False)
     password_last_changed = models.DateTimeField(null=True, blank=True)
     keep_me_logged_in = models.BooleanField(default=False)
@@ -157,11 +162,16 @@ class User(AbstractUser):
         self.full_name = f"{self.first_name} {self.last_name}".strip()
         super().save(*args, **kwargs)
 
-        if not skip_group_assignment:
+        # Organization staff are identity-only by design: they never receive an
+        # automatic default role group on ANY save. Roles are assigned later by
+        # the org owner via assign-user-group. The skip_group_assignment flag
+        # remains for callers who want to opt out explicitly, but the
+        # is_org_staff guard is the durable boundary that keeps staff group-less
+        # across every save path (creation, activation, profile/password flows).
+        if not skip_group_assignment and not self.is_org_staff:
             self.assign_group_based_on_role()
 
     def assign_group_based_on_role(self):
-        """Assign user to corresponding group based on user_type"""
         role_group_mapping = {
             self.Role.STUDENT: "Student",
             self.Role.PARENT: "Parent",
@@ -176,10 +186,8 @@ class User(AbstractUser):
         if group_name:
             try:
                 group = CustomGroup.objects.get(name=group_name)
-                self.groups.remove(
-                    *CustomGroup.objects.filter(name__in=role_group_mapping.values())
-                )
-                self.groups.add(group)
+                if not self.groups.exists():
+                    self.groups.add(group)
             except CustomGroup.DoesNotExist:
                 pass
 

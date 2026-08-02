@@ -10,6 +10,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from user.models import (AuthGroupPermissionsModel, CustomGroup, RoleFamily,
                          User)
+from user.permissions import IsAdminOrProvider, is_admin_user
 from utils.pagination import Pagination
 from utils.role_permission import (get_group_permission_by_user,
                                    get_permission_by_group_ids,
@@ -25,6 +26,14 @@ class GroupViewSet(ModelViewSet):
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["id", "name", "sequence"]
     ordering_fields = ["id", "name", "sequence"]
+
+    def get_permissions(self):
+        perms = super().get_permissions()
+        # Role/group management is owner-only: org staff are managed users and
+        # must not create or alter groups.
+        if self.action in ("create", "update", "partial_update", "destroy"):
+            perms = perms + [IsAdminOrProvider()]
+        return perms
 
     def list(self, request, *args, **kwargs):
         user = request.user
@@ -141,11 +150,52 @@ class GroupViewSet(ModelViewSet):
 class AssignUserGroupViewSet(ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = CustomGroupSerializers
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminOrProvider]
 
     def create(self, request, *args, **kwargs):
         user_ids = request.data.get("user_id")
         user_list = User.objects.filter(pk__in=user_ids)
         group_id = request.data.get("group_id")
+
+        # ── Authorization gate ────────────────────────────────────────────────
+        # Super admins/staff (is_admin_user) can assign any group to any user.
+        # Organization users may only assign groups they created to users they
+        # created.
+        if not is_admin_user(request.user):
+            if request.user.user_type not in [
+                User.Role.INSTITUTE,
+                User.Role.SCHOOL_COLLEGE,
+                User.Role.CORPORATE,
+            ]:
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Only organization users can assign groups",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            if not CustomGroup.objects.filter(
+                id=group_id, created_by=request.user
+            ).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Group not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            if user_list.exclude(created_by=request.user).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "You can only assign groups to users you created",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         try:
             group = Group.objects.get(pk=group_id)
         except Group.DoesNotExist:
@@ -397,10 +447,28 @@ class GetGroupPermissionViewSet(ModelViewSet):
 class AssignPermissionGroupViewSet(ModelViewSet):
     queryset = Permission.objects.all()
     serializer_class = PermissionSerializers
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminOrProvider]
 
     def create(self, request, *args, **kwargs):
         group_id = request.data.get("group_id")
         codename_list = list(request.data.get("codename"))
+
+        # ── Authorization gate ────────────────────────────────────────────────
+        # Super admins/staff (is_admin_user) can assign permissions to any
+        # group. Organization users may only assign permissions to groups they
+        # created.
+        if not is_admin_user(request.user):
+            if not CustomGroup.objects.filter(
+                id=group_id, created_by=request.user
+            ).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Group not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
         group = Group.objects.get(pk=group_id)
         for codename in codename_list:
@@ -459,6 +527,14 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
     filter_backends = [OrderingFilter, SearchFilter]
     ordering_fields = ["name", "sequence"]
     search_fields = ["name"]
+
+    def get_permissions(self):
+        perms = super().get_permissions()
+        # Role creation/editing/deletion is owner-only. Read actions that let a
+        # user inspect their own assigned groups/permissions stay open.
+        if self.action in ("create", "update", "partial_update", "destroy"):
+            perms = perms + [IsAdminOrProvider()]
+        return perms
 
     @action(detail=False, methods=["GET"], url_path="get-group-permission-by-user")
     def get_group_permission_by_user(self, request, *args, **kwargs):
@@ -787,6 +863,21 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
         end_client_id = request.data.get("end_client")
         group_id = kwargs.get("pk")
 
+        # ── Authorization gate ────────────────────────────────────────────────
+        # Super admins/staff (is_admin_user) can update any group.
+        # Organization users may only update groups they created.
+        if not is_admin_user(request.user):
+            if not CustomGroup.objects.filter(
+                id=group_id, created_by=request.user
+            ).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Group not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         role_family_instance = None
         if role_family:
             try:
@@ -798,7 +889,22 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                 )
 
         group_instance = CustomGroup.objects.get(pk=group_id)
-        if company_id:
+
+        # DRF PATCH semantics: identity fields are only updated when the
+        # caller provides them, so a permissions-only PATCH (e.g. clearing
+        # permissions with {"permissions": []}) leaves the role name intact.
+        identity_keys = (
+            "group_name",
+            "role_family",
+            "company",
+            "partner_company",
+            "end_client",
+        )
+        has_identity_update = any(
+            key in request.data for key in identity_keys
+        )
+
+        if has_identity_update and company_id:
             group_exists = (
                 CustomGroup.objects.filter(group_name=group_name, company_id=company_id)
                 .exclude(pk=group_id)
@@ -815,12 +921,13 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
 
             group_instance.name = "company_" + str(company_id) + "_" + group_name
             group_instance.group_name = group_name
-            group_instance.role_family = role_family_instance
+            if "role_family" in request.data:
+                group_instance.role_family = role_family_instance
             group_instance.company_id = company_id
             group_instance.updated_by = request.user
             group_instance.save()
 
-        elif partner_company_id:
+        elif has_identity_update and partner_company_id:
             group_exists = (
                 CustomGroup.objects.filter(
                     group_name=group_name, partner_company_id=partner_company_id
@@ -841,12 +948,13 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                 "partner_company_" + str(partner_company_id) + "_" + group_name
             )
             group_instance.group_name = group_name
-            group_instance.role_family = role_family_instance
+            if "role_family" in request.data:
+                group_instance.role_family = role_family_instance
             group_instance.partner_company_id = partner_company_id
             group_instance.updated_by = request.user
             group_instance.save()
 
-        elif end_client_id:
+        elif has_identity_update and end_client_id:
             group_exists = (
                 CustomGroup.objects.filter(
                     group_name=group_name, end_client_id=end_client_id
@@ -865,12 +973,13 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
 
             group_instance.name = "end_client_" + str(end_client_id) + "_" + group_name
             group_instance.group_name = group_name
-            group_instance.role_family = role_family_instance
+            if "role_family" in request.data:
+                group_instance.role_family = role_family_instance
             group_instance.end_client_id = end_client_id
             group_instance.updated_by = request.user
             group_instance.save()
 
-        else:
+        elif has_identity_update and group_name:
             group_exists = (
                 CustomGroup.objects.filter(
                     group_name=group_name, created_by=request.user
@@ -885,10 +994,20 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                 )
             group_instance.name = group_name
             group_instance.group_name = group_name
+            if "role_family" in request.data:
+                group_instance.role_family = role_family_instance
             group_instance.updated_by = request.user
             group_instance.save()
 
-        if permission_ids:
+        elif has_identity_update and role_family:
+            group_instance.role_family = role_family_instance
+            group_instance.updated_by = request.user
+            group_instance.save()
+
+        # PATCH semantics: only touch permissions when the key is present with
+        # an explicit value. An explicit [] clears them; a missing key or an
+        # explicit null leaves them unchanged.
+        if "permissions" in request.data and permission_ids is not None:
             permissions = Permission.objects.filter(id__in=permission_ids)
             group.permissions.set(permissions)
 
@@ -929,6 +1048,22 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
     @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+
+        # ── Authorization gate ────────────────────────────────────────────────
+        # Super admins/staff (is_admin_user) can delete any group.
+        # Organization users may only delete groups they created.
+        if not is_admin_user(request.user):
+            if not CustomGroup.objects.filter(
+                id=instance.pk, created_by=request.user
+            ).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Group not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         instance.delete()
         instance.save()
         return Response(
@@ -939,7 +1074,7 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
 class DeleteGroupWithPermissionsViewSet(ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = CustomGroupSerializers
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrProvider]
     authentication_classes = [JWTAuthentication]
 
     @transaction.atomic
@@ -951,6 +1086,24 @@ class DeleteGroupWithPermissionsViewSet(ModelViewSet):
                 {"message": "No group IDs provided for deletion."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        # ── Authorization gate ────────────────────────────────────────────────
+        # Super admins/staff (is_admin_user) can archive any group.
+        # Organization users may only archive groups they created.
+        if not is_admin_user(request.user):
+            if (
+                CustomGroup.objects.filter(
+                    id__in=group_ids, created_by=request.user
+                ).count()
+                != len(set(group_ids))
+            ):
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Group not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
         groups = CustomGroup.objects.filter(id__in=group_ids)
         for group in groups:
@@ -972,6 +1125,24 @@ class DeleteGroupWithPermissionsViewSet(ModelViewSet):
                 {"message": "No group IDs provided for deletion."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        # ── Authorization gate ────────────────────────────────────────────────
+        # Super admins/staff (is_admin_user) can restore any group.
+        # Organization users may only restore groups they created.
+        if not is_admin_user(request.user):
+            if (
+                CustomGroup.objects.filter(
+                    id__in=group_ids, created_by=request.user
+                ).count()
+                != len(set(group_ids))
+            ):
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Group not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
         groups = CustomGroup.objects.filter(id__in=group_ids)
         for group in groups:
