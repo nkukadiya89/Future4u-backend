@@ -52,3 +52,10 @@ class InternshipGenerationRateThrottle(PerUserBurstRateThrottle):
 class ProjectRecommendationRateThrottle(PerUserBurstRateThrottle):
     scope = "project_recommendation"
     rate = "10/min"
+
+
+class ProjectRecommendationReadRateThrottle(PerUserBurstRateThrottle):
+    """Cheap DB reads (GET saved recommendations) — generous limit."""
+
+    scope = "project_recommendation_read"
+    rate = "60/min"

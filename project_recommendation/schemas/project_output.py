@@ -15,7 +15,6 @@ class ProjectItem(BaseModel):
     estimated_duration: str = Field(min_length=3, max_length=100)
     industry_relevance: str = Field(min_length=10)
     skills_gained: list[str] = Field(min_length=5, max_length=5)
-    deliverables: list[str] = Field(min_length=5, max_length=5)
     portfolio_value: str = Field(min_length=10)
     why_this_project: str = Field(min_length=10)
 
@@ -30,7 +29,6 @@ class ProjectItem(BaseModel):
     )
     _LIST_FIELDS = (
         "skills_gained",
-        "deliverables",
     )
 
     @field_validator(*_STRING_FIELDS, mode="before")

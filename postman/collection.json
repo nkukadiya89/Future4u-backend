@@ -22203,10 +22203,66 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"assessment_id\": 123\n}"
+              "raw": "{\n  \"assessment_id\": {{assessment_id}}\n}"
             },
             "description": "Generates 3 AI-powered portfolio project ideas using assessment_id. Resolves domain and domain_category from the assessment."
           }
+        },
+        {
+          "name": "get by assessment (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-recommendations/?assessment_id={{assessment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-recommendations",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "assessment_id",
+                  "value": "{{assessment_id}}"
+                }
+              ]
+            },
+            "description": "Get the saved project recommendation for an assessment. Read from the ProjectRecommendation table (saved by generate). 404 if not generated yet."
+          },
+          "response": []
+        },
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/project-recommendations/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "project-recommendations",
+                ""
+              ]
+            },
+            "description": "Paginated list of saved project recommendations for the logged-in user. Supports ?no_pagination=1&page=1&pagesize=10."
+          },
+          "response": []
         }
       ]
     }
@@ -22215,6 +22271,10 @@
     {
       "key": "base_url",
       "value": "http://localhost:8000"
+    },
+    {
+      "key": "assessment_id",
+      "value": ""
     },
     {
       "key": "access_token",

@@ -54,16 +54,7 @@ SYSTEM_PROMPT = (
     "- mode\n"
     "- application_deadline\n\n"
     "Generate ONLY the six fields in the JSON shape above.\n\n"
-    "--- QUALITY EXPECTATIONS ---\n\n"
-    "Each generated field must feel like a real, specific job posting — not a generic template. "
-    "A candidate reading it should immediately understand whether the role fits their background.\n\n"
-    "Avoid:\n"
-    '- Vague descriptions that could describe any job (e.g. "work with a team to deliver projects")\n'
-    '- Responsibilities that are too generic (e.g. "attend meetings", "support the team")\n'
-    "- Skills or education tags that don't connect to the role described\n"
-    "- Padding words in description or why_this_match to hit word counts\n\n"
-    "Be precise: name specific technologies, tools, and domains when the input supports them. "
-    "Be honest: only include details justified by the input.\n\n"
+    "Write specific, role-relevant content — no generic templates, vague phrases, or invented details.\n\n"
     "--- FIELD RULES ---\n\n"
     "name\n"
     "- Realistic, professional job title (3-200 characters) inferred from job_title hint, "
@@ -122,22 +113,6 @@ SYSTEM_PROMPT = (
     "- Do NOT invent specific tools, frameworks, or technologies not mentioned or "
     "strongly implied by the input\n"
     "- Accuracy over completeness — better to have 4 well-chosen skills than 8 mismatched ones\n\n"
-    "--- STRICT VALIDATION (output will be rejected if violated) ---\n"
-    "- Invalid JSON, empty skills/responsibilities/why_this_match, or empty education_tags entries\n"
-    "- Duplicate responsibilities, skills, or education_tags\n"
-    "- education_tags count outside {education_tags_min}-{education_tags_max}\n"
-    "- description not exactly {description_sentence_count} sentences, or outside "
-    "{description_min_words}-{description_max_words} words\n"
-    "- responsibilities count != {responsibilities_count}, or any item outside "
-    "{responsibility_item_min_words}-{responsibility_item_max_words} words\n"
-    "- why_this_match not exactly {why_this_match_sentence_count} sentences, or outside "
-    "{why_this_match_min_words}-{why_this_match_max_words} words\n"
-    "- Placeholder text (TBD, N/A, null, <placeholder>)\n"
-    '- Broken text like ", ," or empty brackets\n'
-    "- Missing fields\n"
-    "- Write in plain, direct recruiter language\n"
-    "- Skills that have no connection to any listed responsibility\n"
-    '- Generic education tags (prefer "B.Tech in Computer Science" over "Bachelor\'s Degree")\n\n'
     "Previous validation feedback (fix these issues): {validation_feedback}"
 ).format(
     description_sentence_count=DESCRIPTION_SENTENCE_COUNT,
@@ -159,17 +134,11 @@ USER_PROMPT = (
     "Generate AI fields for the Future4U Add Job form using the user-provided details below.\n\n"
     "job_title: {job_title}\n"
     "job_overview: {job_overview}\n"
+    "experience_level: {experience_level}\n"
     "--- Company Context ---\n"
     "Company Name: {company_name}\n"
-    "Website: {company_website}\n"
     "About Company: {company_about_us}\n"
     "---\n"
-    "city: {city}\n"
-    "salary_range: {salary_range}\n"
-    "job_type: {job_type}\n"
-    "experience_level: {experience_level}\n"
-    "mode: {mode}\n"
-    "application_deadline: {application_deadline}\n"
 )
 
 

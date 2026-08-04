@@ -26,7 +26,10 @@ from project_recommendation.exceptions import (
     ProjectRecommendationConfigurationError,
     ProjectRecommendationValidationError,
 )
-from project_recommendation.models import ProjectRecommendationPanel
+from project_recommendation.models import (
+    ProjectRecommendation,
+    ProjectRecommendationPanel,
+)
 from project_recommendation.services.project_service import ProjectRecommendationService
 from user.models import User
 
@@ -103,6 +106,104 @@ class ProjectRecommendationRunForm(forms.Form):
                 )
         
         return assessment_id
+
+
+@admin.register(ProjectRecommendation)
+class ProjectRecommendationAdmin(admin.ModelAdmin):
+    """View/edit saved AI project recommendation responses."""
+
+    list_display = (
+        "id",
+        "profile_type",
+        "user",
+        "assessment_link",
+        "domain",
+        "education_level",
+        "token_usage",
+        "last_recommended_at",
+        "deleted",
+        "created_at",
+    )
+    list_filter = ("profile_type", "deleted", "last_recommended_at", "created_at")
+    search_fields = (
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+        "domain",
+        "domain_category",
+    )
+    raw_id_fields = (
+        "user",
+        "student_assessment",
+        "parent_assessment",
+        "professional_assessment",
+    )
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+        "created_by",
+        "updated_by",
+        "deleted_at",
+        "deleted_by",
+        "raw_ai_response",
+    )
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "profile_type",
+                    "user",
+                    "student_assessment",
+                    "parent_assessment",
+                    "professional_assessment",
+                    "domain",
+                    "domain_category",
+                    "education_level",
+                    "token_usage",
+                    "last_recommended_at",
+                    "deleted",
+                )
+            },
+        ),
+        (
+            "AI payload",
+            {
+                "classes": ("collapse",),
+                "fields": ("raw_ai_response",),
+            },
+        ),
+        (
+            "Audit",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "created_at",
+                    "updated_at",
+                    "created_by",
+                    "updated_by",
+                    "deleted_at",
+                    "deleted_by",
+                ),
+            },
+        ),
+    )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            "user",
+            "student_assessment",
+            "parent_assessment",
+            "professional_assessment",
+        )
+
+    @admin.display(description="Assessment")
+    def assessment_link(self, obj):
+        return (
+            obj.student_assessment_id
+            or obj.parent_assessment_id
+            or obj.professional_assessment_id
+        )
 
 
 @admin.register(ProjectRecommendationPanel)

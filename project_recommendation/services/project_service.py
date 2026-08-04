@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import Any
+
+from django.utils import timezone
 
 from assessment.models import (
     ParentAssessment,
@@ -8,7 +11,12 @@ from assessment.models import (
     StudentAssessment,
 )
 from project_recommendation.exceptions import ProjectRecommendationAccessDeniedError
+from project_recommendation.models import ProjectRecommendation
 from project_recommendation.services.project_generator import ProjectGenerator
+
+# One AI generation per assessment, refreshed yearly from the project
+# recommendation's OWN generation date (independent of any other feature).
+PROJECT_RECOMMENDATION_CYCLE_DAYS = 365
 
 # All assessment models that have domain + domain_category fields
 _ASSESSMENT_MODELS: list[type[StudentAssessment | ParentAssessment | ProfessionalAssessment]] = [
@@ -66,7 +74,142 @@ class ProjectRecommendationService:
             "education_level": education_level,
             "projects": data.get("projects", []),
         }
+
+        self._persist(
+            user=user,
+            assessment=assessment,
+            domain=domain,
+            domain_category=domain_category or domain,
+            education_level=education_level,
+            raw_response=data,
+            token_usage=token_usage,
+        )
         return response, token_usage
+
+    @staticmethod
+    def get_existing(
+        user, assessment_id: int, cycle_days: int = PROJECT_RECOMMENDATION_CYCLE_DAYS
+    ) -> dict[str, Any] | None:
+        """Return the saved recommendation if still within the 365-day cycle.
+
+        A second POST for the same assessment returns the persisted result
+        without calling the LLM again (no token cost). The 365-day count
+        starts from the project recommendation's OWN generation date
+        (`last_recommended_at`) — fully independent of any other feature.
+        When the cycle has expired, a fresh AI generation is allowed.
+        """
+        try:
+            assessment = ProjectRecommendationService._resolve_assessment(
+                user, assessment_id
+            )
+        except ProjectRecommendationAccessDeniedError:
+            return None
+
+        relation_kwargs = ProjectRecommendationService._assessment_relation_kwargs(
+            assessment
+        )
+        record = (
+            ProjectRecommendation.objects.filter(**relation_kwargs, deleted=False)
+            .order_by("-last_recommended_at", "-id")
+            .first()
+        )
+        if record is None:
+            return None
+
+        # 365-day count starts from the project recommendation's OWN generation
+        # date — no other feature (e.g. career recommendation) is involved.
+        anchor = record.last_recommended_at
+        if anchor is None:
+            return None  # no anchor -> allow a fresh AI generation
+
+        next_allowed = anchor + timedelta(days=cycle_days)
+        if timezone.now() >= next_allowed:
+            return None  # expired cycle -> allow a fresh AI generation
+
+        raw = record.raw_ai_response
+        return {
+            "domain": record.domain,
+            "domain_category": record.domain_category,
+            "assessment_id": assessment_id,
+            "education_level": record.education_level,
+            "projects": (
+                raw.get("projects", []) if isinstance(raw, dict) else []
+            ),
+        }
+
+    @staticmethod
+    def _assessment_relation_kwargs(assessment) -> dict[str, Any]:
+        """Return the profile_type + FK kwarg for the given assessment type."""
+        if isinstance(assessment, StudentAssessment):
+            return {
+                "profile_type": ProjectRecommendation.ProfileType.STUDENT,
+                "student_assessment": assessment,
+            }
+        if isinstance(assessment, ParentAssessment):
+            return {
+                "profile_type": ProjectRecommendation.ProfileType.PARENT,
+                "parent_assessment": assessment,
+            }
+        return {
+            "profile_type": ProjectRecommendation.ProfileType.PROFESSIONAL,
+            "professional_assessment": assessment,
+        }
+
+    @staticmethod
+    def _persist(
+        *,
+        user,
+        assessment,
+        domain: str,
+        domain_category: str,
+        education_level: str,
+        raw_response: dict[str, Any],
+        token_usage: int,
+    ) -> ProjectRecommendation:
+        """Upsert the full AI response — one row per assessment."""
+        relation_kwargs = ProjectRecommendationService._assessment_relation_kwargs(
+            assessment
+        )
+        now = timezone.now()
+
+        existing = ProjectRecommendation.objects.filter(
+            **relation_kwargs, deleted=False
+        ).first()
+        if existing:
+            existing.domain = domain
+            existing.domain_category = domain_category
+            existing.education_level = education_level
+            existing.raw_ai_response = raw_response
+            existing.token_usage = token_usage
+            existing.last_recommended_at = now
+            existing._request_user = user
+            existing.save(
+                update_fields=[
+                    "domain",
+                    "domain_category",
+                    "education_level",
+                    "raw_ai_response",
+                    "token_usage",
+                    "last_recommended_at",
+                    "updated_at",
+                    "updated_by",
+                ]
+            )
+            return existing
+
+        record = ProjectRecommendation(
+            user=user,
+            **relation_kwargs,
+            domain=domain,
+            domain_category=domain_category,
+            education_level=education_level,
+            raw_ai_response=raw_response,
+            token_usage=token_usage,
+            last_recommended_at=now,
+        )
+        record._request_user = user
+        record.save()
+        return record
 
     @staticmethod
     def _resolve_assessment(user, assessment_id: int):

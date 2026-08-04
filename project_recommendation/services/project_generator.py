@@ -46,7 +46,7 @@ class ProjectGenerator:
         ensure_configured()
 
         prompt = build_project_prompt()
-        llm = get_chat_model(max_tokens=2000)
+        llm = get_chat_model(max_tokens=900)
         last_error: ProjectRecommendationValidationError | None = None
         validation_feedback = "None"
 
