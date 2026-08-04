@@ -1,11 +1,17 @@
 from education_level.serializers import EducationLevelDropdownSerializer
-from .models import Internship,InternshipApplication,Job, JobApplication
 from rest_framework import serializers
 
 from common.serializers import BaseModelSerializer
 from user.models import User
 
-from .models import Internship, InternshipApplication, Job, JobApplication
+from .models import (
+    Internship,
+    InternshipApplication,
+    InternshipApplicationNote,
+    Job,
+    JobApplication,
+    JobApplicationNote,
+)
 
 
 class InternshipSerializer(BaseModelSerializer):
@@ -230,3 +236,27 @@ class JobApplicationSerializer(BaseModelSerializer):
             "applicant",
             "applied_at",
         ]
+
+
+class InternshipApplicationNoteSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = InternshipApplicationNote
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "application",
+            "note",
+        ]
+        read_only_fields = ["application"]
+
+
+class JobApplicationNoteSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = JobApplicationNote
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "application",
+            "note",
+        ]
+        read_only_fields = ["application"]

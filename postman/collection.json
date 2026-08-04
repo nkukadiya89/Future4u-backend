@@ -16325,7 +16325,7 @@
                 "{{base_url}}"
               ],
               "path": [
-                "admin-working-professional-users"
+                "/api/professional-profile/"
               ]
             }
           },
@@ -17322,6 +17322,87 @@
                 ""
               ]
             }
+          },
+          "response": []
+        },
+        {
+          "name": "subscriptions archive-list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/archive-list/?page=1&pagesize=10&search=&ordering=-deleted_at",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions",
+                "archive-list",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "ordering",
+                  "value": "-deleted_at"
+                }
+              ]
+            },
+            "description": "List archived (soft-deleted) subscription packages. Paginated.\n\nGET /api/v1/subscriptions/archive-list/\n\nAccess: superuser (or users with the subscription.view_subscription permission)."
+          },
+          "response": []
+        },
+        {
+          "name": "subscriptions restore (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/{{subscription_id}}/restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions",
+                "{{subscription_id}}",
+                "restore",
+                ""
+              ]
+            },
+            "description": "Restore an archived (soft-deleted) subscription package. The record must currently be archived (deleted=true).\n\nPATCH /api/v1/subscriptions/{id}/restore/\n\nAccess: superuser (or users with the subscription.change_subscription permission)."
           },
           "response": []
         },
@@ -18617,7 +18698,7 @@
                 {
                   "key": "search",
                   "value": "",
-                  "description": "Search archived internships"
+                  "description": "Search archived courses"
                 },
                 {
                   "key": "ordering",
@@ -19016,12 +19097,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/job/archive-list/?page=1&pagesize=10&search=&ordering=-deleted_at",
+              "raw": "{{base_url}}/course-inquiry/archive-list/?page=1&pagesize=10&search=&ordering=-deleted_at",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "job",
+                "course-inquiry",
                 "archive-list",
                 ""
               ],
@@ -19037,7 +19118,7 @@
                 {
                   "key": "search",
                   "value": "",
-                  "description": "Search archived jobs"
+                  "description": "Search archived course inquiries"
                 },
                 {
                   "key": "ordering",
@@ -19045,7 +19126,7 @@
                 }
               ]
             },
-            "description": "List archived jobs (deleted=true)."
+            "description": "List archived course inquiries (deleted=true)."
           },
           "response": []
         },
@@ -19457,7 +19538,7 @@
                 {
                   "key": "search",
                   "value": "",
-                  "description": "Search archived courses"
+                  "description": "Search archived internships"
                 },
                 {
                   "key": "ordering",
@@ -19465,7 +19546,7 @@
                 }
               ]
             },
-            "description": "List archived courses (deleted=true)."
+            "description": "List archived internships (deleted=true)."
           },
           "response": []
         },
@@ -19920,7 +20001,7 @@
                 {
                   "key": "search",
                   "value": "",
-                  "description": "Search archived course inquiries"
+                  "description": "Search archived jobs"
                 },
                 {
                   "key": "ordering",
@@ -19928,7 +20009,7 @@
                 }
               ]
             },
-            "description": "List archived course inquiries (deleted=true)."
+            "description": "List archived jobs (deleted=true)."
           },
           "response": []
         },
@@ -20679,6 +20760,474 @@
       ]
     },
     {
+      "name": "job_application_notes",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job-applications/{{job_application_id}}/notes/?page=1&pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job-applications",
+                "{{job_application_id}}",
+                "notes",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "List notes for the given job application.\n\nAccess: superuser sees all; corporate users see only notes on applications of their own jobs.\n404 if the application id is invalid or deleted."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || (json.results && json.results.data) || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('job_application_note_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job-applications/{{job_application_id}}/notes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job-applications",
+                "{{job_application_id}}",
+                "notes",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Called the student, interested in weekend batch.\"\n}"
+            },
+            "description": "Add a note to a job application. The application id comes from the URL.\n\nRequired: note.\ncreated_by and created_at are set from the authenticated user.\n\nAccess: superuser, or corporate users for applications of their own jobs.\n\nResponse: { success, message, data }\n404 if the application id is invalid, deleted, or belongs to another organization."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const row = json.data;",
+                  "    if (row && row.id != null) pm.collectionVariables.set('job_application_note_id', String(row.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job-applications/{{job_application_id}}/notes/{{job_application_note_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job-applications",
+                "{{job_application_id}}",
+                "notes",
+                "{{job_application_note_id}}",
+                ""
+              ]
+            },
+            "description": "Retrieve a single note.\n\nAccess: superuser, or corporate users for notes on applications of their own jobs.\n404 if the note id is invalid or belongs to another organization."
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job-applications/{{job_application_id}}/notes/{{job_application_note_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job-applications",
+                "{{job_application_id}}",
+                "notes",
+                "{{job_application_note_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Fully replaced note text.\"\n}"
+            },
+            "description": "Full replace: PUT requires the complete note body.\n\nOnly the note's creator (or a superuser) can update it. Returns 403 otherwise.\n\nResponse: { success, message, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job-applications/{{job_application_id}}/notes/{{job_application_note_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job-applications",
+                "{{job_application_id}}",
+                "notes",
+                "{{job_application_note_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Updated note text.\"\n}"
+            },
+            "description": "Partial update: only the fields you send are changed.\n\nOnly the note's creator (or a superuser) can update it. Returns 403 otherwise.\n\nResponse: { success, message, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "destroy (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/job-applications/{{job_application_id}}/notes/{{job_application_note_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "job-applications",
+                "{{job_application_id}}",
+                "notes",
+                "{{job_application_note_id}}",
+                ""
+              ]
+            },
+            "description": "Soft-deletes the note. Only the note's creator (or a superuser) can delete it.\n\nReturns 403 otherwise, and 400 if the note is already archived.\n\nResponse: { success, message }"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "internship_application_notes",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship-applications/{{internship_application_id}}/notes/?page=1&pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship-applications",
+                "{{internship_application_id}}",
+                "notes",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "List notes for the given internship application.\n\nAccess: superuser sees all; institute / corporate users see only notes on applications of their own internships.\n404 if the application id is invalid or deleted."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || (json.results && json.results.data) || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('internship_application_note_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship-applications/{{internship_application_id}}/notes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship-applications",
+                "{{internship_application_id}}",
+                "notes",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Called the student, interested in weekend batch.\"\n}"
+            },
+            "description": "Add a note to a internship application. The application id comes from the URL.\n\nRequired: note.\ncreated_by and created_at are set from the authenticated user.\n\nAccess: superuser, or institute / corporate users for applications of their own internships.\n\nResponse: { success, message, data }\n404 if the application id is invalid, deleted, or belongs to another organization."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const row = json.data;",
+                  "    if (row && row.id != null) pm.collectionVariables.set('internship_application_note_id', String(row.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship-applications/{{internship_application_id}}/notes/{{internship_application_note_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship-applications",
+                "{{internship_application_id}}",
+                "notes",
+                "{{internship_application_note_id}}",
+                ""
+              ]
+            },
+            "description": "Retrieve a single note.\n\nAccess: superuser, or institute / corporate users for notes on applications of their own internships.\n404 if the note id is invalid or belongs to another organization."
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship-applications/{{internship_application_id}}/notes/{{internship_application_note_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship-applications",
+                "{{internship_application_id}}",
+                "notes",
+                "{{internship_application_note_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Fully replaced note text.\"\n}"
+            },
+            "description": "Full replace: PUT requires the complete note body.\n\nOnly the note's creator (or a superuser) can update it. Returns 403 otherwise.\n\nResponse: { success, message, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship-applications/{{internship_application_id}}/notes/{{internship_application_note_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship-applications",
+                "{{internship_application_id}}",
+                "notes",
+                "{{internship_application_note_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Updated note text.\"\n}"
+            },
+            "description": "Partial update: only the fields you send are changed.\n\nOnly the note's creator (or a superuser) can update it. Returns 403 otherwise.\n\nResponse: { success, message, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "destroy (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/internship-applications/{{internship_application_id}}/notes/{{internship_application_note_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "internship-applications",
+                "{{internship_application_id}}",
+                "notes",
+                "{{internship_application_note_id}}",
+                ""
+              ]
+            },
+            "description": "Soft-deletes the note. Only the note's creator (or a superuser) can delete it.\n\nReturns 403 otherwise, and 400 if the note is already archived.\n\nResponse: { success, message }"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "internship_application",
       "item": [
         {
@@ -21240,6 +21789,240 @@
       ]
     },
     {
+      "name": "course_inquiry_notes",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiries/{{course_inquiry_id}}/notes/?page=1&pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiries",
+                "{{course_inquiry_id}}",
+                "notes",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "List notes for the given course inquiry.\n\nAccess: superuser sees all; school_college / institute users see only notes on inquiries of their own courses.\n404 if the inquiry id is invalid or deleted."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rows = json.data || (json.results && json.results.data) || [];",
+                  "    const first = Array.isArray(rows) ? rows[0] : null;",
+                  "    if (first && first.id != null) pm.collectionVariables.set('course_inquiry_note_id', String(first.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "create (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiries/{{course_inquiry_id}}/notes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiries",
+                "{{course_inquiry_id}}",
+                "notes",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Called the student, interested in weekend batch.\"\n}"
+            },
+            "description": "Add a note to a course inquiry. The inquiry id comes from the URL.\n\nRequired: note.\ncreated_by and created_at are set from the authenticated user.\n\nAccess: superuser, or school_college / institute users for inquiries on their own courses.\n\nResponse: { success, message, data }\n404 if the inquiry id is invalid, deleted, or belongs to another organization."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const row = json.data;",
+                  "    if (row && row.id != null) pm.collectionVariables.set('course_inquiry_note_id', String(row.id));",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "retrieve (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiries/{{course_inquiry_id}}/notes/{{course_inquiry_note_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiries",
+                "{{course_inquiry_id}}",
+                "notes",
+                "{{course_inquiry_note_id}}",
+                ""
+              ]
+            },
+            "description": "Retrieve a single note.\n\nAccess: superuser, or school_college / institute users for notes on inquiries of their own courses.\n404 if the note id is invalid or belongs to another organization."
+          },
+          "response": []
+        },
+        {
+          "name": "update (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiries/{{course_inquiry_id}}/notes/{{course_inquiry_note_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiries",
+                "{{course_inquiry_id}}",
+                "notes",
+                "{{course_inquiry_note_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Fully replaced note text.\"\n}"
+            },
+            "description": "Full replace: PUT requires the complete note body.\n\nOnly the note's creator (or a superuser) can update it. Returns 403 otherwise.\n\nResponse: { success, message, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "partial_update (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiries/{{course_inquiry_id}}/notes/{{course_inquiry_note_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiries",
+                "{{course_inquiry_id}}",
+                "notes",
+                "{{course_inquiry_note_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Updated note text.\"\n}"
+            },
+            "description": "Partial update: only the fields you send are changed.\n\nOnly the note's creator (or a superuser) can update it. Returns 403 otherwise.\n\nResponse: { success, message, data }"
+          },
+          "response": []
+        },
+        {
+          "name": "destroy (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/course-inquiries/{{course_inquiry_id}}/notes/{{course_inquiry_note_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "course-inquiries",
+                "{{course_inquiry_id}}",
+                "notes",
+                "{{course_inquiry_note_id}}",
+                ""
+              ]
+            },
+            "description": "Soft-deletes the note. Only the note's creator (or a superuser) can delete it.\n\nReturns 403 otherwise, and 400 if the note is already archived.\n\nResponse: { success, message }"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "ai-course-generation",
       "item": [
         {
@@ -21568,6 +22351,18 @@
     {
       "key": "reset_token",
       "value": ""
+    },
+    {
+      "key": "course_inquiry_note_id",
+      "value": "1"
+    },
+    {
+      "key": "internship_application_note_id",
+      "value": "1"
+    },
+    {
+      "key": "job_application_note_id",
+      "value": "1"
     }
   ]
 }

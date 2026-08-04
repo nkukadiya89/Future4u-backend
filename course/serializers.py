@@ -1,9 +1,10 @@
 from rest_framework import serializers
-from education_level.serializers import EducationLevelDropdownSerializer
-from .models import Courses, CourseInquiry
+
 from common.serializers import BaseModelSerializer
+from education_level.serializers import EducationLevelDropdownSerializer
 from user.models import User
-from .models import CourseInquiry, Courses
+
+from .models import CourseInquiry, CourseInquiryNote, Courses
 
 class CoursesSerializer(BaseModelSerializer):
 
@@ -13,7 +14,6 @@ class CoursesSerializer(BaseModelSerializer):
     city_name = serializers.CharField(source="city.name", read_only=True)
     course_provider_name = serializers.SerializerMethodField()
     education_tags_name = EducationLevelDropdownSerializer(source="education_tags", many=True, read_only=True)
-    # Accept AI-generated course_title as the course name
     course_title = serializers.CharField(
         source="name",
         required=False,
@@ -21,7 +21,6 @@ class CoursesSerializer(BaseModelSerializer):
         help_text="AI-generated course title. Maps to the 'name' field.",
     )
 
-    # Dropdown 1 — type of organisation posting this course
     provider_type = serializers.ChoiceField(
         choices=Courses.PROVIDER_TYPE_CHOICES,
         required=False,
@@ -29,7 +28,6 @@ class CoursesSerializer(BaseModelSerializer):
         allow_blank=True,
     )
 
-    # Dropdown 2 — course provider (institute/school-college user)
     course_provider = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.filter(
             user_type__in=["school_college", "institute"],
@@ -94,10 +92,8 @@ class CoursesSerializer(BaseModelSerializer):
 
     def validate(self, attrs):
         if self.instance:
-            # PATCH request
             name = attrs.get("name", self.instance.name)
         else:
-            # POST request
             name = attrs.get("name")
 
         if not name:
@@ -129,3 +125,15 @@ class CourseInquirySerializer(BaseModelSerializer):
             "career_name",
             "assessment_score",
         ]
+
+class CourseInquiryNoteSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = CourseInquiryNote
+        fields = BaseModelSerializer.Meta.fields+[
+            "id",
+            "inquiry",
+            "note",
+        ]
+        read_only_fields = ["inquiry"]
+

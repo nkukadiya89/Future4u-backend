@@ -36,9 +36,10 @@ class FinancialYearModel(models.Model):
     class Meta:
         db_table = "financial_year"
 
-    def get_current_financial_year(self):
+    @classmethod
+    def get_current_financial_year(cls):
         today = date.today()
-        return FinancialYearModel.objects.filter(
+        return cls.objects.filter(
             start_date__lte=today, end_date__gte=today, deleted=False
         ).first()
 

@@ -108,6 +108,9 @@ class StudentProfileSerializer(
     city_name = serializers.CharField(
         source="user.city.name", read_only=True, default=None
     )
+    address = serializers.CharField(
+        source="user.address", read_only=True, default=None
+    )
     first_name = serializers.CharField(source="user.first_name", read_only=True)
     last_name = serializers.CharField(source="user.last_name", read_only=True)
     phone = serializers.CharField(source="user.phone", read_only=True)
@@ -143,6 +146,7 @@ class StudentProfileSerializer(
             "state_name",
             "city",
             "city_name",
+            "address",
             "medium",
             "first_name",
             "last_name",
@@ -301,7 +305,9 @@ class ProfessionalProfileSerializer(
     city_name = serializers.CharField(
         source="user.city.name", read_only=True, default=None
     )
-
+    address = serializers.CharField(
+        source="user.address", read_only=True, default=None
+    )
     first_name = serializers.CharField(source="user.first_name", read_only=True)
     last_name = serializers.CharField(source="user.last_name", read_only=True)
     phone = serializers.CharField(source="user.phone", read_only=True)
@@ -355,6 +361,7 @@ class ProfessionalProfileSerializer(
             "state_name",
             "city",
             "city_name",
+            "address",
             "employment_type",
             "employment_type_other_text",
             "years_of_experience",

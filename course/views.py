@@ -1,9 +1,6 @@
 from django.db import transaction
 from django.db.models import Q
 from django.db.models.aggregates import Count
-from assessment_career.models import CareerSuggestion
-from common.master_view import BaseModelViewSet
-from course.services import match_courses
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -14,11 +11,12 @@ from rest_framework.response import Response
 from activity_log.services import log_event
 from assessment_career.models import CareerSuggestion
 from common.master_view import BaseModelViewSet
+from common.note_views import BaseLeadNoteViewSet
 from course.services import match_courses
 from user.permissions import IsAdminOrProvider, is_admin_user
 
-from .models import CourseInquiry, Courses
-from .serializers import CourseInquirySerializer, CoursesSerializer
+from .models import CourseInquiry, CourseInquiryNote, Courses
+from .serializers import CourseInquiryNoteSerializer, CourseInquirySerializer, CoursesSerializer
 
 
 class CoursesViewSet(BaseModelViewSet):
@@ -612,3 +610,15 @@ class CourseInquiryViewSet(BaseModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+class CourseInquiryNoteViewSet(BaseLeadNoteViewSet):
+    queryset = CourseInquiryNote.objects.all()
+    serializer_class = CourseInquiryNoteSerializer
+    lead_model = CourseInquiry
+    lead_id_url_param = "inquiry_id"
+    note_lead_field = "inquiry"
+    provider_user_types = ["school_college", "institute"]
+    lead_provider_field_path = "course.course_provider"
+    audit_event_prefix = "course_inquiry_note"
+    lead_display_name = "course inquiry"
+    lead_log_label = "inquiry"

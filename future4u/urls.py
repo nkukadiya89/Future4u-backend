@@ -18,7 +18,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+from course.routers import course_inquiry_note_urls
 from future4u.routers import future4u_router
+from internship_job.routers import (
+    internship_application_note_urls,
+    job_application_note_urls,
+)
 from recommendation.views import RecommendationAPIView, RecommendationChatAPIView
 from user.user_auth import CustomTokenObtainPairView
 from user_profile.views import CorporateDropdownView, MediumChoicesView
@@ -36,6 +41,9 @@ urlpatterns = [
         RecommendationChatAPIView.as_view(),
         name="api-ai-recommendations-chat",
     ),
+    path("", include(course_inquiry_note_urls)),
+    path("", include(internship_application_note_urls)),
+    path("", include(job_application_note_urls)),
     path("", include(future4u_router.urls)),
     path("", include("subscription.urls")),
     path("api/v1/", include("subscription.urls")),
