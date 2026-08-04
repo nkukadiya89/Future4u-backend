@@ -2,7 +2,6 @@ from django.db import transaction
 from django.utils import timezone
 from django.db.models import Q
 from django.db.models.aggregates import Count
-from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
@@ -11,9 +10,14 @@ from rest_framework.response import Response
 from activity_log.services import log_event
 from assessment_career.models import CareerSuggestion
 from common.master_view import BaseModelViewSet
+from common.note_views import BaseLeadNoteViewSet
 from user.permissions import IsAdminOrProvider, is_admin_user
-from .models import Internship, InternshipApplication
-from .serializers import InternshipApplicationSerializer, InternshipSerializer
+from .models import Internship, InternshipApplication, InternshipApplicationNote
+from .serializers import (
+    InternshipApplicationNoteSerializer,
+    InternshipApplicationSerializer,
+    InternshipSerializer,
+)
 from .service import match_internships
 
 # Create your views here.
@@ -696,3 +700,16 @@ class InternshipApplicationViewSet(BaseModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class InternshipApplicationNoteViewSet(BaseLeadNoteViewSet):
+    queryset = InternshipApplicationNote.objects.all()
+    serializer_class = InternshipApplicationNoteSerializer
+    lead_model = InternshipApplication
+    lead_id_url_param = "application_id"
+    note_lead_field = "application"
+    provider_user_types = ["institute", "corporate"]
+    lead_provider_field_path = "internship.internship_provider"
+    audit_event_prefix = "internship_application_note"
+    lead_display_name = "internship application"
+    lead_log_label = "application"

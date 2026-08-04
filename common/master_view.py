@@ -33,6 +33,10 @@ class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
     authentication_classes = [JWTAuthentication]
 
     list_serializer_class = None
+    response_serializer_class = None
+
+    create_message = "Record Created Successfully"
+    update_message = "Updated Successfully"
 
     searching_fields = [
         "created_by__first_name",
@@ -60,6 +64,11 @@ class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
             return self.list_serializer_class
         return super().get_serializer_class()
 
+    def get_response_serializer(self, instance):
+        serializer_class = (self.response_serializer_class or self.get_serializer_class())
+        return serializer_class(instance, context=self.get_serializer_context())
+
+    
     def get_queryset(self):
         queryset = super().get_queryset()
         if self.action not in [
@@ -95,48 +104,48 @@ class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            instance = serializer.save(
-                created_by=request.user,
-                created_at=timezone.now(),
-            )
-            self.log_action(request, instance, "CREATE")
-            return Response(
-                {
-                    "success": True,
-                    "message": "Record Created Successfully",
-                    "data": serializer.data,
-                },
-                status=status.HTTP_201_CREATED,
-            )
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save(
+            created_by=request.user,
+            created_at=timezone.now(),
+        )
+        response_serializer = self.get_response_serializer(instance)
+        self.log_action(request, instance, "CREATE")
         return Response(
-            {"success": False, "message": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST,
+            {
+                "success": True,
+                "message": self.create_message,
+                "data": response_serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
         )
 
     @transaction.atomic
     def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            instance = serializer.save(
-                updated_by=request.user,
-                updated_at=timezone.now(),
-            )
-            self.log_action(request, instance, "UPDATE")
-            return Response(
-                {
-                    "success": True,
-                    "message": "Updated Successfully",
-                    "data": serializer.data,
-                },
-                status=status.HTTP_200_OK,
-            )
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save(
+            updated_by=request.user,
+            updated_at=timezone.now(),
+        )
+        response_serializer = self.get_response_serializer(instance)
+
+        self.log_action(request, instance, "UPDATE")
         return Response(
-            {"success": False, "message": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST,
+            {
+                "success": True,
+                "message": self.update_message,
+                "data": response_serializer.data,
+            },
+            status=status.HTTP_200_OK,
         )
 
+    def partial_update(self, request, *args, **kwargs):
+        kwargs["partial"] = True
+        return self.update(request, *args, **kwargs)
+    
     @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -154,7 +163,7 @@ class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
         instance.save()
 
         if hasattr(self, "log_archive_action"):
-            self.log_archive_action(request, instance=instance, action="ARCHIVE")
+            self.log_archive_action(request, instance, "ARCHIVE")
         return Response(
             {"success": True, "message": "Record Archived Successfully"},
             status=status.HTTP_200_OK,

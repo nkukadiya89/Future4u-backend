@@ -300,3 +300,35 @@ class JobApplication(BaseModule):
             raise
         except Exception as e:
             raise Exception(f"Failed to upload resume: {str(e)}")
+
+
+class InternshipApplicationNote(BaseModule):
+    application = models.ForeignKey(
+        InternshipApplication,
+        on_delete=models.CASCADE,
+        related_name="notes",
+    )
+    note = models.TextField()
+
+    class Meta:
+        db_table = "internship_application_notes"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.application_id} - {self.note[:50]}"
+
+
+class JobApplicationNote(BaseModule):
+    application = models.ForeignKey(
+        JobApplication,
+        on_delete=models.CASCADE,
+        related_name="notes",
+    )
+    note = models.TextField()
+
+    class Meta:
+        db_table = "job_application_notes"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.application_id} - {self.note[:50]}"

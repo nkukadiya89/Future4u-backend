@@ -127,7 +127,8 @@ class SubscriptionWriteSerializer(serializers.ModelSerializer):
                 "duration_days",
             ):
                 validated_data.pop(key, None)
-            instance = Subscription.objects.create(**validated_data, created_by=user)
+            validated_data["created_by"] = user
+            instance = Subscription.objects.create(**validated_data)
         else:
             for attr, value in validated_data.items():
                 if attr not in (
@@ -142,16 +143,25 @@ class SubscriptionWriteSerializer(serializers.ModelSerializer):
             instance.save()
 
         if core_features_data:
+            changed = False
             for item in core_features_data:
                 code = item.get("feature_code", "").strip()
                 status = bool(item.get("feature_status", True))
                 if code == "career_compare":
                     instance.career_compare = status
+                    changed = True
                 elif code == "career_roadmap":
                     instance.career_roadmap = status
+                    changed = True
                 elif code == "ai_chat":
                     instance.ai_chat_access = status
-            instance.save()
+                    changed = True
+            # Save only the columns we changed so creation does not stamp
+            # updated_at via the generic save() update branch.
+            if changed:
+                instance.save(
+                    update_fields=["career_compare", "career_roadmap", "ai_chat_access"]
+                )
 
         PricingService.save(instance, price_data, user, update=is_update)
         FeatureService.sync_custom_features(instance, subs_features, user)

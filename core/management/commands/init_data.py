@@ -348,6 +348,10 @@ class Command(BaseCommand):
             "course|Can delete courses",
             "course|Can view course inquiry",
             "course|Can change course inquiry",
+            "course|Can view course inquiry note",
+            "course|Can add course inquiry note",
+            "course|Can change course inquiry note",
+            "course|Can delete course inquiry note",
         ]
 
         # Institute Permissions - Manage courses, grade students
@@ -371,6 +375,14 @@ class Command(BaseCommand):
             "internship_job|Can delete internship",
             "internship_job|Can view internship application",
             "internship_job|Can change internship application",
+            "internship_job|Can view internship application note",
+            "internship_job|Can add internship application note",
+            "internship_job|Can change internship application note",
+            "internship_job|Can delete internship application note",
+            "course|Can view course inquiry note",
+            "course|Can add course inquiry note",
+            "course|Can change course inquiry note",
+            "course|Can delete course inquiry note",
         ]
 
         # Corporate Permissions - view candidates
@@ -390,8 +402,16 @@ class Command(BaseCommand):
             "internship_job|Can delete internship",
             "internship_job|Can view internship application",
             "internship_job|Can change internship application",
+            "internship_job|Can view internship application note",
+            "internship_job|Can add internship application note",
+            "internship_job|Can change internship application note",
+            "internship_job|Can delete internship application note",
             "internship_job|Can view job application",
             "internship_job|Can change job application",
+            "internship_job|Can view job application note",
+            "internship_job|Can add job application note",
+            "internship_job|Can change job application note",
+            "internship_job|Can delete job application note",
         ]
 
         # Assign superuser to Super Admin group

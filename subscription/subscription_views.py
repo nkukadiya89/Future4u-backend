@@ -3,6 +3,7 @@ import hmac
 import json
 from datetime import timedelta
 
+from django.utils import timezone
 import razorpay
 from decouple import config
 from django.conf import settings
@@ -13,7 +14,8 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-
+from rest_framework import status
+from common.master_view import BaseModelViewSet
 from common.models import FinancialYearModel
 from subscription.models import FeatureUsage
 from subscription.serializers_new import (
@@ -36,72 +38,138 @@ from .models import (
     UserSubscription,
 )
 
-
-class SubscriptionViewSet(ModelViewSet):
-    queryset = Subscription.objects.filter(deleted=False)
+class SubscriptionViewSet(BaseModelViewSet):
+    queryset = Subscription.objects.all()
     serializer_class = SubscriptionAPISerializer
+    list_serializer_class = SubscriptionAPISerializer
+    response_serializer_class = SubscriptionAPISerializer
+
+    create_message = "Subscription Created Successfully"
+    update_message = "Subscription Updated Successfully"
+
+    searching_fields = BaseModelViewSet.searching_fields+[
+        "package_name",
+        "description",
+    ]
+    ordering_fields = [
+        "package_name",
+        "no_of_profile_assessment",
+        "no_of_tokens",
+        "internship_access_type",
+        "no_of_internship_access",
+        "job_portal_access_type",
+        "no_of_job_portal_access",
+        "course_portal_access_type",
+        "no_of_course_portal_access",
+        "project_topic_access_type",
+        "no_of_project_topic_access",
+        "career_compare",
+        "career_roadmap",
+        "ai_chat_access",
+    ]
 
     def get_serializer_class(self):
-        if self.action in ("create", "update", "partial_update"):
+        if self.action in ["create", "update", "partial_update"]:
             return SubscriptionCreateSerializer
         return SubscriptionAPISerializer
 
-    def create(self, request, *args, **kwargs):
-        # Validate with create serializer, respond with clean API serializer
-        create_ser = SubscriptionCreateSerializer(
-            data=request.data, context={"request": request}
-        )
-        create_ser.is_valid(raise_exception=True)
-        instance = create_ser.save()
-        resp_ser = SubscriptionAPISerializer(instance)
+    @action(detail=True, methods=["patch"], url_path="restore")
+    def restore(self, request, pk=None):
+        subscription = Subscription.objects.filter(pk=pk, deleted=True).first()
+
+        if not subscription:
+            return Response(
+                {
+                    "success" : False,
+                    "message" : "Subscription not found.",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        subscription.deleted = False
+        subscription.deleted_at = None
+
+        if hasattr(subscription, "deleted_by"):
+            subscription.deleted_by = None
+
+        subscription.updated_by = request.user
+        subscription.updated_at = timezone.now()
+        subscription.save()
+        response_serializer = self.get_response_serializer(subscription)
         return Response(
             {
-                "success": True,
-                "message": "Subscription package created successfully",
-                "data": resp_ser.data,
+                "success" : True,
+                "message" : "Subscription restored successfully",
+                "data" : response_serializer.data,
             },
-            status=201,
+            status=status.HTTP_200_OK,
         )
 
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        create_ser = SubscriptionCreateSerializer(
-            instance, data=request.data, context={"request": request}
-        )
-        create_ser.is_valid(raise_exception=True)
-        instance = create_ser.save()
-        resp_ser = SubscriptionAPISerializer(instance)
-        return Response(
-            {
-                "success": True,
-                "message": "Subscription package updated successfully",
-                "data": resp_ser.data,
-            },
-        )
 
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        create_ser = SubscriptionCreateSerializer(
-            instance, data=request.data, partial=True, context={"request": request}
-        )
-        create_ser.is_valid(raise_exception=True)
-        instance = create_ser.save()
-        resp_ser = SubscriptionAPISerializer(instance)
-        return Response(
-            {
-                "success": True,
-                "message": "Subscription package updated successfully",
-                "data": resp_ser.data,
-            },
-        )
+# class SubscriptionViewSet(ModelViewSet):
+#     queryset = Subscription.objects.filter(deleted=False)
+#     serializer_class = SubscriptionAPISerializer
 
-    def perform_destroy(self, instance):
-        """Soft-delete: mark as deleted instead of removing from DB."""
-        instance.deleted = True
-        instance.deleted_at = now()
-        if self.request.user.is_authenticated:
-            instance.deleted_by = self.request.user
-        instance.save()
+#     def get_serializer_class(self):
+#         if self.action in ("create", "update", "partial_update"):
+#             return SubscriptionCreateSerializer
+#         return SubscriptionAPISerializer
+
+#     def create(self, request, *args, **kwargs):
+#         # Validate with create serializer, respond with clean API serializer
+#         create_ser = SubscriptionCreateSerializer(
+#             data=request.data, context={"request": request}
+#         )
+#         create_ser.is_valid(raise_exception=True)
+#         instance = create_ser.save()
+#         resp_ser = SubscriptionAPISerializer(instance)
+#         return Response(
+#             {
+#                 "success": True,
+#                 "message": "Subscription package created successfully",
+#                 "data": resp_ser.data,
+#             },
+#             status=201,
+#         )
+
+#     def update(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         create_ser = SubscriptionCreateSerializer(
+#             instance, data=request.data, context={"request": request}
+#         )
+#         create_ser.is_valid(raise_exception=True)
+#         instance = create_ser.save()
+#         resp_ser = SubscriptionAPISerializer(instance)
+#         return Response(
+#             {
+#                 "success": True,
+#                 "message": "Subscription package updated successfully",
+#                 "data": resp_ser.data,
+#             },
+#         )
+
+#     def partial_update(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         create_ser = SubscriptionCreateSerializer(
+#             instance, data=request.data, partial=True, context={"request": request}
+#         )
+#         create_ser.is_valid(raise_exception=True)
+#         instance = create_ser.save()
+#         resp_ser = SubscriptionAPISerializer(instance)
+#         return Response(
+#             {
+#                 "success": True,
+#                 "message": "Subscription package updated successfully",
+#                 "data": resp_ser.data,
+#             },
+#         )
+
+#     def perform_destroy(self, instance):
+#         """Soft-delete: mark as deleted instead of removing from DB."""
+#         instance.deleted = True
+#         instance.deleted_at = now()
+#         if self.request.user.is_authenticated:
+#             instance.deleted_by = self.request.user
+#         instance.save()
 
 
 class UserSubscriptionViewSet(ModelViewSet):
@@ -297,10 +365,18 @@ class SubscriptionInvoiceViewSet(ModelViewSet):
         if invoice.invoice_type == "final":
             return Response({"detail": "Already final"}, status=400)
 
-        with transaction.atomic():
-            # generate invoice number here (use FinancialYearModel)
-            get_current_year = FinancialYearModel.get_current_financial_year()
+        # generate invoice number here (use FinancialYearModel)
+        get_current_year = FinancialYearModel.get_current_financial_year()
+        if not get_current_year:
+            return Response(
+                {
+                    "success": False,
+                    "message": "No active financial year found",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
+        with transaction.atomic():
             last_invoice = (
                 SubscriptionInvoice.objects.select_for_update()
                 .filter(invoice_type="final")

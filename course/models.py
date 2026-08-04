@@ -9,8 +9,6 @@ from common.models import BaseModule
 from country.models import Country
 from state.models import State
 from education_level.models import EducationLevel
-# Create your models here.
-
 
 class Courses(BaseModule):
 
@@ -33,7 +31,6 @@ class Courses(BaseModule):
         ("closed", "Closed"),
     )
 
-    # Which type of organisation is posting this course
     PROVIDER_TYPE_CHOICES = (
         ("school_college", "School / College"),
         ("institute", "Institute"),
@@ -120,3 +117,11 @@ class CourseInquiry(BaseModule):
 
     def __str__(self):
         return f"{self.course.name} - {self.email}"
+
+class CourseInquiryNote(BaseModule):
+    inquiry = models.ForeignKey(CourseInquiry, on_delete=models.CASCADE, related_name="notes")
+    note = models.TextField()
+
+    class Meta:
+        db_table = "course_inquiry_notes"
+        ordering = ["-created_at"]

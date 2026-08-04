@@ -1,9 +1,6 @@
 from django.db import transaction
 from django.db.models import Q
 from django.db.models.aggregates import Count
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from common.master_view import BaseModelViewSet
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -14,10 +11,15 @@ from rest_framework.response import Response
 from activity_log.services import log_event
 from assessment_career.models import CareerSuggestion
 from common.master_view import BaseModelViewSet
+from common.note_views import BaseLeadNoteViewSet
 from user.permissions import IsAdminOrProvider, is_admin_user
 
-from .models import Job, JobApplication
-from .serializers import JobApplicationSerializer, JobSerializer
+from .models import Job, JobApplication, JobApplicationNote
+from .serializers import (
+    JobApplicationNoteSerializer,
+    JobApplicationSerializer,
+    JobSerializer,
+)
 from .service import match_jobs
 
 
@@ -731,3 +733,16 @@ class JobApplicationViewSet(BaseModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class JobApplicationNoteViewSet(BaseLeadNoteViewSet):
+    queryset = JobApplicationNote.objects.all()
+    serializer_class = JobApplicationNoteSerializer
+    lead_model = JobApplication
+    lead_id_url_param = "application_id"
+    note_lead_field = "application"
+    provider_user_types = ["corporate"]
+    lead_provider_field_path = "job.job_provider"
+    audit_event_prefix = "job_application_note"
+    lead_display_name = "job application"
+    lead_log_label = "application"
