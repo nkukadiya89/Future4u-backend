@@ -17,11 +17,9 @@ from .serializers import (
     InternshipApplicationNoteSerializer,
     InternshipApplicationSerializer,
     InternshipSerializer,
+    InternshipSortApplicationSerializer,
 )
 from .service import match_internships
-
-# Create your views here.
-
 
 class InternshipViewSet(BaseModelViewSet):
     def get_queryset(self):
@@ -449,7 +447,11 @@ class InternshipApplicationViewSet(BaseModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        base = InternshipApplication.objects.select_related("internship", "applicant")
+        base = InternshipApplication.objects.select_related("internship", "applicant").prefetch_related(
+            "applicant__student_profile",
+            "applicant__parent_profile",
+            "applicant__professional_profile",
+        )
         if user.is_superuser:
             return base
         if user.user_type in ["institute", "corporate"]:
@@ -637,17 +639,17 @@ class InternshipApplicationViewSet(BaseModelViewSet):
 
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = self.get_serializer(applications, many=True)
+            serializer = InternshipSortApplicationSerializer(applications, many=True)
             return Response({"success": True, "data": serializer.data})
 
         page = self.paginate_queryset(applications)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
+            serializer = InternshipSortApplicationSerializer(page, many=True)
             return self.get_paginated_response(
                 {"success": True, "data": serializer.data}
             )
 
-        serializer = self.get_serializer(applications, many=True)
+        serializer = InternshipSortApplicationSerializer(applications, many=True)
         return Response(
             {
                 "success": True,

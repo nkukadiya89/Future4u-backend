@@ -14973,13 +14973,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/admin-student-users/archive-list/?pagesize=10",
+              "raw": "{{base_url}}/admin-users-archive/?user_type=student&pagesize=10",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "admin-student-users",
-                "archive-list",
+                "admin-users-archive",
                 ""
               ],
               "query": [
@@ -14993,6 +14992,11 @@
                   "value": "10"
                 },
                 {
+                  "key": "user_type",
+                  "value": "student",
+                  "description": "student | school_college | institute | corporate | working_professional"
+                },
+                {
                   "key": "search",
                   "value": "",
                   "disabled": true
@@ -15004,7 +15008,7 @@
                 }
               ]
             },
-            "description": "Admin-only: list archived (soft-deleted) student users (paginated).\n\nGET /admin-student-users/archive-list/\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, search, ordering.\n\n200 response: success, data (array of student users)"
+            "description": "Admin-only: list archived (soft-deleted) student users (paginated).\n\nGET /admin-users-archive/?user_type=student\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of user objects)"
           },
           "response": []
         },
@@ -15591,13 +15595,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/admin-school-colleges-users/archive-list/?pagesize=10",
+              "raw": "{{base_url}}/admin-users-archive/?user_type=school_college&pagesize=10",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "admin-school-colleges-users",
-                "archive-list",
+                "admin-users-archive",
                 ""
               ],
               "query": [
@@ -15611,6 +15614,11 @@
                   "value": "10"
                 },
                 {
+                  "key": "user_type",
+                  "value": "school_college",
+                  "description": "student | school_college | institute | corporate | working_professional"
+                },
+                {
                   "key": "search",
                   "value": "",
                   "disabled": true
@@ -15622,7 +15630,7 @@
                 }
               ]
             },
-            "description": "Admin-only: list archived (soft-deleted) school/college users (paginated).\n\nGET /admin-school-colleges-users/archive-list/\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, search, ordering.\n\n200 response: success, data (array of school/college profiles)"
+            "description": "Admin-only: list archived (soft-deleted) school/college users (paginated).\n\nGET /admin-users-archive/?user_type=school_college\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of user objects)"
           },
           "response": []
         },
@@ -16177,23 +16185,42 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/admin-institute-users/archive-list/?pagesize=10",
+              "raw": "{{base_url}}/admin-users-archive/?user_type=institute&pagesize=10",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "admin-institute-users",
-                "archive-list",
+                "admin-users-archive",
                 ""
               ],
               "query": [
                 {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
                   "key": "pagesize",
                   "value": "10"
+                },
+                {
+                  "key": "user_type",
+                  "value": "institute",
+                  "description": "student | school_college | institute | corporate | working_professional"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "-deleted_at",
+                  "disabled": true
                 }
               ]
             },
-            "description": "Admin-only: list archived institute users (paginated).\n\nGET /admin-institute-users/archive-list/"
+            "description": "Admin-only: list archived (soft-deleted) institute users (paginated).\n\nGET /admin-users-archive/?user_type=institute\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of user objects)"
           },
           "response": []
         },
@@ -16486,6 +16513,60 @@
           "response": []
         },
         {
+          "name": "archive-list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-users-archive/?user_type=working_professional&pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-users-archive",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "user_type",
+                  "value": "working_professional",
+                  "description": "student | school_college | institute | corporate | working_professional"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "-deleted_at",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: list archived (soft-deleted) working professional users (paginated).\n\nGET /admin-users-archive/?user_type=working_professional\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of user objects)"
+          },
+          "response": []
+        },
+        {
           "name": "bulk_archive (PATCH)",
           "request": {
             "method": "PATCH",
@@ -16543,29 +16624,6 @@
             "body": {
               "mode": "raw",
               "raw": "{\"ids\": [1, 2]}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "archive_list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/admin-working-professional-users/archive-list/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "admin-working-professional-users",
-                "archive-list"
-              ]
             }
           },
           "response": []
@@ -16997,23 +17055,42 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/admin-corporate-users/archive-list/?pagesize=10",
+              "raw": "{{base_url}}/admin-users-archive/?user_type=corporate&pagesize=10",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "admin-corporate-users",
-                "archive-list",
+                "admin-users-archive",
                 ""
               ],
               "query": [
                 {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
                   "key": "pagesize",
                   "value": "10"
+                },
+                {
+                  "key": "user_type",
+                  "value": "corporate",
+                  "description": "student | school_college | institute | corporate | working_professional"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "-deleted_at",
+                  "disabled": true
                 }
               ]
             },
-            "description": "Admin-only: list archived corporate users (paginated).\n\nGET /admin-corporate-users/archive-list/"
+            "description": "Admin-only: list archived (soft-deleted) corporate users (paginated).\n\nGET /admin-users-archive/?user_type=corporate\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of user objects)"
           },
           "response": []
         },

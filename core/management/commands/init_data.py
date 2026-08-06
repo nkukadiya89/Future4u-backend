@@ -40,22 +40,26 @@ class Command(BaseCommand):
     help = "Load country data into country database"
 
     def add_arguments(self, parser) -> None:
-        parser.add_argument("--country", type=bool, help="Country data to be uploaded")
+        parser.add_argument("--country", action="store_true", help="Country data to be uploaded")
         parser.add_argument(
-            "--zone_name", type=bool, help="ZoneName data to be uploaded"
+            "--zone_name", action="store_true", help="ZoneName data to be uploaded"
         )
         parser.add_argument(
-            "--domain", type=bool, help="Domain master data to be uploaded"
+            "--domain", action="store_true", help="Domain master data to be uploaded"
         )
         parser.add_argument(
-            "--education_level", type=bool, help="Education level data to be uploaded"
+            "--education_level",
+            action="store_true",
+            help="Education level data to be uploaded",
         )
         parser.add_argument(
-            "--assessment", type=bool, help="Assessment questions/options to be seeded"
+            "--assessment",
+            action="store_true",
+            help="Assessment questions/options to be seeded",
         )
 
-        parser.add_argument("--groups", type=bool, help="Create Groups")
-        parser.add_argument("--user", type=bool, help="Create Super User")
+        parser.add_argument("--groups", action="store_true", help="Create Groups")
+        parser.add_argument("--user", action="store_true", help="Create Super User")
 
     def handle(self, *args, **kwargs):
         self.stdout.write("Initialise..")
@@ -98,13 +102,13 @@ class Command(BaseCommand):
 
         # If no specific flags, run all initialization
         if (
-            kwargs["country"] is None
-            and kwargs["zone_name"] is None
-            and kwargs["domain"] is None
-            and kwargs["education_level"] is None
-            and kwargs["assessment"] is None
-            and kwargs["groups"] is None
-            and kwargs["user"] is None
+            not kwargs["country"]
+            and not kwargs["zone_name"]
+            and not kwargs["domain"]
+            and not kwargs["education_level"]
+            and not kwargs["assessment"]
+            and not kwargs["groups"]
+            and not kwargs["user"]
         ):
             self.load_business_category()
             admin_user = self.create_super_user()

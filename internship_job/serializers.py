@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from common.serializers import BaseModelSerializer
 from user.models import User
+from user_profile.serializers import get_role_profile
 
 from .models import (
     Internship,
@@ -138,6 +139,37 @@ class InternshipApplicationSerializer(BaseModelSerializer):
     applicant_name = serializers.CharField(source="applicant.full_name", read_only=True)
     applicant_type = serializers.CharField(source="applicant.user_type", read_only=True)
     internship_name = serializers.CharField(source="internship.name", read_only=True)
+    inquirer_profile = serializers.SerializerMethodField()
+
+    def get_inquirer_profile(self, obj):
+        profile, serializer_class = get_role_profile(obj.applicant)
+        if profile is None or serializer_class is None:
+            return None
+        return serializer_class(profile, context=self.context).data
+
+    class Meta:
+        model = InternshipApplication
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "applicant",
+            "applicant_name",
+            "applicant_type",
+            "internship",
+            "internship_name",
+            "resume",
+            "status",
+            "applied_at",
+            "inquirer_profile",
+        ]
+        read_only_fields = [
+            "applicant",
+            "applied_at",
+        ]
+
+class InternshipSortApplicationSerializer(BaseModelSerializer):
+    applicant_name = serializers.CharField(source="applicant.full_name", read_only=True)
+    applicant_type = serializers.CharField(source="applicant.user_type", read_only=True)
+    internship_name = serializers.CharField(source="internship.name", read_only=True)
 
     class Meta:
         model = InternshipApplication
@@ -156,7 +188,6 @@ class InternshipApplicationSerializer(BaseModelSerializer):
             "applicant",
             "applied_at",
         ]
-
 
 class JobSerializer(BaseModelSerializer):
     city_name = serializers.CharField(source="city.name", read_only=True)
@@ -218,6 +249,37 @@ class JobApplicationSerializer(BaseModelSerializer):
     applicant_name = serializers.CharField(source="applicant.full_name", read_only=True)
     applicant_type = serializers.CharField(source="applicant.user_type", read_only=True)
     job_name = serializers.CharField(source="job.name", read_only=True)
+    inquirer_profile = serializers.SerializerMethodField()
+
+    def get_inquirer_profile(self, obj):
+        profile, serializer_class = get_role_profile(obj.applicant)
+        if profile is None or serializer_class is None:
+            return None
+        return serializer_class(profile, context=self.context).data
+
+    class Meta:
+        model = JobApplication
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "applicant",
+            "applicant_name",
+            "applicant_type",
+            "job",
+            "job_name",
+            "resume",
+            "status",
+            "inquirer_profile",
+            "applied_at",
+        ]
+        read_only_fields = [
+            "applicant",
+            "applied_at",
+        ]
+
+class JobSortApplicationSerializer(BaseModelSerializer):
+    applicant_name = serializers.CharField(source="applicant.full_name", read_only=True)
+    applicant_type = serializers.CharField(source="applicant.user_type", read_only=True)
+    job_name = serializers.CharField(source="job.name", read_only=True)
 
     class Meta:
         model = JobApplication
@@ -236,8 +298,6 @@ class JobApplicationSerializer(BaseModelSerializer):
             "applicant",
             "applied_at",
         ]
-
-
 class InternshipApplicationNoteSerializer(BaseModelSerializer):
 
     class Meta:
