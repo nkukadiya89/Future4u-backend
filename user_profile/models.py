@@ -371,8 +371,6 @@ class ProfessionalProfile(models.Model):
             )
 
     current_job_title = models.CharField(max_length=150, null=True, blank=True)
-
-    # JSONField sections for professional profile
     career_direction = models.JSONField(default=list, blank=True, null=True)
     education = models.JSONField(default=list, blank=True, null=True)
     work_experience = models.JSONField(default=list, null=True, blank=True)
@@ -380,8 +378,6 @@ class ProfessionalProfile(models.Model):
     certifications = models.JSONField(default=list, null=True, blank=True)
     key_highlights = models.JSONField(default=list, null=True, blank=True)
     additional_insights = models.JSONField(default=list, null=True, blank=True)
-
-    # Professional links
     linkedin_url = models.CharField(max_length=200, null=True, blank=True)
     github_url = models.CharField(max_length=200, null=True, blank=True)
     portfolio = models.CharField(max_length=200, null=True, blank=True)
@@ -528,6 +524,20 @@ class ChildProfile(models.Model):
     linkedin_url = models.CharField(max_length=200, null=True, blank=True)
     github_url = models.CharField(max_length=200, null=True, blank=True)
     portfolio = models.CharField(max_length=200, null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="child_profiles_created",
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="child_profiles_updated",
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True, blank=True)

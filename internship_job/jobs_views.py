@@ -19,6 +19,7 @@ from .serializers import (
     JobApplicationNoteSerializer,
     JobApplicationSerializer,
     JobSerializer,
+    JobSortApplicationSerializer,
 )
 from .service import match_jobs
 
@@ -469,7 +470,11 @@ class JobApplicationViewSet(BaseModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        base = JobApplication.objects.select_related("applicant", "job")
+        base = JobApplication.objects.select_related("applicant", "job").prefetch_related(
+            "applicant__student_profile",
+            "applicant__parent_profile",
+            "applicant__professional_profile",
+        )
         if user.is_superuser:
             return base
         if user.user_type in ["corporate"]:
@@ -659,17 +664,17 @@ class JobApplicationViewSet(BaseModelViewSet):
 
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = self.get_serializer(applications, many=True)
+            serializer = JobSortApplicationSerializer(applications, many=True)
             return Response({"success": True, "data": serializer.data})
 
         page = self.paginate_queryset(applications)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
+            serializer = JobSortApplicationSerializer(page, many=True)
             return self.get_paginated_response(
                 {"success": True, "data": serializer.data}
             )
 
-        serializer = self.get_serializer(applications, many=True)
+        serializer = JobSortApplicationSerializer(applications, many=True)
         return Response(
             {
                 "success": True,

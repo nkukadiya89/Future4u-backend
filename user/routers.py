@@ -5,6 +5,7 @@ from user.admin_user_views import (
     AdminInstituteViewSet,
     AdminSchoolCollegeViewSet,
     AdminStudentViewSet,
+    AdminUserArchiveViewSet,
     AdminWorkingProfessionalViewSet,
 )
 from user.email_phone_verify import VerifiedOTPViewSet
@@ -109,6 +110,11 @@ user_router.register(
     "admin-working-professional-users",
     AdminWorkingProfessionalViewSet,
     basename="admin_working_professional_users",
+)
+user_router.register(
+    "admin-users-archive",
+    AdminUserArchiveViewSet,
+    basename="admin_users_archive",
 )
 user_router.register(
     "organization-students",

@@ -3,6 +3,7 @@ from rest_framework import serializers
 from common.serializers import BaseModelSerializer
 from education_level.serializers import EducationLevelDropdownSerializer
 from user.models import User
+from user_profile.serializers import get_role_profile
 
 from .models import CourseInquiry, CourseInquiryNote, Courses
 
@@ -107,6 +108,14 @@ class CourseInquirySerializer(BaseModelSerializer):
     user_name = serializers.CharField(source="user.full_name", read_only=True)
     career_name = serializers.CharField(source="career_suggestion.career_name", read_only=True)
     assessment_score = serializers.CharField(source="career_suggestion.match_percentage", read_only=True)
+    user_type = serializers.CharField(source="user.user_type", read_only=True)
+    inquirer_profile = serializers.SerializerMethodField()
+
+    def get_inquirer_profile(self, obj):
+        profile, serializer_class = get_role_profile(obj.user)
+        if profile is None or serializer_class is None:
+            return None
+        return serializer_class(profile, context=self.context).data
 
     class Meta:
         model = CourseInquiry
@@ -116,6 +125,34 @@ class CourseInquirySerializer(BaseModelSerializer):
             "course_name",
             "user",
             "user_name",
+            "user_type",
+            "name",
+            "phone",
+            "email",
+            "message",
+            "status",
+            "career_suggestion",
+            "career_name",
+            "assessment_score",
+            "inquirer_profile",
+        ]
+
+class CourseInquirySortSerializer(BaseModelSerializer):
+    course_name = serializers.CharField(source="course.name", read_only=True)
+    user_name = serializers.CharField(source="user.full_name", read_only=True)
+    career_name = serializers.CharField(source="career_suggestion.career_name", read_only=True)
+    assessment_score = serializers.CharField(source="career_suggestion.match_percentage", read_only=True)
+    user_type = serializers.CharField(source="user.user_type", read_only=True)
+
+    class Meta:
+        model = CourseInquiry
+        fields = BaseModelSerializer.Meta.fields + [
+            "id",
+            "course",
+            "course_name",
+            "user",
+            "user_name",
+            "user_type",
             "name",
             "phone",
             "email",

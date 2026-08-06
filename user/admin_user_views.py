@@ -1,19 +1,17 @@
 import os
 import tempfile
-
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
 from activity_log.services import log_event
 from email_utils.send_email import send_activation_password_setup_email
 from user.admin_corporate_serializers import (
@@ -39,6 +37,7 @@ from user.admin_working_professional_serializers import (
 )
 from user.models import User
 from user.permissions import IsAdminUser
+from user.serializers import UserListSerializer
 from user.services.bulk_user_upload import BulkUserUploadService
 from user.tasks import bulk_upload_user_task
 from user_profile.models import (
@@ -48,13 +47,7 @@ from user_profile.models import (
     SchoolCollegeProfile,
     StudentProfile,
 )
-from user_profile.serializers import (
-    CorporateProfileSerializer,
-    InstituteProfileSerializer,
-    ProfessionalProfileSerializer,
-    SchoolCollegeProfileSerializer,
-    StudentProfileSerializer,
-)
+from utils.pagination import Pagination
 
 
 class BaseAdminProfileViewSet(ModelViewSet):
@@ -66,7 +59,6 @@ class BaseAdminProfileViewSet(ModelViewSet):
     role_name = None
     profile_model = None
     detail_serializer_class = None
-    archive_serializer_class = None
 
     def get_queryset(self):
         return User.objects.filter(
@@ -395,47 +387,6 @@ class BaseAdminProfileViewSet(ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @action(detail=False, methods=["get"], url_path="archive-list")
-    def archive_list(self, request, *args, **kwargs):
-        queryset = (
-            self.profile_model.objects.select_related("user")
-            .filter(
-                user__user_type=self.user_role,
-                user__deleted=True,
-            )
-            .order_by("-user__deleted_at")
-        )
-
-        search = request.query_params.get("search", "").strip()
-        if search:
-            queryset = queryset.filter(
-                Q(user__first_name__icontains=search)
-                | Q(user__last_name__icontains=search)
-                | Q(user__email__icontains=search)
-                | Q(user__phone__icontains=search)
-            )
-
-        page = self.paginate_queryset(queryset)
-
-        if page is not None:
-            serializer = self.archive_serializer_class(page, many=True)
-            return self.get_paginated_response(
-                {
-                    "success": True,
-                    "data": serializer.data,
-                }
-            )
-
-        serializer = self.archive_serializer_class(queryset, many=True)
-
-        return Response(
-            {
-                "success": True,
-                "data": serializer.data,
-            },
-            status=status.HTTP_200_OK,
-        )
-
     @action(detail=False, methods=["patch"], url_path="bulk-restore")
     @transaction.atomic
     def bulk_restore(self, request, *args, **kwargs):
@@ -501,13 +452,6 @@ class BaseAdminProfileViewSet(ModelViewSet):
 
     @action(detail=True, methods=["patch"], url_path="update-tokens")
     def update_tokens(self, request, pk=None):
-        """
-        PATCH /admin-{role}-users/<user_id>/update-tokens/
-
-        Super Admin grants extra monthly tokens to an organization user.
-        The extra_token_limit is accumulated each time this is called.
-        Body: {"extra_token_limit": 5000}
-        """
         extra = request.data.get("extra_token_limit")
         if extra is None or not isinstance(extra, int) or extra < 0:
             return Response(
@@ -538,7 +482,6 @@ class BaseAdminProfileViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Accumulate extra tokens and add to running balance
         profile.extra_token_limit = (profile.extra_token_limit or 0) + extra
         profile.token_limit = (profile.token_limit or 0) + extra
         profile.save(update_fields=["extra_token_limit", "token_limit"])
@@ -631,7 +574,6 @@ class AdminStudentViewSet(BaseAdminProfileViewSet):
     profile_model = StudentProfile
     serializer_class = AdminStudentSerializer
     detail_serializer_class = AdminStudentSortSerializer
-    archive_serializer_class = StudentProfileSerializer
 
 
 class AdminSchoolCollegeViewSet(BaseAdminProfileViewSet):
@@ -640,7 +582,6 @@ class AdminSchoolCollegeViewSet(BaseAdminProfileViewSet):
     profile_model = SchoolCollegeProfile
     serializer_class = AdminSchoolCollegesSerializer
     detail_serializer_class = AdminSchoolCollegeSortSerializer
-    archive_serializer_class = SchoolCollegeProfileSerializer
 
 
 class AdminInstituteViewSet(BaseAdminProfileViewSet):
@@ -649,7 +590,6 @@ class AdminInstituteViewSet(BaseAdminProfileViewSet):
     profile_model = InstituteProfile
     serializer_class = AdminInstituteSerializer
     detail_serializer_class = AdminInstituteSortSerializer
-    archive_serializer_class = InstituteProfileSerializer
 
 
 class AdminCorporateViewSet(BaseAdminProfileViewSet):
@@ -658,7 +598,6 @@ class AdminCorporateViewSet(BaseAdminProfileViewSet):
     profile_model = CorporateProfile
     serializer_class = AdminCorporateSerializer
     detail_serializer_class = AdminCorporateSortSerializer
-    archive_serializer_class = CorporateProfileSerializer
 
 
 class AdminWorkingProfessionalViewSet(BaseAdminProfileViewSet):
@@ -667,4 +606,89 @@ class AdminWorkingProfessionalViewSet(BaseAdminProfileViewSet):
     profile_model = ProfessionalProfile
     serializer_class = AdminWorkingProfessionalSerializer
     detail_serializer_class = AdminWorkingProfessionalSortSerializer
-    archive_serializer_class = ProfessionalProfileSerializer
+
+class AdminUserArchiveViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    authentication_classes = [JWTAuthentication]
+    pagination_class = Pagination
+    serializer_class = UserListSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+    http_method_names = ["get", "head", "options"]
+
+    search_fields = [
+        "id",
+        "first_name",
+        "last_name",
+        "full_name",
+        "email",
+        "phone",
+        "user_type",
+        "states__name",
+        "city__name",
+        "deleted_by__first_name",
+        "deleted_by__last_name",
+        "deleted_by__full_name",
+        "deleted_at",
+    ]
+
+    ordering_fields = [
+        "id",
+        "first_name",
+        "last_name",
+        "full_name",
+        "email",
+        "phone",
+        "user_type",
+        "states",
+        "city",
+        "deleted_by",
+        "deleted_at",
+        "created_at",
+    ]
+
+    def get_queryset(self):
+        queryset = (
+            User.objects.filter(deleted=True)
+            .select_related(
+                "country",
+                "states",
+                "city",
+                "created_by",
+                "updated_by",
+                "deleted_by",
+            )
+            .order_by("-deleted_at")
+        )
+
+        user_type = self.request.query_params.get("user_type")
+        if user_type:
+            queryset = queryset.filter(user_type=user_type)
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        no_pagination = request.query_params.get("no_pagination")
+        if no_pagination:
+            serializer = UserListSerializer(queryset, many=True)
+            return Response({"success": True, "data": serializer.data})
+
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = UserListSerializer(page, many=True)
+            return self.get_paginated_response(
+                {
+                    "success": True,
+                    "data": serializer.data,
+                }
+            )
+
+        serializer = UserListSerializer(queryset, many=True)
+        return Response(
+            {
+                "success": True,
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
