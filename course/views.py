@@ -16,7 +16,7 @@ from course.services import match_courses
 from user.permissions import IsAdminOrProvider, is_admin_user
 
 from .models import CourseInquiry, CourseInquiryNote, Courses
-from .serializers import CourseInquiryNoteSerializer, CourseInquirySerializer, CoursesSerializer
+from .serializers import CourseInquiryNoteSerializer, CourseInquirySerializer, CoursesSerializer, CourseInquirySortSerializer
 
 
 class CoursesViewSet(BaseModelViewSet):
@@ -427,7 +427,11 @@ class CourseInquiryViewSet(BaseModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        base = CourseInquiry.objects.select_related("course")
+        base = CourseInquiry.objects.select_related("course", "user").prefetch_related(
+            "user__student_profile",
+            "user__parent_profile",
+            "user__professional_profile",
+        )
         if user.is_superuser:
             return base
         if user.user_type in ["school_college", "institute"]:
@@ -551,17 +555,17 @@ class CourseInquiryViewSet(BaseModelViewSet):
 
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = self.get_serializer(inquiries, many=True)
+            serializer = CourseInquirySortSerializer(inquiries, many=True)
             return Response({"success": True, "data": serializer.data})
 
         page = self.paginate_queryset(inquiries)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
+            serializer =CourseInquirySortSerializer(page, many=True)
             return self.get_paginated_response(
                 {"success": True, "data": serializer.data}
             )
 
-        serializer = self.get_serializer(inquiries, many=True)
+        serializer = CourseInquirySortSerializer(inquiries, many=True)
         return Response(
             {
                 "success": True,

@@ -69,7 +69,65 @@ class ChildProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     pagination_class = Pagination
+    filter_backends = [SearchFilter, OrderingFilter]
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+
+    search_fields = [
+        "parent_profile__user__first_name",
+        "parent_profile__user__last_name",
+        "parent_profile__user__full_name",
+        "parent_profile__user__phone",
+        "parent_profile__user__email",
+        "first_name",
+        "last_name",
+        "phone",
+        "email",
+        "academic_performance",
+        "education_level__level_code",
+        "education_level__display_name",
+        "stream__stream_code",
+        "stream__stream_name",
+        "linkedin_url",
+        "github_url",
+        "portfolio",
+        "skills",
+        "projects",
+        "internships",
+        "certifications",
+        "achievements",
+        "extra_activities",
+        "additional_insights",
+        # Audit fields (same format as BaseModelViewSet.searching_fields)
+        "created_by__first_name",
+        "created_by__last_name",
+        "created_by__full_name",
+        "created_at",
+        "updated_by__first_name",
+        "updated_by__last_name",
+        "updated_by__full_name",
+        "updated_at",
+    ]
+
+    ordering_fields = [
+        "id",
+        "parent_profile",
+        "first_name",
+        "last_name",
+        "date_of_birth",
+        "academic_performance",
+        "education_level",
+        "stream",
+        "phone",
+        "email",
+        "linkedin_url",
+        "github_url",
+        "portfolio",
+        # Audit fields (same format as BaseModelViewSet.ordering_fields)
+        "created_by",
+        "created_at",
+        "updated_by",
+        "updated_at",
+    ]
 
     def get_queryset(self):
         return (
@@ -147,7 +205,10 @@ class ChildProfileViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        child = serializer.save(parent_profile=parent_profile)
+        child = serializer.save(
+            parent_profile=parent_profile,
+            created_by=request.user,
+        )
 
         profile_image_file = request.FILES.get("profile_image")
         if profile_image_file:
@@ -184,6 +245,9 @@ class ChildProfileViewSet(ModelViewSet):
             )
 
         child = serializer.save()
+        child.updated_by = request.user
+        child.updated_at = timezone.now()
+        child.save(update_fields=["updated_by", "updated_at"])
 
         profile_image_file = request.FILES.get("profile_image")
         if profile_image_file:
@@ -601,6 +665,8 @@ class StudentProfileViewSet(ModelViewSet):
         "user__city__name",
         "user__first_name",
         "user__last_name",
+        "user__full_name",
+        "user__designation",
         "user__phone",
         "user__email",
         "medium",
@@ -614,11 +680,19 @@ class StudentProfileViewSet(ModelViewSet):
         "achievements",
         "additional_insights",
         "extra_activities",
+        # Audit fields (same format as BaseModelViewSet.searching_fields)
+        "user__created_by__first_name",
+        "user__created_by__last_name",
+        "user__created_by__full_name",
+        "user__created_at",
+        "updated_by__first_name",
+        "updated_by__last_name",
+        "updated_by__full_name",
+        "updated_at",
     ]
     ordering_fields = [
         "id",
         "user",
-        "language",
         "medium",
         "education_level",
         "stream",
@@ -634,6 +708,10 @@ class StudentProfileViewSet(ModelViewSet):
         "linkedin_url",
         "github_url",
         "portfolio",
+        # Audit fields (same format as BaseModelViewSet.ordering_fields)
+        "user__created_by",
+        "user__created_at",
+        "updated_by",
         "updated_at",
     ]
 
@@ -796,6 +874,8 @@ class ProfessionalProfileViewSet(ModelViewSet):
         "user__city__name",
         "user__first_name",
         "user__last_name",
+        "user__full_name",
+        "user__designation",
         "user__phone",
         "user__email",
         "employment_type",
@@ -805,10 +885,14 @@ class ProfessionalProfileViewSet(ModelViewSet):
         "linkedin_url",
         "github_url",
         "portfolio",
-        "skills",
-        "certifications",
-        "key_highlights",
-        "additional_insights",
+        "user__created_by__first_name",
+        "user__created_by__last_name",
+        "user__created_by__full_name",
+        "user__created_at",
+        "updated_by__first_name",
+        "updated_by__last_name",
+        "updated_by__full_name",
+        "updated_at",
     ]
 
     ordering_fields = [
@@ -822,9 +906,19 @@ class ProfessionalProfileViewSet(ModelViewSet):
         "current_industry",
         "education_level",
         "stream",
+        "career_direction",
+        "education",
+        "work_experience",
+        "skills",
+        "certifications",
+        "key_highlights",
+        "additional_insights",
         "linkedin_url",
         "github_url",
         "portfolio",
+        "user__created_by",
+        "user__created_at",
+        "updated_by",
         "updated_at",
     ]
 
@@ -986,16 +1080,31 @@ class ParentProfileViewSet(ModelViewSet):
         "user__city__name",
         "user__first_name",
         "user__last_name",
+        "user__full_name",
+        "user__designation",
         "user__phone",
         "user__email",
         "relationship",
         "other_relationship_text",
+        # Audit fields (same format as BaseModelViewSet.searching_fields)
+        "user__created_by__first_name",
+        "user__created_by__last_name",
+        "user__created_by__full_name",
+        "user__created_at",
+        "updated_by__first_name",
+        "updated_by__last_name",
+        "updated_by__full_name",
+        "updated_at",
     ]
 
     ordering_fields = [
         "id",
         "user",
         "relationship",
+        # Audit fields (same format as BaseModelViewSet.ordering_fields)
+        "user__created_by",
+        "user__created_at",
+        "updated_by",
         "updated_at",
     ]
 
@@ -1251,12 +1360,6 @@ class CorporateGalleryViewSet(OrganizationGalleryViewSet):
 
 
 class CorporateDropdownView(APIView):
-    """
-    GET /api/companies/
-    Returns a lightweight list of all registered companies for frontend dropdown.
-    Response: [{"id": 1, "company_name": "Nivzen Technologies Pvt. Ltd."}, ...]
-    """
-
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -1285,11 +1388,6 @@ class CorporateDropdownView(APIView):
 
 
 class MediumChoicesView(APIView):
-    """
-    GET /api/medium-choices/
-    Response: {"success": true, "data": [{"value": "english", "label": "English"}, ...]}
-    """
-
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 

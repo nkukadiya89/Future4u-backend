@@ -39,6 +39,25 @@ def validate_json_choices(value, valid_set, field_name):
     return value
 
 
+def get_role_profile(user):
+    if user is None:
+        return None, None
+    profile_related_names = {
+        User.Role.STUDENT: "student_profile",
+        User.Role.PARENT: "parent_profile",
+        User.Role.PROFESSIONAL: "professional_profile",
+    }
+    profile_serializers = {
+        User.Role.STUDENT: StudentProfileSerializer,
+        User.Role.PARENT: ParentProfileSerializer,
+        User.Role.PROFESSIONAL: ProfessionalProfileSerializer,
+    }
+    related_name = profile_related_names.get(user.user_type)
+    if not related_name:
+        return None, None
+    return getattr(user, related_name, None), profile_serializers.get(user.user_type)
+
+
 class UserProfileSerializer(ProfileLanguageMixin, serializers.ModelSerializer):
     """Base profile serializer for Super Admin with language preference"""
 
@@ -710,6 +729,8 @@ class ChildProfileSerializer(serializers.ModelSerializer):
         source="stream.stream_name", read_only=True, default=None
     )
     language = serializers.SerializerMethodField()
+    created_by = UserQuickSerializer(read_only=True)
+    updated_by = UserQuickSerializer(read_only=True)
 
     class Meta:
         model = ChildProfile
@@ -744,10 +765,12 @@ class ChildProfileSerializer(serializers.ModelSerializer):
             "linkedin_url",
             "github_url",
             "portfolio",
+            "created_by",
+            "updated_by",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ("id", "parent_profile", "created_at", "updated_at")
+        read_only_fields = ("id", "parent_profile", "created_by", "updated_by", "created_at", "updated_at")
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()
