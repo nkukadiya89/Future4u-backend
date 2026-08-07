@@ -91,9 +91,9 @@ class ResendPasswordResetViewSet(ModelViewSet):
         from company.models import Company
         from employee.models import Employee
 
-        if Company.objects.filter(user=user).exists():
+        if Company.objects.filter(email=user.email).exists():
             return "Company"
-        elif Employee.objects.filter(user=user).exists():
+        elif Employee.objects.filter(email=user.email).exists():
             return "Employee"
         else:
             return "User"

@@ -211,12 +211,12 @@ class ResetPasswordViewSet(ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            employee = Employee.objects.filter(user=user).first()
+            employee = Employee.objects.filter(email=user.email).first()
             if employee:
                 employee.status = "active"
                 employee.save()
 
-            company = Company.objects.filter(user=user).first()
+            company = Company.objects.filter(email=user.email).first()
             if company:
                 company.status = "active"
                 company.is_active = True
@@ -314,12 +314,12 @@ class ForgotPasswordViewSet(ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            employee = Employee.objects.filter(user=user).first()
+            employee = Employee.objects.filter(email=user.email).first()
             if employee:
                 employee.status = "active"
                 employee.save()
 
-            company = Company.objects.filter(user=user).first()
+            company = Company.objects.filter(email=user.email).first()
             if company:
                 company.status = "active"
                 company.is_active = True
