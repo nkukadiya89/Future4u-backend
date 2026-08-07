@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.core.cache import cache
 from django.db import transaction
@@ -15,8 +16,8 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from activity_log.models import ActivityLog
-from common.master_view import BaseModelViewSet
 from common.mixins.view_mixins import ListEnvelopeMixin
+from user.models import User
 from user_profile.models import (
     MEDIUM_CHOICES,
     BusinessSetting,
@@ -64,6 +65,8 @@ from utils.generate_ip_address import get_client_ip
 from utils.pagination import Pagination
 from utils.throttles import PerUserBurstRateThrottle
 
+logger = logging.getLogger(__name__)
+
 
 class ChildProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -97,7 +100,6 @@ class ChildProfileViewSet(ModelViewSet):
         "achievements",
         "extra_activities",
         "additional_insights",
-        # Audit fields (same format as BaseModelViewSet.searching_fields)
         "created_by__first_name",
         "created_by__last_name",
         "created_by__full_name",
@@ -122,7 +124,6 @@ class ChildProfileViewSet(ModelViewSet):
         "linkedin_url",
         "github_url",
         "portfolio",
-        # Audit fields (same format as BaseModelViewSet.ordering_fields)
         "created_by",
         "created_at",
         "updated_by",
@@ -183,7 +184,10 @@ class ChildProfileViewSet(ModelViewSet):
                 return Response(
                     {
                         "success": False,
-                        "message": "A child with the same name and date of birth already exists under your profile.",
+                        "message": (
+                            "A child with the same name and date of birth"
+                            " already exists under your profile."
+                        ),
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -193,7 +197,9 @@ class ChildProfileViewSet(ModelViewSet):
             return Response(
                 {
                     "success": False,
-                    "message": "Parent profile not found. Please set up your profile first.",
+                    "message": (
+                        "Parent profile not found. Please set up your profile first."
+                    ),
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -318,7 +324,6 @@ class BusinessSettingViewSet(ListEnvelopeMixin, ModelViewSet):
             response_serializer = BusinessSettingInfoSerializer(instance)
             payload = response_serializer.data
 
-            # Tailor response when company business setting is created
             if instance.company_id:
                 filtered = {
                     "id": payload.get("id"),
@@ -360,7 +365,6 @@ class BusinessSettingViewSet(ListEnvelopeMixin, ModelViewSet):
             if company_id:
                 business_setting = BusinessSetting.objects.get(company_id=company_id)
             else:
-                # Fallback to pk if neither is provided
                 business_setting = BusinessSetting.objects.get(id=pk)
 
             serializer = self.serializer_class(business_setting)
@@ -381,7 +385,6 @@ class BusinessSettingViewSet(ListEnvelopeMixin, ModelViewSet):
             if company_id:
                 business_setting = BusinessSetting.objects.get(company_id=company_id)
             else:
-                # Fallback to pk if neither is provided
                 business_setting = BusinessSetting.objects.get(id=pk)
         except BusinessSetting.DoesNotExist:
             return Response(
@@ -404,7 +407,6 @@ class BusinessSettingViewSet(ListEnvelopeMixin, ModelViewSet):
                 company=instance.company,
             )
 
-            # Tailor response when company business setting is updated
             if instance.company_id:
                 filtered = {
                     "id": payload.get("id"),
@@ -448,7 +450,6 @@ class BusinessSettingViewSet(ListEnvelopeMixin, ModelViewSet):
                 .first()
             )
 
-            # If no business setting found, return null data
             if not business_setting:
                 return Response(
                     {
@@ -467,7 +468,12 @@ class BusinessSettingViewSet(ListEnvelopeMixin, ModelViewSet):
                         },
                     }
                 )
-        except Exception:
+        except Exception as e:
+            logger.warning(
+                "Failed to fetch business setting for user %s: %s",
+                request.user.id,
+                e,
+            )
             return Response(
                 {
                     "success": True,
@@ -486,7 +492,6 @@ class BusinessSettingViewSet(ListEnvelopeMixin, ModelViewSet):
                 }
             )
 
-        # If location data is not configured, return null for location fields
         if not all(
             [business_setting.country, business_setting.state, business_setting.city]
         ):
@@ -580,7 +585,6 @@ class UserProfileViewSet(ModelViewSet):
     throttle_classes = [PerUserBurstRateThrottle]
 
     def get_queryset(self):
-        # Only Super Admin can access UserProfile
         if self.request.user.user_type != self.request.user.Role.SUPER_ADMIN:
             return UserProfile.objects.none()
         return UserProfile.objects.filter(user=self.request.user).select_related("user")
@@ -607,7 +611,6 @@ class UserProfileViewSet(ModelViewSet):
         )
 
     def partial_update(self, request, *args, **kwargs):
-        # Only Super Admin can access UserProfile
         if request.user.user_type != request.user.Role.SUPER_ADMIN:
             return Response(
                 {
@@ -631,8 +634,8 @@ class UserProfileViewSet(ModelViewSet):
         ser.save()
         try:
             cache.delete(recommendation_key(request.user.id))
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Cache delete failed for user %s: %s", request.user.id, e)
         out = UserProfileSerializer(profile).data
         return Response(
             {
@@ -680,7 +683,6 @@ class StudentProfileViewSet(ModelViewSet):
         "achievements",
         "additional_insights",
         "extra_activities",
-        # Audit fields (same format as BaseModelViewSet.searching_fields)
         "user__created_by__first_name",
         "user__created_by__last_name",
         "user__created_by__full_name",
@@ -708,7 +710,6 @@ class StudentProfileViewSet(ModelViewSet):
         "linkedin_url",
         "github_url",
         "portfolio",
-        # Audit fields (same format as BaseModelViewSet.ordering_fields)
         "user__created_by",
         "user__created_at",
         "updated_by",
@@ -716,7 +717,9 @@ class StudentProfileViewSet(ModelViewSet):
     ]
 
     def get_queryset(self):
-        return (
+        user = self.request.user
+        org_roles = [User.Role.SCHOOL_COLLEGE, User.Role.INSTITUTE]
+        qs = (
             StudentProfile.objects.filter(user__deleted=False)
             .select_related(
                 "user__country",
@@ -727,6 +730,9 @@ class StudentProfileViewSet(ModelViewSet):
             )
             .prefetch_related("language")
         )
+        if user.user_type in org_roles:
+            return qs.filter(Q(user__created_by=user) | Q(referred_by=user))
+        return qs
 
     def get_profile_object(self, request):
         queryset = self.get_queryset()
@@ -737,7 +743,10 @@ class StudentProfileViewSet(ModelViewSet):
         return queryset.filter(user=request.user).first()
 
     def list(self, request, *args, **kwargs):
-        if request.user.is_superuser:
+        user = request.user
+        org_roles = [User.Role.SCHOOL_COLLEGE, User.Role.INSTITUTE]
+
+        if user.is_superuser or user.user_type == User.Role.SUPER_ADMIN:
             user_id = request.query_params.get("user_id")
             queryset = self.get_queryset()
             no_pagination = request.query_params.get("no_pagination")
@@ -749,13 +758,10 @@ class StudentProfileViewSet(ModelViewSet):
 
             if status_filter:
                 queryset = queryset.filter(user__status=status_filter)
-
             if city_id:
                 queryset = queryset.filter(user__city_id=city_id)
-
             if state_id:
                 queryset = queryset.filter(user__states_id=state_id)
-
             if country_id:
                 queryset = queryset.filter(user__country_id=country_id)
 
@@ -763,13 +769,11 @@ class StudentProfileViewSet(ModelViewSet):
 
             if user_id:
                 profile = queryset.filter(user_id=user_id).first()
-
                 if not profile:
                     return Response(
                         {"success": False, "message": "Profile not found"},
                         status=status.HTTP_404_NOT_FOUND,
                     )
-
                 serializer = StudentProfileSerializer(profile)
                 return Response(
                     {"success": True, "data": serializer.data},
@@ -777,23 +781,35 @@ class StudentProfileViewSet(ModelViewSet):
                 )
             if no_pagination:
                 serializer = StudentProfileSerializer(queryset, many=True)
-
                 return Response(
-                    {
-                        "success": True,
-                        "data": serializer.data,
-                    },
+                    {"success": True, "data": serializer.data},
                     status=status.HTTP_200_OK,
                 )
             page = self.paginate_queryset(queryset)
-
             if page is not None:
                 serializer = StudentProfileSerializer(page, many=True)
                 return self.get_paginated_response(
-                    {
-                        "success": True,
-                        "data": serializer.data,
-                    }
+                    {"success": True, "data": serializer.data}
+                )
+            serializer = StudentProfileSerializer(queryset, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+
+        if user.user_type in org_roles:
+            queryset = self.filter_queryset(self.get_queryset())
+            no_pagination = request.query_params.get("no_pagination")
+            if no_pagination:
+                serializer = StudentProfileSerializer(queryset, many=True)
+                return Response(
+                    {"success": True, "data": serializer.data},
+                    status=status.HTTP_200_OK,
+                )
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = StudentProfileSerializer(page, many=True)
+                return self.get_paginated_response(
+                    {"success": True, "data": serializer.data}
                 )
             serializer = StudentProfileSerializer(queryset, many=True)
             return self.get_paginated_response(
@@ -809,7 +825,6 @@ class StudentProfileViewSet(ModelViewSet):
             )
 
         serializer = StudentProfileSerializer(profile)
-
         return Response(
             {"success": True, "data": serializer.data},
             status=status.HTTP_200_OK,
@@ -844,8 +859,8 @@ class StudentProfileViewSet(ModelViewSet):
         profile.save(update_fields=["updated_by", "updated_at"])
         try:
             cache.delete(recommendation_key(request.user.id))
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Cache delete failed for user %s: %s", request.user.id, e)
         out = StudentProfileSerializer(profile).data
         return Response(
             {
@@ -1050,8 +1065,8 @@ class ProfessionalProfileViewSet(ModelViewSet):
         profile.save(update_fields=["updated_by", "updated_at"])
         try:
             cache.delete(recommendation_key(request.user.id))
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Cache delete failed for user %s: %s", request.user.id, e)
         out = ProfessionalProfileSerializer(profile).data
         return Response(
             {
@@ -1086,7 +1101,6 @@ class ParentProfileViewSet(ModelViewSet):
         "user__email",
         "relationship",
         "other_relationship_text",
-        # Audit fields (same format as BaseModelViewSet.searching_fields)
         "user__created_by__first_name",
         "user__created_by__last_name",
         "user__created_by__full_name",
@@ -1101,7 +1115,6 @@ class ParentProfileViewSet(ModelViewSet):
         "id",
         "user",
         "relationship",
-        # Audit fields (same format as BaseModelViewSet.ordering_fields)
         "user__created_by",
         "user__created_at",
         "updated_by",
@@ -1234,8 +1247,8 @@ class ParentProfileViewSet(ModelViewSet):
         profile.save(update_fields=["updated_by", "updated_at"])
         try:
             cache.delete(recommendation_key(request.user.id))
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Cache delete failed for user %s: %s", request.user.id, e)
         out = ParentProfileSerializer(profile).data
         return Response(
             {
