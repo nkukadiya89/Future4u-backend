@@ -30,10 +30,7 @@ class IsAdminOrProvider(BasePermission):
             return False
         if is_admin_user(user):
             return True
-        # Organization staff are managed users, not delegated administrators:
-        # they must not perform owner-only organization-management actions even
-        # though they inherit the creator's user_type (institute/school_college/
-        # corporate).
+        # Org staff are managed users, not delegated admins.
         return (
             not user.is_org_staff
             and user.user_type
@@ -56,9 +53,7 @@ class IsSchoolCollegeOrInstitute(BasePermission):
         if not user or not user.is_authenticated:
             return False
 
-        # Organization staff are managed users, not delegated administrators:
-        # they must not manage organization students even though they inherit
-        # the creator's user_type (institute/school_college).
+        # Org staff are managed users; only owners manage org students.
         return (
             not user.is_org_staff
             and user.user_type

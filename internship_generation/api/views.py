@@ -45,7 +45,6 @@ class InternshipGenerationAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Check token availability before AI call
         try:
             check_token_available(request.user, "internship_gen")
         except Exception as exc:
@@ -59,9 +58,13 @@ class InternshipGenerationAPIView(APIView):
                 user=request.user,
                 validated_input=serializer.validated_data,
             )
-            # Deduct actual LLM token usage after successful AI call
             try:
-                deduct_monthly_tokens(request.user, token_usage)
+                deduct_monthly_tokens(
+                    request.user,
+                    token_usage,
+                    feature_code="internship_gen",
+                    request=request,
+                )
             except Exception as exc:
                 logger.error(
                     "TOKEN_RECONCILE user=%s feature=internship_gen cost=%s err=%s",

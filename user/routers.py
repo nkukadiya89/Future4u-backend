@@ -14,9 +14,6 @@ from user.group_and_permission import (
     AssignUserGroupViewSet,
     CreateGroupWithPermissionsViewSet,
     DeleteGroupWithPermissionsViewSet,
-    GetAllPermissionViewSet,
-    GetGroupPermissionViewSet,
-    GroupViewSet,
     PermissionViewSet,
 )
 from user.resend_password_reset import ResendPasswordResetViewSet
@@ -66,33 +63,23 @@ user_router.register(
 )
 user_router.register("role-family", RoleFamilyViewSet, basename="role_family")
 user_router.register("verified-otp", VerifiedOTPViewSet, basename="verified-otp")
-user_router.register("create-group", GroupViewSet, basename="create_new_group")
-user_router.register("get-group", GroupViewSet, basename="list_group")
 user_router.register(
-    "assign-user-group", AssignUserGroupViewSet, basename="assign_user_group"
+    "roles", CreateGroupWithPermissionsViewSet, basename="roles"
 )
 user_router.register(
-    "create-group-permissions",
-    CreateGroupWithPermissionsViewSet,
-    basename="create_group_with_permissions",
-)
-user_router.register(
-    "delete-group-permissions",
+    "role-archive",
     DeleteGroupWithPermissionsViewSet,
-    basename="delete_group_with_permissions",
+    basename="role_archive",
 )
 user_router.register(
-    "get-all-permission-list", GetAllPermissionViewSet, basename="list_all_permissions"
-)
-user_router.register("list-permission", PermissionViewSet, basename="list_permission")
-user_router.register(
-    "get-group-permission", GetGroupPermissionViewSet, basename="get_group_permission"
+    "assign-role", AssignUserGroupViewSet, basename="assign_role"
 )
 user_router.register(
-    "assign-permission-group",
+    "assign-role-permission",
     AssignPermissionGroupViewSet,
-    basename="assign_permission_group",
+    basename="assign_role_permission",
 )
+user_router.register("permissions", PermissionViewSet, basename="permissions")
 
 user_router.register("auth", AuthViewSet, basename="auth")
 user_router.register("admin-student-users", AdminStudentViewSet, basename="admin_users")

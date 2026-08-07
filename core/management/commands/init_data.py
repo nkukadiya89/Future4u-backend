@@ -65,7 +65,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.stdout.write("Initialise..")
-        # Handle specific flags
         if kwargs["groups"]:
             admin_user = (
                 User.objects.filter(is_superuser=True).first() or User.objects.first()
@@ -102,7 +101,6 @@ class Command(BaseCommand):
             self.load_assessment_masters()
             return
 
-        # If no specific flags, run all initialization
         if (
             not kwargs["country"]
             and not kwargs["zone_name"]
@@ -128,7 +126,7 @@ class Command(BaseCommand):
             self.load_assessment_masters()
             self.load_language_master()
 
-    # Super User Create
+    # Super user
     def create_super_user(self):
         self.stdout.write("Creating Super User.......")
         exist_superuser = User.objects.filter(is_superuser=True).first()
@@ -168,25 +166,10 @@ class Command(BaseCommand):
             self.stdout.write("Super User already exists, updated profile/password.")
         return user
 
-    # Role Family Create
+    # Role families
     role_family_data = [
         {
             "family_name": "Future4U Family",
-            "created_by": 1,
-            "updated_by": 1,
-        },
-        {
-            "family_name": "Partner Company Family",
-            "created_by": 1,
-            "updated_by": 1,
-        },
-        {
-            "family_name": "Ads Agency Family",
-            "created_by": 1,
-            "updated_by": 1,
-        },
-        {
-            "family_name": "EndClient Family",
             "created_by": 1,
             "updated_by": 1,
         },
@@ -230,7 +213,7 @@ class Command(BaseCommand):
             )
             return
 
-        # Create groups for each Role type
+        # Default role groups
         super_admin_group, _ = CustomGroup.objects.update_or_create(
             name="Super Admin",
             defaults={"group_name": "Super Admin", "created_by": user},
@@ -270,7 +253,7 @@ class Command(BaseCommand):
             )
         )
 
-        # Student Permissions - View own data, assessments, recommendations
+        # Student permissions
         student_permissions = [
             "assessment|Can view student assessment",
             "assessment|Can view concern",
@@ -296,7 +279,7 @@ class Command(BaseCommand):
             "internship_job|Can change job application",
         ]
 
-        # Parent Permissions - View linked child's data
+        # Parent permissions
         parent_permissions = [
             "assessment|Can view student assessment",
             "assessment|Can view parent assessment",
@@ -319,7 +302,7 @@ class Command(BaseCommand):
             "internship_job|Can change job application",
         ]
 
-        # Professional Permissions - View career resources, update own profile
+        # Professional permissions
         professional_permissions = [
             "assessment|Can view student assessment",
             "domain|Can view domain",
@@ -341,7 +324,7 @@ class Command(BaseCommand):
             "internship_job|Can change job application",
         ]
 
-        # School/College Permissions - Manage their students
+        # School/College permissions
         school_college_permissions = [
             "assessment|Can view student assessment",
             "domain|Can view domain",
@@ -358,9 +341,10 @@ class Command(BaseCommand):
             "course|Can add course inquiry note",
             "course|Can change course inquiry note",
             "course|Can delete course inquiry note",
+            "course_generation|Can generate AI course details",
         ]
 
-        # Institute Permissions - Manage courses, grade students
+        # Institute permissions
         institute_permissions = [
             "assessment|Can add student assessment",
             "assessment|Can change student assessment",
@@ -389,9 +373,11 @@ class Command(BaseCommand):
             "course|Can add course inquiry note",
             "course|Can change course inquiry note",
             "course|Can delete course inquiry note",
+            "course_generation|Can generate AI course details",
+            "internship_generation|Can generate AI internship details",
         ]
 
-        # Corporate Permissions - view candidates
+        # Corporate permissions
         corporate_permissions = [
             "assessment|Can view student assessment",
             "domain|Can view domain",
@@ -418,9 +404,11 @@ class Command(BaseCommand):
             "internship_job|Can add job application note",
             "internship_job|Can change job application note",
             "internship_job|Can delete job application note",
+            "job_generation|Can generate AI job posting details",
+            "internship_generation|Can generate AI internship details",
         ]
 
-        # Assign superuser to Super Admin group
+        # Assign superuser to Super Admin
         if user.is_superuser:
             assign_group_super_admin = CustomGroup.objects.get(name="Super Admin")
             assign_group_super_admin.user_set.add(user)
@@ -486,7 +474,7 @@ class Command(BaseCommand):
             BusinessCategory.objects.bulk_create(categories_to_create)
         self.stdout.write("Business Category data uploaded.")
 
-    # Country Upload CSV
+    # Country CSV
     def load_country(self, admin_user=None):
         self.stdout.write("Loading Country...")
         created_by_user = admin_user or User.objects.filter(is_superuser=True).first()
@@ -605,7 +593,7 @@ class Command(BaseCommand):
             for name in names:
                 model.objects.get_or_create(name__iexact=name, defaults={"name": name})
 
-    # State Upload CSV
+    # State CSV
     def load_state(self, admin_user=None):
         self.stdout.write("Loading State...")
         created_by_user = admin_user or User.objects.filter(is_superuser=True).first()
@@ -651,7 +639,7 @@ class Command(BaseCommand):
                 State.objects.bulk_create(states_to_create, ignore_conflicts=True)
         self.stdout.write("State data uploaded successfully.")
 
-    # City Upload CSV
+    # City CSV
     def load_city(self, admin_user=None):
         self.stdout.write("Loading City....")
         created_by_user = admin_user or User.objects.filter(is_superuser=True).first()
@@ -711,7 +699,7 @@ class Command(BaseCommand):
 
         self.stdout.write("City data uploaded successfully.")
 
-    # City Area Upload CSV
+    # City Area CSV
     def load_city_area(self):
         if CityArea is None:
             self.stdout.write(
@@ -830,7 +818,6 @@ class Command(BaseCommand):
             "domain_hierarchy.csv",
         )
 
-        # Prepare command arguments
         command_args = {"path": file_path}
 
         call_command("init_domain_master", **command_args)

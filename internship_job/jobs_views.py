@@ -34,7 +34,7 @@ class JobViewSet(BaseModelViewSet):
         elif user.user_type in [
             "corporate",
         ]:
-            base = queryset.filter(job_provider=user)
+            base = queryset.filter(job_provider=user.get_owner_user())
         else:
             base = queryset.filter(status="active")
         if self.action not in [
@@ -105,7 +105,7 @@ class JobViewSet(BaseModelViewSet):
                 request.user.user_type in ["corporate"]
                 and "job_provider" not in serializer.validated_data
             ):
-                save_kwargs["job_provider"] = request.user
+                save_kwargs["job_provider"] = request.user.get_owner_user()
             serializer.save(**save_kwargs)
             log_event(
                 event="job.created",
@@ -160,7 +160,7 @@ class JobViewSet(BaseModelViewSet):
 
         jobs = Job.objects.filter(id__in=ids, deleted=False)
         if not is_admin:
-            jobs = jobs.filter(job_provider=request.user)
+            jobs = jobs.filter(job_provider=request.user.get_owner_user())
 
         found_ids = set(jobs.values_list("id", flat=True))
         not_found_ids = list(set(ids) - found_ids)
@@ -341,7 +341,7 @@ class JobViewSet(BaseModelViewSet):
         user = request.user
         if not user.is_superuser:
             if user.user_type in ["corporate"]:
-                queryset = queryset.filter(job_provider=user)
+                queryset = queryset.filter(job_provider=user.get_owner_user())
             else:
                 queryset = queryset.none()
 
@@ -468,7 +468,7 @@ class JobApplicationViewSet(BaseModelViewSet):
         if user.is_superuser:
             return base
         if user.user_type in ["corporate"]:
-            return base.filter(job__job_provider=user)
+            return base.filter(job__job_provider=user.get_owner_user())
         return base.filter(applicant=user)
 
     def list(self, request, *args, **kwargs):
@@ -621,7 +621,7 @@ class JobApplicationViewSet(BaseModelViewSet):
     @action(detail=False, methods=["get"], url_path="received-inquiries")
     def receive_inquiries(self, request):
         inquiries = JobApplication.objects.filter(
-            job__job_provider=request.user,
+            job__job_provider=request.user.get_owner_user(),
             deleted=False,
         ).select_related("job", "applicant")
 
@@ -678,7 +678,7 @@ class JobApplicationViewSet(BaseModelViewSet):
         application = self.get_object()
 
         job = application.job
-        if job.job_provider != request.user:
+        if job.job_provider != request.user.get_owner_user():
             return Response(
                 {
                     "success": False,

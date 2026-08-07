@@ -33,7 +33,7 @@ class InternshipViewSet(BaseModelViewSet):
             "institute",
             "corporate",
         ]:
-            base = queryset.filter(internship_provider=user)
+            base = queryset.filter(internship_provider=user.get_owner_user())
         else:
             base = queryset.filter(status="active")
         if self.action not in [
@@ -104,7 +104,7 @@ class InternshipViewSet(BaseModelViewSet):
                 request.user.user_type in ["institute", "corporate"]
                 and "internship_provider" not in serializer.validated_data
             ):
-                save_kwargs["internship_provider"] = request.user
+                save_kwargs["internship_provider"] = request.user.get_owner_user()
             serializer.save(**save_kwargs)
             log_event(
                 event="internship.created",
@@ -159,7 +159,7 @@ class InternshipViewSet(BaseModelViewSet):
             deleted=False,
         )
         if not is_admin:
-            internships = internships.filter(internship_provider=request.user)
+            internships = internships.filter(internship_provider=request.user.get_owner_user())
 
         found_ids = set(internships.values_list("id", flat=True))
         not_found_ids = list(set(ids) - found_ids)
@@ -346,7 +346,7 @@ class InternshipViewSet(BaseModelViewSet):
         user = request.user
         if not user.is_superuser:
             if user.user_type in ["institute", "corporate"]:
-                queryset = queryset.filter(internship_provider=user)
+                queryset = queryset.filter(internship_provider=user.get_owner_user())
             else:
                 queryset = queryset.none()
 
@@ -458,7 +458,7 @@ class InternshipApplicationViewSet(BaseModelViewSet):
         if user.is_superuser:
             return base
         if user.user_type in ["institute", "corporate"]:
-            return base.filter(internship__internship_provider=user)
+            return base.filter(internship__internship_provider=user.get_owner_user())
         return base.filter(applicant=user)
 
     def list(self, request, *args, **kwargs):
@@ -609,7 +609,7 @@ class InternshipApplicationViewSet(BaseModelViewSet):
     @action(detail=False, methods=["get"], url_path="received-inquiries")
     def receive_inquiries(self, request):
         inquiries = InternshipApplication.objects.filter(
-            internship__internship_provider=request.user,
+            internship__internship_provider=request.user.get_owner_user(),
             deleted=False,
         ).select_related("internship", "applicant")
 
@@ -665,7 +665,7 @@ class InternshipApplicationViewSet(BaseModelViewSet):
     def update_status(self, request, pk=None):
         application = self.get_object()
 
-        if application.internship.internship_provider != request.user:
+        if application.internship.internship_provider != request.user.get_owner_user():
             return Response(
                 {
                     "success": False,

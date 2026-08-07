@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from activity_log.services import log_event
 from common.master_view import BaseModelViewSet
 from utils.aws_file_upload import delete_uploaded_file
 
@@ -204,6 +205,15 @@ class OrganizationProfileViewSet(BaseModelViewSet):
 
         profile = self.get_object()
 
+        if profile.user.is_org_staff:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Organization staff cannot have a personal token pool.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         extra_token_limit = request.data.get("extra_token_limit")
         if extra_token_limit is None:
             return Response(
@@ -234,6 +244,11 @@ class OrganizationProfileViewSet(BaseModelViewSet):
             .get(id=profile.id)
             .extra_token_limit
         )
+        before_token = (
+            self.profile_model.objects.only("token_limit")
+            .get(id=profile.id)
+            .token_limit
+        )
         increase = extra_token_limit - (old_extra or 0)
 
         with transaction.atomic():
@@ -249,6 +264,24 @@ class OrganizationProfileViewSet(BaseModelViewSet):
                     "updated_by",
                     "updated_at",
                 ]
+            )
+            log_event(
+                event="user.tokens_updated",
+                description=(
+                    f"Set extra tokens to {extra_token_limit} for "
+                    f"{profile.user.email}"
+                ),
+                user=request.user,
+                entity_type="user",
+                entity_id=profile.user_id,
+                metadata={
+                    "previous_extra": old_extra,
+                    "new_extra": extra_token_limit,
+                    "token_increase": increase,
+                    "token_limit_before": before_token,
+                    "token_limit_after": profile.token_limit,
+                },
+                request=request,
             )
 
         serializer = self.read_serializer_class(profile)

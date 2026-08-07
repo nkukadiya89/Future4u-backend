@@ -19,8 +19,7 @@ User = get_user_model()
 def _create_organization_profile(profile_model, user):
     defaults = {"created_by": user}
     if user.is_org_staff:
-        # Staff must not inherit the org's default monthly allowance.
-        # Zero is made durable by _check_org_monthly_reset in utils/token_check.py.
+        # Staff get no default allowance; zero is kept durable by _check_org_monthly_reset.
         defaults["token_limit"] = 0
         defaults["extra_token_limit"] = 0
     profile_model.objects.get_or_create(
@@ -32,13 +31,11 @@ def _create_organization_profile(profile_model, user):
 @receiver(post_save, sender=User)
 def create_user_profiles(sender, instance, created, **kwargs):
     if created:
-        # Create UserProfile ONLY for Super Admin
         if instance.user_type == User.Role.SUPER_ADMIN:
             transaction.on_commit(
                 lambda: UserProfile.objects.get_or_create(user=instance)
             )
 
-        # Create role-specific profile based on user_type
         elif instance.user_type == User.Role.STUDENT:
             transaction.on_commit(
                 lambda: StudentProfile.objects.get_or_create(user=instance)

@@ -162,16 +162,16 @@ class User(AbstractUser):
         self.full_name = f"{self.first_name} {self.last_name}".strip()
         super().save(*args, **kwargs)
 
-        # Organization staff are identity-only by design: they never receive an
-        # automatic default role group on ANY save. Roles are assigned later by
-        # the org owner via assign-user-group. The skip_group_assignment flag
-        # remains for callers who want to opt out explicitly, but the
-        # is_org_staff guard is the durable boundary that keeps staff group-less
-        # across every save path (creation, activation, profile/password flows).
+        # Org staff are identity-only: never auto-assign a default role group;
+        # the org owner assigns roles later via /assign-role/.
         if not skip_group_assignment and not self.is_org_staff:
             self.assign_group_based_on_role()
 
     def assign_group_based_on_role(self):
+        # Soft-deleted users must never receive (or re-gain) a default role.
+        if self.deleted:
+            return
+
         role_group_mapping = {
             self.Role.STUDENT: "Student",
             self.Role.PARENT: "Parent",
@@ -184,12 +184,20 @@ class User(AbstractUser):
 
         group_name = role_group_mapping.get(self.user_type)
         if group_name:
-            try:
-                group = CustomGroup.objects.get(name=group_name)
-                if not self.groups.exists():
-                    self.groups.add(group)
-            except CustomGroup.DoesNotExist:
-                pass
+            group = CustomGroup.objects.filter(
+                name=group_name, deleted=False
+            ).first()
+            if group and not self.groups.exists():
+                self.groups.add(group)
+
+    def get_owner_user(self):
+        """Return the owning user account for this user.
+
+        Organization staff act on behalf of the user that created them.
+        """
+        if self.is_org_staff and self.created_by:
+            return self.created_by
+        return self
 
     @property
     def full_name_property(self):

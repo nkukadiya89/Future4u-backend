@@ -35,7 +35,6 @@ def send_confirm_mail(subject, template, data):
     msg.attach(msImage)
 
     if template == "password-changed-confirmation.html":
-        # Attach additional image if needed
         url = os.path.join(BASE_DIR, "static/images/checked.png")
         img_data1 = open(url, "rb").read()
         msImage1 = MIMEImage(img_data1)
@@ -60,8 +59,7 @@ def send_success_mail(subject, template, data):
 
     user = User.objects.filter(email=email).first()
 
-    # User has no company field; companies are linked to users via the
-    # email-based lookup used across the codebase.
+    # Companies are linked to users via email-based lookup.
     company = Company.objects.filter(email=email).first()
     created_by_company = (
         company.created_by.email if company and company.created_by else None
@@ -103,7 +101,6 @@ def send_success_mail(subject, template, data):
     msg.attach(msImage)
 
     if template == "register-success.html":
-        # Attach additional image if needed
         url = os.path.join(BASE_DIR, "static/images/checked.png")
         img_data1 = open(url, "rb").read()
         msImage1 = MIMEImage(img_data1)

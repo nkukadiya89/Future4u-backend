@@ -13,14 +13,6 @@ from user.services.registration_service import setup_web_user_password
 
 
 class OrganizationStaffSerializer(BaseModelSerializer):
-    """Create/update staff users owned by an organization admin.
-
-    Identity only — user_type is inherited from the creator, is_org_staff=True.
-    No role assignment and no token logic here (roles go through the existing
-    assign-user-group endpoint; the staff token rule lives in the profile signal
-    and utils/token_check.py).
-    """
-
     data = serializers.CharField(write_only=True, required=False)
     profile_image = serializers.ImageField(write_only=True, required=False)
 
@@ -133,10 +125,7 @@ class OrganizationStaffSerializer(BaseModelSerializer):
             email_verified=False,
             must_change_password=True,
         )
-        # Explicit intent: staff are created with zero groups (roles are
-        # assigned later via assign-user-group). The durable enforcement lives
-        # in User.save() via the is_org_staff guard; this flag documents the
-        # intent at the call site.
+        # Staff are created group-less; roles are assigned later via /assign-role/.
         staff.save(skip_group_assignment=True)
 
         setup_web_user_password(staff)

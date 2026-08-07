@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -34,7 +35,6 @@ from user.serializers import (
 )
 from user.user_auth import (
     get_user_group_permissions,
-    get_user_groups,
     get_user_permissions,
 )
 from utils.generate_otp import generate_otp, send_otp_email
@@ -118,7 +118,6 @@ class ForgetPasswordViewSet(ModelViewSet):
     serializer_class = VerifyOTPSerializer
     permission_classes = [AllowAny]
 
-    # @transaction.atomic
     def create(self, request, *args, **kwargs):
         email = request.data.get("email")
 
@@ -147,7 +146,6 @@ class ForgetPasswordViewSet(ModelViewSet):
             token = generate_forget_pass_token(email, user_phone, 30)
             name = user.first_name
 
-            # Email Context
             context = {"name": name, "token": token, "email": email}
             current_site = request._current_scheme_host + request.path
             context["current_site"] = current_site
@@ -425,8 +423,7 @@ class LoginWithEmailOtpViewset(ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # WhatsApp verification logic removed - field no longer exists
-            # TODO: Implement alternative phone verification method
+            # TODO: implement alternative phone verification method
             return Response(
                 {
                     "success": False,
@@ -491,18 +488,14 @@ class VerifyEmailOtpAndGiveTokenViewset(ModelViewSet):
 
                     company_profile_perc = 0
                     company_profile_count = None
-                    # Company subscription logic removed - users are now standalone
                     company_active_subscription = None
-                    # TODO: Implement alternative subscription management
+                    # TODO: implement alternative subscription management
 
-                    # Fetching permissions and groups
                     permission_data = get_user_permissions(user)
                     group_permission_data = get_user_group_permissions(user)
-                    group_data = get_user_groups(user)
 
-                    # Company info logic removed - users are now standalone
                     company_id = None
-                    # TODO: Implement alternative user identification
+                    # TODO: implement alternative user identification
 
                     user_data = {
                         "user_id": user.id,
@@ -514,7 +507,7 @@ class VerifyEmailOtpAndGiveTokenViewset(ModelViewSet):
                         "active_subscription": company_active_subscription,
                         "user_type": user.user_type,
                         "permission": permission_data,
-                        "group_permission": group_permission_data,
+                        "role_permission": group_permission_data,
                         "company_profile_count": company_profile_count,
                         "company_profile_perc": company_profile_perc,
                     }
@@ -570,9 +563,7 @@ class RoleFamilyViewSet(RetrieveSuccessEnvelopeMixin, ModelViewSet):
 
     def get_permissions(self):
         perms = super().get_permissions()
-        # Role-family management is owner-only, same boundary as role/group
-        # management: org staff are managed users and must not create or alter
-        # role families. Read actions stay open.
+        # Role-family writes are owner-only; org staff must not manage families.
         if self.action in ("create", "update", "partial_update", "destroy"):
             perms = perms + [IsAdminOrProvider()]
         return perms
@@ -585,21 +576,17 @@ class RoleFamilyViewSet(RetrieveSuccessEnvelopeMixin, ModelViewSet):
             serializer = self.serializer_class(queryset, many=True)
             return Response({"success": True, "data": serializer.data})
 
-        else:
-            if no_pagination:
-                serializer = self.serializer_class(queryset, many=True)
-                return Response({"success": True, "data": serializer.data})
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = self.serializer_class(page, many=True)
-                return self.get_paginated_response(
-                    {"success": True, "data": serializer.data}
-                )
-
-            serializer = self.serializer_class(queryset, many=True)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
             return self.get_paginated_response(
                 {"success": True, "data": serializer.data}
             )
+
+        serializer = self.serializer_class(queryset, many=True)
+        return self.get_paginated_response(
+            {"success": True, "data": serializer.data}
+        )
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -608,6 +595,17 @@ class RoleFamilyViewSet(RetrieveSuccessEnvelopeMixin, ModelViewSet):
 
         if serializer.is_valid():
             serializer.save()
+            log_event(
+                event="role_family.created",
+                description=(
+                    f"Created role family {serializer.instance.family_name}"
+                ),
+                user=request.user,
+                entity_type="role_family",
+                entity_id=serializer.instance.id,
+                metadata={"family_name": serializer.instance.family_name},
+                request=request,
+            )
             return Response(
                 {"success": True, "data": serializer.data},
                 status=status.HTTP_201_CREATED,
@@ -639,7 +637,7 @@ class RoleFamilyViewSet(RetrieveSuccessEnvelopeMixin, ModelViewSet):
                 [", ".join(value) for value in serializer.errors.values()]
             )
             return Response(
-                {"success": True, "data": error_message},
+                {"success": False, "message": error_message},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -741,10 +739,17 @@ class UserListViewSet(ModelViewSet):
 
         organization = self.request.query_params.get("organization")
         if organization:
-            queryset = queryset.filter(
-                Q(created_by_id=organization)
-                | Q(student_profile__referred_by=organization)
-            )
+            try:
+                organization = int(organization)
+            except (TypeError, ValueError):
+                raise ValidationError(
+                    {"organization": "organization must be a valid integer."}
+                )
+            if organization:
+                queryset = queryset.filter(
+                    Q(created_by_id=organization)
+                    | Q(student_profile__referred_by=organization)
+                )
 
         return queryset
 

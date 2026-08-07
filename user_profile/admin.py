@@ -394,6 +394,12 @@ class SchoolCollegeProfileAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     )
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly = list(self.readonly_fields)
+        if obj is not None and getattr(obj.user, "is_org_staff", False):
+            readonly.append("extra_token_limit")
+        return tuple(readonly)
     raw_id_fields = ("user",)
 
     fieldsets = (
@@ -458,6 +464,12 @@ class InstituteProfileAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     )
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly = list(self.readonly_fields)
+        if obj is not None and getattr(obj.user, "is_org_staff", False):
+            readonly.append("extra_token_limit")
+        return tuple(readonly)
     raw_id_fields = ("user",)
 
     fieldsets = (
@@ -519,6 +531,12 @@ class CorporateProfileAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     )
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly = list(self.readonly_fields)
+        if obj is not None and getattr(obj.user, "is_org_staff", False):
+            readonly.append("extra_token_limit")
+        return tuple(readonly)
     raw_id_fields = ("user",)
 
     fieldsets = (

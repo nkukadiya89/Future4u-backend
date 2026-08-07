@@ -1,205 +1,68 @@
 from django.contrib.auth.models import Permission
 
 from company.models import Company
-from user.models import (
-    AuthGroupPermissionsModel,
-    AuthPermissionModel,
-    CustomGroup,
-    RoleFamily,
-)
+from user.models import AuthGroupPermissionsModel, CustomGroup, RoleFamily
+from user.serializers import PermissionSerializers
 
 
-def get_permission_by_group_ids(
-    group_ids, user_assigned_groups=None, user_assgined_permissions=None
-):
-    permission_dict = {}
+def parse_ids(value):
+    
+    if value is None:
+        return []
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return [value]
+    if isinstance(value, str):
+        value = [part.strip() for part in value.split(",") if part.strip()]
+    elif not isinstance(value, list):
+        return None
+    try:
+        return [int(item) for item in value]
+    except (TypeError, ValueError):
+        return None
 
-    # Fetch all permissions for the assigned user groups
-    all_default_permissions = AuthGroupPermissionsModel.objects.filter(
-        group__name=user_assigned_groups
-    )
 
-    for default_permission in all_default_permissions:
-        permission = Permission.objects.get(id=default_permission.permission.id)
-        permission_detail = {
-            "id": None,
-            "permission_id": permission.id,
-            "name": default_permission.permission.name,
-            "codename": permission.codename,
-            "content_type_id": default_permission.permission.content_type.id,
-            "model_name": default_permission.permission.content_type.app_label.capitalize(),
-            "is_checked": False,
-        }
-        permission_dict[permission.id] = permission_detail
+def get_group_permission_by_user(custom_roles):
+    """Return each role's permissions as structured permission objects."""
+    user_role_permissions = {}
 
-    # Fetch From Given Group ID
-    group_ids_permissions = AuthGroupPermissionsModel.objects.filter(
-        group_id__in=group_ids
-    )
-    for group_permission in group_ids_permissions:
-        permission = Permission.objects.get(id=group_permission.permission.id)
-        permission_detail = {
-            "id": group_permission.id,
-            "permission_id": permission.id,
-            "name": group_permission.permission.name,
-            "codename": permission.codename,
-            "content_type_id": group_permission.permission.content_type.id,
-            "model_name": group_permission.permission.content_type.app_label.capitalize(),
-            "is_checked": True,
-        }
-        permission_dict[permission.id] = permission_detail
-
-    # Fetch From Given Employee ID
-    if user_assgined_permissions:
-        user_assigned_permission_ids = user_assgined_permissions.values_list(
-            "id", flat=True
+    for role in custom_roles.select_related("role_family"):
+        role_id = role.id
+        role_name = role.group_name
+        role_family = (
+            {"id": role.role_family.id, "name": role.role_family.family_name}
+            if role.role_family
+            else None
         )
-        user_assigned_permission = Permission.objects.filter(
-            id__in=user_assigned_permission_ids
-        )
-        for user_permission in user_assigned_permission:
-            permission_detail = {
-                "id": None,
-                "permission_id": user_permission.id,
-                "name": user_permission.name,
-                "codename": user_permission.codename,
-                "content_type_id": user_permission.content_type.id,
-                "model_name": user_permission.content_type.app_label.capitalize(),
-                "is_checked": True,
-            }
-            permission_dict[user_permission.id] = permission_detail
 
-    response = list(permission_dict.values())
-
-    return response
-
-
-def get_purticlare_permission(
-    content_types, model_names, group_id, company_id, partner_company_id, end_client_id
-):
-    get_all_groups = None
-
-    # partner_company / end_client features removed from the project,
-    # but some callers may still pass these ids.
-    if partner_company_id:
-        return {"Partner Company Not Available"}
-    if end_client_id:
-        return {"EndClient Not Available"}
-
-    if company_id:
-        try:
-            company_instance = Company.objects.get(id=company_id)
-        except Company.DoesNotExist:
-            return {"Company Not Found"}
-
-        get_groups = CustomGroup.objects.filter(
-            name__icontains="Company Admin"
-        ).values_list("name", flat=True)
-        get_company_groups = CustomGroup.objects.filter(
-            company=company_instance
-        ).values_list("name", flat=True)
-        get_all_groups = list(get_groups) + list(get_company_groups)
-
-    else:
-        get_super_admin_groups = CustomGroup.objects.filter(
-            name__icontains="Super Admin"
-        )
-        get_all_groups = list(get_super_admin_groups.values_list("name", flat=True))
-
-    permission_list = []
-
-    group_permissions = AuthGroupPermissionsModel.objects.filter(
-        permission__content_type=content_types,
-        permission__content_type__model=model_names,
-        group__name__in=get_all_groups,
-    )
-    permissions_qs = Permission.objects.filter(
-        id__in=group_permissions.values_list("permission__id", flat=True)
-    )
-
-    permission_by_groups = []
-    if group_id:
-        permission_by_group = AuthGroupPermissionsModel.objects.filter(
-            group_id=group_id,
-            permission__content_type__id=content_types,
-            permission__content_type__model=model_names,
-        )
-        for permission_group in permission_by_group:
-            group_by_permission = {
-                "name": permission_group.permission.name,
-                "content_type_id": permission_group.permission.content_type.id,
-                "is_checked": True,
-            }
-            permission_by_groups.append(group_by_permission)
-
-    for grp_permission in permissions_qs:
-        permission_detail = {
-            "id": grp_permission.id,
-            "name": grp_permission.name,
-            "codename": "codename",
-            "content_type_id": grp_permission.content_type.id,
-            "model_name": grp_permission.content_type.app_label.capitalize(),
-            "is_checked": False,
-        }
-        permission_list.append(permission_detail)
-
-    if len(permission_by_groups) > 0:
-        for permission_by_group in permission_by_groups:
-            for permission in permission_list:
-                if (
-                    permission["name"] == permission_by_group["name"]
-                    and permission["content_type_id"]
-                    == permission_by_group["content_type_id"]
-                ):
-                    permission["is_checked"] = True
-
-    return permission_list
-
-
-def get_group_permission_by_user(custom_group, exclude_group):
-    user_group_permissions = {}
-
-    for group in custom_group:
-        group_id = group.id
-        custom_group_name = group.group_name
-        group_role_family = group.role_family.family_name if group.role_family else None
-
-        if group_id not in user_group_permissions:
-            user_group_permissions[group_id] = {
-                "group_id": group_id,
-                "group_role_family": group_role_family,
-                "group_name": custom_group_name,
+        if role_id not in user_role_permissions:
+            user_role_permissions[role_id] = {
+                "role_id": role_id,
+                "role_name": role_name,
+                "role_family": role_family,
                 "permissions": [],
             }
 
-        # Get only the permissions for this CustomGroup
-        permission_by_group = AuthPermissionModel.objects.filter(
-            authgrouppermissionsmodel__group_id=group_id
+        permission_ids = AuthGroupPermissionsModel.objects.filter(
+            group_id=role_id
+        ).values_list("permission_id", flat=True)
+        permissions = Permission.objects.filter(id__in=permission_ids).select_related(
+            "content_type"
         )
 
-        for permission_group in permission_by_group:
-            group_permission = AuthGroupPermissionsModel.objects.filter(
-                permission=permission_group, group_id=group_id
-            ).first()
-
+        for permission in permissions:
             permission_entry = {
-                "id": group_permission.id if group_permission else None,
-                "permission_id": permission_group.id,
-                "name": permission_group.name,
-                "model_name": (
-                    "RFQ"
-                    if permission_group.content_type.app_label.capitalize() == "Rfq"
-                    else permission_group.content_type.app_label.capitalize()
-                ),
+                **PermissionSerializers(permission).data,
                 "is_checked": True,
             }
-            user_group_permissions[group_id]["permissions"].append(permission_entry)
+            user_role_permissions[role_id]["permissions"].append(permission_entry)
 
     response = sorted(
-        user_group_permissions.values(), key=lambda x: x["group_id"], reverse=False
+        user_role_permissions.values(), key=lambda x: x["role_id"], reverse=False
     )
 
-    return {"user_group_permissions": response}
+    return {"roles": response}
 
 
 def create_company_role_family(request, company_id):

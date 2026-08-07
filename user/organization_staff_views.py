@@ -111,6 +111,7 @@ class OrganizationStaffViewSet(BaseModelViewSet):
                     "must_change_password": True,
                     "created_by": staff.created_by_id,
                     "created_at": staff.created_at,
+                    "profile_image": staff.profile_image,
                 },
                 status=status.HTTP_201_CREATED,
             )
@@ -172,6 +173,7 @@ class OrganizationStaffViewSet(BaseModelViewSet):
                     "message": "Staff updated successfully",
                     "user_id": staff.id,
                     "user_type": staff.user_type,
+                    "profile_image": staff.profile_image,
                 },
                 status=status.HTTP_200_OK,
             )

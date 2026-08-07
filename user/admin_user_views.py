@@ -472,6 +472,15 @@ class BaseAdminProfileViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        if user.is_org_staff:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Organization staff cannot have a personal token pool.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         profile = self.profile_model.objects.filter(user=user).first()
         if not profile:
             return Response(
