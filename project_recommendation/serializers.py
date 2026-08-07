@@ -7,11 +7,10 @@ class ProjectRecommendationSerializer(serializers.ModelSerializer):
     """Read serializer for saved project recommendations.
 
     Mirrors the POST generate response shape (domain, domain_category,
-    assessment_id, education_level, projects) so the frontend renders
-    saved data the same way as freshly generated data.
+    education_level, overview, projects) so the frontend renders saved
+    data the same way as freshly generated data.
     """
 
-    assessment_id = serializers.SerializerMethodField()
     projects = serializers.SerializerMethodField()
 
     class Meta:
@@ -19,20 +18,12 @@ class ProjectRecommendationSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "profile_type",
-            "assessment_id",
             "domain",
             "domain_category",
-            "education_level",
+            "overview",
             "token_usage",
             "last_recommended_at",
             "projects",
-        )
-
-    def get_assessment_id(self, obj):
-        return (
-            obj.student_assessment_id
-            or obj.parent_assessment_id
-            or obj.professional_assessment_id
         )
 
     def get_projects(self, obj):
@@ -40,3 +31,4 @@ class ProjectRecommendationSerializer(serializers.ModelSerializer):
         if isinstance(raw, dict):
             return raw.get("projects", [])
         return []
+

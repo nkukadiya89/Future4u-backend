@@ -17,9 +17,13 @@ class ProjectRecommendationPanel(models.Model):
 class ProjectRecommendation(BaseModule):
     """Persists the full AI-generated project recommendation response.
 
-    One row per assessment (upserted on regeneration). Metadata lives in
-    columns; the full AI payload (projects list) is stored in
-    `raw_ai_response` so the exact generated response is always available.
+    Fully standalone — not linked to any assessment or career
+    recommendation. Generated from domain + domain category dropdowns and
+    an optional overview text. One row per (profile_type, domain,
+    domain_category, overview) input, upserted on regeneration. The full
+    response payload (projects list) is stored in `raw_ai_response` so the
+    exact served response is always available (LLM-generated,
+    token_usage > 0).
     """
 
     class ProfileType(models.TextChoices):
@@ -38,30 +42,9 @@ class ProjectRecommendation(BaseModule):
         related_name="project_recommendations",
         db_index=True,
     )
-    student_assessment = models.OneToOneField(
-        "assessment.StudentAssessment",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="project_recommendation",
-    )
-    parent_assessment = models.OneToOneField(
-        "assessment.ParentAssessment",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="project_recommendation",
-    )
-    professional_assessment = models.OneToOneField(
-        "assessment.ProfessionalAssessment",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="project_recommendation",
-    )
     domain = models.CharField(max_length=250, blank=True, default="")
     domain_category = models.CharField(max_length=250, blank=True, default="")
-    education_level = models.CharField(max_length=150, blank=True, default="")
+    overview = models.TextField(blank=True, default="")
     raw_ai_response = models.JSONField(default=dict, blank=True)
     token_usage = models.PositiveIntegerField(default=0)
     last_recommended_at = models.DateTimeField(null=True, blank=True, db_index=True)
@@ -73,10 +56,4 @@ class ProjectRecommendation(BaseModule):
     def __str__(self):
         return f"ProjectRec {self.id} ({self.profile_type})"
 
-    @property
-    def assessment(self):
-        return (
-            self.student_assessment
-            or self.parent_assessment
-            or self.professional_assessment
-        )
+

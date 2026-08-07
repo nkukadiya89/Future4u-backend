@@ -15,13 +15,9 @@ from django.conf import settings
 from django.contrib import admin
 from django.shortcuts import render
 
-from assessment.models import (
-    ParentAssessment,
-    ProfessionalAssessment,
-    StudentAssessment,
-)
-from common.mixins.admin_mixins import ReadOnlyAdminMixin
 from ai.config import is_configured
+from common.mixins.admin_mixins import ReadOnlyAdminMixin
+from domain.models import Domain
 from project_recommendation.exceptions import (
     ProjectRecommendationConfigurationError,
     ProjectRecommendationValidationError,
@@ -49,9 +45,9 @@ def _provider_status() -> dict:
     if not enabled:
         mode = "disabled"
     elif not configured:
-        mode = f"enabled, {pname} not configured"
+        mode = f"ai mode, {pname} not configured"
     else:
-        mode = f"{pname} project generation"
+        mode = f"ai mode ({pname} project generation)"
     return {
         "project_recommendation_enabled": enabled,
         "provider_name": pname,
@@ -71,41 +67,37 @@ class ProjectRecommendationRunForm(forms.Form):
         empty_label="Select a user",
         help_text="Select the user to generate project recommendations for.",
     )
-    assessment_id = forms.IntegerField(
+    domain_category = forms.ModelChoiceField(
+        queryset=Domain.objects.filter(deleted=False, parent__isnull=True),
         required=True,
-        help_text="Required. Assessment ID to generate projects from.",
+        empty_label="Select Category (Root Domain)",
+        help_text="Select domain category.",
+    )
+    domain = forms.ModelChoiceField(
+        queryset=Domain.objects.filter(deleted=False, parent__isnull=False),
+        required=True,
+        empty_label="Select Domain (Child)",
+        help_text="Select child domain under the category.",
+    )
+    overview = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 3}),
+        required=False,
+        help_text="Optional project overview description.",
     )
 
-    def clean_assessment_id(self):
-        assessment_id = self.cleaned_data["assessment_id"]
-        user = self.cleaned_data.get("user")
-        
-        if user and assessment_id:
-            # Verify assessment exists and belongs to user
-            assessment_models = [
-                StudentAssessment,
-                ParentAssessment,
-                ProfessionalAssessment,
-            ]
-            found = False
-            for ModelClass in assessment_models:
-                try:
-                    ModelClass.objects.get(
-                        id=assessment_id,
-                        user=user,
-                        deleted=False,
-                    )
-                    found = True
-                    break
-                except ModelClass.DoesNotExist:
-                    continue
-            
-            if not found:
+    def clean(self):
+        cleaned_data = super().clean()
+        domain_obj = cleaned_data.get("domain")
+        category_obj = cleaned_data.get("domain_category")
+
+        if domain_obj and category_obj:
+            if domain_obj.parent_id and str(domain_obj.parent_id) != str(category_obj.id):
                 raise forms.ValidationError(
-                    "Assessment not found or does not belong to the selected user."
+                    "Selected Domain does not belong to the selected Domain Category."
                 )
-        
-        return assessment_id
+
+        return cleaned_data
+
 
 
 @admin.register(ProjectRecommendation)
@@ -116,9 +108,8 @@ class ProjectRecommendationAdmin(admin.ModelAdmin):
         "id",
         "profile_type",
         "user",
-        "assessment_link",
         "domain",
-        "education_level",
+        "domain_category",
         "token_usage",
         "last_recommended_at",
         "deleted",
@@ -131,13 +122,9 @@ class ProjectRecommendationAdmin(admin.ModelAdmin):
         "user__last_name",
         "domain",
         "domain_category",
+        "overview",
     )
-    raw_id_fields = (
-        "user",
-        "student_assessment",
-        "parent_assessment",
-        "professional_assessment",
-    )
+    raw_id_fields = ("user",)
     readonly_fields = (
         "created_at",
         "updated_at",
@@ -154,12 +141,9 @@ class ProjectRecommendationAdmin(admin.ModelAdmin):
                 "fields": (
                     "profile_type",
                     "user",
-                    "student_assessment",
-                    "parent_assessment",
-                    "professional_assessment",
                     "domain",
                     "domain_category",
-                    "education_level",
+                    "overview",
                     "token_usage",
                     "last_recommended_at",
                     "deleted",
@@ -190,20 +174,7 @@ class ProjectRecommendationAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related(
-            "user",
-            "student_assessment",
-            "parent_assessment",
-            "professional_assessment",
-        )
-
-    @admin.display(description="Assessment")
-    def assessment_link(self, obj):
-        return (
-            obj.student_assessment_id
-            or obj.parent_assessment_id
-            or obj.professional_assessment_id
-        )
+        return super().get_queryset(request).select_related("user")
 
 
 @admin.register(ProjectRecommendationPanel)
@@ -216,12 +187,21 @@ class ProjectRecommendationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
         if request.method == "POST" and form.is_valid():
             user = form.cleaned_data.get("user")
-            assessment_id = form.cleaned_data["assessment_id"]
+            domain_obj = form.cleaned_data.get("domain")
+            category_obj = form.cleaned_data.get("domain_category")
+            overview = (form.cleaned_data.get("overview") or "").strip()
+
+            generate_kwargs = {
+                "user": user,
+                "domain": domain_obj.domain_name,
+                "domain_category": category_obj.domain_name,
+                "overview": overview,
+            }
 
             generation_input = {
                 "user": user.pk if user else None,
                 "user_email": user.email if user else "",
-                "assessment_id": assessment_id,
+                **generate_kwargs,
             }
 
             diagnostics = {
@@ -232,10 +212,7 @@ class ProjectRecommendationPanelAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
 
             try:
                 service = ProjectRecommendationService()
-                data, token_usage = service.generate(
-                    user=user,
-                    assessment_id=assessment_id,
-                )
+                data, token_usage = service.generate(**generate_kwargs)
                 result = {
                     "data": data,
                     "token_usage": token_usage,

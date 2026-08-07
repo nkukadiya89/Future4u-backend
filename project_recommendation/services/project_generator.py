@@ -37,7 +37,7 @@ class ProjectGenerator:
         domain: str,
         domain_category: str,
         career_name: str,
-        education_level: str = "",
+        overview: str = "",
     ) -> tuple[ProjectRecommendationPayload, int]:
         if not is_configured():
             raise ProjectRecommendationConfigurationError(
@@ -57,7 +57,7 @@ class ProjectGenerator:
                     domain_category=domain_category,
                     career_name=career_name,
                     validation_feedback=validation_feedback,
-                    education_level=education_level,
+                    overview=overview,
                 )
                 return cls._invoke_once(
                     prompt=prompt,

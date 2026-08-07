@@ -12915,7 +12915,7 @@
           "response": []
         },
         {
-          "name": "dropdown (GET)",
+          "name": "dropdown categories (GET)",
           "request": {
             "method": "GET",
             "header": [
@@ -12929,7 +12929,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/domains/dropdown/",
+              "raw": "{{base_url}}/api/domains/dropdown/?root_only=1",
               "host": [
                 "{{base_url}}"
               ],
@@ -12942,17 +12942,94 @@
               "query": [
                 {
                   "key": "root_only",
-                  "value": "true",
-                  "description": "Filter to only parent domains"
-                },
-                {
-                  "key": "parent_id",
-                  "value": "",
-                  "description": "Filter child domains by parent ID"
+                  "value": "1",
+                  "description": "Return only root domains (parent == null) for the category dropdown"
                 }
               ]
-            }
+            },
+            "description": "Step 1 of the project-recommendation flow. Fetches the root domain categories for the first dropdown. Response data: [{ id, domain_code, domain_name, parent_id }]. The test script stores the first category id into {{domain_category_id}}."
           },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Returns categories', function () {",
+                  "  pm.expect(json.success).to.eql(true);",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});",
+                  "if (json.success && json.data && json.data.length) {",
+                  "  pm.collectionVariables.set('domain_category_id', json.data[0].id);",
+                  "  pm.test('domain_category_id set', function () {",
+                  "    pm.expect(pm.collectionVariables.get('domain_category_id')).to.eql(json.data[0].id);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "dropdown children (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/domains/dropdown/?parent_id={{domain_category_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "domains",
+                "dropdown",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "parent_id",
+                  "value": "{{domain_category_id}}",
+                  "description": "Category id from the categories dropdown step; returns the child domains under it"
+                }
+              ]
+            },
+            "description": "Step 2 of the project-recommendation flow. Fetches child domains for the category selected in step 1 (uses {{domain_category_id}}). Response data: [{ id, domain_code, domain_name, parent_id }]. The test script stores the first domain id into {{domain_id}}."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Returns child domains', function () {",
+                  "  pm.expect(json.success).to.eql(true);",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});",
+                  "if (json.success && json.data && json.data.length) {",
+                  "  pm.collectionVariables.set('domain_id', json.data[0].id);",
+                  "  pm.test('domain_id set', function () {",
+                  "    pm.expect(pm.collectionVariables.get('domain_id')).to.eql(json.data[0].id);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
           "response": []
         },
         {
@@ -22252,6 +22329,7 @@
     },
     {
       "name": "project-recommendation",
+      "description": "Student project-recommendation flow. POST /api/project-recommendations/ with domain_id, domain_category_id and an optional overview to generate 3 AI-powered portfolio project ideas (deducts tokens). The served response is persisted so GET returns history after re-login. GET /api/project-recommendations/ lists saved history - paginated via ?page=&pagesize= or the full list via ?no_pagination=1.",
       "item": [
         {
           "name": "generate (POST)",
@@ -22280,13 +22358,33 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"assessment_id\": {{assessment_id}}\n}"
+              "raw": "{\n  \"domain_id\": \"{{domain_id}}\",\n  \"domain_category_id\": \"{{domain_category_id}}\",\n  \"overview\": \"I want to build a career guidance web app\"\n}"
             },
-            "description": "Generates 3 AI-powered portfolio project ideas using assessment_id. Resolves domain and domain_category from the assessment."
-          }
+            "description": "Step 3 of the frontend flow. Generates 3 portfolio project ideas for the selected domain + category (overview optional). Response data: { domain, domain_category, overview, projects: [{ project_name, short_description, difficulty, estimated_duration, industry_relevance, skills_gained, portfolio_value, why_this_project }] }. AI mode deducts tokens. The served response is persisted so GET returns it later."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Success envelope', function () {",
+                  "  pm.expect(json.success).to.eql(true);",
+                  "  pm.expect(json.data).to.be.an('object');",
+                  "  pm.expect(json.data.domain).to.be.a('string');",
+                  "  pm.expect(json.data.domain_category).to.be.a('string');",
+                  "  pm.expect(json.data.projects).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "response": []
         },
         {
-          "name": "get by assessment (GET)",
+          "name": "list (paginated) (GET)",
           "request": {
             "method": "GET",
             "header": [
@@ -22296,7 +22394,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/project-recommendations/?assessment_id={{assessment_id}}",
+              "raw": "{{base_url}}/api/project-recommendations/?page=1&pagesize=10",
               "host": [
                 "{{base_url}}"
               ],
@@ -22307,17 +22405,21 @@
               ],
               "query": [
                 {
-                  "key": "assessment_id",
-                  "value": "{{assessment_id}}"
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
                 }
               ]
             },
-            "description": "Get the saved project recommendation for an assessment. Read from the ProjectRecommendation table (saved by generate). 404 if not generated yet."
+            "description": "Step 4 of the frontend flow. Paginated list of saved project recommendations for the logged-in user. Response: { count, next, previous, results: { success, data } } where each data item has id, profile_type, domain, domain_category, overview, token_usage, last_recommended_at, projects."
           },
           "response": []
         },
         {
-          "name": "list (GET)",
+          "name": "list all (no_pagination=1) (GET)",
           "request": {
             "method": "GET",
             "header": [
@@ -22327,7 +22429,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/project-recommendations/",
+              "raw": "{{base_url}}/api/project-recommendations/?no_pagination=1",
               "host": [
                 "{{base_url}}"
               ],
@@ -22335,14 +22437,21 @@
                 "api",
                 "project-recommendations",
                 ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1"
+                }
               ]
             },
-            "description": "Paginated list of saved project recommendations for the logged-in user. Supports ?no_pagination=1&page=1&pagesize=10."
+            "description": "Full unpaginated list of all saved project recommendations for the logged-in user. Response: { success, data: [...] }."
           },
           "response": []
         }
       ]
     }
+
   ],
   "variable": [
     {

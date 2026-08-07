@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import logging
+from uuid import UUID
 
 from django.conf import settings
-from django.db.models import Q
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from user.permissions import IsIndividualUser
@@ -35,14 +35,22 @@ class ProjectRecommendationAPIView(APIView):
     """
     POST /api/project-recommendations/
 
-    Generates 3 AI-powered portfolio project ideas based on the user's
-    completed assessment. Resolves domain and domain_category from
-    the assessment.
+    Returns 3 portfolio project ideas for the domain dropdowns (master
+    Domain table) plus an optional overview text. Fully standalone — not
+    linked to any assessment or career recommendation.
+
+    Projects are generated via the LLM (deducts tokens). The served
+    response is persisted so saved projects remain visible via GET after
+    the student logs back in.
 
     Request body:
     {
-        "assessment_id": 123
+        "domain_id": "<uuid from /api/domains/dropdown/?parent_id=...>",
+        "domain_category_id": "<uuid from /api/domains/dropdown/?root_only=1>",
+        "overview": "I want to build a career guidance web app"
     }
+
+    Response: domain, domain_category, overview, projects.
     """
 
     authentication_classes = [JWTAuthentication]
@@ -56,46 +64,16 @@ class ProjectRecommendationAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         """
-        GET /api/project-recommendations/?assessment_id=19
+        GET /api/project-recommendations/
 
-        Returns the saved project recommendation for the assessment, or a
-        paginated list of all saved recommendations for the logged-in user
-        when assessment_id is omitted. Data is read from the
-        ProjectRecommendation table (persisted by the POST endpoint).
+        Returns a paginated list of all saved recommendations for the
+        logged-in user (or the full list with ?no_pagination=1). Data is
+        read from the ProjectRecommendation table (persisted by POST).
         """
         queryset = ProjectRecommendation.objects.filter(
             user=request.user,
             deleted=False,
         ).order_by("-last_recommended_at", "-id")
-
-        assessment_id = request.query_params.get("assessment_id")
-        if assessment_id:
-            try:
-                assessment_id = int(assessment_id)
-            except (TypeError, ValueError):
-                return Response(
-                    {
-                        "success": False,
-                        "message": "assessment_id must be an integer",
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            record = queryset.filter(
-                Q(student_assessment_id=assessment_id)
-                | Q(parent_assessment_id=assessment_id)
-                | Q(professional_assessment_id=assessment_id)
-            ).first()
-            if not record:
-                return Response(
-                    {
-                        "success": False,
-                        "message": "Project recommendation not found for this assessment",
-                    },
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-            serializer = ProjectRecommendationSerializer(record)
-            return Response({"success": True, "data": serializer.data})
 
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
@@ -115,31 +93,31 @@ class ProjectRecommendationAPIView(APIView):
         )
 
     def post(self, request, *args, **kwargs):
-        try:
-            assessment_id = int(request.data.get("assessment_id", ""))
-        except (TypeError, ValueError):
+        domain_id = request.data.get("domain_id")
+        domain_category_id = request.data.get("domain_category_id")
+        overview = str(request.data.get("overview", "") or "").strip()
+
+        if not (domain_id and domain_category_id):
             return Response(
                 {
                     "success": False,
-                    "message": "assessment_id is required and must be an integer",
+                    "message": "domain_id and domain_category_id are required",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # One generation per assessment, refreshed yearly: if already saved
-        # and still within the 365-day cycle (counted from the project
-        # recommendation's own date), return the stored result without calling
-        # the AI again (no token deduction).
-        saved = ProjectRecommendationService.get_existing(
-            user=request.user,
-            assessment_id=assessment_id,
+        domain, domain_category, error = self._resolve_domain_inputs(
+            domain_id, domain_category_id
         )
-        if saved is not None:
+        if error:
             return Response(
-                {"success": True, "data": saved},
-                status=status.HTTP_200_OK,
+                {"success": False, "message": error},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Always regenerate: no cooldown/365-day cache on project
+        # recommendations. Each POST runs the LLM, persists the result
+        # and deducts tokens.
         try:
             check_token_available(request.user, "project_gen")
         except Exception as exc:
@@ -166,7 +144,9 @@ class ProjectRecommendationAPIView(APIView):
         try:
             data, token_usage = _service.generate(
                 user=request.user,
-                assessment_id=assessment_id,
+                domain=domain,
+                domain_category=domain_category,
+                overview=overview,
             )
             try:
                 deduct_monthly_tokens(request.user, token_usage)
@@ -220,3 +200,30 @@ class ProjectRecommendationAPIView(APIView):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    @staticmethod
+    def _resolve_domain_inputs(domain_id, domain_category_id):
+        """Resolve dropdown domain IDs to names and validate they belong together."""
+        from domain.models import Domain
+
+        try:
+            domain_uuid = UUID(str(domain_id))
+            category_uuid = UUID(str(domain_category_id))
+        except (ValueError, TypeError):
+            return None, None, "domain_id and domain_category_id must be valid UUIDs"
+
+        domain_obj = Domain.objects.filter(
+            id=domain_uuid, deleted=False
+        ).first()
+        category = Domain.objects.filter(id=category_uuid, deleted=False).first()
+        if not domain_obj or not category:
+            return None, None, "Invalid domain or domain category"
+
+        if domain_obj.parent_id and str(domain_obj.parent_id) != str(category.id):
+            return (
+                None,
+                None,
+                "Selected domain does not belong to the selected domain category",
+            )
+
+        return domain_obj.domain_name, category.domain_name, None
