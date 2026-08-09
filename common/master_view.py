@@ -65,10 +65,9 @@ class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
         return super().get_serializer_class()
 
     def get_response_serializer(self, instance):
-        serializer_class = (self.response_serializer_class or self.get_serializer_class())
+        serializer_class = self.response_serializer_class or self.get_serializer_class()
         return serializer_class(instance, context=self.get_serializer_context())
 
-    
     def get_queryset(self):
         queryset = super().get_queryset()
         if self.action not in [
@@ -145,7 +144,7 @@ class BaseModelViewSet(ListEnvelopeMixin, ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
-    
+
     @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

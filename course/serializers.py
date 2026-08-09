@@ -7,6 +7,7 @@ from user_profile.serializers import get_role_profile
 
 from .models import CourseInquiry, CourseInquiryNote, Courses
 
+
 class CoursesSerializer(BaseModelSerializer):
 
     created_by_name = serializers.SerializerMethodField()
@@ -14,7 +15,9 @@ class CoursesSerializer(BaseModelSerializer):
     state_name = serializers.CharField(source="state.name", read_only=True)
     city_name = serializers.CharField(source="city.name", read_only=True)
     course_provider_name = serializers.SerializerMethodField()
-    education_tags_name = EducationLevelDropdownSerializer(source="education_tags", many=True, read_only=True)
+    education_tags_name = EducationLevelDropdownSerializer(
+        source="education_tags", many=True, read_only=True
+    )
     course_title = serializers.CharField(
         source="name",
         required=False,
@@ -106,8 +109,12 @@ class CoursesSerializer(BaseModelSerializer):
 class CourseInquirySerializer(BaseModelSerializer):
     course_name = serializers.CharField(source="course.name", read_only=True)
     user_name = serializers.CharField(source="user.full_name", read_only=True)
-    career_name = serializers.CharField(source="career_suggestion.career_name", read_only=True)
-    assessment_score = serializers.CharField(source="career_suggestion.match_percentage", read_only=True)
+    career_name = serializers.CharField(
+        source="career_suggestion.career_name", read_only=True
+    )
+    assessment_score = serializers.CharField(
+        source="career_suggestion.match_percentage", read_only=True
+    )
     user_type = serializers.CharField(source="user.user_type", read_only=True)
     inquirer_profile = serializers.SerializerMethodField()
 
@@ -137,11 +144,16 @@ class CourseInquirySerializer(BaseModelSerializer):
             "inquirer_profile",
         ]
 
+
 class CourseInquirySortSerializer(BaseModelSerializer):
     course_name = serializers.CharField(source="course.name", read_only=True)
     user_name = serializers.CharField(source="user.full_name", read_only=True)
-    career_name = serializers.CharField(source="career_suggestion.career_name", read_only=True)
-    assessment_score = serializers.CharField(source="career_suggestion.match_percentage", read_only=True)
+    career_name = serializers.CharField(
+        source="career_suggestion.career_name", read_only=True
+    )
+    assessment_score = serializers.CharField(
+        source="career_suggestion.match_percentage", read_only=True
+    )
     user_type = serializers.CharField(source="user.user_type", read_only=True)
 
     class Meta:
@@ -163,14 +175,14 @@ class CourseInquirySortSerializer(BaseModelSerializer):
             "assessment_score",
         ]
 
+
 class CourseInquiryNoteSerializer(BaseModelSerializer):
 
     class Meta:
         model = CourseInquiryNote
-        fields = BaseModelSerializer.Meta.fields+[
+        fields = BaseModelSerializer.Meta.fields + [
             "id",
             "inquiry",
             "note",
         ]
         read_only_fields = ["inquiry"]
-

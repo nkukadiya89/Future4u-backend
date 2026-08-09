@@ -47,9 +47,7 @@ def bulk_upload_user_task(file_path, admin_id, user_type, **kwargs):
         admin_user = User.objects.get(id=admin_id)
         forced_referred_by_id = kwargs.get("forced_referred_by")
         if forced_referred_by_id is not None:
-            kwargs["forced_referred_by"] = User.objects.get(
-                id=forced_referred_by_id
-            )
+            kwargs["forced_referred_by"] = User.objects.get(id=forced_referred_by_id)
         result = BulkUserUploadService.process_file_path(
             file_path,
             admin_user,

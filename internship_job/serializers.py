@@ -21,7 +21,9 @@ class InternshipSerializer(BaseModelSerializer):
     state_name = serializers.CharField(source="state.name", read_only=True)
     created_by_name = serializers.SerializerMethodField()
     internship_provider_name = serializers.SerializerMethodField()
-    education_tags_name = EducationLevelDropdownSerializer(source="education_tags", many=True, read_only=True)
+    education_tags_name = EducationLevelDropdownSerializer(
+        source="education_tags", many=True, read_only=True
+    )
 
     # Field aliases for the AI generation pipeline / frontend payload
     internship_overview = serializers.CharField(
@@ -166,6 +168,7 @@ class InternshipApplicationSerializer(BaseModelSerializer):
             "applied_at",
         ]
 
+
 class InternshipSortApplicationSerializer(BaseModelSerializer):
     applicant_name = serializers.CharField(source="applicant.full_name", read_only=True)
     applicant_type = serializers.CharField(source="applicant.user_type", read_only=True)
@@ -189,12 +192,15 @@ class InternshipSortApplicationSerializer(BaseModelSerializer):
             "applied_at",
         ]
 
+
 class JobSerializer(BaseModelSerializer):
     city_name = serializers.CharField(source="city.name", read_only=True)
     country_name = serializers.CharField(source="country.name", read_only=True)
     state_name = serializers.CharField(source="state.name", read_only=True)
     job_provider_name = serializers.SerializerMethodField()
-    education_tags_name = EducationLevelDropdownSerializer(source="education_tags", many=True, read_only=True)
+    education_tags_name = EducationLevelDropdownSerializer(
+        source="education_tags", many=True, read_only=True
+    )
 
     job_provider = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.filter(
@@ -276,6 +282,7 @@ class JobApplicationSerializer(BaseModelSerializer):
             "applied_at",
         ]
 
+
 class JobSortApplicationSerializer(BaseModelSerializer):
     applicant_name = serializers.CharField(source="applicant.full_name", read_only=True)
     applicant_type = serializers.CharField(source="applicant.user_type", read_only=True)
@@ -298,6 +305,8 @@ class JobSortApplicationSerializer(BaseModelSerializer):
             "applicant",
             "applied_at",
         ]
+
+
 class InternshipApplicationNoteSerializer(BaseModelSerializer):
 
     class Meta:

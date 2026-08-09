@@ -11,7 +11,9 @@ from project_recommendation.exceptions import ProjectRecommendationAccessDeniedE
 from project_recommendation.services.project_generator import ProjectGenerator
 
 # All assessment models that have domain + domain_category fields
-_ASSESSMENT_MODELS: list[type[StudentAssessment | ParentAssessment | ProfessionalAssessment]] = [
+_ASSESSMENT_MODELS: list[
+    type[StudentAssessment | ParentAssessment | ProfessionalAssessment]
+] = [
     StudentAssessment,
     ParentAssessment,
     ProfessionalAssessment,
@@ -94,27 +96,32 @@ class ProjectRecommendationService:
         from user_profile.models import StudentProfile, ProfessionalProfile
 
         if isinstance(assessment, StudentAssessment):
-            profile = StudentProfile.objects.filter(user=user).select_related(
-                "education_level"
-            ).first()
+            profile = (
+                StudentProfile.objects.filter(user=user)
+                .select_related("education_level")
+                .first()
+            )
             if profile and profile.education_level_id:
                 return getattr(profile.education_level, "display_name", "") or ""
 
         elif isinstance(assessment, ParentAssessment):
             # Parent is assessing for a child — get child's education level
             from user_profile.models import ChildProfile
-            child = ChildProfile.objects.select_related(
-                "education_level"
-            ).filter(
-                id=assessment.child_id
-            ).first()
+
+            child = (
+                ChildProfile.objects.select_related("education_level")
+                .filter(id=assessment.child_id)
+                .first()
+            )
             if child and child.education_level_id:
                 return getattr(child.education_level, "display_name", "") or ""
 
         elif isinstance(assessment, ProfessionalAssessment):
-            profile = ProfessionalProfile.objects.filter(user=user).select_related(
-                "education_level"
-            ).first()
+            profile = (
+                ProfessionalProfile.objects.filter(user=user)
+                .select_related("education_level")
+                .first()
+            )
             if profile and profile.education_level_id:
                 return getattr(profile.education_level, "display_name", "") or ""
 

@@ -16,7 +16,9 @@ def backfill_job_provider_from_corporate(apps, schema_editor):
 
     if jobs:
         Job.objects.bulk_update(jobs, ["job_provider"])
-        print(f"  Fixed {len(jobs)} job(s) with null job_provider backfilled from corporate.user")
+        print(
+            f"  Fixed {len(jobs)} job(s) with null job_provider backfilled from corporate.user"
+        )
 
 
 class Migration(migrations.Migration):

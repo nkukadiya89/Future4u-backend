@@ -3,8 +3,7 @@ from __future__ import annotations
 from langchain_core.prompts import ChatPromptTemplate
 
 
-_OUTPUT_SHAPE = (
-    """{{
+_OUTPUT_SHAPE = """{{
     "project_name": "",
     "short_description": "",
     "difficulty": "",
@@ -15,7 +14,6 @@ _OUTPUT_SHAPE = (
     "portfolio_value": "",
     "why_this_project": ""
 }}"""
-)
 
 SYSTEM_PROMPT = (
     "You are an expert Career Portfolio Project Recommendation AI.\n\n"
@@ -97,10 +95,12 @@ USER_PROMPT = (
 
 
 def build_project_prompt() -> ChatPromptTemplate:
-    return ChatPromptTemplate.from_messages([
-        ("system", SYSTEM_PROMPT),
-        ("human", USER_PROMPT),
-    ])
+    return ChatPromptTemplate.from_messages(
+        [
+            ("system", SYSTEM_PROMPT),
+            ("human", USER_PROMPT),
+        ]
+    )
 
 
 def format_prompt_inputs(

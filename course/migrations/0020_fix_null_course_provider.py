@@ -8,7 +8,7 @@ def fix_null_course_provider(apps, schema_editor):
         created_by__isnull=False,
         created_by__user_type__in=["school_college", "institute"],
     ).update(course_provider=models.F("created_by"))
-    
+
     if updated:
         print(f"  Fixed {updated} course(s) with null course_provider")
 

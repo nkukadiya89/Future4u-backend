@@ -40,6 +40,7 @@ def _pretty_json(value) -> str:
 
 def _provider_status() -> dict:
     from ai.config import llm_provider
+
     configured = is_configured()
     enabled = getattr(settings, "PROJECT_RECOMMENDATION_ENABLED", True)
     pname = llm_provider()
@@ -76,7 +77,7 @@ class ProjectRecommendationRunForm(forms.Form):
     def clean_assessment_id(self):
         assessment_id = self.cleaned_data["assessment_id"]
         user = self.cleaned_data.get("user")
-        
+
         if user and assessment_id:
             # Verify assessment exists and belongs to user
             assessment_models = [
@@ -96,12 +97,12 @@ class ProjectRecommendationRunForm(forms.Form):
                     break
                 except ModelClass.DoesNotExist:
                     continue
-            
+
             if not found:
                 raise forms.ValidationError(
                     "Assessment not found or does not belong to the selected user."
                 )
-        
+
         return assessment_id
 
 

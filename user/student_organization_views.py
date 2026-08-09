@@ -167,7 +167,6 @@ class OrganizationStudentViewSet(BaseModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-
     @action(detail=True, methods=["get"], url_path="assessments")
     def student_assessment(self, request, pk=None):
         student = self.get_object()

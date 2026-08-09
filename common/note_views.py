@@ -66,7 +66,7 @@ class BaseLeadNoteViewSet(BaseModelViewSet):
     def _lead_id_of(self, instance):
         """Return the lead id of a note instance (e.g. instance.inquiry_id)."""
         return getattr(instance, f"{self.note_lead_field}_id")
-    
+
     def _log_note_event(self, action, description, lead_id, note_id=None):
         from activity_log.services import log_event
 

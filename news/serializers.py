@@ -7,22 +7,16 @@ from rest_framework import serializers
 from .models import News
 
 
-class NewsSerializer(serializers.ModelSerializer):
-    """Serializer used for create/update operations."""
+class BaseNewsSerializer(serializers.ModelSerializer):
+    """Base serializer that returns a unified, filtered representation.
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        # Override image field to return S3 URL directly
-        if instance.image and instance.image.name:
-            if instance.image.name.startswith("http"):
-                data["image"] = instance.image.name
-            else:
-                request = self.context.get("request")
-                if request:
-                    data["image"] = request.build_absolute_uri(instance.image.url)
-                else:
-                    data["image"] = instance.image.url
-        return data
+    It exposes the superset of all fields used by the different News serializers
+    and filters out keys with `None` values so responses remain compact while
+    consistent across list/detail/create/update views.
+    """
+
+    image = serializers.SerializerMethodField()
+    highlights = serializers.SerializerMethodField()
 
     class Meta:
         model = News
@@ -35,8 +29,40 @@ class NewsSerializer(serializers.ModelSerializer):
             "image",
             "is_published",
             "published_at",
+            "highlights",
         ]
         read_only_fields = ["id"]
+
+    def get_image(self, obj: News) -> Optional[str]:
+        if obj.image:
+            image_path = getattr(obj.image, "name", None)
+            if image_path and image_path.startswith("http"):
+                return image_path
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
+
+    def get_highlights(self, obj: News) -> Optional[Dict[str, Any]]:
+        if not getattr(obj, "content", None):
+            return None
+        summary = obj.content.strip()[:200]
+        first_line = obj.content.strip().split("\n", 1)[0]
+        return {"heading": first_line[:120], "summary": summary}
+
+    def to_representation(self, instance):
+        """Return only keys that have a non-None value.
+
+        Note: boolean False and numeric 0 are considered valid values and will
+        be included because they are not `None`.
+        """
+        data = super().to_representation(instance)
+        return {k: v for k, v in data.items() if v is not None}
+
+
+class NewsSerializer(BaseNewsSerializer):
+    """Serializer used for create/update operations."""
 
     def create(self, validated_data):
         image_file = validated_data.pop("image", None)
@@ -87,72 +113,15 @@ class NewsSerializer(serializers.ModelSerializer):
         return instance
 
 
-class NewsListSerializer(serializers.ModelSerializer):
-    """Compact representation for lists."""
+class NewsListSerializer(BaseNewsSerializer):
+    """Compact representation for lists (unified response)."""
 
-    image_url = serializers.SerializerMethodField()
-
-    class Meta:
-        model = News
-        fields = [
-            "id",
-            "title",
-            "short_description",
-            "category",
-            "image_url",
-            "published_at",
-        ]
-
-    def get_image_url(self, obj: News) -> Optional[str]:
-        if obj.image:
-            # Return the raw S3 URL directly (stored in image.name)
-            image_path = obj.image.name
-            if image_path and image_path.startswith("http"):
-                return image_path
-            # Fallback for local files
-            request = self.context.get("request")
-            if request:
-                return request.build_absolute_uri(obj.image.url)
-            return obj.image.url
-        return None
+    class Meta(BaseNewsSerializer.Meta):
+        pass
 
 
-class NewsDetailSerializer(serializers.ModelSerializer):
-    """Detailed representation for single object views."""
+class NewsDetailSerializer(BaseNewsSerializer):
+    """Detailed representation for single object views (unified response)."""
 
-    image_url = serializers.SerializerMethodField()
-    highlights = serializers.SerializerMethodField()
-
-    class Meta:
-        model = News
-        fields = [
-            "id",
-            "title",
-            "category",
-            "image_url",
-            "published_at",
-            "content",
-            "highlights",
-        ]
-
-    def get_image_url(self, obj: News) -> Optional[str]:
-        if obj.image:
-            # If it's an S3 URL, return it directly
-            if obj.image.name.startswith("http"):
-                return obj.image.name
-            # Otherwise, build absolute URI for local files
-            request = self.context.get("request")
-            if request:
-                return request.build_absolute_uri(obj.image.url)
-            return obj.image.url
-        return None
-
-    def get_highlights(self, obj: News) -> Optional[Dict[str, Any]]:
-        """Create an optional highlights summary. Keeps things lightweight for UI."""
-
-        # Simple heuristic: first 200 chars as summary and first line as heading
-        if not obj.content:
-            return None
-        summary = obj.content.strip()[:200]
-        first_line = obj.content.strip().split("\n", 1)[0]
-        return {"heading": first_line[:120], "summary": summary}
+    class Meta(BaseNewsSerializer.Meta):
+        pass

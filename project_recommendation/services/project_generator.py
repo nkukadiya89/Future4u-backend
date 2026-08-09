@@ -154,7 +154,7 @@ def _extract_text_content(result: Any) -> str:
             # Remove opening fence (```json, ```python, or just ```)
             first_newline = content.find("\n")
             if first_newline != -1:
-                content = content[first_newline + 1:]
+                content = content[first_newline + 1 :]
             # Remove closing fence
             if content.endswith("```"):
                 content = content[:-3].rstrip()

@@ -8,7 +8,7 @@ def fix_null_internship_provider(apps, schema_editor):
         created_by__isnull=False,
         created_by__user_type__in=["institute", "corporate"],
     ).update(internship_provider=models.F("created_by"))
-    
+
     if updated:
         print(f"  Fixed {updated} internship(s) with null internship_provider")
 

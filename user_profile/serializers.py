@@ -127,9 +127,7 @@ class StudentProfileSerializer(
     city_name = serializers.CharField(
         source="user.city.name", read_only=True, default=None
     )
-    address = serializers.CharField(
-        source="user.address", read_only=True, default=None
-    )
+    address = serializers.CharField(source="user.address", read_only=True, default=None)
     first_name = serializers.CharField(source="user.first_name", read_only=True)
     last_name = serializers.CharField(source="user.last_name", read_only=True)
     phone = serializers.CharField(source="user.phone", read_only=True)
@@ -324,9 +322,7 @@ class ProfessionalProfileSerializer(
     city_name = serializers.CharField(
         source="user.city.name", read_only=True, default=None
     )
-    address = serializers.CharField(
-        source="user.address", read_only=True, default=None
-    )
+    address = serializers.CharField(source="user.address", read_only=True, default=None)
     first_name = serializers.CharField(source="user.first_name", read_only=True)
     last_name = serializers.CharField(source="user.last_name", read_only=True)
     phone = serializers.CharField(source="user.phone", read_only=True)
@@ -770,7 +766,14 @@ class ChildProfileSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ("id", "parent_profile", "created_by", "updated_by", "created_at", "updated_at")
+        read_only_fields = (
+            "id",
+            "parent_profile",
+            "created_by",
+            "updated_by",
+            "created_at",
+            "updated_at",
+        )
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()
