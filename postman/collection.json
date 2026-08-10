@@ -18,7 +18,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/activity-log/?no_pagination=1&pagesize=10",
+              "raw": "{{base_url}}/activity-log/?event=auth.login&from_date=2026-08-01&to_date=2026-08-06&no_pagination=1&pagesize=10",
               "host": [
                 "{{base_url}}"
               ],
@@ -28,19 +28,18 @@
               "query": [
                 {
                   "key": "event",
-                  "value": "user.login"
+                  "value": "auth.login",
+                  "description": "Filter by event name, e.g. user.tokens_deducted, role.created."
                 },
                 {
                   "key": "from_date",
-                  "value": "2026-07-01"
+                  "value": "2026-08-01",
+                  "description": "Optional. Only events on or after this date (YYYY-MM-DD)."
                 },
                 {
                   "key": "to_date",
-                  "value": "2026-07-08"
-                },
-                {
-                  "key": "user_id",
-                  "value": "1"
+                  "value": "2026-08-06",
+                  "description": "Optional. Only events on or before this date (YYYY-MM-DD)."
                 },
                 {
                   "key": "search",
@@ -57,7 +56,8 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "description": "Audit trail list. Authentication determines the dataset: super admin sees all logs; everyone else sees only their own. Optional filters: ?event (event name), ?from_date / ?to_date (YYYY-MM-DD), ?search (text). Pagination via ?page / ?pagesize, or ?no_pagination=1."
         },
         {
           "name": "mine (GET)",
@@ -7148,188 +7148,6 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/role-family/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "role-family"
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1"
-                },
-                {
-                  "key": "pagesize",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/role-family/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "role-family"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"family_name\": \"string\", \"created_by\": 1, \"updated_by\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/role-family/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "role-family",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/role-family/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "role-family",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"family_name\": \"string\", \"created_by\": 1, \"updated_by\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/role-family/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "role-family",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"family_name\": \"string\", \"created_by\": 1, \"updated_by\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/role-family/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "role-family",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
               "raw": "{{base_url}}/verified-otp/",
               "host": [
                 "{{base_url}}"
@@ -7653,1689 +7471,6 @@
           "response": []
         },
         {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-group/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "create-group"
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1"
-                },
-                {
-                  "key": "pagesize",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-group/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "create-group"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "archive_group_permissions_list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-group/archive-group-permissions-list/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "create-group",
-                "archive-group-permissions-list"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "create-group",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "create-group",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "create-group",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "create-group",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-group/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-group"
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1"
-                },
-                {
-                  "key": "pagesize",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-group/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-group"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "archive_group_permissions_list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-group/archive-group-permissions-list/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-group",
-                "archive-group-permissions-list"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-group",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-group",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-group",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-group",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/assign-user-group/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "assign-user-group"
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1"
-                },
-                {
-                  "key": "pagesize",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/assign-user-group/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "assign-user-group"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/assign-user-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "assign-user-group",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/assign-user-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "assign-user-group",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/assign-user-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "assign-user-group",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/assign-user-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "assign-user-group",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-group-permissions/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "create-group-permissions"
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1"
-                },
-                {
-                  "key": "pagesize",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-group-permissions/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "create-group-permissions"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "get_group_permission_by_user (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-group-permissions/get-group-permission-by-user/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "create-group-permissions",
-                "get-group-permission-by-user"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-group-permissions/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "create-group-permissions",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-group-permissions/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "create-group-permissions",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-group-permissions/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "create-group-permissions",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/create-group-permissions/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "create-group-permissions",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/delete-group-permissions/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "delete-group-permissions"
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1"
-                },
-                {
-                  "key": "pagesize",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/delete-group-permissions/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "delete-group-permissions"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "restore_group_permissions (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/delete-group-permissions/restore-group-permissions/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "delete-group-permissions",
-                "restore-group-permissions"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/delete-group-permissions/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "delete-group-permissions",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/delete-group-permissions/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "delete-group-permissions",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/delete-group-permissions/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "delete-group-permissions",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"company\": 1, \"created_by\": 1, \"updated_by\": 1, \"created_at\": \"2026-01-01T00:00:00Z\", \"updated_at\": \"2026-01-01T00:00:00Z\", \"deleted\": true}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/delete-group-permissions/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "delete-group-permissions",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-all-permission-list/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-all-permission-list"
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1"
-                },
-                {
-                  "key": "pagesize",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-all-permission-list/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-all-permission-list"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\": \"string\", \"codename\": \"string\", \"content_type\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-all-permission-list/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-all-permission-list",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-all-permission-list/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-all-permission-list",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\": \"string\", \"codename\": \"string\", \"content_type\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-all-permission-list/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-all-permission-list",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\": \"string\", \"codename\": \"string\", \"content_type\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-all-permission-list/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-all-permission-list",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/list-permission/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "list-permission"
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1"
-                },
-                {
-                  "key": "pagesize",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/list-permission/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "list-permission"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\": \"string\", \"codename\": \"string\", \"content_type\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "get_purticlare_permission (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/list-permission/get-purticlare-permission/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "list-permission",
-                "get-purticlare-permission"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "group_wise_permission (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/list-permission/group-wise-permission/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "list-permission",
-                "group-wise-permission"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\": \"string\", \"codename\": \"string\", \"content_type\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "model_wise_permission (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/list-permission/model-wise-permission/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "list-permission",
-                "model-wise-permission"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/list-permission/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "list-permission",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/list-permission/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "list-permission",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\": \"string\", \"codename\": \"string\", \"content_type\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/list-permission/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "list-permission",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\": \"string\", \"codename\": \"string\", \"content_type\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/list-permission/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "list-permission",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-group-permission/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-group-permission"
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1"
-                },
-                {
-                  "key": "pagesize",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-group-permission/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-group-permission"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\": \"string\", \"codename\": \"string\", \"content_type\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-group-permission/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-group-permission",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-group-permission/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-group-permission",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\": \"string\", \"codename\": \"string\", \"content_type\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-group-permission/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-group-permission",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\": \"string\", \"codename\": \"string\", \"content_type\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/get-group-permission/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "get-group-permission",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "list (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/assign-permission-group/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "assign-permission-group"
-              ],
-              "query": [
-                {
-                  "key": "no_pagination",
-                  "value": "1"
-                },
-                {
-                  "key": "pagesize",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "create (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/assign-permission-group/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "assign-permission-group"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\": \"string\", \"codename\": \"string\", \"content_type\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "retrieve (GET)",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/assign-permission-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "assign-permission-group",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "update (PUT)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/assign-permission-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "assign-permission-group",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\": \"string\", \"codename\": \"string\", \"content_type\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "partial_update (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/assign-permission-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "assign-permission-group",
-                "1"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\": \"string\", \"codename\": \"string\", \"content_type\": 1}"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "destroy (DELETE)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/assign-permission-group/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "assign-permission-group",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
           "name": "user-detail (GET)",
           "request": {
             "method": "GET",
@@ -9394,6 +7529,672 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Roles & Permissions",
+      "item": [
+        {
+          "name": "Roles",
+          "item": [
+            {
+              "name": "List Roles (GET)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/roles/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "roles"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Role (POST)",
+              "description": "Creates a role with a role family and a permission set. Fields: role_name (required), role_family (optional role-family id), permissions (optional list of permission ids or codenames e.g. \"view_courses\" - get valid ids from \"list permissions\").",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/roles/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "roles"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role_name\": \"Role Name\",\n  \"role_family\": {{role_family_id}},\n  \"permissions\": [{{permission_id}}]\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Role (GET)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/roles/{{role_id}}/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "roles",
+                    "{{role_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Role (PATCH)",
+              "description": "Partial update - only the fields you send are changed. Send \"permissions\" to replace the permission set; [] clears all permissions; omitting or null leaves them unchanged. Ownership-scoped to roles you created (super admins bypass).",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/roles/{{role_id}}/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "roles",
+                    "{{role_id}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role_name\": \"Updated Role Name\",\n  \"permissions\": [{{permission_id}}]\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Role (DELETE)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/roles/{{role_id}}/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "roles",
+                    "{{role_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Role Permissions (GET)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/roles/get-role-permissions/?role_id={{role_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "roles",
+                    "get-role-permissions"
+                  ],
+                  "query": [
+                    {
+                      "key": "role_id",
+                      "value": "{{role_id}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Current User Role Permissions (GET)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/roles/get-role-permission-by-user/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "roles",
+                    "get-role-permission-by-user"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Assign Role to User (POST)",
+              "description": "Assigns a role to one or more users. Fields: user_id (array of user ids), role_id (role id). Ownership-scoped: you can only assign roles you created to users you created (super admins bypass).",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/assign-role/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "assign-role"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": [{{user_id}}],\n  \"role_id\": {{role_id}}\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Archive Roles (POST)",
+              "description": "Soft-deletes roles. Body: role_ids (list of role ids). Ownership-scoped to roles you created (super admins bypass).",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/role-archive/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "role-archive"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role_ids\": [{{role_id}}]\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Archived Roles (GET)",
+              "description": "Lists the soft-deleted roles created by the current user. Optional query params: pagesize, search, ordering, no_pagination.",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/role-archive/archived/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "role-archive",
+                    "archived"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Restore Roles (POST)",
+              "description": "Restores archived roles. Body: role_ids (list of role ids). Ownership-scoped to roles you created (super admins bypass).",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/role-archive/restore/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "role-archive",
+                    "restore-group-permissions"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role_ids\": [{{role_id}}]\n}"
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Permissions",
+          "item": [
+            {
+              "name": "List Permissions (GET)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/permissions/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "permissions"
+                  ],
+                  "query": [
+                    {
+                      "key": "no_pagination",
+                      "value": "1"
+                    },
+                    {
+                      "key": "pagesize",
+                      "value": "10"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Role-wise Permissions (PATCH)",
+              "description": "Body: role_id (single id) or role_ids (list). Returns the permissions assigned to the given role(s).",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/permissions/role-wise-permission/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "permissions",
+                    "role-wise-permission"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role_id\": {{role_id}}\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Model-wise Permissions (GET)",
+              "description": "Query params: app_label (e.g. \"course\") and model_name (e.g. \"courses\") - both required. Returns the permissions available for that model.",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/permissions/model-wise-permission/?app_label=course&model_name=courses",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "permissions",
+                    "model-wise-permission"
+                  ],
+                  "query": [
+                    {
+                      "key": "app_label",
+                      "value": "course"
+                    },
+                    {
+                      "key": "model_name",
+                      "value": "courses"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Assign Permissions to Role (POST)",
+              "description": "Adds permissions to a role by codename (e.g. [\"view_courses\", \"generate_course\"]), not by id. Ownership-scoped to roles you created (super admins bypass).",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/assign-role-permission/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "assign-role-permission"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role_id\": {{role_id}},\n  \"codename\": [\"view_courses\"]\n}"
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Role Families",
+          "item": [
+            {
+              "name": "List Role Families (GET)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/role-family/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "role-family"
+                  ],
+                  "query": [
+                    {
+                      "key": "no_pagination",
+                      "value": "1"
+                    },
+                    {
+                      "key": "pagesize",
+                      "value": "10"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Role Family (POST)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/role-family/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "role-family"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"family_name\": \"Role Family Name\"\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Role Family (GET)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/role-family/{{role_family_id}}/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "role-family",
+                    "{{role_family_id}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Role Family (PUT)",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/role-family/{{role_family_id}}/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "role-family",
+                    "{{role_family_id}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"family_name\": \"Updated Role Family\"\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Role Family (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/role-family/{{role_family_id}}/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "role-family",
+                    "{{role_family_id}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"family_name\": \"Updated Role Family\"\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Role Family (DELETE)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/role-family/{{role_family_id}}/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "role-family",
+                    "{{role_family_id}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": "Role & permission management (RBAC): create roles, assign permissions to roles, assign roles to users, list permissions and role families.\n\nThe API speaks role vocabulary throughout (e.g. /roles/, role_id, role_name). Requires Bearer {{access_token}}; role-management writes are limited to organization owners and super admins (org staff and students are blocked)."
     },
     {
       "name": "Organization Students",
@@ -9746,6 +8547,307 @@
       ]
     },
     {
+      "name": "Organization Staff",
+      "item": [
+        {
+          "name": "list organization staff (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-staff/?pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-staff",
+                "?pagesize=10"
+              ],
+              "query": [
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create organization staff (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-staff/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-staff",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"email\":\"{{user_email}}\",\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"country\":\"{{country_id}}\",\"state\":\"{{state_id}}\",\"city\":\"{{city_id}}\",\"address\":\"{{address}}\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retrieve organization staff (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-staff/{{organization_staff_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-staff",
+                "{{organization_staff_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update organization staff (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-staff/{{organization_staff_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-staff",
+                "{{organization_staff_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"first_name\":\"Updated\",\"phone\":\"9876543211\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete organization staff (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-staff/{{organization_staff_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-staff",
+                "{{organization_staff_id}}",
+                ""
+              ]
+            },
+            "description": "Soft-delete (archive) a single staff member created by the authenticated organization user.\n\nDELETE /organization-staff/{organization_staff_id}/\n\nSet {{organization_staff_id}} from the create or list response. Only non-active staff can be deleted (active staff must first be set to inactive via update-status).\n\n200 on success, 400 if the staff member is active, 404 if not found or not created by this user."
+          },
+          "response": []
+        },
+        {
+          "name": "update organization staff status (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-staff/update-status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-staff",
+                "update-status",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [{{organization_staff_id}}], \"status\": \"active\"}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk archive organization staff (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-staff/bulk-archive/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-staff",
+                "bulk-archive",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [{{organization_staff_id}}]}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "list archived organization staff (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-staff/archive-list/?pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-staff",
+                "archive-list",
+                "?pagesize=10"
+              ],
+              "query": [
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bulk restore organization staff (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-staff/bulk-restore/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-staff",
+                "bulk-restore",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"ids\": [{{organization_staff_id}}]}"
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Organization admin staff management. Requires Bearer {{access_token}} and an org user_type (school_college / institute / corporate). Base path: /organization-staff/\n\nOwnership is enforced via created_by + user_type: a staff member is created with user_type = creator's user_type, created_by = creator, is_org_staff = true, status pending, unusable password and a password setup link. Staff never auto-receive monthly AI tokens (their token pool starts at 0); super admin can grant via the existing update-tokens endpoint. Roles are assigned through the existing /assign-role/ endpoint — no role_id during creation.\n\nEndpoints: create, list, retrieve, update (PATCH), update-status, bulk-archive, archive-list, bulk-restore, destroy."
+    },
+    {
       "name": "Organization Token Usage",
       "item": [
         {
@@ -9781,24 +8883,70 @@
                   "value": "School"
                 },
                 {
-                  "key": "id",
-                  "value": ""
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "List organization users with token usage stats.\n\nAuthentication determines the dataset (same as staff-usage):\n- Super admin: all organizations; optional ?user_type narrows.\n- Org owner: own organization only.\n\nOptional query params:\n- ?user_type=school_college|institute|corporate (super admin)\n- ?search=name\n- ?page=1\n\nResponse item fields: id, user, organization, login_type, monthly_limit, used_tokens, remaining_tokens, usage_percentage."
+          }
+        },
+        {
+          "name": "Staff Usage (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/org-token-usage/staff-usage/?user_type=institute&from_date=2026-08-01&to_date=2026-08-06&search=staff",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "org-token-usage",
+                "staff-usage"
+              ],
+              "query": [
+                {
+                  "key": "user_type",
+                  "value": "institute",
+                  "description": "Optional (super admin). Narrow to one org type: school_college | institute | corporate."
                 },
                 {
-                  "key": "user",
-                  "value": ""
+                  "key": "from_date",
+                  "value": "2026-08-01",
+                  "description": "Optional. Only consumption on or after this date (YYYY-MM-DD)."
+                },
+                {
+                  "key": "to_date",
+                  "value": "2026-08-06",
+                  "description": "Optional. Only consumption on or before this date (YYYY-MM-DD)."
+                },
+                {
+                  "key": "search",
+                  "value": "staff",
+                  "description": "Optional. Search organization name / owner name / email."
                 },
                 {
                   "key": "page",
                   "value": "1"
                 },
                 {
-                  "key": "ordering",
-                  "value": ""
+                  "key": "pagesize",
+                  "value": "10"
                 }
               ]
             },
-            "description": "List all organization users with token usage stats. Admin only.\n\nSupports query params:\n- ?user_type=institute|school_college|corporate\n- ?id={profile_id}\n- ?user={user_id}\n- ?search=name\n- ?ordering=monthly_limit|-remaining_tokens\n- ?page=1"
+            "description": "Per-staff AI token consumption, grouped by organization owner.\n\nAuthentication determines the dataset (same as /api/org-token-usage/):\n- Super admin: all organizations by default; optional ?user_type / ?search narrow it.\n- Org owner: always their own organization only.\n- Org staff / students / parents / professionals: forbidden (403).\n\nOptional query params:\n- ?user_type=school_college|institute|corporate (super admin)\n- ?from_date=YYYY-MM-DD / ?to_date=YYYY-MM-DD (consumption window)\n- ?search=name (organization / owner)\n- ?page=1\n\nResponse: list of groups: { owner: {id, organization, user_type}, staff: [ {user, user_name, user_email, tokens_used, requests, last_activity_at, features[]} ] }.\nFeatures: feature_code, tokens, requests. Groups sorted by total tokens used, descending."
           }
         }
       ]
@@ -19576,7 +18724,7 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"closed\",\n  \"ids\": [{{internship_id}}]\n}"
             },
-            "description": "Admins can update any internship. Institute, school/college, and corporate providers can update only internships they own. Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."
+            "description": "Admins can update any internship. Institute and corporate providers can update only internships they own. Valid statuses: draft, active, closed. Returns updated_ids, skipped_ids, and not_found_ids."
           },
           "response": []
         },
@@ -22439,6 +21587,18 @@
     },
     {
       "key": "job_application_note_id",
+      "value": "1"
+    },
+    {
+      "key": "role_id",
+      "value": "1"
+    },
+    {
+      "key": "role_family_id",
+      "value": "1"
+    },
+    {
+      "key": "permission_id",
       "value": "1"
     }
   ]

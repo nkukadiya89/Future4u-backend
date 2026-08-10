@@ -48,6 +48,7 @@ from user_profile.models import (
     StudentProfile,
 )
 from utils.pagination import Pagination
+from utils.token_check import _check_org_monthly_reset
 
 
 class BaseAdminProfileViewSet(ModelViewSet):
@@ -472,6 +473,15 @@ class BaseAdminProfileViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        if user.is_org_staff:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Organization staff cannot have a personal token pool.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         profile = self.profile_model.objects.filter(user=user).first()
         if not profile:
             return Response(
@@ -482,9 +492,17 @@ class BaseAdminProfileViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        profile.extra_token_limit = (profile.extra_token_limit or 0) + extra
-        profile.token_limit = (profile.token_limit or 0) + extra
-        profile.save(update_fields=["extra_token_limit", "token_limit"])
+        with transaction.atomic():
+            profile = (
+                self.profile_model.objects.select_for_update().get(id=profile.id)
+            )
+            _check_org_monthly_reset(profile, user.user_type)
+
+            previous_extra = profile.extra_token_limit or 0
+            before_token = profile.token_limit or 0
+            profile.extra_token_limit = previous_extra + extra
+            profile.token_limit = before_token + extra
+            profile.save(update_fields=["extra_token_limit", "token_limit"])
 
         log_event(
             event="user.tokens_updated",
@@ -494,6 +512,13 @@ class BaseAdminProfileViewSet(ModelViewSet):
             user=request.user,
             entity_type="user",
             entity_id=user.id,
+            metadata={
+                "previous_extra": previous_extra,
+                "new_extra": profile.extra_token_limit,
+                "token_increase": extra,
+                "token_limit_before": before_token,
+                "token_limit_after": profile.token_limit,
+            },
             request=request,
         )
 

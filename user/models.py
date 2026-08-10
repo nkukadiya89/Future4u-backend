@@ -79,6 +79,11 @@ class User(AbstractUser):
     is_active = models.BooleanField(default=False)
     status = models.CharField(choices=STATUS_CHOICES, default="pending", max_length=25)
     user_type = models.CharField(max_length=30, choices=Role.choices)
+    is_org_staff = models.BooleanField(
+        default=False,
+        help_text="True for staff users created by an organization admin. "
+        "Staff never receive an automatic monthly token allowance.",
+    )
     email_verified = models.BooleanField(default=False)
     password_last_changed = models.DateTimeField(null=True, blank=True)
     keep_me_logged_in = models.BooleanField(default=False)
@@ -157,11 +162,16 @@ class User(AbstractUser):
         self.full_name = f"{self.first_name} {self.last_name}".strip()
         super().save(*args, **kwargs)
 
-        if not skip_group_assignment:
+        # Org staff are identity-only: never auto-assign a default role group;
+        # the org owner assigns roles later via /assign-role/.
+        if not skip_group_assignment and not self.is_org_staff:
             self.assign_group_based_on_role()
 
     def assign_group_based_on_role(self):
-        """Assign user to corresponding group based on user_type"""
+        # Soft-deleted users must never receive (or re-gain) a default role.
+        if self.deleted:
+            return
+
         role_group_mapping = {
             self.Role.STUDENT: "Student",
             self.Role.PARENT: "Parent",
@@ -174,14 +184,20 @@ class User(AbstractUser):
 
         group_name = role_group_mapping.get(self.user_type)
         if group_name:
-            try:
-                group = CustomGroup.objects.get(name=group_name)
-                self.groups.remove(
-                    *CustomGroup.objects.filter(name__in=role_group_mapping.values())
-                )
+            group = CustomGroup.objects.filter(
+                name=group_name, deleted=False
+            ).first()
+            if group and not self.groups.exists():
                 self.groups.add(group)
-            except CustomGroup.DoesNotExist:
-                pass
+
+    def get_owner_user(self):
+        """Return the owning user account for this user.
+
+        Organization staff act on behalf of the user that created them.
+        """
+        if self.is_org_staff and self.created_by:
+            return self.created_by
+        return self
 
     @property
     def full_name_property(self):

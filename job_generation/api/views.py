@@ -19,7 +19,7 @@ from job_generation.exceptions import (
 )
 from job_generation.serializers.job_generation_input import JobGenerationInputSerializer
 from job_generation.services.job_generation_service import JobGenerationService
-from user.permissions import IsAdminOrProvider
+from user.permissions import HasPerm
 from utils.throttles import JobGenerationRateThrottle
 from utils.token_check import check_token_available, deduct_monthly_tokens
 
@@ -34,7 +34,8 @@ class JobGenerationAPIView(APIView):
     """
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, IsAdminOrProvider]
+    permission_classes = [IsAuthenticated, HasPerm]
+    required_permission = "job_generation.generate_job"
     throttle_classes = [JobGenerationRateThrottle]
 
     def post(self, request, *args, **kwargs):
@@ -45,7 +46,6 @@ class JobGenerationAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Check token availability before AI call
         try:
             check_token_available(request.user, "job_gen")
         except Exception as exc:
@@ -60,9 +60,13 @@ class JobGenerationAPIView(APIView):
                 user=request.user,
                 validated_input=serializer.validated_data,
             )
-            # Deduct actual LLM token usage after successful AI call
             try:
-                deduct_monthly_tokens(request.user, token_usage)
+                deduct_monthly_tokens(
+                    request.user,
+                    token_usage,
+                    feature_code="job_gen",
+                    request=request,
+                )
             except Exception as exc:
                 logger.error(
                     "TOKEN_RECONCILE user=%s feature=job_gen cost=%s err=%s",
@@ -121,7 +125,11 @@ class JobGenerationSaveView(APIView):
     """
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, IsAdminOrProvider]
+    permission_classes = [IsAuthenticated, HasPerm]
+    required_permission = [
+        "job_generation.generate_job",
+        "internship_job.add_job",
+    ]
     throttle_classes = [JobGenerationRateThrottle]
 
     @transaction.atomic
@@ -133,7 +141,6 @@ class JobGenerationSaveView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Check token availability before AI call
         try:
             check_token_available(request.user, "job_gen")
         except Exception as exc:
@@ -219,9 +226,13 @@ class JobGenerationSaveView(APIView):
         if save_mode not in ("draft", "publish"):
             save_mode = "draft"
 
-        # Deduct actual LLM token usage after successful AI call
         try:
-            deduct_monthly_tokens(request.user, token_usage)
+            deduct_monthly_tokens(
+                request.user,
+                token_usage,
+                feature_code="job_gen_save",
+                request=request,
+            )
         except Exception as exc:
             logger.error(
                 "TOKEN_RECONCILE user=%s feature=job_gen_save cost=%s err=%s",
@@ -232,7 +243,7 @@ class JobGenerationSaveView(APIView):
 
         job = Job.objects.create(
             **generated_data,
-            job_provider=request.user,
+            job_provider=request.user.get_owner_user(),
             created_by=request.user,
             created_at=timezone.now(),
             status="active" if save_mode == "publish" else "draft",

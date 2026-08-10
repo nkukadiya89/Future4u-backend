@@ -48,7 +48,6 @@ class AddEmployeeSerializer(
             "password",
             "permission",
             "profile_photo",
-            # Permanent address
             "permanent_address_building",
             "permanent_address_area",
             "permanent_address_landmark",
@@ -56,7 +55,6 @@ class AddEmployeeSerializer(
             "permanent_address_country",
             "permanent_address_state",
             "permanent_address_city",
-            # Current address
             "current_address_building",
             "current_address_area",
             "current_address_landmark",
@@ -150,15 +148,11 @@ class AddEmployeeSerializer(
                         {"success": False, "message": "Group Not Found"}
                     )
 
-        # Replace the existing permission assignment code (around line 145-147) with:
         if permission_ids:
-            # Get all permissions that exist from the provided IDs
             existing_permissions = Permission.objects.filter(id__in=permission_ids)
-            # Add only the existing permissions
             for permission in existing_permissions:
                 user.user_permissions.add(permission)
 
-            # Log if any permissions were not found
             found_ids = set(existing_permissions.values_list("id", flat=True))
             not_found = set(permission_ids) - found_ids
             if not_found:
@@ -169,7 +163,7 @@ class AddEmployeeSerializer(
         user.employee = employee_instance
         user.role = assign_role[0] if assign_role else None
 
-        # Set designation similar to company creation
+        # Set designation from the first assigned role
         if assign_role:
             try:
                 group = CustomGroup.objects.get(id=assign_role[0])
@@ -195,6 +189,7 @@ class AddEmployeeSerializer(
 
     def update(self, instance, validated_data):
         request = self.context.get("request")
+        permission_provided = "permission" in validated_data
         permission_ids = validated_data.pop("permission", [])
         assign_role = validated_data.pop("role", [])
 
@@ -232,7 +227,6 @@ class AddEmployeeSerializer(
         instance.profile_photo = validated_data.get(
             "profile_photo", instance.profile_photo
         )
-        # Permanent address
         instance.permanent_address_building = validated_data.get(
             "permanent_address_building", instance.permanent_address_building
         )
@@ -254,7 +248,6 @@ class AddEmployeeSerializer(
         instance.permanent_address_city = validated_data.get(
             "permanent_address_city", instance.permanent_address_city
         )
-        # Current address
         instance.current_address_building = validated_data.get(
             "current_address_building", instance.current_address_building
         )
@@ -276,7 +269,6 @@ class AddEmployeeSerializer(
         instance.current_address_city = validated_data.get(
             "current_address_city", instance.current_address_city
         )
-        # Set updated_by and updated_at
         instance.updated_by = request.user
         instance.updated_at = now()
 
@@ -299,21 +291,19 @@ class AddEmployeeSerializer(
                         {"success": False, "message": "Group Not Found"}
                     )
 
-        user.user_permissions.clear()
-        if permission_ids:
-            # Get all permissions that exist from the provided IDs
-            existing_permissions = Permission.objects.filter(id__in=permission_ids)
-            # Add only the existing permissions
-            for permission in existing_permissions:
-                user.user_permissions.add(permission)
+        if permission_provided:
+            user.user_permissions.clear()
+            if permission_ids:
+                existing_permissions = Permission.objects.filter(id__in=permission_ids)
+                for permission in existing_permissions:
+                    user.user_permissions.add(permission)
 
-            # Log if any permissions were not found
-            found_ids = set(existing_permissions.values_list("id", flat=True))
-            not_found = set(permission_ids) - found_ids
-            if not_found:
-                pass
+                found_ids = set(existing_permissions.values_list("id", flat=True))
+                not_found = set(permission_ids) - found_ids
+                if not_found:
+                    pass
 
-        # Update designation similar to company creation when role is updated
+        # Update designation from the assigned role
         if assign_role:
             try:
                 group = CustomGroup.objects.get(id=assign_role[0])
@@ -473,7 +463,6 @@ class EmployeeArchiveSerializer(serializers.ModelSerializer):
                             user_instance.is_active = False
                             user_instance.save()
 
-                    # Log employee archive activity
                     ip_address = get_client_ip(request) if request else None
                     archiving_user = users.first()
                     company = getattr(archiving_user, "company", None)
@@ -530,7 +519,6 @@ class EmployeeRestoreSerializer(serializers.ModelSerializer):
                     employee_instance.updated_at = now()
                     employee_instance.save()
                 if users.exists():
-                    # Log employee restore activity
                     ip_address = get_client_ip(request) if request else None
                     restoring_user = users.first()
                     company = getattr(restoring_user, "company", None)
@@ -587,7 +575,6 @@ class EmployeeArchiveListSerializer(
             "password",
             "permission",
             "profile_photo",
-            # Permanent address
             "permanent_address_building",
             "permanent_address_area",
             "permanent_address_landmark",
@@ -595,7 +582,6 @@ class EmployeeArchiveListSerializer(
             "permanent_address_country",
             "permanent_address_state",
             "permanent_address_city",
-            # Current address
             "current_address_building",
             "current_address_area",
             "current_address_landmark",

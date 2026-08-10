@@ -136,6 +136,12 @@ class InternshipSerializer(BaseModelSerializer):
             return obj.internship_provider.full_name
         return None
 
+    def validate(self, attrs):
+        # New internships must carry a name; AI generation provides one via internship_title.
+        if self.instance is None and not str(attrs.get("name") or "").strip():
+            raise serializers.ValidationError({"name": "This field is required."})
+        return attrs
+
 
 class InternshipApplicationSerializer(BaseModelSerializer):
     applicant_name = serializers.CharField(source="applicant.full_name", read_only=True)
@@ -249,6 +255,12 @@ class JobSerializer(BaseModelSerializer):
                     return name
             return obj.job_provider.full_name
         return None
+
+    def validate(self, attrs):
+        # New jobs must carry a name; the AI generation payload always includes one.
+        if self.instance is None and not str(attrs.get("name") or "").strip():
+            raise serializers.ValidationError({"name": "This field is required."})
+        return attrs
 
 
 class JobApplicationSerializer(BaseModelSerializer):

@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.apps import apps as django_apps
 from django.contrib.auth.models import Group, Permission
 from django.utils import timezone
 from django.utils.timezone import now
@@ -15,10 +16,19 @@ from employee.models import Employee
 from user.models import User
 
 
+# Exclude Django's own framework apps from permission claims; app-label
+# filtering is stable across databases (content-type ids differ on fresh installs).
+PROJECT_APP_LABELS = sorted(
+    app_config.label
+    for app_config in django_apps.get_app_configs()
+    if not app_config.name.startswith("django.")
+)
+
+
 def get_user_permissions(user):
     user_permissions = Permission.objects.filter(user=user)
     custom_group_permissions = Permission.objects.filter(
-        group__user=user, content_type_id__gt=5
+        group__user=user, content_type__app_label__in=PROJECT_APP_LABELS
     )
 
     all_permissions_set = {
@@ -34,11 +44,9 @@ def get_user_permissions(user):
 
 
 def get_user_group_permissions(user):
-    user_group = Group.objects.filter(user=user).first()
-
     custom_group_permissions = Permission.objects.filter(
-        group=user_group, content_type_id__gt=5
-    )
+        group__user=user, content_type__app_label__in=PROJECT_APP_LABELS
+    ).distinct()
 
     all_permissions_set = {
         f"{perm.content_type.app_label}|{perm.codename}"
@@ -59,15 +67,11 @@ def get_user_groups(user):
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Make original username field (email) optional and add a common `username` field
         if "email" in self.fields:
             self.fields["email"].required = False
         self.fields["username"] = serializers.CharField(required=False)
 
     def validate(self, attrs):
-        # login_value = attrs.get("email").lower()
-
-        # Accept a single common field `login` (email or mobile/phone)
         request_data = self.context["request"].data
         raw_login = (
             request_data.get("username") or attrs.get("username") or attrs.get("email")
@@ -82,7 +86,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         keep_me_logged = self.context["request"].data.get("keep_me_logged_in", False)
 
-        # Check if the provided input contains "@" (likely an email)
         if "@" in login_value and "." in login_value:
             user = User.objects.filter(email=login_value).first()
             if user is None:
@@ -93,7 +96,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                     }
                 )
         else:
-            # Assuming phone is unique, if not, adjust the query accordingly
             user = User.objects.filter(phone=login_value).first()
             if user is None:
                 raise AuthenticationFailed(
@@ -111,7 +113,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 }
             )
 
-        # Check if user is active
         if user.deleted:
             raise AuthenticationFailed(
                 {
@@ -132,7 +133,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         try:
             token = super(CustomTokenObtainPairSerializer, self).validate(attrs)
         except AuthenticationFailed as e:
-            # Check if this is a password authentication failure
+            # The user was already resolved above, so this is a bad password.
             error_detail = str(e.detail).lower()
             if (
                 "authentication failed" in error_detail
@@ -140,7 +141,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 or "no active account found" in error_detail
                 or "invalid credentials" in error_detail
             ):
-                # Since we already found the user, this must be a password error
                 raise AuthenticationFailed(
                     {
                         "success": False,
@@ -148,12 +148,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                     }
                 )
             else:
-                # Re-raise the original exception for other cases
                 raise e
 
         permission_data = get_user_permissions(user)
         group_permission_data = get_user_group_permissions(user)
-        group_data = get_user_groups(user)
 
         token.update(
             {
@@ -165,7 +163,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                     "phone": user.phone,
                     "user_type": user.user_type,
                     "permission": permission_data,
-                    "group_permission": group_permission_data,
+                    "role_permission": group_permission_data,
                     "keep_me_logged_in": keep_me_logged,
                     "last_login": user.last_login,
                     "must_change_password": user.must_change_password,
@@ -177,7 +175,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             access_token = AccessToken(token["access"])
             refresh_token = RefreshToken(token["refresh"])
 
-            # Set custom lifetime
             access_token.set_exp(lifetime=timedelta(days=365))
             refresh_token.set_exp(lifetime=timedelta(days=365))
 

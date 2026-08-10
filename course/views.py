@@ -5,7 +5,6 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from activity_log.services import log_event
@@ -13,7 +12,7 @@ from assessment_career.models import CareerSuggestion
 from common.master_view import BaseModelViewSet
 from common.note_views import BaseLeadNoteViewSet
 from course.services import match_courses
-from user.permissions import IsAdminOrProvider, is_admin_user
+from user.permissions import is_admin_user
 
 from .models import CourseInquiry, CourseInquiryNote, Courses
 from .serializers import (
@@ -37,7 +36,7 @@ class CoursesViewSet(BaseModelViewSet):
             "institute",
             "school_college",
         ]:
-            base = queryset.filter(course_provider=user)
+            base = queryset.filter(course_provider=user.get_owner_user())
         else:
             base = queryset.filter(status="active")
         if self.action not in [
@@ -103,7 +102,7 @@ class CoursesViewSet(BaseModelViewSet):
                 request.user.user_type in ["school_college", "institute"]
                 and "course_provider" not in serializer.validated_data
             ):
-                save_kwargs["course_provider"] = request.user
+                save_kwargs["course_provider"] = request.user.get_owner_user()
             serializer.save(**save_kwargs)
             log_event(
                 event="course.created",
@@ -131,7 +130,6 @@ class CoursesViewSet(BaseModelViewSet):
         detail=False,
         methods=["patch"],
         url_path="update-status",
-        permission_classes=[IsAuthenticated, IsAdminOrProvider],
     )
     @transaction.atomic
     def bulk_update_status(self, request, *args, **kwargs):
@@ -157,7 +155,7 @@ class CoursesViewSet(BaseModelViewSet):
 
         courses = Courses.objects.filter(id__in=ids, deleted=False)
         if not is_admin:
-            courses = courses.filter(course_provider=request.user)
+            courses = courses.filter(course_provider=request.user.get_owner_user())
 
         found_ids = set(courses.values_list("id", flat=True))
         not_found_ids = list(set(ids) - found_ids)
@@ -245,7 +243,7 @@ class CoursesViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        records = Courses.objects.filter(id__in=ids)
+        records = self.get_queryset().filter(id__in=ids)
 
         if not records.exists():
             return Response(
@@ -292,7 +290,7 @@ class CoursesViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        records = Courses.objects.filter(id__in=ids)
+        records = self.get_queryset().filter(id__in=ids)
 
         if not records.exists():
             return Response(
@@ -342,7 +340,7 @@ class CoursesViewSet(BaseModelViewSet):
         user = request.user
         if not user.is_superuser:
             if user.user_type in ["institute", "school_college"]:
-                queryset = queryset.filter(course_provider=user)
+                queryset = queryset.filter(course_provider=user.get_owner_user())
             else:
                 queryset = queryset.none()
 
@@ -445,7 +443,7 @@ class CourseInquiryViewSet(BaseModelViewSet):
         if user.is_superuser:
             return base
         if user.user_type in ["school_college", "institute"]:
-            return base.filter(course__course_provider=user)
+            return base.filter(course__course_provider=user.get_owner_user())
         return base.filter(user=user).filter(user=user)
 
     def list(self, request, *args, **kwargs):
@@ -539,7 +537,7 @@ class CourseInquiryViewSet(BaseModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="received-inquiries")
     def received_inquiries(self, request):
-        inquiries = CourseInquiry.objects.filter(course__course_provider=request.user)
+        inquiries = CourseInquiry.objects.filter(course__course_provider=request.user.get_owner_user())
 
         course_id = request.query_params.get("course_id")
         if not course_id:
@@ -590,7 +588,7 @@ class CourseInquiryViewSet(BaseModelViewSet):
     def update_status(self, request, pk=None):
         inquiries = self.get_object()
 
-        if inquiries.course.course_provider != request.user:
+        if inquiries.course.course_provider != request.user.get_owner_user():
             return Response(
                 {
                     "success": False,
