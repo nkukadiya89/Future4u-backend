@@ -13,6 +13,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from activity_log.services import log_event
 from common.master_view import BaseModelViewSet
 from utils.aws_file_upload import delete_uploaded_file
+from utils.token_check import _check_org_monthly_reset
 
 
 class OrganizationProfileViewSet(BaseModelViewSet):
@@ -238,20 +239,16 @@ class OrganizationProfileViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Get current extra from DB (not from cached profile)
-        old_extra = (
-            self.profile_model.objects.only("extra_token_limit")
-            .get(id=profile.id)
-            .extra_token_limit
-        )
-        before_token = (
-            self.profile_model.objects.only("token_limit")
-            .get(id=profile.id)
-            .token_limit
-        )
-        increase = extra_token_limit - (old_extra or 0)
-
         with transaction.atomic():
+            profile = (
+                self.profile_model.objects.select_for_update().get(id=profile.id)
+            )
+            _check_org_monthly_reset(profile, profile.user.user_type)
+
+            old_extra = profile.extra_token_limit or 0
+            before_token = profile.token_limit or 0
+            increase = extra_token_limit - old_extra
+
             profile.extra_token_limit = extra_token_limit
             if increase > 0:
                 profile.token_limit = (profile.token_limit or 0) + increase
@@ -285,8 +282,16 @@ class OrganizationProfileViewSet(BaseModelViewSet):
             )
 
         serializer = self.read_serializer_class(profile)
+        data = serializer.data
+        data.update(
+            {
+                "extra_token_limit": profile.extra_token_limit,
+                "token_limit": profile.token_limit,
+                "last_token_reset_at": profile.last_token_reset_at,
+            }
+        )
         return Response(
-            {"success": True, "data": serializer.data},
+            {"success": True, "data": data},
             status=status.HTTP_200_OK,
         )
 

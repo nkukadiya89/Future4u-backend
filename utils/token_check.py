@@ -94,11 +94,30 @@ def _check_org_monthly_reset(profile, user_type):
         return
     if (today - profile.last_token_reset_at).days >= 30:
         base = _org_base_token_limit(profile, user_type)
+        before_token = profile.token_limit
+        before_extra = profile.extra_token_limit
         profile.token_limit = base
         profile.extra_token_limit = 0
         profile.last_token_reset_at = today
         profile.save(
             update_fields=["token_limit", "extra_token_limit", "last_token_reset_at"]
+        )
+        log_event(
+            event="user.tokens_reset",
+            description=(
+                f"Monthly token reset for "
+                f"{getattr(profile.user, 'email', profile.user_id)}"
+            ),
+            user=profile.user,
+            entity_type="user",
+            entity_id=profile.user_id,
+            metadata={
+                "base": base,
+                "token_limit_before": before_token,
+                "token_limit_after": base,
+                "extra_token_before": before_extra,
+                "extra_token_after": 0,
+            },
         )
 
 
@@ -258,12 +277,12 @@ def deduct_monthly_tokens(user, actual_tokens, feature_code=None, request=None):
         if not profile:
             return
 
-        _check_org_monthly_reset(profile, owner.user_type)
-
         with transaction.atomic():
             locked_profile = (
                 type(profile).objects.select_for_update().get(id=profile.id)
             )
+            _check_org_monthly_reset(locked_profile, owner.user_type)
+
             deduction = min(actual_tokens, locked_profile.token_limit)
             before = locked_profile.token_limit or 0
             type(profile).objects.filter(id=locked_profile.id).update(
