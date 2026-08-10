@@ -30,6 +30,7 @@ from user.admin_user_serializers import (
     AdminStudentSerializer,
     AdminStudentSortSerializer,
     BulkUserUploadSerializer,
+    UserArchiveSerializer,
 )
 from user.admin_working_professional_serializers import (
     AdminWorkingProfessionalSerializer,
@@ -37,7 +38,6 @@ from user.admin_working_professional_serializers import (
 )
 from user.models import User
 from user.permissions import IsAdminUser
-from user.serializers import UserListSerializer
 from user.services.bulk_user_upload import BulkUserUploadService
 from user.tasks import bulk_upload_user_task
 from user_profile.models import (
@@ -48,7 +48,6 @@ from user_profile.models import (
     StudentProfile,
 )
 from utils.pagination import Pagination
-from utils.token_check import _check_org_monthly_reset
 
 
 class BaseAdminProfileViewSet(ModelViewSet):
@@ -451,90 +450,6 @@ class BaseAdminProfileViewSet(ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @action(detail=True, methods=["patch"], url_path="update-tokens")
-    def update_tokens(self, request, pk=None):
-        extra = request.data.get("extra_token_limit")
-        if extra is None or not isinstance(extra, int) or extra < 0:
-            return Response(
-                {
-                    "success": False,
-                    "message": "extra_token_limit must be a non-negative integer",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        user = self.get_user(pk)
-        if not user:
-            return Response(
-                {
-                    "success": False,
-                    "message": f"{self.role_name} not found",
-                },
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        if user.is_org_staff:
-            return Response(
-                {
-                    "success": False,
-                    "message": "Organization staff cannot have a personal token pool.",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        profile = self.profile_model.objects.filter(user=user).first()
-        if not profile:
-            return Response(
-                {
-                    "success": False,
-                    "message": f"{self.role_name} profile not found",
-                },
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        with transaction.atomic():
-            profile = (
-                self.profile_model.objects.select_for_update().get(id=profile.id)
-            )
-            _check_org_monthly_reset(profile, user.user_type)
-
-            previous_extra = profile.extra_token_limit or 0
-            before_token = profile.token_limit or 0
-            profile.extra_token_limit = previous_extra + extra
-            profile.token_limit = before_token + extra
-            profile.save(update_fields=["extra_token_limit", "token_limit"])
-
-        log_event(
-            event="user.tokens_updated",
-            description=(
-                f"Added {extra} extra tokens " f"to {self.role_name} {user.email}"
-            ),
-            user=request.user,
-            entity_type="user",
-            entity_id=user.id,
-            metadata={
-                "previous_extra": previous_extra,
-                "new_extra": profile.extra_token_limit,
-                "token_increase": extra,
-                "token_limit_before": before_token,
-                "token_limit_after": profile.token_limit,
-            },
-            request=request,
-        )
-
-        return Response(
-            {
-                "success": True,
-                "message": f"{extra} extra tokens added to {self.role_name}.",
-                "data": {
-                    "extra_token_limit": profile.extra_token_limit,
-                    "token_limit": profile.token_limit,
-                    "last_token_reset_at": profile.last_token_reset_at,
-                },
-            },
-            status=status.HTTP_200_OK,
-        )
-
     @action(detail=False, methods=["post"], url_path="bulk-upload")
     def bulk_upload_users(self, request):
         serializer = BulkUserUploadSerializer(data=request.data)
@@ -636,7 +551,7 @@ class AdminUserArchiveViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser]
     authentication_classes = [JWTAuthentication]
     pagination_class = Pagination
-    serializer_class = UserListSerializer
+    serializer_class = UserArchiveSerializer
     filter_backends = [SearchFilter, OrderingFilter]
     http_method_names = ["get", "head", "options"]
 
@@ -654,6 +569,9 @@ class AdminUserArchiveViewSet(ModelViewSet):
         "deleted_by__last_name",
         "deleted_by__full_name",
         "deleted_at",
+        "institute_profile__institute_name",
+        "school_college_profile__institute_name",
+        "corporate_profile__company_name",
     ]
 
     ordering_fields = [
@@ -669,6 +587,9 @@ class AdminUserArchiveViewSet(ModelViewSet):
         "deleted_by",
         "deleted_at",
         "created_at",
+        "institute_profile__institute_name",
+        "school_college_profile__institute_name",
+        "corporate_profile__company_name",
     ]
 
     def get_queryset(self):
@@ -688,6 +609,46 @@ class AdminUserArchiveViewSet(ModelViewSet):
         user_type = self.request.query_params.get("user_type")
         if user_type:
             queryset = queryset.filter(user_type=user_type)
+            deep_select = {
+                User.Role.STUDENT: (
+                    "student_profile__education_level",
+                    "student_profile__stream",
+                ),
+                User.Role.PARENT: (),
+                User.Role.PROFESSIONAL: (
+                    "professional_profile__education_level",
+                    "professional_profile__stream",
+                    "professional_profile__current_industry_category",
+                    "professional_profile__current_industry",
+                ),
+                User.Role.SCHOOL_COLLEGE: (),
+                User.Role.INSTITUTE: (),
+                User.Role.CORPORATE: (),
+            }.get(user_type, ())
+            deep_prefetch = {
+                User.Role.STUDENT: ("student_profile__language",),
+                User.Role.PARENT: ("parent_profile__language",),
+                User.Role.PROFESSIONAL: ("professional_profile__language",),
+                User.Role.SCHOOL_COLLEGE: (
+                    "school_college_profile__gallery_images",
+                    "school_college_profile__education",
+                ),
+                User.Role.INSTITUTE: ("institute_profile__gallery_images",),
+                User.Role.CORPORATE: ("corporate_profile__gallery_images",),
+            }.get(user_type, ())
+            if deep_select:
+                queryset = queryset.select_related(*deep_select)
+            if deep_prefetch:
+                queryset = queryset.prefetch_related(*deep_prefetch)
+        else:
+            queryset = queryset.prefetch_related(
+                "student_profile",
+                "parent_profile",
+                "professional_profile",
+                "school_college_profile",
+                "institute_profile",
+                "corporate_profile",
+            )
 
         return queryset
 
@@ -695,13 +656,13 @@ class AdminUserArchiveViewSet(ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = UserListSerializer(queryset, many=True)
+            serializer = UserArchiveSerializer(queryset, many=True)
             return Response({"success": True, "data": serializer.data})
 
         page = self.paginate_queryset(queryset)
 
         if page is not None:
-            serializer = UserListSerializer(page, many=True)
+            serializer = UserArchiveSerializer(page, many=True)
             return self.get_paginated_response(
                 {
                     "success": True,
@@ -709,7 +670,7 @@ class AdminUserArchiveViewSet(ModelViewSet):
                 }
             )
 
-        serializer = UserListSerializer(queryset, many=True)
+        serializer = UserArchiveSerializer(queryset, many=True)
         return Response(
             {
                 "success": True,

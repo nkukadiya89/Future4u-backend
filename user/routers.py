@@ -16,6 +16,7 @@ from user.group_and_permission import (
     DeleteGroupWithPermissionsViewSet,
     PermissionViewSet,
 )
+from user.organization_professional_views import OrganizationProfessionalViewSet
 from user.resend_password_reset import ResendPasswordResetViewSet
 from user.organization_staff_views import OrganizationStaffViewSet
 from user.student_organization_views import OrganizationStudentViewSet
@@ -113,5 +114,11 @@ user_router.register(
     "organization-staff",
     OrganizationStaffViewSet,
     basename="organization_staff",
+)
+
+user_router.register(
+    "organization-professionals",
+    OrganizationProfessionalViewSet,
+    basename="organization_professionals",
 )
 user_router.register("users", UserListViewSet, basename="users")

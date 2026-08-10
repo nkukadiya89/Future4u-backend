@@ -169,6 +169,176 @@
       "value": "1",
       "type": "default",
       "enabled": true
+    },
+    {
+      "key": "assessment_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "career_suggestion_id_1",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "career_suggestion_id_2",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "corporate_gallery_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "corporate_profile_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "course_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "course_inquiry_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "course_inquiry_note_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "institute_gallery_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "institute_profile_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "internship_application_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "internship_application_note_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "internship_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "invoice_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "job_application_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "job_application_note_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "job_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "language_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "organization_staff_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "parent_profile_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "parent_suggestion_id_1",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "parent_suggestion_id_2",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "payment_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "professional_assessment_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "professional_profile_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "professional_suggestion_id_1",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "professional_suggestion_id_2",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "school_college_gallery_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "school_college_profile_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "stream_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "student_profile_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "subscription_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "user_profile_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "user_subscription_id",
+      "value": "",
+      "enabled": true
     }
   ],
   "_postman_variable_scope": "environment",

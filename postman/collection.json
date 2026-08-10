@@ -8547,6 +8547,157 @@
       ]
     },
     {
+      "name": "Organization Professionals",
+      "description": "Corporate-managed working professionals.\n\nAll endpoints require a corporate Bearer token.\n\nSingle create (POST) and bulk upload (POST /bulk-upload/) do NOT accept professional profile fields (years_of_experience, employment_type) - the professional completes their own profile after onboarding. Bulk upload forces referred_by to the uploading corporate.",
+      "item": [
+        {
+          "name": "list organization professionals (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-professionals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-professionals",
+                ""
+              ]
+            },
+            "description": "List working professionals created/referred by the authenticated corporate.\n\nGET /organization-professionals/\n\nSupports search (?search=...) and ordering (?ordering=...).\n\n200 response: success, count, next, previous, data[]"
+          },
+          "response": []
+        },
+        {
+          "name": "create organization professional (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-professionals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-professionals",
+                ""
+              ]
+            },
+            "description": "Create a working professional under the authenticated corporate user.\n\nPOST /organization-professionals/\n\nMultipart form-data: `data` (JSON string) + optional `profile_image`.\n\nRequired in `data`: email, first_name, country, state, city\nOptional: last_name, phone, address\n\nDo NOT send years_of_experience / employment_type (profile fields are reserved for the professional to complete later).\n\n201 response: success, message, professional_id, must_change_password, created_by, created_at\n400 response: success, errors",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\"email\":\"{{professional_email}}\",\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"country\":\"{{country_id}}\",\"state\":\"{{state_id}}\",\"city\":\"{{city_id}}\",\"address\":\"{{address}}\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_image",
+                  "type": "file",
+                  "src": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    pm.test('Organization professional created', () => pm.expect(json.success).to.eql(true));",
+                  "    if (json.professional_id != null) {",
+                  "      pm.collectionVariables.set('professional_id', String(json.professional_id));",
+                  "      pm.environment.set('professional_id', String(json.professional_id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "retrieve organization professional (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-professionals/{{professional_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-professionals",
+                "{{professional_id}}",
+                ""
+              ]
+            },
+            "description": "Retrieve a single professional by id.\n\nGET /organization-professionals/{id}/\n\n200 response: success, data (full professional object incl. profile fields education_level, employment_type, years_of_experience, current_job_title, last_active)"
+          },
+          "response": []
+        },
+        {
+          "name": "bulk upload organization professionals (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-professionals/bulk-upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-professionals",
+                "bulk-upload",
+                ""
+              ]
+            },
+            "description": "Bulk upload working professionals from a CSV/XLS/XLSX file.\n\nPOST /organization-professionals/bulk-upload/\n\nMultipart form-data: `file` (required).\n\nRequired columns: First Name, Last Name, Email, Phone, Referral Code, Country, State, City\nOptional columns: Address, About Me\n\nThe Years of Experience / Employment Type columns are ignored - the corporate flow skips professional profile fields. referred_by is forced to the authenticated corporate.\n\nProcessing is async (Celery). The response returns immediately:\n200 response: success, message ('Bulk Upload Started...')\n\nA summary email is sent to the corporate with inserted/failed/skipped counts and per-row errors.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "disabled": false
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Organization Staff",
       "item": [
         {
@@ -14219,21 +14370,79 @@
                 {
                   "key": "user_type",
                   "value": "student",
-                  "description": "student | school_college | institute | corporate | working_professional"
+                  "description": "student | parent | school_college | institute | corporate | working_professional"
                 },
                 {
                   "key": "search",
                   "value": "",
+                  "description": "Searches user fields only: id, name, email, phone, city, state, deleted_at, deleted_by.",
                   "disabled": true
                 },
                 {
                   "key": "ordering",
                   "value": "-deleted_at",
+                  "description": "Order by user fields: id, email, name, user_type, states, city, deleted_at, created_at.",
                   "disabled": true
                 }
               ]
             },
-            "description": "Admin-only: list archived (soft-deleted) student users (paginated).\n\nGET /admin-users-archive/?user_type=student\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of user objects)"
+            "description": "Admin-only: list archived (soft-deleted) student users (paginated).\n\nGET /admin-users-archive/?user_type=student\n\nRequires Bearer {{access_token}} with admin permissions.\n\nEach row returns the student FULL profile data (StudentProfile) - no user model fields - plus archive metadata: deleted_at, deleted_by.\n\nSearch (?search=) covers user fields; profile fields are not searchable for students. Ordering (?ordering=) supports id, email, name, user_type, states, city, deleted_at, created_at.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of full profile objects). Rows without a profile return only deleted_at / deleted_by."
+          },
+          "response": []
+        },
+        {
+          "name": "archive-list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin-users-archive/?user_type=parent&pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin-users-archive",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "user_type",
+                  "value": "parent",
+                  "description": "student | parent | school_college | institute | corporate | working_professional"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Searches user fields only: id, name, email, phone, city, state, deleted_at, deleted_by.",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "-deleted_at",
+                  "description": "Order by user fields: id, email, name, user_type, deleted_at, created_at.",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Admin-only: list archived (soft-deleted) parent users (paginated).\n\nGET /admin-users-archive/?user_type=parent\n\nRequires Bearer {{access_token}} with admin permissions.\n\nEach row returns the parent FULL profile data (ParentProfile) - no user model fields - plus archive metadata: deleted_at, deleted_by.\n\nSearch (?search=) covers user fields; profile fields are not searchable for parents. Ordering (?ordering=) supports id, email, name, user_type, deleted_at, created_at.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of full profile objects). Rows without a profile return only deleted_at / deleted_by."
           },
           "response": []
         },
@@ -14841,21 +15050,23 @@
                 {
                   "key": "user_type",
                   "value": "school_college",
-                  "description": "student | school_college | institute | corporate | working_professional"
+                  "description": "student | parent | school_college | institute | corporate | working_professional"
                 },
                 {
                   "key": "search",
-                  "value": "",
+                  "value": "Green Valley",
+                  "description": "Searches user fields AND the school/college name (school_college_profile__institute_name).",
                   "disabled": true
                 },
                 {
                   "key": "ordering",
-                  "value": "-deleted_at",
+                  "value": "school_college_profile__institute_name",
+                  "description": "Order by user fields OR school/college name: school_college_profile__institute_name, -deleted_at, id, email.",
                   "disabled": true
                 }
               ]
             },
-            "description": "Admin-only: list archived (soft-deleted) school/college users (paginated).\n\nGET /admin-users-archive/?user_type=school_college\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of user objects)"
+            "description": "Admin-only: list archived (soft-deleted) school/college users (paginated).\n\nGET /admin-users-archive/?user_type=school_college\n\nRequires Bearer {{access_token}} with admin permissions.\n\nEach row returns the school/college FULL profile data (SchoolCollegeProfile) - no user model fields - plus archive metadata: deleted_at, deleted_by.\n\nSearch (?search=) covers user fields AND the school/college name (school_college_profile__institute_name). Ordering (?ordering=) supports school_college_profile__institute_name, -deleted_at, id, email.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of full profile objects). Rows without a profile return only deleted_at / deleted_by."
           },
           "response": []
         },
@@ -15431,21 +15642,23 @@
                 {
                   "key": "user_type",
                   "value": "institute",
-                  "description": "student | school_college | institute | corporate | working_professional"
+                  "description": "student | parent | school_college | institute | corporate | working_professional"
                 },
                 {
                   "key": "search",
-                  "value": "",
+                  "value": "Stanford",
+                  "description": "Searches user fields AND the institute name (institute_profile__institute_name).",
                   "disabled": true
                 },
                 {
                   "key": "ordering",
-                  "value": "-deleted_at",
+                  "value": "institute_profile__institute_name",
+                  "description": "Order by user fields OR institute name: institute_profile__institute_name, -deleted_at, id, email.",
                   "disabled": true
                 }
               ]
             },
-            "description": "Admin-only: list archived (soft-deleted) institute users (paginated).\n\nGET /admin-users-archive/?user_type=institute\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of user objects)"
+            "description": "Admin-only: list archived (soft-deleted) institute users (paginated).\n\nGET /admin-users-archive/?user_type=institute\n\nRequires Bearer {{access_token}} with admin permissions.\n\nEach row returns the institute FULL profile data (InstituteProfile) - no user model fields - plus archive metadata: deleted_at, deleted_by.\n\nSearch (?search=) covers user fields AND the institute name (institute_profile__institute_name). Ordering (?ordering=) supports institute_profile__institute_name, -deleted_at, id, email.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of full profile objects). Rows without a profile return only deleted_at / deleted_by."
           },
           "response": []
         },
@@ -15773,21 +15986,23 @@
                 {
                   "key": "user_type",
                   "value": "working_professional",
-                  "description": "student | school_college | institute | corporate | working_professional"
+                  "description": "student | parent | school_college | institute | corporate | working_professional"
                 },
                 {
                   "key": "search",
                   "value": "",
+                  "description": "Searches user fields only: id, name, email, phone, city, state, deleted_at, deleted_by.",
                   "disabled": true
                 },
                 {
                   "key": "ordering",
                   "value": "-deleted_at",
+                  "description": "Order by user fields: id, email, name, user_type, states, city, deleted_at, created_at.",
                   "disabled": true
                 }
               ]
             },
-            "description": "Admin-only: list archived (soft-deleted) working professional users (paginated).\n\nGET /admin-users-archive/?user_type=working_professional\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of user objects)"
+            "description": "Admin-only: list archived (soft-deleted) working professional users (paginated).\n\nGET /admin-users-archive/?user_type=working_professional\n\nRequires Bearer {{access_token}} with admin permissions.\n\nEach row returns the working professional FULL profile data (ProfessionalProfile) - no user model fields - plus archive metadata: deleted_at, deleted_by.\n\nSearch (?search=) covers user fields; profile fields are not searchable for this role. Ordering (?ordering=) supports id, email, name, user_type, deleted_at, created_at.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of full profile objects). Rows without a profile return only deleted_at / deleted_by."
           },
           "response": []
         },
@@ -16301,21 +16516,23 @@
                 {
                   "key": "user_type",
                   "value": "corporate",
-                  "description": "student | school_college | institute | corporate | working_professional"
+                  "description": "student | parent | school_college | institute | corporate | working_professional"
                 },
                 {
                   "key": "search",
-                  "value": "",
+                  "value": "Acme",
+                  "description": "Searches user fields AND the company name (corporate_profile__company_name).",
                   "disabled": true
                 },
                 {
                   "key": "ordering",
-                  "value": "-deleted_at",
+                  "value": "corporate_profile__company_name",
+                  "description": "Order by user fields OR company name: corporate_profile__company_name, -deleted_at, id, email.",
                   "disabled": true
                 }
               ]
             },
-            "description": "Admin-only: list archived (soft-deleted) corporate users (paginated).\n\nGET /admin-users-archive/?user_type=corporate\n\nRequires Bearer {{access_token}} with admin permissions.\n\nOrdered by deleted_at descending.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of user objects)"
+            "description": "Admin-only: list archived (soft-deleted) corporate users (paginated).\n\nGET /admin-users-archive/?user_type=corporate\n\nRequires Bearer {{access_token}} with admin permissions.\n\nEach row returns the corporate FULL profile data (CorporateProfile) - no user model fields - plus archive metadata: deleted_at, deleted_by.\n\nSearch (?search=) covers user fields AND the company name (corporate_profile__company_name). Ordering (?ordering=) supports corporate_profile__company_name, -deleted_at, id, email.\n\nOptional query params: no_pagination, pagesize, user_type, search, ordering.\n\n200 response: success, data (array of full profile objects). Rows without a profile return only deleted_at / deleted_by."
           },
           "response": []
         },
@@ -21043,7 +21260,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"job_title\": \"Senior Python Developer\",\n    \"job_overview\": \"Looking for an experienced Python developer to build and maintain backend microservices\",\n    \"corporate\": 2,\n    \"country\": 1,\n    \"state\": 1,\n    \"city\": 4,\n    \"salary_min\": \"800000\",\n    \"salary_max\": \"1200000\",\n    \"job_type\": \"full_time\",\n    \"experience_level\": \"3_5\",\n    \"mode\": \"hybrid\"\n}"
+              "raw": "{\n    \"job_title\": \"Senior Python Developer\",\n    \"job_overview\": \"Looking for an experienced Python developer to build and maintain backend microservices\",\n    \"country\": 1,\n    \"state\": 1,\n    \"city\": 4,\n    \"salary_min\": \"800000\",\n    \"salary_max\": \"1200000\",\n    \"job_type\": \"full_time\",\n    \"experience_level\": \"3_5\",\n    \"mode\": \"hybrid\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/ai-job-generation/",
@@ -21073,7 +21290,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"job_title\": \"Junior Data Analyst\",\n    \"job_overview\": \"Looking for a fresher data analyst to work on data visualization and reporting\",\n    \"corporate\": 2,\n    \"country\": 1,\n    \"state\": 1,\n    \"city\": 4,\n    \"salary_min\": \"300000\",\n    \"salary_max\": \"500000\",\n    \"job_type\": \"full_time\",\n    \"experience_level\": \"fresher\",\n    \"mode\": \"onsite\",\n    \"save_mode\": \"publish\"\n}"
+              "raw": "{\n    \"job_title\": \"Junior Data Analyst\",\n    \"job_overview\": \"Looking for a fresher data analyst to work on data visualization and reporting\",\n    \"country\": 1,\n    \"state\": 1,\n    \"city\": 4,\n    \"salary_min\": \"300000\",\n    \"salary_max\": \"500000\",\n    \"job_type\": \"full_time\",\n    \"experience_level\": \"fresher\",\n    \"mode\": \"onsite\",\n    \"save_mode\": \"publish\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/ai-job-generation/save/",

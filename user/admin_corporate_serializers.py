@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from django.utils import timezone
 
 from django.db import transaction
 from rest_framework import serializers
@@ -253,7 +253,7 @@ class AdminCorporateSerializer(serializers.ModelSerializer):
         if website_sent:
             profile.website = website
         profile.updated_by = request.user
-        profile.updated_at = datetime.now()
+        profile.updated_at = timezone.now()
         profile.save()
 
         if old_email.lower() != instance.email.lower():

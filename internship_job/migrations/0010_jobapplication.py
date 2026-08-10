@@ -9,6 +9,11 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("internship_job", "0009_job_status"),
+        # Run after the legacy jobs-app cleanup so the old `job_application`
+        # table is dropped before this migration re-creates it under the
+        # internship_job app. Without this dependency the DROP in
+        # skill/0006_remove_jobs_app runs after the CREATE on fresh DBs.
+        ("skill", "0006_remove_jobs_app"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
