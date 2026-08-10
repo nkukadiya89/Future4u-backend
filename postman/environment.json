@@ -151,6 +151,24 @@
       "key": "organization_student_suggestion_id",
       "value": "",
       "enabled": true
+    },
+    {
+      "key": "role_id",
+      "value": "1",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "role_family_id",
+      "value": "1",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "permission_id",
+      "value": "1",
+      "type": "default",
+      "enabled": true
     }
   ],
   "_postman_variable_scope": "environment",

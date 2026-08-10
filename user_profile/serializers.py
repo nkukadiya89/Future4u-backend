@@ -23,8 +23,6 @@ from user_profile.models import (
     StudentProfile,
     UserProfile,
 )
-from utils.token_check import get_org_token_usage
-
 from .models import CorporateProfile, InstituteProfile, SchoolCollegeProfile
 
 
@@ -897,16 +895,6 @@ class InstituteProfileSerializer(BaseModelSerializer):
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
-    remaining_tokens = serializers.IntegerField(source="token_limit", read_only=True)
-    used_tokens = serializers.SerializerMethodField()
-    monthly_limit = serializers.SerializerMethodField()
-
-    def get_monthly_limit(self, obj):
-        return get_org_token_usage(obj, User.Role.INSTITUTE)["monthly_limit"]
-
-    def get_used_tokens(self, obj):
-        return get_org_token_usage(obj, User.Role.INSTITUTE)["used_tokens"]
-
     class Meta:
         model = InstituteProfile
         fields = BaseModelSerializer.Meta.fields + [
@@ -933,9 +921,6 @@ class InstituteProfileSerializer(BaseModelSerializer):
             "institute_name",
             "gallery_images",
             "referral_code",
-            "remaining_tokens",
-            "used_tokens",
-            "monthly_limit",
         ]
 
 
@@ -1003,16 +988,6 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
-    remaining_tokens = serializers.IntegerField(source="token_limit", read_only=True)
-    used_tokens = serializers.SerializerMethodField()
-    monthly_limit = serializers.SerializerMethodField()
-
-    def get_monthly_limit(self, obj):
-        return get_org_token_usage(obj, User.Role.SCHOOL_COLLEGE)["monthly_limit"]
-
-    def get_used_tokens(self, obj):
-        return get_org_token_usage(obj, User.Role.SCHOOL_COLLEGE)["used_tokens"]
-
     class Meta:
         model = SchoolCollegeProfile
         fields = BaseModelSerializer.Meta.fields + [
@@ -1043,9 +1018,6 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
             "status",
             "referral_code",
             "gallery_images",
-            "remaining_tokens",
-            "used_tokens",
-            "monthly_limit",
         ]
 
 
@@ -1115,16 +1087,6 @@ class CorporateProfileSerializer(BaseModelSerializer):
     created_at = serializers.CharField(source="user.created_at", read_only=True)
     deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
-    remaining_tokens = serializers.IntegerField(source="token_limit", read_only=True)
-    used_tokens = serializers.SerializerMethodField()
-    monthly_limit = serializers.SerializerMethodField()
-
-    def get_monthly_limit(self, obj):
-        return get_org_token_usage(obj, User.Role.CORPORATE)["monthly_limit"]
-
-    def get_used_tokens(self, obj):
-        return get_org_token_usage(obj, User.Role.CORPORATE)["used_tokens"]
-
     class Meta:
         model = CorporateProfile
         fields = BaseModelSerializer.Meta.fields + [
@@ -1150,9 +1112,6 @@ class CorporateProfileSerializer(BaseModelSerializer):
             "referral_code",
             "company_name",
             "gallery_images",
-            "remaining_tokens",
-            "used_tokens",
-            "monthly_limit",
         ]
 
 

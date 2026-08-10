@@ -1,176 +1,156 @@
 from django.contrib.auth.models import Group, Permission
 from django.db import transaction
+from django.db.models import Prefetch, Q
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from activity_log.services import log_event
-from user.models import AuthGroupPermissionsModel, CustomGroup, RoleFamily, User
+from user.models import (AuthGroupPermissionsModel, CustomGroup, RoleFamily,
+                         User)
+from user.permissions import IsAdminOrProvider, is_admin_user
+from user.user_auth import PROJECT_APP_LABELS, get_user_permissions
 from utils.pagination import Pagination
-from utils.role_permission import (
-    get_group_permission_by_user,
-    get_permission_by_group_ids,
-    get_purticlare_permission,
-)
+from utils.role_permission import get_group_permission_by_user, parse_ids
 
 from .serializers import CustomGroupSerializers, PermissionSerializers
 
 
-class GroupViewSet(ModelViewSet):
-    queryset = Group.objects.all().order_by("-id")
-    serializer_class = CustomGroupSerializers
-    pagination_class = Pagination
-    filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ["id", "name", "sequence"]
-    ordering_fields = ["id", "name", "sequence"]
+def _resolve_permission_objects(values):
+    """Resolve permission ids/codenames to Permission objects, or None if invalid."""
+    if values is None:
+        return []
+    if not isinstance(values, list):
+        values = [values]
 
-    def list(self, request, *args, **kwargs):
-        user = request.user
-        no_pagination = self.request.query_params.get("no_pagination")
-        company_id = self.request.query_params.get("company_id")
-        partner_company_id = self.request.query_params.get("partner_company_id")
-
-        # partner_company / end_client groups removed from the data model
-        if partner_company_id:
-            return Response(
-                {
-                    "success": False,
-                    "message": "partner company groups are not available anymore",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        if company_id:
-            queryset = self.filter_queryset(
-                CustomGroup.objects.filter(company=company_id, deleted=False).order_by(
-                    "-id"
-                )
-            )
-
+    ids = []
+    codenames = []
+    for value in values:
+        if isinstance(value, bool):
+            return None
+        if isinstance(value, int):
+            ids.append(value)
+        elif isinstance(value, str) and value.strip():
+            codenames.append(value.strip())
         else:
-            queryset = self.filter_queryset(
-                CustomGroup.objects.filter(
-                    created_by=user.id,
-                    company__isnull=True,
-                    deleted=False,
-                ).order_by("-id")
-            )
+            return None
 
-        self.pagination_class.page_size = int(request.query_params.get("pagesize", 10))
-        page = self.paginate_queryset(queryset)
+    permissions = []
+    if ids:
+        id_permissions = list(Permission.objects.filter(id__in=ids))
+        if len(id_permissions) != len(set(ids)):
+            return None
+        permissions.extend(id_permissions)
+    if codenames:
+        codename_permissions = list(Permission.objects.filter(codename__in=codenames))
+        if len(codename_permissions) != len(set(codenames)):
+            return None
+        permissions.extend(codename_permissions)
+    return permissions
 
-        if no_pagination:
-            serializer = self.serializer_class(queryset, many=True)
-            return Response({"success": True, "data": serializer.data})
 
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
+def _can_assign_permissions(user, permissions):
+    """Non-admin users may only grant permissions they already possess."""
+    if is_admin_user(user):
+        return True
+    owned = set(get_user_permissions(user))
+    return all(
+        f"{p.content_type.app_label}|{p.codename}" in owned for p in permissions
+    )
 
-        serializer = self.serializer_class(queryset, many=True)
-        return Response({"success": True, "data": serializer.data})
 
-    def create(self, request, *args, **kwargs):
-        data = request.data
-        serializer = CustomGroupSerializers(data=data)
-
-        if serializer.is_valid():
-            serializer.validated_data["created_by"] = request.user
-            serializer.save()
-            log_event(
-                event="group.created",
-                description=f"Created group {serializer.data.get('name')}",
-                user=request.user,
-                entity_type="group",
-                entity_id=serializer.instance.id if serializer.instance else None,
-                metadata={"group_name": serializer.data.get("name")},
-                request=request,
-            )
-            return Response(
-                {"success": True, "data": serializer.data},
-                status=status.HTTP_201_CREATED,
-            )
-        else:
-            return Response(
-                {"success": False, "message": serializer.errors},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-    @transaction.atomic
-    @action(detail=False, methods=["get"], url_path="archive-group-permissions-list")
-    def archive_group_permissions_list(self, request, *args, **kwargs):
-        user = request.user
-        archive_group_list = CustomGroup.objects.filter(
-            created_by=user.id, deleted=True
-        ).order_by("-sequence")
-        queryset = self.filter_queryset(archive_group_list)
-        excluded_group_ids = [1, 2, 3]
-        queryset = queryset.exclude(id__in=excluded_group_ids)
-
-        self.pagination_class.page_size = int(request.query_params.get("pagesize", 10))
-        page = self.paginate_queryset(queryset)
-        no_pagination = request.query_params.get("no_pagination")
-
-        if no_pagination:
-            serializer = self.serializer_class(queryset, many=True)
-            return Response({"success": True, "data": serializer.data})
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
-
-        serializer = self.serializer_class(queryset, many=True)
-        return Response(
-            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-        )
-
-    def update(self, request, *args, **kwargs):
-        data = request.data
-        instance = self.get_object()
-
-        serializer = self.serializer_class(instance, data=data, partial=True)
-
-        if serializer.is_valid():
-            instance.save()
-            log_event(
-                event="group.updated",
-                description=f"Updated group {instance.name}",
-                user=request.user,
-                entity_type="group",
-                entity_id=instance.id,
-                metadata={"group_name": instance.name},
-                request=request,
-            )
-            return Response(
-                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-            )
-        else:
-            return Response(
-                {"success": False, "message": serializer.errors},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+def _get_owned_role_queryset(user, deleted=False):
+    """Roles a user may manage: admins see all, others only roles they created.
+    ``deleted=True`` targets archived roles for restore.
+    """
+    queryset = CustomGroup.objects.filter(deleted=deleted)
+    if not is_admin_user(user):
+        queryset = queryset.filter(created_by=user)
+    return queryset
 
 
 class AssignUserGroupViewSet(ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = CustomGroupSerializers
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminOrProvider]
+    # Only assign is exposed; destroy() would cascade-revoke member permissions.
+    http_method_names = ["post", "head", "options"]
 
     def create(self, request, *args, **kwargs):
-        user_ids = request.data.get("user_id")
-        user_list = User.objects.filter(pk__in=user_ids)
-        group_id = request.data.get("group_id")
+        user_ids = parse_ids(request.data.get("user_id"))
+        if user_ids is None:
+            return Response(
+                {"success": False, "message": "Invalid user_id or role_id."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not user_ids:
+            return Response(
+                {"success": False, "message": "user_id must be a non-empty list."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        role_id_list = parse_ids(request.data.get("role_id"))
+        if role_id_list is None or len(role_id_list) != 1:
+            return Response(
+                {"success": False, "message": "Invalid user_id or role_id."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        role_id = role_id_list[0]
+
+        user_list = User.objects.filter(pk__in=user_ids, deleted=False)
+
+        # Owners may only assign roles they created to users they created.
+        if not is_admin_user(request.user):
+            if request.user.user_type not in [
+                User.Role.INSTITUTE,
+                User.Role.SCHOOL_COLLEGE,
+                User.Role.CORPORATE,
+            ]:
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Only organization users can assign roles",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Archived roles must be restored before assignment.
+            if not _get_owned_role_queryset(request.user).filter(
+                id=role_id
+            ).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Role not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            if user_list.exclude(created_by=request.user).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "You can only assign roles to users you created",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         try:
-            group = Group.objects.get(pk=group_id)
+            role = Group.objects.get(pk=role_id)
         except Group.DoesNotExist:
             return Response(
-                {"success": False, "message": "Group does not exist"},
+                {"success": False, "message": "Role does not exist"},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not CustomGroup.objects.filter(id=role_id, deleted=False).exists():
+            return Response(
+                {"success": False, "message": "Role not found"},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         if len(user_list) != len(user_ids):
@@ -180,49 +160,53 @@ class AssignUserGroupViewSet(ModelViewSet):
             )
 
         for user in user_list:
-            group.user_set.add(user)
+            role.user_set.add(user)
+
+        log_event(
+            event="role.assigned",
+            description=f"Assigned role {role.name} to {len(user_list)} user(s)",
+            user=request.user,
+            entity_type="role",
+            entity_id=role_id,
+            metadata={
+                "role_id": role_id,
+                "role_name": role.name,
+                "user_ids": user_ids,
+            },
+            request=request,
+        )
 
         return Response(
-            {"success": True, "message": "User assigned to group"},
+            {"success": True, "message": "User assigned to role"},
             status=status.HTTP_200_OK,
         )
 
 
 class PermissionViewSet(ModelViewSet):
-    queryset = Permission.objects.filter(content_type_id__gt=5).order_by("id")
+    queryset = Permission.objects.filter(
+        content_type__app_label__in=PROJECT_APP_LABELS
+    ).order_by("id")
     serializer_class = PermissionSerializers
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+    # Read-only permission browser; writes are blocked.
+    http_method_names = ["get", "patch", "head", "options"]
 
-    @action(
-        detail=False,
-        methods=["GET"],
-        url_path="get-purticlare-permission",
-        permission_classes=[AllowAny],
-    )
-    def get_purticlare_permission(self, request, *args, **kwargs):
-        content_types = self.request.query_params.get("content_types")
-        model_names = self.request.query_params.get("model_names")
-        group_id = self.request.query_params.get("group_id")
-        company_id = self.request.query_params.get("company_id")
-        partner_company_id = self.request.query_params.get("partner_company_id")
-        end_client_id = self.request.query_params.get("end_client_id")
-
-        if not content_types:
-            return Response({"success": False, "message": "Content Type Not Found"})
-
-        if not model_names:
-            return Response({"success": False, "message": "Model Name Not Found"})
-
-        response = get_purticlare_permission(
-            content_types,
-            model_names,
-            group_id,
-            company_id,
-            partner_company_id,
-            end_client_id,
+    def update(self, request, *args, **kwargs):
+        return Response(
+            {"success": False, "message": "Method not allowed"},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
         )
-        return Response({"success": True, "data": response}, status=status.HTTP_200_OK)
+
+    partial_update = update
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if is_admin_user(self.request.user):
+            return queryset
+        return queryset.filter(
+            Q(group__user=self.request.user) | Q(user=self.request.user)
+        ).distinct()
 
     @action(detail=False, methods=["GET"], url_path="model-wise-permission")
     def model_wise_permission(self, request, *args, **kwargs):
@@ -238,123 +222,130 @@ class PermissionViewSet(ModelViewSet):
             return Response({"success": False, "message": "Model Name Not Found"})
 
         permission_list = queryset.filter(
-            content_type=app_label, content_type__model=model_name
+            content_type__app_label=app_label, content_type__model=model_name
         )
 
         page = self.paginate_queryset(permission_list)
         no_pagination = request.query_params.get("no_pagination")
         if no_pagination:
-            serializer = self.serializer_class(queryset, many=True)
+            serializer = self.serializer_class(permission_list, many=True)
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
 
         serializer = self.get_serializer(permission_list, many=True)
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
 
-    @action(detail=False, methods=["PATCH"], url_path="group-wise-permission")
-    def group_wise_permission(self, request, *args, **kwargs):
-        group_ids = request.data.get("group_ids")
-        group_id = request.data.get("group_id")
-        company_id = request.data.get("company_id")
-        partner_company_id = request.data.get("partner_company_id")
-        role_name = request.data.get("role_name")
+    @action(detail=False, methods=["PATCH"], url_path="role-wise-permission")
+    def role_wise_permission(self, request, *args, **kwargs):
+        role_id = request.data.get("role_id")
 
-        if group_ids:
-            user_assigned_groups = None
-            user_assigned_permissions = None
-            try:
-                if role_name:
-                    role_permission = Group.objects.get(name=role_name)
-                    user_assigned_groups = role_permission
-                elif company_id:
-                    User.objects.get(company=company_id)
-                    user_assigned_groups = Group.objects.get(name="Company Admin")
-                else:
-                    return Response(
-                        {
-                            "success": False,
-                            "message": "partner company groups are not available anymore",
-                        },
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
-            except Group.DoesNotExist:
-                return Response(
-                    {"success": False, "message": "Group not found"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-
-            response = get_permission_by_group_ids(
-                group_ids, user_assigned_groups, user_assigned_permissions
-            )
-            return Response(
-                {"success": True, "data": response}, status=status.HTTP_200_OK
-            )
-
-        elif group_id:
-            fetched_permissions = AuthGroupPermissionsModel.objects.filter(
-                group_id__in=group_id
-            ).order_by("-id")
-
-            permission_details = []
-            for get_permission in fetched_permissions:
-                codename = Permission.objects.get(
-                    id=get_permission.permission.id
-                ).codename
-                custom_group = CustomGroup.objects.get(
-                    group_ptr=get_permission.group.id
-                )
-
-                permission_info = {
-                    "id": get_permission.id,
-                    "group_id": get_permission.group.id,
-                    "group_name": custom_group.group_name,
-                    "content_type": get_permission.permission.content_type.id,
-                    "model_name": (
-                        get_permission.permission.content_type.model.capitalize()
-                    ),
-                    "codename": codename,
-                }
-                permission_details.append(permission_info)
-
-            return Response(
-                {"success": True, "data": permission_details}, status=status.HTTP_200_OK
-            )
-
-        else:
+        if not role_id:
             return Response(
                 {"success": False, "message": "Provide Valid Data"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    def list(self, request, *args, **kwargs):
-        group_name = self.request.query_params.get("group_name")
-
-        if group_name:
-            permission_list = []
-            permission_by_group = AuthGroupPermissionsModel.objects.filter(
-                group__name=group_name
+        role_id_list = parse_ids(role_id)
+        if not role_id_list:
+            return Response(
+                {"success": False, "message": "Invalid role_id."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-            for permissions in permission_by_group:
-                codename = Permission.objects.get(id=permissions.permission.id)
-                permission_detail = {
-                    "id": permissions.permission.id,
-                    "name": permissions.permission.name,
-                    "codename": codename.codename,
-                    "content_type_id": permissions.permission.content_type.id,
-                    "model": permissions.permission.content_type.model.capitalize(),
-                }
-                permission_list.append(permission_detail)
+        owned_roles = _get_owned_role_queryset(request.user).filter(
+            pk__in=role_id_list
+        )
+        if is_admin_user(request.user):
+            if not owned_roles.exists():
+                return Response(
+                    {"success": False, "message": "Role not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        else:
+            if owned_roles.count() != len(set(role_id_list)):
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Role not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        fetched_permissions = AuthGroupPermissionsModel.objects.filter(
+            group_id__in=role_id_list
+        ).order_by("-id")
+        permission_ids = list(
+            fetched_permissions.values_list("permission_id", flat=True)
+        )
+        permissions_by_id = {
+            p.id: p
+            for p in Permission.objects.filter(id__in=permission_ids).select_related(
+                "content_type"
+            )
+        }
+        groups_by_id = {
+            g.group_ptr_id: g
+            for g in CustomGroup.objects.filter(group_ptr_id__in=role_id_list)
+        }
+
+        permission_details = []
+        for fetched in fetched_permissions:
+            permission = permissions_by_id.get(fetched.permission_id)
+            if permission is None:
+                continue
+            permission_info = PermissionSerializers(permission).data
+            custom_group = groups_by_id.get(fetched.group_id)
+            permission_info["role_id"] = fetched.group_id
+            permission_info["role_name"] = (
+                custom_group.group_name if custom_group else None
+            )
+            permission_details.append(permission_info)
+
+        return Response(
+            {"success": True, "data": permission_details}, status=status.HTTP_200_OK
+        )
+
+    def list(self, request, *args, **kwargs):
+        role_name = self.request.query_params.get("role_name")
+
+        if role_name:
+            role = (
+                _get_owned_role_queryset(self.request.user)
+                .filter(Q(group_name=role_name) | Q(name=role_name))
+                .order_by("id")
+                .first()
+            )
+            if role is None:
+                if is_admin_user(self.request.user):
+                    return Response(
+                        {"success": False, "message": "Role not found"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Role not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            permission_ids = AuthGroupPermissionsModel.objects.filter(
+                group_id=role.id
+            ).values_list("permission_id", flat=True)
+            permission_list = PermissionSerializers(
+                Permission.objects.filter(id__in=permission_ids).select_related(
+                    "content_type"
+                ),
+                many=True,
+            ).data
             return Response(
-                {
-                    "success": True,
-                    "data": permission_list,
-                },
+                {"success": True, "data": permission_list},
                 status=status.HTTP_200_OK,
             )
 
@@ -366,7 +357,9 @@ class PermissionViewSet(ModelViewSet):
             return Response({"success": True, "data": serializer.data})
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(
@@ -378,96 +371,114 @@ class PermissionViewSet(ModelViewSet):
         )
 
 
-class GetGroupPermissionViewSet(ModelViewSet):
-    queryset = Permission.objects.all()
-    serializer_class = PermissionSerializers
-    lookup_field = "id"
-
-    def retrieve(self, request, *args, **kwargs):
-        data = {}
-        group_id = self.kwargs.get("id")
-        try:
-            group = Group.objects.get(pk=group_id)
-        except Group.DoesNotExist:
-            data["total_record"] = 0
-            data["success"] = False
-            data["message"] = "Group not found"
-            data["data"] = []
-            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
-
-        permission_list = {}
-
-        for permission in group.permissions.all():
-            app_label = permission.content_type.app_label
-            codename = permission.codename
-
-            if app_label in permission_list:
-                permission_list[app_label].append(codename)
-            else:
-                permission_list[app_label] = [codename]
-
-        data["total_record"] = len(permission_list)
-        data["success"] = True
-        data["message"] = "OK"
-        data["data"] = permission_list
-        return Response(data=data, status=status.HTTP_200_OK)
-
-
 class AssignPermissionGroupViewSet(ModelViewSet):
     queryset = Permission.objects.all()
     serializer_class = PermissionSerializers
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminOrProvider]
+    # Only assign is exposed; other routes would let providers mutate Permission rows.
+    http_method_names = ["post", "head", "options"]
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
-        group_id = request.data.get("group_id")
-        codename_list = list(request.data.get("codename"))
+        role_id = request.data.get("role_id")
+        codename = request.data.get("codename")
 
-        group = Group.objects.get(pk=group_id)
-        for codename in codename_list:
-            code_id = (
-                Permission.objects.filter(codename=codename).values("id")[0].get("id")
+        codename_list = codename if isinstance(codename, list) else [codename]
+        codename_list = [str(c).strip() for c in codename_list if c and str(c).strip()]
+        if not codename_list:
+            return Response(
+                {"success": False, "message": "codename must be a non-empty list."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-            group.permissions.add(code_id)
+        try:
+            role_id = int(role_id)
+        except (TypeError, ValueError):
+            return Response(
+                {"success": False, "message": "Invalid role_id."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        group_permission = Permission.objects.filter(group=group)
-        permission_list = {}
-        for permission in group_permission:
-            if permission.content_type.app_label in permission_list:
-                permission_name = permission_list[permission.content_type.app_label]
-                permission_list[permission.content_type.app_label] = ",".join(
-                    [permission_name, permission.name.split(" ")[1]]
-                )
-            else:
-                permission_list[permission.content_type.app_label] = (
-                    permission.name.split(" ")[1]
+        # Admins can assign to any role; owners only to roles they created.
+        if not is_admin_user(request.user):
+            if not _get_owned_role_queryset(request.user).filter(
+                id=role_id
+            ).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Role not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
                 )
 
+        try:
+            role = Group.objects.get(pk=role_id)
+        except Group.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Role does not exist"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if not CustomGroup.objects.filter(id=role_id, deleted=False).exists():
+            return Response(
+                {"success": False, "message": "Role not found"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Resolve all codenames before writing (no partial grants).
+        permissions_to_add = []
+        for codename in codename_list:
+            permission = Permission.objects.filter(codename=codename).first()
+            if permission is None:
+                return Response(
+                    {
+                        "success": False,
+                        "message": f"Permission '{codename}' not found",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            permissions_to_add.append(permission)
+
+        if not _can_assign_permissions(request.user, permissions_to_add):
+            return Response(
+                {
+                    "success": False,
+                    "message": "You can only assign permissions you possess",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        role.permissions.add(*permissions_to_add)
+
+        log_event(
+            event="role.permission_added",
+            description=(
+                f"Added {len(permissions_to_add)} permission(s) "
+                f"to role {role.name}"
+            ),
+            user=request.user,
+            entity_type="role",
+            entity_id=role_id,
+            metadata={
+                "role_id": role_id,
+                "role_name": role.name,
+                "permissions": sorted(p.codename for p in permissions_to_add),
+            },
+            request=request,
+        )
+
+        permissions_data = PermissionSerializers(
+            role.permissions.all(), many=True
+        ).data
         return Response(
             {
                 "success": True,
-                "message": "Permission assigned to group",
-                "response": permission_list,
+                "message": "Permission assigned to role",
+                "data": permissions_data,
             },
             status=status.HTTP_200_OK,
         )
-
-
-class GetAllPermissionViewSet(ModelViewSet):
-    queryset = Permission.objects.all()
-    serializer_class = PermissionSerializers
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        no_pagination = request.query_params.get("no_pagination")
-        if no_pagination:
-            serializer = self.serializer_class(queryset, many=True)
-            return Response({"success": True, "data": serializer.data})
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
 
 
 class CreateGroupWithPermissionsViewSet(ModelViewSet):
@@ -479,38 +490,29 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
     ordering_fields = ["name", "sequence"]
     search_fields = ["name"]
 
-    @action(detail=False, methods=["GET"], url_path="get-group-permission-by-user")
-    def get_group_permission_by_user(self, request, *args, **kwargs):
-        login_user = request.user  # Better: use request.user directly
+    def get_permissions(self):
+        perms = super().get_permissions()
+        # Role writes are owner-only; read actions stay open.
+        if self.action in ("create", "update", "partial_update", "destroy"):
+            perms = perms + [IsAdminOrProvider()]
+        return perms
 
-        # Get all groups the user belongs to
-        user_groups = Group.objects.filter(user=login_user).values_list("id", flat=True)
-
-        # Company logic removed - users are now standalone
-        # TODO: Implement alternative group exclusion logic
-        exclude_group_names = []  # No exclusion for now
-
-        # Get user's custom groups, excluding the admin role specific to their type
-        user_custom_groups = CustomGroup.objects.filter(
-            group_ptr__in=user_groups
-        ).exclude(group_ptr__name__in=exclude_group_names)
-
-        # Optional: Get the excluded admin group (if needed for logic)
-        excluded_admin_groups = CustomGroup.objects.filter(
-            group_ptr__name__in=exclude_group_names
+    @action(detail=False, methods=["GET"], url_path="get-role-permission-by-user")
+    def get_role_permission_by_user(self, request, *args, **kwargs):
+        user_roles = Group.objects.filter(user=request.user).values_list(
+            "id", flat=True
         )
+        user_custom_roles = CustomGroup.objects.filter(group_ptr__in=user_roles)
 
-        # Call your helper function (make sure it exists and works correctly)
-        response = get_group_permission_by_user(
-            user_custom_groups, excluded_admin_groups
-        )
+        response = get_group_permission_by_user(user_custom_roles)
 
         return Response(
-            {"success": True, "response": response}, status=status.HTTP_200_OK
+            {"success": True, "data": response}, status=status.HTTP_200_OK
         )
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        # Archived roles are hidden from read paths (deleted=False convention).
+        queryset = super().get_queryset().exclude(customgroup__deleted=True)
         search_param = self.request.query_params.get("search", None)
         ordering_param = self.request.query_params.get("ordering", None)
 
@@ -523,392 +525,385 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
         return queryset
 
     def list(self, request, *args, **kwargs):
-        groups = self.get_queryset()
-        group_list = []
+        queryset = self.get_queryset()
+        if not is_admin_user(request.user):
+            queryset = queryset.filter(
+                customgroup__in=_get_owned_role_queryset(request.user)
+            )
+        roles = list(
+            queryset.prefetch_related(
+                Prefetch(
+                    "permissions",
+                    queryset=Permission.objects.select_related("content_type"),
+                )
+            )
+        )
+        # Resolve CustomGroup rows in one query via the MTI group_ptr link.
+        custom_groups = {
+            cg.group_ptr_id: cg
+            for cg in CustomGroup.objects.filter(
+                group_ptr_id__in=[role.id for role in roles]
+            ).select_related("role_family")
+        }
+        role_list = []
 
-        for group in groups:
-            permissions = [
+        for role in roles:
+            custom_group = custom_groups.get(role.id)
+            role_list.append(
                 {
-                    "id": permission.id,
-                    "permission": (
-                        f"{permission.content_type.app_label}| {permission.name}"
+                    "role_id": role.id,
+                    "role_name": (
+                        custom_group.group_name if custom_group else role.name
                     ),
-                }
-                for permission in group.permissions.all()
-            ]
-
-            custom_group = CustomGroup.objects.filter(group_name=group).first()
-            group_list.append(
-                {
-                    "group_id": group.id,
-                    "group_name": custom_group.group_name,
                     "sequence": custom_group.sequence if custom_group else None,
-                    "permissions": permissions,
+                    "role_family": (
+                        {
+                            "id": custom_group.role_family.id,
+                            "name": custom_group.role_family.family_name,
+                        }
+                        if custom_group and custom_group.role_family
+                        else None
+                    ),
+                    "permissions": PermissionSerializers(
+                        role.permissions.all(), many=True
+                    ).data,
                 }
             )
 
         return Response(
-            {"success": True, "response": group_list}, status=status.HTTP_200_OK
+            {"success": True, "data": role_list}, status=status.HTTP_200_OK
         )
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        permissions = [
-            {
-                "id": permission.id,
-                "permission": f"{permission.content_type.app_label} | {permission.name}",
-            }
-            for permission in instance.permissions.all()
-        ]
+        # Same ownership rule as update()/destroy().
+        if not is_admin_user(request.user):
+            if not _get_owned_role_queryset(request.user).filter(
+                pk=instance.pk
+            ).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Role not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
-        custom_group = CustomGroup.objects.filter(name=instance).first()
+        # Same MTI lookup as list().
+        custom_group = CustomGroup.objects.filter(group_ptr=instance).first()
 
-        group_data = {
-            "group_id": instance.id,
-            "group_name": custom_group.group_name,
-            "role_family": (
-                custom_group.role_family.id if custom_group.role_family else None
-            ),
-            "family_name": (
-                custom_group.role_family.family_name
-                if custom_group.role_family
-                else None
+        role_data = {
+            "role_id": instance.id,
+            "role_name": (
+                custom_group.group_name if custom_group else instance.name
             ),
             "sequence": custom_group.sequence if custom_group else None,
-            "permissions": permissions,
+            "role_family": (
+                {
+                    "id": custom_group.role_family.id,
+                    "name": custom_group.role_family.family_name,
+                }
+                if custom_group and custom_group.role_family
+                else None
+            ),
+            "permissions": PermissionSerializers(
+                instance.permissions.all(), many=True
+            ).data,
         }
 
         return Response(
-            {"success": True, "response": group_data}, status=status.HTTP_200_OK
+            {"success": True, "data": role_data}, status=status.HTTP_200_OK
+        )
+
+    @action(detail=False, methods=["GET"], url_path="get-role-permissions")
+    def get_role_permissions(self, request, *args, **kwargs):
+        role_ids_param = request.query_params.get("role_ids")
+        role_id_param = request.query_params.get("role_id")
+
+        if not role_ids_param and not role_id_param:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Please provide role_id or role_ids",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        role_ids = parse_ids(role_ids_param or role_id_param)
+        if not role_ids:
+            return Response(
+                {"success": False, "message": "Invalid role id(s)"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        custom_roles = _get_owned_role_queryset(request.user).filter(
+            pk__in=role_ids
+        )
+        if is_admin_user(request.user):
+            if not custom_roles.exists():
+                return Response(
+                    {"success": False, "message": "Role not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        else:
+            # Non-admins may only read roles they created; reject partial matches.
+            if custom_roles.count() != len(set(role_ids)):
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Role not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        response = get_group_permission_by_user(custom_roles)
+
+        return Response(
+            {"success": True, "data": response}, status=status.HTTP_200_OK
         )
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        group_name = request.data.get("group_name")
+        role_name = request.data.get("role_name")
         role_family = request.data.get("role_family")
-        permission_ids = request.data.get("permissions", [])
-        company_id = request.data.get("company")
-        partner_company_id = request.data.get("partner_company")
-        end_client_id = request.data.get("end_client")
+        permissions_input = request.data.get("permissions", [])
 
-        # group = CustomGroup.objects.filter(group_name=group_name).exists()
         role_family_instance = None
         if role_family:
             try:
                 role_family_instance = RoleFamily.objects.get(id=role_family)
-            except RoleFamily.DoesNotExist:
+            except (RoleFamily.DoesNotExist, TypeError, ValueError):
                 return Response(
                     {"success": False, "message": "Role Family Not Found"},
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-        if company_id:
-            group_exists = CustomGroup.objects.filter(
-                group_name=group_name, company_id=company_id
-            ).exists()
-            if group_exists:
-                return Response(
-                    {"success": False, "message": "Group name already exists"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            # Create the CustomGroup instance, which will automatically assign a sequence
-            if group_name and group_name.replace(" ", "").isalpha():
-                custom_group = CustomGroup(
-                    name="company_" + str(company_id) + "_" + group_name,
-                    group_name=group_name,
-                    role_family=role_family_instance,
-                    company_id=company_id,
-                    created_by=request.user,
-                )
-                custom_group.save()
-                user = User.objects.get(company=company_id).id
-                custom_group.user_set.add(user)
-
-            else:
-                return Response(
-                    {
-                        "success": False,
-                        "message": "Group name should contain only characters",
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-        elif partner_company_id:
-            group_exists = CustomGroup.objects.filter(
-                group_name=group_name, partner_company_id=partner_company_id
-            ).exists()
-            if group_exists:
-                return Response(
-                    {"success": False, "message": "Group name already exists"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            # Create the CustomGroup instance, which will automatically assign a sequence
-            if group_name and group_name.replace(" ", "").isalpha():
-                custom_group = CustomGroup(
-                    name="partner_company_"
-                    + str(partner_company_id)
-                    + "_"
-                    + group_name,
-                    group_name=group_name,
-                    role_family=role_family_instance,
-                    partner_company_id=partner_company_id,
-                    created_by=request.user,
-                )
-                custom_group.save()
-                user = User.objects.get(
-                    partner_company=partner_company_id, company__isnull=True
-                ).id
-                custom_group.user_set.add(user)
-
-            else:
-                return Response(
-                    {
-                        "success": False,
-                        "message": "Group name should contain only characters",
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-        elif end_client_id:
-            group_exists = CustomGroup.objects.filter(
-                group_name=group_name, end_client_id=end_client_id
-            ).exists()
-            if group_exists:
-                return Response(
-                    {"success": False, "message": "Group name already exists"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            # Create the CustomGroup instance, which will automatically assign a sequence
-            if group_name and group_name.replace(" ", "").isalpha():
-                custom_group = CustomGroup(
-                    name="end_client_" + str(end_client_id) + "_" + group_name,
-                    group_name=group_name,
-                    role_family=role_family_instance,
-                    end_client_id=end_client_id,
-                    created_by=request.user,
-                )
-                custom_group.save()
-                user = User.objects.get(
-                    end_client=end_client_id,
-                    company__isnull=True,
-                    partner_company__isnull=True,
-                ).id
-                custom_group.user_set.add(user)
-
-            else:
-                return Response(
-                    {
-                        "success": False,
-                        "message": "Group name should contain only characters",
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-        else:
-            group_exists = CustomGroup.objects.filter(
-                group_name=group_name, created_by=request.user
-            ).exists()
-            if group_exists:
-                return Response(
-                    {"success": False, "message": "Group name already exists"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            custom_group = CustomGroup(
-                name=group_name,
-                group_name=group_name,
-                created_by=request.user,
+        if not role_name or not str(role_name).strip():
+            return Response(
+                {
+                    "success": False,
+                    "message": "Role name should contain only characters",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
-            custom_group.save()
-            user = User.objects.get(id=request.user.id).id
-            custom_group.user_set.add(user)
 
-        # Create the CustomGroup instance, which will automatically assign a sequence
+        role_exists = CustomGroup.objects.filter(
+            group_name=role_name, created_by=request.user
+        ).exists()
+        if role_exists:
+            return Response(
+                {"success": False, "message": "Role name already exists"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        permissions = Permission.objects.filter(id__in=permission_ids)
-        custom_group.permissions.set(permissions)
+        # Resolve permissions before any write (codenames canonical, ids accepted).
+        permissions = _resolve_permission_objects(permissions_input)
+        if permissions is None:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Invalid permission id(s) or codename(s).",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        permission_list = {}
-        for permission in custom_group.permissions.all():
-            if permission.content_type.app_label in permission_list:
-                permission_name = permission_list[permission.content_type.app_label]
-                permission_list[permission.content_type.app_label] = ",".join(
-                    [permission_name, permission.name.split(" ")[1]]
-                )
-            else:
-                permission_list[permission.content_type.app_label] = (
-                    permission.name.split(" ")[1]
-                )
+        if not _can_assign_permissions(request.user, permissions):
+            return Response(
+                {
+                    "success": False,
+                    "message": "You can only assign permissions you possess",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        custom_group = CustomGroup(
+            name=role_name,
+            group_name=role_name,
+            role_family=role_family_instance,
+            created_by=request.user,
+        )
+        custom_group.save()
+        custom_group.user_set.add(request.user)
+        if permissions:
+            custom_group.permissions.set(permissions)
+
+        log_event(
+            event="role.created",
+            description=f"Created role {custom_group.group_name}",
+            user=request.user,
+            entity_type="role",
+            entity_id=custom_group.id,
+            metadata={
+                "role_id": custom_group.id,
+                "role_name": custom_group.group_name,
+                "role_family_id": (
+                    role_family_instance.id if role_family_instance else None
+                ),
+                "permissions": sorted(
+                    custom_group.permissions.values_list("codename", flat=True)
+                ),
+            },
+            request=request,
+        )
 
         return Response(
             {
                 "success": True,
-                "message": "Group created and Permission assigned to Group",
-                "id": custom_group.id,
-                "group_name": group_name,
-                "sequence": custom_group.sequence,
-                "role_family": (
-                    custom_group.role_family.family_name
-                    if custom_group.role_family
-                    else None
-                ),
-                "company": company_id,
-                "partner_company": partner_company_id,
-                "end_client": end_client_id,
-                "response": permission_list,
+                "message": "Role created and permissions assigned",
+                "data": {
+                    "role_id": custom_group.id,
+                    "role_name": custom_group.group_name,
+                    "sequence": custom_group.sequence,
+                    "role_family": (
+                        {
+                            "id": custom_group.role_family.id,
+                            "name": custom_group.role_family.family_name,
+                        }
+                        if custom_group.role_family
+                        else None
+                    ),
+                    "permissions": PermissionSerializers(
+                        custom_group.permissions.all(), many=True
+                    ).data,
+                },
             },
             status=status.HTTP_200_OK,
         )
 
     @transaction.atomic
     def update(self, request, *args, **kwargs):
-        group = self.get_object()
-        group_name = request.data.get("group_name")
+        role = self.get_object()
+        role_name = request.data.get("role_name")
         role_family = request.data.get("role_family")
-        permission_ids = request.data.get("permissions", [])
-        company_id = request.data.get("company")
-        partner_company_id = request.data.get("partner_company")
-        end_client_id = request.data.get("end_client")
-        group_id = kwargs.get("pk")
+        permissions_input = request.data.get("permissions")
+        role_id = kwargs.get("pk")
+
+        if not is_admin_user(request.user):
+            if not _get_owned_role_queryset(request.user).filter(
+                id=role_id
+            ).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Role not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
         role_family_instance = None
         if role_family:
             try:
                 role_family_instance = RoleFamily.objects.get(id=role_family)
-            except RoleFamily.DoesNotExist:
+            except (RoleFamily.DoesNotExist, TypeError, ValueError):
                 return Response(
                     {"success": False, "message": "Role Family Not Found"},
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-        group_instance = CustomGroup.objects.get(pk=group_id)
-        if company_id:
-            group_exists = (
-                CustomGroup.objects.filter(group_name=group_name, company_id=company_id)
-                .exclude(pk=group_id)
+        # Plain Groups without a CustomGroup child cannot be role-edited.
+        role_instance = CustomGroup.objects.filter(pk=role_id).first()
+        if role_instance is None:
+            return Response(
+                {"success": False, "message": "Role not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Identity fields only update on non-empty values (DRF PATCH semantics).
+        has_identity_update = False
+        if "role_name" in request.data and role_name:
+            role_exists = (
+                CustomGroup.objects.filter(
+                    group_name=role_name, created_by=request.user
+                )
+                .exclude(pk=role_id)
                 .exists()
             )
-            if group_exists:
+            if role_exists:
+                return Response(
+                    {"success": False, "message": "Role name already exists"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            role_instance.name = role_name
+            role_instance.group_name = role_name
+            has_identity_update = True
+        if "role_family" in request.data and role_family:
+            role_instance.role_family = role_family_instance
+            has_identity_update = True
+        if has_identity_update:
+            role_instance.updated_by = request.user
+            role_instance.save()
+
+        # Permissions only change when the key is present; diff computed only then.
+        permission_diff = {"added_permissions": [], "removed_permissions": []}
+        if "permissions" in request.data and permissions_input is not None:
+            before_codenames = set(
+                role.permissions.values_list("codename", flat=True)
+            )
+            permissions = _resolve_permission_objects(permissions_input)
+            if permissions is None:
                 return Response(
                     {
                         "success": False,
-                        "message": "Role name already exists with your Company",
+                        "message": "Invalid permission id(s) or codename(s).",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-
-            group_instance.name = "company_" + str(company_id) + "_" + group_name
-            group_instance.group_name = group_name
-            group_instance.role_family = role_family_instance
-            group_instance.company_id = company_id
-            group_instance.updated_by = request.user
-            group_instance.save()
-
-        elif partner_company_id:
-            group_exists = (
-                CustomGroup.objects.filter(
-                    group_name=group_name, partner_company_id=partner_company_id
-                )
-                .exclude(pk=group_id)
-                .exists()
-            )
-            if group_exists:
+            if not _can_assign_permissions(request.user, permissions):
                 return Response(
                     {
                         "success": False,
-                        "message": "Role name already exists with your Partner Company",
+                        "message": "You can only assign permissions you possess",
                     },
-                    status=status.HTTP_400_BAD_REQUEST,
+                    status=status.HTTP_403_FORBIDDEN,
                 )
-
-            group_instance.name = (
-                "partner_company_" + str(partner_company_id) + "_" + group_name
+            role.permissions.set(permissions)
+            after_codenames = set(
+                role.permissions.values_list("codename", flat=True)
             )
-            group_instance.group_name = group_name
-            group_instance.role_family = role_family_instance
-            group_instance.partner_company_id = partner_company_id
-            group_instance.updated_by = request.user
-            group_instance.save()
+            permission_diff = {
+                "added_permissions": sorted(after_codenames - before_codenames),
+                "removed_permissions": sorted(before_codenames - after_codenames),
+            }
 
-        elif end_client_id:
-            group_exists = (
-                CustomGroup.objects.filter(
-                    group_name=group_name, end_client_id=end_client_id
-                )
-                .exclude(pk=group_id)
-                .exists()
-            )
-            if group_exists:
-                return Response(
-                    {
-                        "success": False,
-                        "message": "Role name already exists with your Partner Company",
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            group_instance.name = "end_client_" + str(end_client_id) + "_" + group_name
-            group_instance.group_name = group_name
-            group_instance.role_family = role_family_instance
-            group_instance.end_client_id = end_client_id
-            group_instance.updated_by = request.user
-            group_instance.save()
-
-        else:
-            group_exists = (
-                CustomGroup.objects.filter(
-                    group_name=group_name, created_by=request.user
-                )
-                .exclude(pk=group_id)
-                .exists()
-            )
-            if group_exists:
-                return Response(
-                    {"success": False, "message": "Group name already exists"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            group_instance.name = group_name
-            group_instance.group_name = group_name
-            group_instance.updated_by = request.user
-            group_instance.save()
-
-        if permission_ids:
-            permissions = Permission.objects.filter(id__in=permission_ids)
-            group.permissions.set(permissions)
-
-        permission_list = {}
-        for permission in group.permissions.all():
-            if permission.content_type.app_label in permission_list:
-                permission_name = permission_list[permission.content_type.app_label]
-                permission_list[permission.content_type.app_label] = ",".join(
-                    [permission_name, permission.name.split(" ")[1]]
-                )
-            else:
-                permission_list[permission.content_type.app_label] = (
-                    permission.name.split(" ")[1]
-                )
+        log_event(
+            event="role.updated",
+            description=f"Updated role {role_instance.group_name}",
+            user=request.user,
+            entity_type="role",
+            entity_id=role_instance.id,
+            metadata={
+                "role_id": role_instance.id,
+                "role_name": role_instance.group_name,
+                "role_family_id": role_instance.role_family_id,
+                "added_permissions": permission_diff["added_permissions"],
+                "removed_permissions": permission_diff["removed_permissions"],
+            },
+            request=request,
+        )
 
         return Response(
             {
                 "success": True,
-                "message": "Group updated and Permission assigned to Group",
-                "id": group_instance.id,
-                "group_name": group_instance.group_name,
-                "sequence": (
-                    group_instance.sequence if group_instance.sequence else None
-                ),
-                "role_family": (
-                    group_instance.role_family.family_name
-                    if group_instance.role_family
-                    else None
-                ),
-                "company": company_id,
-                "partner_company": partner_company_id,
-                "end_client": end_client_id,
-                "response": permission_list,
+                "message": "Role updated",
+                "data": {
+                    "role_id": role_instance.id,
+                    "role_name": role_instance.group_name,
+                    "sequence": (
+                        role_instance.sequence if role_instance.sequence else None
+                    ),
+                    "role_family": (
+                        {
+                            "id": role_instance.role_family.id,
+                            "name": role_instance.role_family.family_name,
+                        }
+                        if role_instance.role_family
+                        else None
+                    ),
+                    "permissions": PermissionSerializers(
+                        role.permissions.all(), many=True
+                    ).data,
+                },
             },
             status=status.HTTP_200_OK,
         )
@@ -916,8 +911,41 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
     @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.delete()
-        instance.save()
+
+        if not is_admin_user(request.user):
+            if not _get_owned_role_queryset(request.user).filter(
+                id=instance.pk
+            ).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Role not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        # Soft delete - hard delete would cascade-revoke member permissions.
+        custom_group = CustomGroup.objects.filter(pk=instance.pk).first()
+        if custom_group is None:
+            # Plain groups without a CustomGroup child report 404, not 500.
+            return Response(
+                {"success": False, "message": "Role not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        custom_group.deleted = True
+        custom_group.save(update_fields=["deleted"])
+        log_event(
+            event="role.deleted",
+            description=f"Deleted role {custom_group.group_name or custom_group.name}",
+            user=request.user,
+            entity_type="role",
+            entity_id=instance.pk,
+            metadata={
+                "role_id": instance.pk,
+                "role_name": custom_group.group_name or custom_group.name,
+            },
+            request=request,
+        )
         return Response(
             {"success": True, "message": "Role Deleted"}, status=status.HTTP_200_OK
         )
@@ -926,46 +954,170 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
 class DeleteGroupWithPermissionsViewSet(ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = CustomGroupSerializers
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrProvider]
     authentication_classes = [JWTAuthentication]
+    pagination_class = Pagination
+    # Only archive/restore/archived-list are exposed; destroy() would cascade-revoke permissions.
+    http_method_names = ["post", "get", "head", "options"]
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        group_ids = request.data.get("group_ids", [])
-
-        if not group_ids:
+        role_ids = parse_ids(request.data.get("role_ids"))
+        if role_ids is None:
             return Response(
-                {"message": "No group IDs provided for deletion."},
+                {
+                    "success": False,
+                    "message": "Invalid role_ids.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not role_ids:
+            return Response(
+                {
+                    "success": False,
+                    "message": "No role IDs provided for deletion.",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        groups = CustomGroup.objects.filter(id__in=group_ids)
-        for group in groups:
-            group.deleted = True
-            group.save()
+        if not is_admin_user(request.user):
+            if (
+                _get_owned_role_queryset(request.user)
+                .filter(id__in=role_ids)
+                .count()
+                != len(set(role_ids))
+            ):
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Role not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        roles = CustomGroup.objects.filter(id__in=role_ids)
+        for role in roles:
+            role.deleted = True
+            role.save()
+
+        log_event(
+            event="role.archived",
+            description=f"Archived {roles.count()} role(s)",
+            user=request.user,
+            entity_type="role",
+            entity_id=None,
+            metadata={"role_ids": role_ids, "count": roles.count()},
+            request=request,
+        )
 
         return Response(
-            {"success": True, "message": "Groups Archive successfully"},
+            {"success": True, "message": "Roles archived successfully"},
             status=status.HTTP_200_OK,
         )
 
     @transaction.atomic
-    @action(detail=False, methods=["post"], url_path="restore-group-permissions")
-    def restore_group_permissions(self, request, *args, **kwargs):
-        group_ids = request.data.get("group_ids", [])
-
-        if not group_ids:
+    @action(detail=False, methods=["post"], url_path="restore")
+    def restore_roles(self, request, *args, **kwargs):
+        role_ids = parse_ids(request.data.get("role_ids"))
+        if role_ids is None:
             return Response(
-                {"message": "No group IDs provided for deletion."},
+                {
+                    "success": False,
+                    "message": "Invalid role_ids.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not role_ids:
+            return Response(
+                {
+                    "success": False,
+                    "message": "No role IDs provided for deletion.",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        groups = CustomGroup.objects.filter(id__in=group_ids)
-        for group in groups:
-            group.deleted = False
-            group.save()
+        if not is_admin_user(request.user):
+            if (
+                _get_owned_role_queryset(request.user, deleted=True)
+                .filter(id__in=role_ids)
+                .count()
+                != len(set(role_ids))
+            ):
+                return Response(
+                    {
+                        "success": False,
+                        "message": "Role not found or not owned by you",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        roles = CustomGroup.objects.filter(id__in=role_ids)
+        for role in roles:
+            role.deleted = False
+            role.save()
+
+        log_event(
+            event="role.restored",
+            description=f"Restored {roles.count()} role(s)",
+            user=request.user,
+            entity_type="role",
+            entity_id=None,
+            metadata={"role_ids": role_ids, "count": roles.count()},
+            request=request,
+        )
 
         return Response(
-            {"success": True, "message": "Groups Restored successfully"},
+            {"success": True, "message": "Roles restored successfully"},
             status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["GET"], url_path="archived")
+    def archived_list(self, request, *args, **kwargs):
+        user = request.user
+        archived_roles = (
+            _get_owned_role_queryset(user, deleted=True)
+            .select_related("role_family")
+            .prefetch_related(
+                Prefetch(
+                    "permissions",
+                    queryset=Permission.objects.select_related("content_type"),
+                )
+            )
+            .order_by("-sequence")
+        )
+        queryset = self.filter_queryset(archived_roles)
+
+        page = self.paginate_queryset(queryset)
+        no_pagination = request.query_params.get("no_pagination")
+        items = queryset if no_pagination or page is None else page
+
+        role_list = [
+            {
+                "role_id": role.id,
+                "role_name": role.group_name,
+                "sequence": role.sequence,
+                "role_family": (
+                    {
+                        "id": role.role_family.id,
+                        "name": role.role_family.family_name,
+                    }
+                    if role.role_family
+                    else None
+                ),
+                "permissions": PermissionSerializers(
+                    role.permissions.all(), many=True
+                ).data,
+            }
+            for role in items
+        ]
+
+        if no_pagination:
+            return Response({"success": True, "data": role_list})
+        if page is not None:
+            return self.get_paginated_response(
+                {"success": True, "data": role_list}
+            )
+
+        return Response(
+            {"success": True, "data": role_list}, status=status.HTTP_200_OK
         )

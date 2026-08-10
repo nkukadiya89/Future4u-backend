@@ -56,21 +56,17 @@ class ResendPasswordResetViewSet(ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Get user details based on user type
             user_name = user.first_name
             user_phone = user.phone
 
-            # Generate new token
             token = generate_forget_pass_token(email, user_phone, 30)
 
-            # Prepare email context
             context = {
                 "name": user_name,
                 "token": token,
                 "email": email,
             }
 
-            # Send email in background thread
             email_thread = threading.Thread(
                 target=self.send_email_thread,
                 args=(context,),
@@ -81,7 +77,6 @@ class ResendPasswordResetViewSet(ModelViewSet):
                 {
                     "success": True,
                     "message": "Password reset email has been resent successfully",
-                    # "data": {"email": email, "user_type": self._get_user_type(user)},
                 },
                 status=status.HTTP_200_OK,
             )

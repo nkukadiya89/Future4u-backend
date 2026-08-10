@@ -2,10 +2,8 @@ from django.db import models
 from assessment_career.models import CareerSuggestion
 from common.models import BaseModule
 from django.conf import settings
-from django.db import models
 
 from city.models import City
-from common.models import BaseModule
 from country.models import Country
 from state.models import State
 from education_level.models import EducationLevel

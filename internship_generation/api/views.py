@@ -19,7 +19,7 @@ from internship_generation.serializers.internship_generation_input import (
 from internship_generation.services.internship_generation_service import (
     InternshipGenerationService,
 )
-from user.permissions import IsAdminOrProvider
+from user.permissions import HasPerm
 from utils.throttles import InternshipGenerationRateThrottle
 from utils.token_check import check_token_available, deduct_monthly_tokens
 
@@ -33,7 +33,8 @@ class InternshipGenerationAPIView(APIView):
     """
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, IsAdminOrProvider]
+    permission_classes = [IsAuthenticated, HasPerm]
+    required_permission = "internship_generation.generate_internship"
     throttle_classes = [InternshipGenerationRateThrottle]
 
     def post(self, request, *args, **kwargs):
@@ -44,7 +45,6 @@ class InternshipGenerationAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Check token availability before AI call
         try:
             check_token_available(request.user, "internship_gen")
         except Exception as exc:
@@ -58,9 +58,13 @@ class InternshipGenerationAPIView(APIView):
                 user=request.user,
                 validated_input=serializer.validated_data,
             )
-            # Deduct actual LLM token usage after successful AI call
             try:
-                deduct_monthly_tokens(request.user, token_usage)
+                deduct_monthly_tokens(
+                    request.user,
+                    token_usage,
+                    feature_code="internship_gen",
+                    request=request,
+                )
             except Exception as exc:
                 logger.error(
                     "TOKEN_RECONCILE user=%s feature=internship_gen cost=%s err=%s",

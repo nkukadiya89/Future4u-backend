@@ -17,7 +17,7 @@ from course_generation.serializers.course_generation_input import (
     CourseGenerationInputSerializer,
 )
 from course_generation.services.course_generation_service import CourseGenerationService
-from user.permissions import IsAdminOrProvider
+from user.permissions import HasPerm
 from utils.throttles import CourseGenerationRateThrottle
 from utils.token_check import check_token_available, deduct_monthly_tokens
 
@@ -31,7 +31,8 @@ class CourseGenerationAPIView(APIView):
     """
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, IsAdminOrProvider]
+    permission_classes = [IsAuthenticated, HasPerm]
+    required_permission = "course_generation.generate_course"
     throttle_classes = [CourseGenerationRateThrottle]
 
     def post(self, request, *args, **kwargs):
@@ -42,7 +43,6 @@ class CourseGenerationAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Check token availability before AI call
         try:
             check_token_available(request.user, "course_gen")
         except Exception as exc:
@@ -56,9 +56,13 @@ class CourseGenerationAPIView(APIView):
                 user=request.user,
                 validated_input=serializer.validated_data,
             )
-            # Deduct actual LLM token usage after successful AI call
             try:
-                deduct_monthly_tokens(request.user, token_usage)
+                deduct_monthly_tokens(
+                    request.user,
+                    token_usage,
+                    feature_code="course_gen",
+                    request=request,
+                )
             except Exception as exc:
                 logger.error(
                     "TOKEN_RECONCILE user=%s feature=course_gen cost=%s err=%s",

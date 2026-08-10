@@ -9,3 +9,6 @@ class InternshipGenerationPanel(models.Model):
         managed = False
         verbose_name = "AI Internship Generation"
         verbose_name_plural = "AI Internship Generation"
+        permissions = [
+            ("generate_internship", "Can generate AI internship details"),
+        ]

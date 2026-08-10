@@ -96,6 +96,7 @@ class UserAdmin(BaseUserAdmin):
         "first_name",
         "last_name",
         "user_type",
+        "is_org_staff",
         "created_by",
         "is_active",
         "is_staff",
@@ -105,6 +106,7 @@ class UserAdmin(BaseUserAdmin):
         "is_active",
         "is_staff",
         "user_type",
+        "is_org_staff",
         "status",
         "must_change_password",
         "deleted",
@@ -119,6 +121,7 @@ class UserAdmin(BaseUserAdmin):
         "deleted",
         "deleted_at",
         "deleted_by",
+        "is_org_staff",
     )
 
     fieldsets = (
@@ -147,6 +150,7 @@ class UserAdmin(BaseUserAdmin):
             {
                 "fields": (
                     "user_type",
+                    "is_org_staff",
                     "status",
                     "email_verified",
                     "must_change_password",

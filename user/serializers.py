@@ -1,4 +1,4 @@
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Permission
 from rest_framework import serializers
 
 from common.mixins.serializer_mixins import (
@@ -6,13 +6,13 @@ from common.mixins.serializer_mixins import (
     OtpEmailValidationMixin,
     UserNameMixin,
 )
-from user.models import ContentTypeModel, CustomGroup, RoleFamily, User
+from user.models import CustomGroup, RoleFamily, User
 from user.user_auth import get_user_groups, get_user_permissions
 from utils.datetime_formatter import format_datetime
 
 
 class CustomGroupSerializers(serializers.ModelSerializer):
-    sequence = serializers.IntegerField(source="sequence", read_only=True)
+    sequence = serializers.IntegerField(read_only=True)
     name = serializers.CharField(source="group_name", read_only=True)
 
     class Meta:
@@ -28,26 +28,22 @@ class CustomGroupSerializers(serializers.ModelSerializer):
             "updated_at",
             "deleted",
         ]
-
-
-class ContentTypeSerializers(serializers.ModelSerializer):
-    permission_on = serializers.CharField(source="model")
-
-    class Meta:
-        model = ContentTypeModel
-        fields = ["id", "permission_on"]
+        # Ownership, soft-delete and company scoping are server-managed.
+        read_only_fields = [
+            "company",
+            "created_by",
+            "updated_by",
+            "deleted",
+        ]
 
 
 class PermissionSerializers(serializers.ModelSerializer):
-    model_name = serializers.SerializerMethodField()
+    app_label = serializers.CharField(source="content_type.app_label", read_only=True)
+    model_name = serializers.CharField(source="content_type.model", read_only=True)
 
     class Meta:
         model = Permission
-        fields = ["id", "name", "codename", "content_type", "model_name"]
-
-    def get_model_name(self, obj):
-        model_name = obj.content_type.model.capitalize()
-        return model_name
+        fields = ["id", "name", "codename", "app_label", "model_name"]
 
 
 class VerifyAccountSerializer(OtpEmailValidationMixin, serializers.ModelSerializer):
@@ -175,9 +171,12 @@ class UserDetailsSerializer(serializers.ModelSerializer):
 
         assign_site_employee = []
 
-        # ret["company"] = instance.company.id if instance.company else None  # Removed
         ret["assign_site_employee"] = assign_site_employee
-        ret["role"] = get_user_groups(instance)
+        # Translate internal Django groups to the canonical role shape.
+        ret["role"] = [
+            {"role_id": group["id"], "role_name": group["name"]}
+            for group in get_user_groups(instance)
+        ]
 
         ret["company_role"] = company_role
         ret["vendor_role"] = vendor_role

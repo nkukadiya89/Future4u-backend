@@ -9,3 +9,6 @@ class CourseGenerationPanel(models.Model):
         managed = False
         verbose_name = "AI Course Generation"
         verbose_name_plural = "AI Course Generation"
+        permissions = [
+            ("generate_course", "Can generate AI course details"),
+        ]

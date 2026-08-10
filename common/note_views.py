@@ -38,7 +38,7 @@ class BaseLeadNoteViewSet(BaseModelViewSet):
         if user.is_superuser:
             return lead
         if user.user_type in self.provider_user_types:
-            if self._resolve_lead_provider(lead) == user:
+            if self._resolve_lead_provider(lead) == user.get_owner_user():
                 return lead
         return None
 
@@ -94,7 +94,7 @@ class BaseLeadNoteViewSet(BaseModelViewSet):
                     f"{self.note_lead_field}__"
                     f"{self.lead_provider_field_path.replace('.', '__')}"
                 )
-                queryset = queryset.filter(**{provider_lookup: user})
+                queryset = queryset.filter(**{provider_lookup: user.get_owner_user()})
             else:
                 queryset = queryset.none()
         lead_id = self.kwargs.get(self.lead_id_url_param)

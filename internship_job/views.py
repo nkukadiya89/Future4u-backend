@@ -5,7 +5,6 @@ from django.db.models.aggregates import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from activity_log.services import log_event
 from assessment_career.models import CareerSuggestion
@@ -34,7 +33,7 @@ class InternshipViewSet(BaseModelViewSet):
             "institute",
             "corporate",
         ]:
-            base = queryset.filter(internship_provider=user)
+            base = queryset.filter(internship_provider=user.get_owner_user())
         else:
             base = queryset.filter(status="active")
         if self.action not in [
@@ -105,7 +104,7 @@ class InternshipViewSet(BaseModelViewSet):
                 request.user.user_type in ["institute", "corporate"]
                 and "internship_provider" not in serializer.validated_data
             ):
-                save_kwargs["internship_provider"] = request.user
+                save_kwargs["internship_provider"] = request.user.get_owner_user()
             serializer.save(**save_kwargs)
             log_event(
                 event="internship.created",
@@ -129,7 +128,6 @@ class InternshipViewSet(BaseModelViewSet):
         detail=False,
         methods=["patch"],
         url_path="update-status",
-        permission_classes=[IsAuthenticated, IsAdminOrProvider],
     )
     @transaction.atomic
     def bulk_update_status(self, request, *args, **kwargs):
@@ -161,7 +159,7 @@ class InternshipViewSet(BaseModelViewSet):
             deleted=False,
         )
         if not is_admin:
-            internships = internships.filter(internship_provider=request.user)
+            internships = internships.filter(internship_provider=request.user.get_owner_user())
 
         found_ids = set(internships.values_list("id", flat=True))
         not_found_ids = list(set(ids) - found_ids)
@@ -249,7 +247,7 @@ class InternshipViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        records = Internship.objects.filter(id__in=ids)
+        records = self.get_queryset().filter(id__in=ids)
 
         if not records.exists():
             return Response(
@@ -296,7 +294,7 @@ class InternshipViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        records = Internship.objects.filter(id__in=ids)
+        records = self.get_queryset().filter(id__in=ids)
 
         if not records.exists():
             return Response(
@@ -348,7 +346,7 @@ class InternshipViewSet(BaseModelViewSet):
         user = request.user
         if not user.is_superuser:
             if user.user_type in ["institute", "corporate"]:
-                queryset = queryset.filter(internship_provider=user)
+                queryset = queryset.filter(internship_provider=user.get_owner_user())
             else:
                 queryset = queryset.none()
 
@@ -460,7 +458,7 @@ class InternshipApplicationViewSet(BaseModelViewSet):
         if user.is_superuser:
             return base
         if user.user_type in ["institute", "corporate"]:
-            return base.filter(internship__internship_provider=user)
+            return base.filter(internship__internship_provider=user.get_owner_user())
         return base.filter(applicant=user)
 
     def list(self, request, *args, **kwargs):
@@ -611,7 +609,7 @@ class InternshipApplicationViewSet(BaseModelViewSet):
     @action(detail=False, methods=["get"], url_path="received-inquiries")
     def receive_inquiries(self, request):
         inquiries = InternshipApplication.objects.filter(
-            internship__internship_provider=request.user,
+            internship__internship_provider=request.user.get_owner_user(),
             deleted=False,
         ).select_related("internship", "applicant")
 
@@ -667,7 +665,7 @@ class InternshipApplicationViewSet(BaseModelViewSet):
     def update_status(self, request, pk=None):
         application = self.get_object()
 
-        if application.internship.internship_provider != request.user:
+        if application.internship.internship_provider != request.user.get_owner_user():
             return Response(
                 {
                     "success": False,

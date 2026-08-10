@@ -30,8 +30,10 @@ class IsAdminOrProvider(BasePermission):
             return False
         if is_admin_user(user):
             return True
+        # Org staff are managed users, not delegated admins.
         return (
-            user.user_type
+            not user.is_org_staff
+            and user.user_type
             in [
                 User.Role.INSTITUTE,
                 User.Role.SCHOOL_COLLEGE,
@@ -51,8 +53,10 @@ class IsSchoolCollegeOrInstitute(BasePermission):
         if not user or not user.is_authenticated:
             return False
 
+        # Org staff are managed users; only owners manage org students.
         return (
-            user.user_type
+            not user.is_org_staff
+            and user.user_type
             in [
                 User.Role.SCHOOL_COLLEGE,
                 User.Role.INSTITUTE,
@@ -86,3 +90,32 @@ class IsIndividualUser(BasePermission):
             and user.status == "active"
             and not user.deleted
         )
+
+
+class HasPerm(BasePermission):
+    """
+    Require one or more Django permissions for the request.
+
+    The view must set a ``required_permission`` attribute, e.g.::
+
+        class CourseGenerationAPIView(APIView):
+            required_permission = "course_generation.generate_course"
+            permission_classes = [IsAuthenticated, HasPerm]
+
+    Pass a list to require ALL of the listed permissions::
+
+        class JobGenerationSaveView(APIView):
+            required_permission = [
+                "job_generation.generate_job",
+                "internship_job.add_job",
+            ]
+            permission_classes = [IsAuthenticated, HasPerm]
+    """
+
+    def has_permission(self, request, view):
+        permission = getattr(view, "required_permission", None)
+        if not permission:
+            return False
+        if isinstance(permission, (list, tuple)):
+            return request.user.has_perms(permission)
+        return request.user.has_perm(permission)

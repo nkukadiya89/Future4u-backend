@@ -2,6 +2,7 @@ from django.db import transaction
 from django.db.models import F
 from django.utils.timezone import now
 
+from activity_log.services import log_event
 from subscription.constants import FEATURE_FIELD_MAP
 from subscription.models import FeatureUsage, SubscriptionFeature, UserSubscription
 from user.models import User
@@ -36,9 +37,7 @@ ORGANIZATION_TYPES = (
     User.Role.CORPORATE,
 )
 
-# Default monthly token allowance per org type (used during monthly reset).
-# Stored in code so changing it affects ALL existing users, not just new ones.
-# Per-user overrides are tracked via extra_token_limit on the profile.
+# Default monthly allowance per org type; per-user overrides use extra_token_limit.
 DEFAULT_ORG_TOKEN_LIMITS = {
     User.Role.INSTITUTE: 20000,
     User.Role.CORPORATE: 20000,
@@ -56,21 +55,69 @@ def _get_org_profile(user):
     return None
 
 
+def _resolve_token_owner(user):
+    """Return the user whose token pool is charged for an org request.
+    Staff own no quota — their usage is charged to the org owner who
+    created them; all other users charge their own pool."""
+    owner = user.get_owner_user()
+    if owner is None or owner.deleted or not owner.is_active:
+        raise Exception(
+            "Organization tokens unavailable. Contact your administrator."
+        )
+    return owner
+
+
+def _is_org_staff_profile(profile):
+    """Return True when the profile belongs to an organization staff user."""
+    return bool(getattr(getattr(profile, "user", None), "is_org_staff", False))
+
+
+def _org_base_token_limit(profile, user_type):
+    """Monthly base token allowance for an org profile.
+    Staff always get 0 — they never auto-receive the org default."""
+    if _is_org_staff_profile(profile):
+        return 0
+    return DEFAULT_ORG_TOKEN_LIMITS.get(user_type, 20000)
+
+
 def _check_org_monthly_reset(profile, user_type):
     """Reset token_limit to base default only.
     extra_token_limit is a one-time per-month grant — it resets to 0
-    so the new month starts cleanly with just the config default."""
+    so the new month starts cleanly with just the config default.
+    Staff users reset to 0 (their base is always 0)."""
     today = now().date()
-    if (
-        not profile.last_token_reset_at
-        or (today - profile.last_token_reset_at).days >= 30
-    ):
-        base = DEFAULT_ORG_TOKEN_LIMITS.get(user_type, 20000)
+    if not profile.last_token_reset_at:
+        # Profile has not entered a reset cycle yet: start the clock
+        # without touching the balance so pre-first-use top-ups survive.
+        profile.last_token_reset_at = today
+        profile.save(update_fields=["last_token_reset_at"])
+        return
+    if (today - profile.last_token_reset_at).days >= 30:
+        base = _org_base_token_limit(profile, user_type)
+        before_token = profile.token_limit
+        before_extra = profile.extra_token_limit
         profile.token_limit = base
         profile.extra_token_limit = 0
         profile.last_token_reset_at = today
         profile.save(
             update_fields=["token_limit", "extra_token_limit", "last_token_reset_at"]
+        )
+        log_event(
+            event="user.tokens_reset",
+            description=(
+                f"Monthly token reset for "
+                f"{getattr(profile.user, 'email', profile.user_id)}"
+            ),
+            user=profile.user,
+            entity_type="user",
+            entity_id=profile.user_id,
+            metadata={
+                "base": base,
+                "token_limit_before": before_token,
+                "token_limit_after": base,
+                "extra_token_before": before_extra,
+                "extra_token_after": 0,
+            },
         )
 
 
@@ -101,13 +148,14 @@ def check_token_available(user, feature_code, quantity=1):
 
     name = FEATURE_NAMES.get(feature_code, feature_code)
 
-    # ── ORG USERS: CHECK availability only, no deduction ──
+    # Org users: availability check only, no deduction
     if user.user_type in ORGANIZATION_TYPES:
-        profile = _get_org_profile(user)
+        owner = _resolve_token_owner(user)
+        profile = _get_org_profile(owner)
         if not profile:
             raise Exception("Profile not found")
 
-        _check_org_monthly_reset(profile, user.user_type)
+        _check_org_monthly_reset(profile, owner.user_type)
 
         min_required = MIN_TOKENS_REQUIRED.get(feature_code)
         if min_required is not None and profile.token_limit < min_required:
@@ -117,7 +165,7 @@ def check_token_available(user, feature_code, quantity=1):
             )
         return True
 
-    # ── SUBSCRIPTION USERS (existing flow unchanged) ──
+    # Subscription users (existing flow unchanged)
     user_sub = (
         UserSubscription.objects.filter(user=user, is_active=True)
         .select_related("plan_price__plan")
@@ -136,9 +184,7 @@ def check_token_available(user, feature_code, quantity=1):
 
     _reset_subscription_monthly_tokens(user, user_sub)
 
-    # Verify this specific feature is included in the user's plan FIRST
-    # (Before token checks — non-token features like assessment
-    #  and career_compare should not show token-related errors)
+    # Verify the feature is in the plan before token checks.
     if feature_code not in ("monthly_tokens", "recommendation"):
         field_name = FEATURE_FIELD_MAP.get(feature_code)
         if field_name:
@@ -168,7 +214,7 @@ def check_token_available(user, feature_code, quantity=1):
                     f"Please upgrade to access this feature."
                 )
 
-    # Token checks — only for LLM-consuming features (those in MIN_TOKENS_REQUIRED)
+    # Token checks apply only to LLM-consuming features (in MIN_TOKENS_REQUIRED).
     min_required = MIN_TOKENS_REQUIRED.get(feature_code)
     if min_required is not None:
         base_limit = plan.no_of_tokens or 0
@@ -201,7 +247,7 @@ def get_org_token_usage(profile, user_type):
     Single source of truth. Returns monthly_limit, used_tokens,
     remaining_tokens, and usage_percentage.
     """
-    base = DEFAULT_ORG_TOKEN_LIMITS.get(user_type, 20000)
+    base = _org_base_token_limit(profile, user_type)
     extra = profile.extra_token_limit or 0
     monthly_limit = base + extra
     remaining_tokens = profile.token_limit or 0
@@ -217,30 +263,54 @@ def get_org_token_usage(profile, user_type):
     }
 
 
-def deduct_monthly_tokens(user, actual_tokens):
-    """Deduct actual LLM token usage after a successful AI generation."""
+def deduct_monthly_tokens(user, actual_tokens, feature_code=None, request=None):
+    """Deduct actual LLM token usage after a successful AI generation.
+    Staff are charged to their owning org's pool; deduction and its
+    audit event share one transaction."""
     if user.is_superuser or actual_tokens <= 0:
         return
 
-    # ── ORG USERS: deduct from profile.token_limit ──
+    # Org users: deduct from the owner's profile token pool
     if user.user_type in ORGANIZATION_TYPES:
-        profile = _get_org_profile(user)
+        owner = _resolve_token_owner(user)
+        profile = _get_org_profile(owner)
         if not profile:
             return
-
-        _check_org_monthly_reset(profile, user.user_type)
 
         with transaction.atomic():
             locked_profile = (
                 type(profile).objects.select_for_update().get(id=profile.id)
             )
+            _check_org_monthly_reset(locked_profile, owner.user_type)
+
             deduction = min(actual_tokens, locked_profile.token_limit)
+            before = locked_profile.token_limit or 0
             type(profile).objects.filter(id=locked_profile.id).update(
                 token_limit=F("token_limit") - deduction
             )
+            if deduction > 0:
+                log_event(
+                    event="user.tokens_deducted",
+                    description=(
+                        f"Deducted {deduction} tokens for "
+                        f"{feature_code or 'AI feature'}"
+                    ),
+                    user=user,
+                    entity_type="user",
+                    entity_id=owner.id,
+                    metadata={
+                        "feature_code": feature_code,
+                        "tokens": deduction,
+                        "owner_user_id": owner.id,
+                        "owner_profile_id": profile.id,
+                        "before": before,
+                        "after": before - deduction,
+                    },
+                    request=request,
+                )
         return
 
-    # ── SUBSCRIPTION USERS (existing flow unchanged) ──
+    # Subscription users (existing flow unchanged)
     user_sub = (
         UserSubscription.objects.filter(user=user, is_active=True)
         .select_related("plan_price__plan")
