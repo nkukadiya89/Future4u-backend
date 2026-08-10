@@ -1,6 +1,6 @@
 import json
 import threading
-from datetime import datetime
+from django.utils import timezone
 
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import Permission
@@ -47,9 +47,6 @@ class EmployeeSearchOrdering:
         "email",
         "phone",
         "status",
-        "user__groups__name",
-        "user__user_permissions__name",
-        "user__user_permissions__content_type__app_label",
     ]
 
     ordering_fields = [
@@ -58,9 +55,6 @@ class EmployeeSearchOrdering:
         "email",
         "phone",
         "status",
-        "user__groups__name",
-        "user__user_permissions__name",
-        "user__user_permissions__content_type__app_label",
         "created_at",
         "updated_at",
     ]
@@ -221,7 +215,8 @@ class AddEmployeeViewSet(
         if user.company:
             company_instance = user.company
             employee_list = Employee.objects.filter(
-                created_by__company=company_instance, deleted=False
+                created_by__groups__customgroup__company=company_instance,
+                deleted=False,
             ).order_by("-id")
 
         else:
@@ -256,32 +251,36 @@ class AddEmployeeViewSet(
         if user.company:
             company_instance = user.company
             users = User.objects.filter(
-                employee__in=Employee.objects.filter(
-                    created_by__company=company_instance, status="active", deleted=False
-                )
+                groups__customgroup__company=company_instance,
+                status="active",
+                deleted=False,
             )
 
         else:
             super_user_instance = user
             users = User.objects.filter(
-                employee__in=Employee.objects.filter(
+                email__in=Employee.objects.filter(
                     created_by=super_user_instance, status="active", deleted=False
-                )
+                ).values_list("email", flat=True)
             )
 
         pagination = Pagination()
         result_page = pagination.paginate_queryset(users, request)
 
-        employee_data = [
-            {
-                "id": user.id,
-                "employee_id": user.employee.id,
-                "first_name": user.employee.first_name,
-                "last_name": user.employee.last_name,
-                "phone": user.employee.phone,
-            }
-            for user in result_page
-        ]
+        employee_data = []
+        for user in result_page:
+            employee = Employee.objects.filter(email=user.email).first()
+            if not employee:
+                continue
+            employee_data.append(
+                {
+                    "id": user.id,
+                    "employee_id": employee.id,
+                    "first_name": employee.first_name,
+                    "last_name": employee.last_name,
+                    "phone": employee.phone,
+                }
+            )
 
         return pagination.get_paginated_response(
             {"success": True, "data": employee_data}
@@ -323,9 +322,9 @@ class AddEmployeeViewSet(
         #         status=status.HTTP_200_OK,
         #     )
 
+        # Note: the user.partner_company FK no longer exists, so partner-company
+        # scoping is not possible; return all active employees.
         employee_list = Employee.objects.filter(
-            user__partner_company_id=partner_company_id,
-            # user__role=technician_role_id,
             status="active",
             deleted=False,
         ).order_by("-id")
@@ -385,9 +384,9 @@ class AddEmployeeViewSet(
             company_instance = user.company
             users = User.objects.filter(
                 user_permissions__in=permission,
-                employee__in=Employee.objects.filter(
-                    created_by__company=company_instance, status="active", deleted=False
-                ),
+                groups__customgroup__company=company_instance,
+                status="active",
+                deleted=False,
             ).distinct()
 
         else:
@@ -399,14 +398,18 @@ class AddEmployeeViewSet(
         pagination = Pagination()
         result_page = pagination.paginate_queryset(users, request)
 
-        employee_data = [
-            {
-                "id": user.employee.id,
-                "first_name": user.employee.first_name,
-                "phone": user.employee.phone,
-            }
-            for user in result_page
-        ]
+        employee_data = []
+        for user in result_page:
+            employee = Employee.objects.filter(email=user.email).first()
+            if not employee:
+                continue
+            employee_data.append(
+                {
+                    "id": employee.id,
+                    "first_name": employee.first_name,
+                    "phone": employee.phone,
+                }
+            )
 
         return pagination.get_paginated_response(
             {"success": True, "data": employee_data}
@@ -464,7 +467,7 @@ class AddEmployeeViewSet(
             employee.updated_at = now()
             employee.save()
 
-            users = User.objects.filter(employee=employee)
+            users = User.objects.filter(email=employee.email)
             for user in users:
                 if first_name:
                     user.first_name = first_name
@@ -501,7 +504,7 @@ class AddEmployeeViewSet(
                     status=400,
                 )
 
-            user = User.objects.filter(employee=employee).first()
+            user = User.objects.filter(email=employee.email).first()
 
             if not user:
                 return Response(
@@ -542,9 +545,9 @@ class EmployeeStatusViewSet(
         )
         if serializer.is_valid():
             with transaction.atomic():
-                user = User.objects.get(employee=instance)
+                user = User.objects.filter(email=instance.email).first()
                 instance.updated_by = request.user
-                instance.updated_at = datetime.now()
+                instance.updated_at = timezone.now()
                 instance = serializer.save()
 
                 email = instance.email
@@ -642,9 +645,6 @@ class EmployeeArchiveViewSet(ModelViewSet):
         "email",
         "phone",
         "status",
-        "user__groups__name",
-        "user__user_permissions__name",
-        "user__user_permissions__content_type__app_label",
     ]
 
     ordering_fields = [
@@ -653,9 +653,6 @@ class EmployeeArchiveViewSet(ModelViewSet):
         "email",
         "phone",
         "status",
-        "user__groups__name",
-        "user__user_permissions__name",
-        "user__user_permissions__content_type__app_label",
         "created_at",
         "updated_at",
     ]
@@ -711,7 +708,8 @@ class EmployeeArchiveViewSet(ModelViewSet):
         if user.company:
             company_instance = user.company
             employee_list = Employee.objects.filter(
-                created_by__company=company_instance, deleted=True
+                created_by__groups__customgroup__company=company_instance,
+                deleted=True,
             ).order_by("-id")
 
         else:
@@ -772,7 +770,7 @@ class EmployeeRestoreViewSet(ModelViewSet):
                     employee = Employee.objects.get(id=emp_id)
                 except Employee.DoesNotExist:
                     continue
-                user = User.objects.filter(employee=employee).first()
+                user = User.objects.filter(email=employee.email).first()
                 # Log employee restore activity
                 ip_address = get_client_ip(request)
                 company = getattr(user, "company", None) if user else None

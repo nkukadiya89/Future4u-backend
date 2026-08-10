@@ -308,14 +308,15 @@ class BusinessSettingViewSet(ListEnvelopeMixin, ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        # User.company was removed from the model; a user is now associated
+        # with a company through the company's created_by relationship.
         queryset = BusinessSetting.objects.filter(
-            Q(user_id=user) | Q(company=user.company)
+            Q(user_id=user) | Q(company__created_by=user)
         ).order_by("-id")
         return queryset
 
     def create(self, request, *args, **kwargs):
-        data = request.data
-        data["user"] = request.user.id
+        data = request.data.copy()
         data["user_id"] = request.user.id
         serializer = BusinessSettingSerializer(data=data)
 
@@ -736,7 +737,8 @@ class StudentProfileViewSet(ModelViewSet):
 
     def get_profile_object(self, request):
         queryset = self.get_queryset()
-        if request.user.is_superuser:
+        org_roles = [User.Role.SCHOOL_COLLEGE, User.Role.INSTITUTE]
+        if request.user.is_superuser or request.user.user_type in org_roles:
             user_id = request.query_params.get("user_id")
             if user_id:
                 return queryset.filter(user_id=user_id).first()
@@ -798,7 +800,21 @@ class StudentProfileViewSet(ModelViewSet):
 
         if user.user_type in org_roles:
             queryset = self.filter_queryset(self.get_queryset())
+            user_id = request.query_params.get("user_id")
             no_pagination = request.query_params.get("no_pagination")
+
+            if user_id:
+                profile = queryset.filter(user_id=user_id).first()
+                if not profile:
+                    return Response(
+                        {"success": False, "message": "Profile not found"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+                serializer = StudentProfileSerializer(profile)
+                return Response(
+                    {"success": True, "data": serializer.data},
+                    status=status.HTTP_200_OK,
+                )
             if no_pagination:
                 serializer = StudentProfileSerializer(queryset, many=True)
                 return Response(
@@ -938,26 +954,36 @@ class ProfessionalProfileViewSet(ModelViewSet):
     ]
 
     def get_queryset(self):
+        user = self.request.user
         qs = ProfessionalProfile.objects.select_related(
             "user__country", "user__states", "user__city", "education_level", "stream"
         ).prefetch_related("language")
         if (
-            self.request.user.is_superuser
-            or self.request.user.user_type == self.request.user.Role.SUPER_ADMIN
+            user.is_superuser
+            or user.user_type == user.Role.SUPER_ADMIN
         ):
             return qs.filter(user__deleted=False)
-        return qs.filter(user=self.request.user)
+        if user.user_type == user.Role.CORPORATE:
+            return qs.filter(user__deleted=False).filter(
+                Q(user__created_by=user) | Q(referred_by=user)
+            )
+        return qs.filter(user=user)
 
     def get_profile_object(self, request):
         queryset = self.get_queryset()
-        if request.user.is_superuser:
+        if (
+            request.user.is_superuser
+            or request.user.user_type == request.user.Role.CORPORATE
+        ):
             user_id = request.query_params.get("user_id")
             if user_id:
                 return queryset.filter(user_id=user_id).first()
         return queryset.filter(user=request.user).first()
 
     def list(self, request, *args, **kwargs):
-        if request.user.is_superuser:
+        user = request.user
+
+        if user.is_superuser or user.user_type == user.Role.SUPER_ADMIN:
             user_id = request.query_params.get("user_id")
             queryset = self.get_queryset()
             no_pagination = request.query_params.get("no_pagination")
@@ -1014,6 +1040,40 @@ class ProfessionalProfileViewSet(ModelViewSet):
                         "success": True,
                         "data": serializer.data,
                     }
+                )
+            serializer = ProfessionalProfileSerializer(queryset, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+
+        if user.user_type == user.Role.CORPORATE:
+            queryset = self.filter_queryset(self.get_queryset())
+            user_id = request.query_params.get("user_id")
+            no_pagination = request.query_params.get("no_pagination")
+
+            if user_id:
+                profile = queryset.filter(user_id=user_id).first()
+                if not profile:
+                    return Response(
+                        {"success": False, "message": "Profile not found"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+                serializer = ProfessionalProfileSerializer(profile)
+                return Response(
+                    {"success": True, "data": serializer.data},
+                    status=status.HTTP_200_OK,
+                )
+            if no_pagination:
+                serializer = ProfessionalProfileSerializer(queryset, many=True)
+                return Response(
+                    {"success": True, "data": serializer.data},
+                    status=status.HTTP_200_OK,
+                )
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = ProfessionalProfileSerializer(page, many=True)
+                return self.get_paginated_response(
+                    {"success": True, "data": serializer.data}
                 )
             serializer = ProfessionalProfileSerializer(queryset, many=True)
             return self.get_paginated_response(

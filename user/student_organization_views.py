@@ -11,7 +11,6 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
 from activity_log.services import log_event
 from assessment.models import StudentAssessment
 from assessment.serializers import StudentAssessmentSerializer
@@ -135,26 +134,6 @@ class OrganizationStudentViewSet(BaseModelViewSet):
                 },
                 status=status.HTTP_201_CREATED,
             )
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        no_pagination = request.query_params.get("no_pagination")
-        if no_pagination:
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(
-                {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-            )
-        page = self.paginate_queryset(queryset)
-
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return self.get_paginated_response(
-            {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
-        )
 
     def retrieve(self, request, *args, **kwargs):
         student = self.get_object()

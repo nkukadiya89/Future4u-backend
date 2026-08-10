@@ -171,7 +171,6 @@ class CreateCompanyAccountViewSet(CreatePasswordEmailMixin, viewsets.ViewSet):
                         context = {"name": name, "token": token, "email": email}
 
                         try:
-                            # Get the user associated with this company
                             from user.models import CustomGroup
 
                             admin_group = CustomGroup.objects.filter(
@@ -179,16 +178,14 @@ class CreateCompanyAccountViewSet(CreatePasswordEmailMixin, viewsets.ViewSet):
                             ).first()
                             if admin_group:
                                 user = (
-                                    User.objects.filter(
-                                        company=company, groups=admin_group
-                                    )
+                                    User.objects.filter(groups=admin_group)
                                     .order_by("id")
                                     .first()
                                 )
                             else:
                                 user = (
                                     User.objects.filter(
-                                        company=company, role__isnull=False
+                                        groups__customgroup__company=company
                                     )
                                     .order_by("id")
                                     .first()
@@ -284,7 +281,6 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
 
     def create(self, request, *args, **kwargs):
         data = json.loads(request.data["form_data"])
-        # data["created_by"] = request.user.id
 
         company_logo = request.data.get("company_logo")
 
@@ -306,25 +302,26 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
                     instance.upload_company_logo_presentation(company_logo)
                     instance.save()
 
-                instance.save()  # type: ignore
+                instance.save()
 
                 token = generate_forget_pass_token(email, user_phone, 30)
 
                 context = {"name": name, "token": token, "email": email}
 
-                # Get the user associated with this company for email sending
                 admin_group = CustomGroup.objects.filter(
                     name="Company Admin", company=instance
                 ).first()
                 if admin_group:
                     user = (
-                        User.objects.filter(company=instance, groups=admin_group)
+                        User.objects.filter(groups=admin_group)
                         .order_by("id")
                         .first()
                     )
                 else:
                     user = (
-                        User.objects.filter(company=instance, role__isnull=False)
+                        User.objects.filter(
+                            groups__customgroup__company=instance
+                        )
                         .order_by("id")
                         .first()
                     )
@@ -344,13 +341,11 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
                     status=status.HTTP_201_CREATED,
                 )
         else:
-            # Handle nested serializer errors properly
             errors = []
             for field, error_list in serializer.errors.items():
                 if isinstance(error_list, list):
                     for error in error_list:
                         if isinstance(error, dict):
-                            # Handle nested errors (e.g., services)
                             for nested_field, nested_error in error.items():
                                 if isinstance(nested_error, list):
                                     errors.extend(
@@ -389,7 +384,6 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         data = json.loads(request.data["form_data"])
-        # data["updated_by"] = request.user.id
         company_logo = request.data.get("company_logo")
 
         serializer = CompanySerializer(
@@ -397,13 +391,11 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
         )
 
         if serializer.is_valid():
-            # instance.updated_by = request.user
             company = serializer.save()
 
             ip_address = get_client_ip(request)
             ActivityLog.log.company_update(company, ip_address, request.user)
 
-            # Only upload new logo if company_logo is provided and is not a string (URL)
             if company_logo and hasattr(company_logo, "read"):
                 instance.upload_company_logo_presentation(company_logo)
                 instance.save()
@@ -414,13 +406,11 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
                 status=status.HTTP_200_OK,
             )
         else:
-            # Handle nested serializer errors properly
             errors = []
             for field, error_list in serializer.errors.items():
                 if isinstance(error_list, list):
                     for error in error_list:
                         if isinstance(error, dict):
-                            # Handle nested errors (e.g., services)
                             for nested_field, nested_error in error.items():
                                 if isinstance(nested_error, list):
                                     errors.extend(
@@ -505,7 +495,6 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
         try:
             company = Company.objects.get(id=pk, deleted=False)
 
-            # Use serializer to get properly serialized data
             serializer = CompanySerializer(company)
             data = serializer.data
 
@@ -520,14 +509,12 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
             company = Company.objects.get(id=pk)
             form_data = json.loads(request.data.get("form_data", "{}"))
 
-            # Extract all fields from form_data
             company_name = form_data.get("company_name")
             person_name = form_data.get("person_name")
             email = form_data.get("email")
             phone = form_data.get("phone")
             gst_no = form_data.get("gst_no")
 
-            # GST Address fields
             gst_address_country = form_data.get("gst_address_country")
             gst_address_state = form_data.get("gst_address_state")
             gst_address_city = form_data.get("gst_address_city")
@@ -536,7 +523,6 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
             gst_address_landmark = form_data.get("gst_address_landmark")
             gst_address_pincode = form_data.get("gst_address_pincode")
 
-            # Communication Address fields
             communication_address_country = form_data.get(
                 "communication_address_country"
             )
@@ -555,7 +541,6 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
 
             company_logo = request.data.get("company_logo", None)
 
-            # Update Company Model
             if company_name:
                 company.name = company_name
             if person_name:
@@ -567,7 +552,6 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
             if gst_no:
                 company.gst_no = gst_no
 
-            # Update GST Address (accept FK ids in payload)
             if gst_address_country not in (None, ""):
                 company.gst_address_country_id = gst_address_country
             if gst_address_state not in (None, ""):
@@ -583,7 +567,6 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
             if gst_address_pincode:
                 company.gst_address_pincode = gst_address_pincode
 
-            # Update Communication Address (accept FK ids in payload)
             if communication_address_country not in (None, ""):
                 company.communication_address_country_id = communication_address_country
             if communication_address_state not in (None, ""):
@@ -608,8 +591,9 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
             ip_address = get_client_ip(request)
             ActivityLog.log.update_company_basic_info(company, ip_address, request.user)
 
-            # Update associated users
-            users = User.objects.filter(email=company.email, company=company)
+            users = User.objects.filter(
+                email=company.email, groups__customgroup__company=company
+            )
             for user in users:
                 if person_name:
                     user.first_name = person_name
@@ -659,13 +643,15 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
             ).first()
             if admin_group:
                 user = (
-                    User.objects.filter(company=company, groups=admin_group)
+                    User.objects.filter(groups=admin_group)
                     .order_by("id")
                     .first()
                 )
             else:
                 user = (
-                    User.objects.filter(company=company, role__isnull=False)
+                    User.objects.filter(
+                        groups__customgroup__company=company
+                    )
                     .order_by("id")
                     .first()
                 )
@@ -713,7 +699,6 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Validate status
         valid_statuses = ["active", "inactive", "pending"]
         if new_status not in valid_statuses:
             return Response(
@@ -734,7 +719,7 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
             company.save()
 
             is_active_flag = True if new_status == "active" else False
-            User.objects.filter(company=company).update(
+            User.objects.filter(groups__customgroup__company=company).update(
                 status=new_status, is_active=is_active_flag
             )
 
@@ -761,7 +746,6 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
             )
 
 
-# Company Multiple Archive
 class CompanyArchiveViewSet(SearchOrderingFilter, ModelViewSet):
     queryset = Company.objects.filter(deleted=True).order_by("-id")
     serializer_class = CompanyInfoSerializer
@@ -857,7 +841,6 @@ class CompanyArchiveViewSet(SearchOrderingFilter, ModelViewSet):
             data=request.data, context={"request": request}
         )
         if serializer.is_valid():
-            # Determine count for pluralized message
             deleted_ids = (
                 serializer.validated_data.get("deleted", [])
                 if hasattr(serializer, "validated_data")
@@ -865,7 +848,6 @@ class CompanyArchiveViewSet(SearchOrderingFilter, ModelViewSet):
             )
             count = len(deleted_ids) if isinstance(deleted_ids, list) else 1
 
-            # Add activity logging for each archived company
             ip_address = get_client_ip(request)
             for deleted_id in deleted_ids:
                 try:
@@ -907,7 +889,6 @@ class CompanyArchiveViewSet(SearchOrderingFilter, ModelViewSet):
         return self.get_paginated_response({"success": True, "data": serializer.data})
 
 
-# Company Multiple Restore
 class CompanyRestoreViewSet(SearchOrderingFilter, ModelViewSet):
     queryset = Company.objects.filter(deleted=True).order_by("id")
     serializer_class = CompanyInfoSerializer
@@ -920,7 +901,6 @@ class CompanyRestoreViewSet(SearchOrderingFilter, ModelViewSet):
             data=request.data, context={"request": request}
         )
         if serializer.is_valid():
-            # Determine count for pluralized message
             deleted_ids = (
                 serializer.validated_data.get("deleted", [])
                 if hasattr(serializer, "validated_data")
@@ -928,7 +908,6 @@ class CompanyRestoreViewSet(SearchOrderingFilter, ModelViewSet):
             )
             count = len(deleted_ids) if isinstance(deleted_ids, list) else 1
 
-            # Add activity logging for each restored company
             ip_address = get_client_ip(request)
             for deleted_id in deleted_ids:
                 try:
@@ -1223,7 +1202,6 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # If already deleted, return success response (idempotent operation)
         if instance.deleted:
             company_id = request.query_params.get("company_id") or request.data.get(
                 "company_id"
@@ -1255,7 +1233,6 @@ class CompanyPhotoViewSet(SearchOrderingFilter, ModelViewSet):
 
         company_for_response = instance.company
 
-        # Mark as deleted (soft delete)
         instance.deleted = True
         instance.deleted_by = request.user
         instance.deleted_at = now()
@@ -1363,7 +1340,6 @@ class CompanyPhotoArchiveViewSet(CompanyPhotoArchivedQuerysetMixin, ModelViewSet
             )
             count = len(deleted_ids) if isinstance(deleted_ids, list) else 1
 
-            # Add activity logging for each archived document
             ip_address = get_client_ip(request)
             for deleted_id in deleted_ids:
                 try:
@@ -1418,7 +1394,6 @@ class CompanyPhotoRestoreViewSet(
             )
             count = len(deleted_ids) if isinstance(deleted_ids, list) else 1
 
-            # Add activity logging for each restored document
             ip_address = get_client_ip(request)
             for deleted_id in deleted_ids:
                 try:

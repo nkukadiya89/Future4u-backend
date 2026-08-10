@@ -13,7 +13,6 @@ from job_generation.constants.job_generation_constants import (
     JOB_TITLE_MAX_LENGTH,
 )
 from state.models import State
-from user_profile.models import CorporateProfile
 
 
 class JobGenerationInputSerializer(serializers.Serializer):
@@ -29,10 +28,6 @@ class JobGenerationInputSerializer(serializers.Serializer):
         max_length=JOB_OVERVIEW_MAX_LENGTH,
         trim_whitespace=True,
         help_text="Brief role overview used as primary context for AI generation.",
-    )
-    corporate = serializers.PrimaryKeyRelatedField(
-        queryset=CorporateProfile.objects.filter(deleted=False),
-        help_text="CorporateProfile ID of the company posting this job.",
     )
     country = serializers.PrimaryKeyRelatedField(
         required=False,

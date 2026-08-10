@@ -213,6 +213,41 @@ class DomainAPITests(TestCase):
         self.client.get(url)
         self.assertLessEqual(len(connection.queries), 30)
 
+    def test_list_filtered_by_parent_id(self):
+        url = reverse("domain-list")
+        root = self.client.post(url, self._payload(code="cat_root"), format="json").data["data"]["id"]
+        other = self.client.post(url, self._payload(code="cat_other"), format="json").data["data"]["id"]
+        child = self.client.post(url, self._payload(code="cat_child", parent_id=root), format="json").data["data"]["id"]
+
+        r = self.client.get(url, {"parent_id": root})
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        ids = [row["id"] for row in r.data["results"]["data"]]
+        self.assertIn(child, ids)
+        self.assertNotIn(root, ids)
+        self.assertNotIn(other, ids)
+
+    def test_list_invalid_parent_id_does_not_crash(self):
+        url = reverse("domain-list")
+        self.client.post(url, self._payload(code="no_crash"), format="json")
+        r = self.client.get(url, {"parent_id": "not-a-uuid"})
+        self.assertEqual(r.data["results"]["data"], [])
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+
+    def test_dropdown_invalid_parent_id_does_not_crash(self):
+        url = reverse("domain-dropdown")
+        r = self.client.get(url, {"parent_id": "not-a-uuid"})
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        self.assertEqual(r.data["data"], [])
+
+    def test_list_root_only(self):
+        url = reverse("domain-list")
+        root = self.client.post(url, self._payload(code="ro_r"), format="json").data["data"]["id"]
+        self.client.post(url, self._payload(code="ro_c", parent_id=root), format="json")
+        r = self.client.get(url, {"root_only": "1"})
+        self.assertEqual(r.status_code, status.HTTP_200_OK)
+        ids = [row["id"] for row in r.data["results"]["data"]]
+        self.assertIn(root, ids)
+
     def test_list_response_time_budget(self):
         url = reverse("domain-list")
         for i in range(8):

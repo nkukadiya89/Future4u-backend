@@ -3,10 +3,18 @@ from django.db import migrations, models
 
 def fix_null_course_provider(apps, schema_editor):
     Courses = apps.get_model("course", "Courses")
+    User = apps.get_model("user", "User")
+    # Historical User model uses `role` before the rename to `user_type`.
+    type_field = "user_type" if hasattr(User, "user_type") else "role"
+    provider_ids = list(
+        User.objects.filter(
+            **{f"{type_field}__in": ["school_college", "institute"]}
+        ).values_list("id", flat=True)
+    )
     updated = Courses.objects.filter(
         course_provider__isnull=True,
         created_by__isnull=False,
-        created_by__user_type__in=["school_college", "institute"],
+        created_by_id__in=provider_ids,
     ).update(course_provider=models.F("created_by"))
 
     if updated:

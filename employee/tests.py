@@ -59,7 +59,7 @@ class EmployeeModelTest(TestCase):
         self.assertEqual(employee.created_by, self.user)
         self.assertEqual(employee.permanent_address_country, self.country)
         self.assertIsNotNone(employee.created_at)
-        self.assertIsNone(employee.updated_at)
+        self.assertIsNotNone(employee.updated_at)
         self.assertEqual(employee.deleted, 0)
 
     def test_employee_str_method(self):
@@ -82,7 +82,7 @@ class EmployeeModelTest(TestCase):
         self.assertEqual(employee.deleted, 0)
         self.assertIsNone(employee.created_by)
         self.assertIsNone(employee.updated_by)
-        self.assertIsNone(employee.updated_at)
+        self.assertIsNotNone(employee.updated_at)
         self.assertIsNone(employee.deleted_by)
         self.assertIsNone(employee.deleted_at)
 
@@ -139,7 +139,6 @@ class EmployeeSerializerTest(TestCase):
         self.city = City.objects.create(
             name="Bangalore", state=self.state, country=self.country
         )
-        # Create an Employee and a linked User
         self.employee = Employee.objects.create(
             email="test@example.com",
             phone="9876543210",
@@ -150,7 +149,6 @@ class EmployeeSerializerTest(TestCase):
             email="test@example.com",
             password="testpass123",
             phone="9876543210",
-            employee=self.employee,
         )
         self.employee_data = {
             "email": "test@example.com",
@@ -166,8 +164,8 @@ class EmployeeSerializerTest(TestCase):
     def test_add_employee_serializer_create(self):
         """Test creating Employee through serializer"""
         serializer_data = {
-            "email": "newemployee@example.com",  # Use a unique email
-            "phone": 9876543211,  # Use a unique phone number
+            "email": "newemployee@example.com",
+            "phone": 9876543211,
             "first_name": "New",
             "last_name": "Employee",
             "password": "testpass123",
@@ -178,14 +176,11 @@ class EmployeeSerializerTest(TestCase):
             "permanent_address_city": self.city.id,
         }
         with patch("employee.serializers.get_client_ip") as mock_get_ip, patch(
-            "employee.serializers.generate_random_password"
-        ) as mock_generate_pass, patch(
             "employee.serializers.ActivityLog"
         ) as mock_activity_log, patch(
             "django.contrib.auth.models.Group"
         ) as mock_group:
             mock_get_ip.return_value = "127.0.0.1"
-            mock_generate_pass.return_value = "randompass"
             mock_activity_log.log.employee_create = MagicMock()
             mock_group.objects.get.return_value = MagicMock()
             request_mock = MagicMock(user=self.user)
@@ -198,12 +193,11 @@ class EmployeeSerializerTest(TestCase):
             self.assertEqual(employee.phone, "9876543211")
             self.assertEqual(employee.created_by, self.user)
             user = User.objects.get(email="newemployee@example.com")
-            self.assertEqual(user.employee, employee)
+            self.assertEqual(user.email, employee.email)
             mock_activity_log.log.employee_create.assert_called_once()
 
     def test_add_employee_serializer_validation(self):
         """Test serializer validation"""
-        # Invalid: Duplicate email
         serializer_data = {
             "email": "test@example.com",
             "phone": 9876543211,
@@ -218,7 +212,6 @@ class EmployeeSerializerTest(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("email", serializer.errors)
 
-        # Invalid: Invalid phone
         serializer_data = {
             "email": "new@example.com",
             "phone": 123,
@@ -259,7 +252,6 @@ class EmployeeSerializerTest(TestCase):
             employee2.refresh_from_db()
             self.assertEqual(employee1.deleted, 1)
             self.assertEqual(employee2.deleted, 1)
-            # Status remains unchanged (pending) since serializer doesn't modify it
             self.assertEqual(employee1.status, "pending")
             self.assertEqual(employee2.status, "pending")
 
@@ -291,7 +283,6 @@ class EmployeeSerializerTest(TestCase):
             employee2.refresh_from_db()
             self.assertEqual(employee1.deleted, False)
             self.assertEqual(employee2.deleted, 0)
-            # Status remains unchanged (pending) after restore
             self.assertEqual(employee1.status, "pending")
             self.assertEqual(employee2.status, "pending")
 
@@ -341,18 +332,15 @@ class BaseAPITestCase(APITestCase):
             deleted=True,
             status="inactive",
         )
-        # Link Users to Employees for password tests
         self.user1 = User.objects.create_user(
-            email="test1@example.com",
+            email=self.employee1.email,
             password="oldpass123",
             phone="9876543210",
-            employee=self.employee1,
         )
         self.user2 = User.objects.create_user(
-            email="test2@example.com",
+            email=self.employee2.email,
             password="oldpass123",
             phone="9876543211",
-            employee=self.employee2,
         )
 
 
@@ -418,11 +406,8 @@ class AddEmployeeViewSetTest(BaseAPITestCase):
 
     @patch("employee.models.upload_file_to_bucket")
     @patch("employee.serializers.get_client_ip")
-    @patch("employee.serializers.ActivityLog")  # Changed from views to serializers
-    @patch("employee.views.send_mail")
-    def test_create_employee(
-        self, mock_send_mail, mock_activity_log, mock_get_ip, mock_upload_file
-    ):
+    @patch("employee.serializers.ActivityLog")
+    def test_create_employee(self, mock_activity_log, mock_get_ip, mock_upload_file):
         """Test creating a new employee"""
         mock_get_ip.return_value = "127.0.0.1"
         mock_upload_file.return_value = ("path/to/photo.jpg", "presigned_url")
@@ -449,22 +434,21 @@ class AddEmployeeViewSetTest(BaseAPITestCase):
         self.assertTrue(response.data["success"])
         self.assertEqual(
             response.data["message"],
-            "Reset Password Mail has been sent to registed email",
+            "Employee created. Temporary password sent to their email.",
         )
         employee = Employee.objects.get(email="new@example.com")
         self.assertEqual(employee.phone, "9876543213")
         self.assertEqual(employee.profile_photo, "path/to/photo.jpg")
         user = User.objects.get(email="new@example.com")
-        self.assertEqual(user.employee, employee)
+        self.assertEqual(user.email, employee.email)
         mock_activity_log.log.employee_create.assert_called_once()
-        mock_send_mail.assert_called_once()
 
     def test_create_employee_invalid_data(self):
         """Test creating employee with invalid data"""
         data = {
             "form_data": json.dumps(
                 {
-                    "email": "test1@example.com",  # Duplicate email
+                    "email": "test1@example.com",
                     "phone": 9876543213,
                     "first_name": "New",
                     "password": "testpass123",
@@ -477,7 +461,7 @@ class AddEmployeeViewSetTest(BaseAPITestCase):
 
     @patch("employee.models.upload_file_to_bucket")
     @patch("employee.serializers.get_client_ip")
-    @patch("employee.serializers.ActivityLog")  # Changed from views to serializers
+    @patch("employee.serializers.ActivityLog")
     def test_update_employee(self, mock_activity_log, mock_get_ip, mock_upload_file):
         """Test updating an employee"""
         mock_get_ip.return_value = "127.0.0.1"
@@ -506,7 +490,7 @@ class AddEmployeeViewSetTest(BaseAPITestCase):
         self.assertEqual(self.employee1.email, "updated@example.com")
         self.assertEqual(self.employee1.phone, "9876543214")
         self.assertEqual(self.employee1.profile_photo, "path/to/new_photo.jpg")
-        user = User.objects.get(employee=self.employee1)
+        user = User.objects.get(email=self.employee1.email)
         self.assertEqual(user.email, "updated@example.com")
         mock_activity_log.log.employee_modify.assert_called_once()
 
@@ -548,12 +532,11 @@ class AddEmployeeViewSetTest(BaseAPITestCase):
         self.assertEqual(self.employee1.first_name, "Updated")
         self.assertEqual(self.employee1.last_name, "NewLast")
         self.assertEqual(self.employee1.phone, "9876543214")
-        user = User.objects.get(employee=self.employee1)
+        user = User.objects.get(email=self.employee1.email)
         self.assertEqual(user.first_name, "Updated")
 
     def test_change_employee_password(self):
         """Test changing employee password"""
-        # Use existing self.user1 instead of creating a new user
         data = {
             "old_password": "oldpass123",
             "new_password": "newpass123",

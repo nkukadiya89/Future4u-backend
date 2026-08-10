@@ -23,7 +23,7 @@ class ActivityLog(models.Model):
     event = models.CharField(max_length=100, db_index=True)
     description = models.TextField()
     entity_type = models.CharField(max_length=100, null=True, blank=True)
-    entity_id = models.IntegerField(null=True, blank=True)
+    entity_id = models.CharField(max_length=100, null=True, blank=True)
     metadata = models.JSONField(default=dict)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -39,6 +39,4 @@ class ActivityLog(models.Model):
     def __str__(self):
         return f"{self.event} - {self.created_at}"
 
-
-# Backward-compatible no-op logger for legacy ERP views
 ActivityLog.log = _NoOpLogger()

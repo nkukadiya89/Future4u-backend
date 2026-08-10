@@ -10,8 +10,12 @@ class SubscriptionMasterTests(APITestCase):
     def setUp(self):
         self.client = APIClient()
         User = get_user_model()
-        self.user = User.objects.create_user(
-            email="mastertester@example.com", password="pass1234", first_name="Master"
+        # Superuser (active) so CustomModelPermissions grants CRUD access to
+        # the SubscriptionViewSet (which extends BaseModelViewSet).
+        self.user = User.objects.create_superuser(
+            email="mastertester@example.com",
+            password="pass1234",
+            first_name="Master",
         )
         self.client.force_authenticate(user=self.user)
 
@@ -33,7 +37,7 @@ class SubscriptionMasterTests(APITestCase):
 
     def test_subscription_create(self):
         resp = self.client.post(
-            "/subscription/", self._create_subscription_payload(), format="json"
+            "/subscriptions/", self._create_subscription_payload(), format="json"
         )
         self.assertEqual(resp.status_code, 201)
         # Response is wrapped in success/data envelope
@@ -44,28 +48,30 @@ class SubscriptionMasterTests(APITestCase):
     def test_subscription_retrieve_update_delete(self):
         # create
         create = self.client.post(
-            "/subscription/", self._create_subscription_payload(), format="json"
+            "/subscriptions/", self._create_subscription_payload(), format="json"
         )
         self.assertEqual(create.status_code, 201)
         sub_id = create.data["data"]["id"]
 
         # retrieve
-        resp = self.client.get(f"/subscription/{sub_id}/")
+        resp = self.client.get(f"/subscriptions/{sub_id}/")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.data["id"], sub_id)
+        self.assertEqual(resp.data["data"]["id"], sub_id)
 
         # update
         resp = self.client.patch(
-            f"/subscription/{sub_id}/", {"package_name": "Starter Plus"}, format="json"
+            f"/subscriptions/{sub_id}/",
+            {"package_name": "Starter Plus"},
+            format="json",
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data["data"]["package_name"], "Starter Plus")
 
         # delete (soft delete)
-        resp = self.client.delete(f"/subscription/{sub_id}/")
-        self.assertEqual(resp.status_code, 204)
+        resp = self.client.delete(f"/subscriptions/{sub_id}/")
+        self.assertEqual(resp.status_code, 200)
 
-        resp = self.client.get("/subscription/")
+        resp = self.client.get("/subscriptions/")
         self.assertEqual(resp.status_code, 200)
 
     def test_subscription_serializer_includes_requested_fields(self):

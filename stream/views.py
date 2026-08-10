@@ -224,7 +224,10 @@ class StreamViewSet(SuccessEnvelopeMixin, ModelViewSet):
             user=request.user,
             entity_type="stream",
             entity_id=None,
-            metadata={"stream_ids": list(ser.validated_data["ids"]), "count": n},
+            metadata={
+                "stream_ids": [str(i) for i in ser.validated_data["ids"]],
+                "count": n,
+            },
             request=request,
         )
         return Response(
@@ -248,7 +251,10 @@ class StreamViewSet(SuccessEnvelopeMixin, ModelViewSet):
             user=request.user,
             entity_type="stream",
             entity_id=None,
-            metadata={"stream_ids": list(ser.validated_data["ids"]), "count": n},
+            metadata={
+                "stream_ids": [str(i) for i in ser.validated_data["ids"]],
+                "count": n,
+            },
             request=request,
         )
         return Response(

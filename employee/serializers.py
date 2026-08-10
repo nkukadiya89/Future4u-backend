@@ -157,13 +157,6 @@ class AddEmployeeSerializer(
             not_found = set(permission_ids) - found_ids
             if not_found:
                 pass
-
-        if employee_instance.created_by:
-            user.company = employee_instance.created_by.company
-        user.employee = employee_instance
-        user.role = assign_role[0] if assign_role else None
-
-        # Set designation from the first assigned role
         if assign_role:
             try:
                 group = CustomGroup.objects.get(id=assign_role[0])
@@ -192,6 +185,7 @@ class AddEmployeeSerializer(
         permission_provided = "permission" in validated_data
         permission_ids = validated_data.pop("permission", [])
         assign_role = validated_data.pop("role", [])
+        old_email = instance.email
 
         phone = str(validated_data.get("phone", instance.phone)).strip()
         if phone.startswith("+91"):
@@ -272,7 +266,10 @@ class AddEmployeeSerializer(
         instance.updated_by = request.user
         instance.updated_at = now()
 
-        user = User.objects.get(employee=instance)
+        user = (
+            User.objects.filter(email=old_email).first()
+            or User.objects.filter(email=instance.email).first()
+        )
         if user:
             user.first_name = validated_data.get("first_name", user.first_name)
             user.last_name = validated_data.get("last_name", user.last_name)
@@ -303,7 +300,6 @@ class AddEmployeeSerializer(
                 if not_found:
                     pass
 
-        # Update designation from the assigned role
         if assign_role:
             try:
                 group = CustomGroup.objects.get(id=assign_role[0])
@@ -335,7 +331,10 @@ class AddEmployeeSerializer(
             if fields_param:
                 requested_fields = [field.strip() for field in fields_param.split(",")]
 
-        user = User.objects.get(employee=instance)
+        user = User.objects.filter(email=instance.email).first()
+
+        if user is None:
+            return ret
 
         if not requested_fields or "groups" in requested_fields:
             custom_group = user.groups.all()
@@ -431,9 +430,9 @@ class EmployeeArchiveSerializer(serializers.ModelSerializer):
 
         for deleted_id in deleted_ids:
             try:
-                users = User.objects.filter(employee_id=deleted_id)
-
                 employee = Employee.objects.get(id=deleted_id)
+
+                users = User.objects.filter(email=employee.email)
 
                 if employee.status == "pending":
                     employee.deleted = True
@@ -492,7 +491,7 @@ class EmployeeRestoreSerializer(serializers.ModelSerializer):
         for deleted_id in deleted_ids:
             try:
                 employee_instance = Employee.objects.get(id=deleted_id)
-                users = User.objects.filter(employee=employee_instance)
+                users = User.objects.filter(email=employee_instance.email)
                 if users:
                     for user_instance in users:
                         if user_instance.status == "pending":

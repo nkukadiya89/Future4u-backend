@@ -22,20 +22,18 @@ class JobGenerationService:
                 "Job generation is only available for corporate accounts"
             )
 
-        corporate_id = validated_input.get("corporate")
-        if isinstance(corporate_id, CorporateProfile):
-            company = corporate_id
-        else:
-            company = CorporateProfile.objects.filter(
-                id=corporate_id, deleted=False
-            ).first()
-        if not company:
+        owner = user.get_owner_user()
+        company = getattr(owner, "corporate_profile", None) if owner else None
+        if not company or company.deleted:
             from job_generation.exceptions import JobGenerationValidationError
 
             raise JobGenerationValidationError(
-                "CorporateProfile not found",
-                error="Invalid corporate ID",
-                details="The selected company does not exist.",
+                "Corporate profile not found for your account",
+                error="Company not found",
+                details=(
+                    "No corporate profile is linked to your organization. "
+                    "Contact your administrator."
+                ),
             )
 
         generation_input = {
@@ -61,11 +59,6 @@ def _build_response(
         resolve_education_tag_meta(tag) for tag in data.get("education_tags", [])
     ]
 
-    # Resolve education tag metadata to actual EducationLevel DB records.
-    # Multiple AI tags can share the same level_key (e.g. "BCA" and "B.Tech"
-    # both map to "graduation") — keep all of them in education_tags_meta for
-    # display, but deduplicate the resolved PKs so the DB M2M gets only one ID
-    # per level_key.
     level_codes = [t["level_key"] for t in enriched_tags if t.get("level_key")]
     if level_codes:
         levels = EducationLevel.objects.filter(level_code__in=set(level_codes))

@@ -53,7 +53,9 @@ class BulkUserUploadService:
         return required_columns
 
     @classmethod
-    def process(cls, file, request_user, user_type, forced_referred_by=None):
+    def process(
+        cls, file, request_user, user_type, forced_referred_by=None, skip_profile_fields=False
+    ):
         df = cls._read_file(file)
 
         valid_roles = [role.value for role in User.Role]
@@ -270,6 +272,19 @@ class BulkUserUploadService:
                 profile_data = {}
                 if profile_service:
                     profile_data = profile_service.validate_row(row, profile_masters)
+
+                # Corporate onboarding of professionals: the corporate is not
+                # allowed to set professional profile fields, so discard them.
+                if skip_profile_fields:
+                    profile_data = {
+                        key: value
+                        for key, value in profile_data.items()
+                        if key
+                        not in (
+                            "years_of_experience",
+                            "employment_type",
+                        )
+                    }
 
                 # referral_code = str(row.get("Referral Code", "") or "").strip()
                 referral_value = row.get("Referral Code")
