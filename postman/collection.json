@@ -20966,7 +20966,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"job_title\": \"Senior Python Developer\",\n    \"job_overview\": \"Looking for an experienced Python developer to build and maintain backend microservices\",\n    \"corporate\": 2,\n    \"country\": 1,\n    \"state\": 1,\n    \"city\": 4,\n    \"salary_min\": \"800000\",\n    \"salary_max\": \"1200000\",\n    \"job_type\": \"full_time\",\n    \"experience_level\": \"3_5\",\n    \"mode\": \"hybrid\"\n}"
+              "raw": "{\n    \"job_title\": \"Senior Python Developer\",\n    \"job_overview\": \"Looking for an experienced Python developer to build and maintain backend microservices\",\n    \"country\": 1,\n    \"state\": 1,\n    \"city\": 4,\n    \"salary_min\": \"800000\",\n    \"salary_max\": \"1200000\",\n    \"job_type\": \"full_time\",\n    \"experience_level\": \"3_5\",\n    \"mode\": \"hybrid\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/ai-job-generation/",
@@ -20996,7 +20996,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"job_title\": \"Junior Data Analyst\",\n    \"job_overview\": \"Looking for a fresher data analyst to work on data visualization and reporting\",\n    \"corporate\": 2,\n    \"country\": 1,\n    \"state\": 1,\n    \"city\": 4,\n    \"salary_min\": \"300000\",\n    \"salary_max\": \"500000\",\n    \"job_type\": \"full_time\",\n    \"experience_level\": \"fresher\",\n    \"mode\": \"onsite\",\n    \"save_mode\": \"publish\"\n}"
+              "raw": "{\n    \"job_title\": \"Junior Data Analyst\",\n    \"job_overview\": \"Looking for a fresher data analyst to work on data visualization and reporting\",\n    \"country\": 1,\n    \"state\": 1,\n    \"city\": 4,\n    \"salary_min\": \"300000\",\n    \"salary_max\": \"500000\",\n    \"job_type\": \"full_time\",\n    \"experience_level\": \"fresher\",\n    \"mode\": \"onsite\",\n    \"save_mode\": \"publish\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/ai-job-generation/save/",

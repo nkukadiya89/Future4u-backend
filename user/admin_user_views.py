@@ -48,7 +48,6 @@ from user_profile.models import (
     StudentProfile,
 )
 from utils.pagination import Pagination
-from utils.token_check import _check_org_monthly_reset
 
 
 class BaseAdminProfileViewSet(ModelViewSet):
@@ -447,90 +446,6 @@ class BaseAdminProfileViewSet(ModelViewSet):
             {
                 "success": True,
                 "message": f"{self.role_name}s restored successfully",
-            },
-            status=status.HTTP_200_OK,
-        )
-
-    @action(detail=True, methods=["patch"], url_path="update-tokens")
-    def update_tokens(self, request, pk=None):
-        extra = request.data.get("extra_token_limit")
-        if extra is None or not isinstance(extra, int) or extra < 0:
-            return Response(
-                {
-                    "success": False,
-                    "message": "extra_token_limit must be a non-negative integer",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        user = self.get_user(pk)
-        if not user:
-            return Response(
-                {
-                    "success": False,
-                    "message": f"{self.role_name} not found",
-                },
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        if user.is_org_staff:
-            return Response(
-                {
-                    "success": False,
-                    "message": "Organization staff cannot have a personal token pool.",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        profile = self.profile_model.objects.filter(user=user).first()
-        if not profile:
-            return Response(
-                {
-                    "success": False,
-                    "message": f"{self.role_name} profile not found",
-                },
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        with transaction.atomic():
-            profile = (
-                self.profile_model.objects.select_for_update().get(id=profile.id)
-            )
-            _check_org_monthly_reset(profile, user.user_type)
-
-            previous_extra = profile.extra_token_limit or 0
-            before_token = profile.token_limit or 0
-            profile.extra_token_limit = previous_extra + extra
-            profile.token_limit = before_token + extra
-            profile.save(update_fields=["extra_token_limit", "token_limit"])
-
-        log_event(
-            event="user.tokens_updated",
-            description=(
-                f"Added {extra} extra tokens " f"to {self.role_name} {user.email}"
-            ),
-            user=request.user,
-            entity_type="user",
-            entity_id=user.id,
-            metadata={
-                "previous_extra": previous_extra,
-                "new_extra": profile.extra_token_limit,
-                "token_increase": extra,
-                "token_limit_before": before_token,
-                "token_limit_after": profile.token_limit,
-            },
-            request=request,
-        )
-
-        return Response(
-            {
-                "success": True,
-                "message": f"{extra} extra tokens added to {self.role_name}.",
-                "data": {
-                    "extra_token_limit": profile.extra_token_limit,
-                    "token_limit": profile.token_limit,
-                    "last_token_reset_at": profile.last_token_reset_at,
-                },
             },
             status=status.HTTP_200_OK,
         )
