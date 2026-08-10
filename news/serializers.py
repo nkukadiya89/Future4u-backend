@@ -56,9 +56,11 @@ class BaseNewsSerializer(serializers.ModelSerializer):
 
         Note: boolean False and numeric 0 are considered valid values and will
         be included because they are not `None`.
+        The `image` field is preserved even when it is null so responses remain
+        consistent across list/detail endpoints.
         """
         data = super().to_representation(instance)
-        return {k: v for k, v in data.items() if v is not None}
+        return {k: v for k, v in data.items() if v is not None or k == "image"}
 
 
 class NewsSerializer(BaseNewsSerializer):
