@@ -39,6 +39,7 @@ def _pretty_json(value) -> str:
 
 def _provider_status() -> dict:
     from ai.config import llm_provider
+
     configured = is_configured()
     enabled = getattr(settings, "PROJECT_RECOMMENDATION_ENABLED", True)
     pname = llm_provider()

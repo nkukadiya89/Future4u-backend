@@ -21,6 +21,7 @@ from .serializers import (
 )
 from .service import match_internships
 
+
 class InternshipViewSet(BaseModelViewSet):
     def get_queryset(self):
         queryset = Internship.objects.select_related(
@@ -96,12 +97,15 @@ class InternshipViewSet(BaseModelViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             save_kwargs = {
-                'created_by': request.user,
-                'created_at': timezone.now(),
+                "created_by": request.user,
+                "created_at": timezone.now(),
             }
             # Auto-set internship_provider when institute/corporate creates their own internship
-            if request.user.user_type in ['institute', 'corporate'] and 'internship_provider' not in serializer.validated_data:
-                save_kwargs['internship_provider'] = request.user
+            if (
+                request.user.user_type in ["institute", "corporate"]
+                and "internship_provider" not in serializer.validated_data
+            ):
+                save_kwargs["internship_provider"] = request.user
             serializer.save(**save_kwargs)
             log_event(
                 event="internship.created",
@@ -177,8 +181,7 @@ class InternshipViewSet(BaseModelViewSet):
             log_event(
                 event="internship.bulk_status_changed",
                 description=(
-                    f"Changed {len(updated_ids)} "
-                    f"internship(s) to {new_status}"
+                    f"Changed {len(updated_ids)} " f"internship(s) to {new_status}"
                 ),
                 user=request.user,
                 entity_type="internship",
@@ -447,7 +450,9 @@ class InternshipApplicationViewSet(BaseModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        base = InternshipApplication.objects.select_related("internship", "applicant").prefetch_related(
+        base = InternshipApplication.objects.select_related(
+            "internship", "applicant"
+        ).prefetch_related(
             "applicant__student_profile",
             "applicant__parent_profile",
             "applicant__professional_profile",
@@ -691,7 +696,10 @@ class InternshipApplicationViewSet(BaseModelViewSet):
             user=request.user,
             entity_type="internship_application",
             entity_id=application.id,
-            metadata={"internship_id": application.internship_id, "status": application_status},
+            metadata={
+                "internship_id": application.internship_id,
+                "status": application_status,
+            },
             request=request,
         )
         return Response(

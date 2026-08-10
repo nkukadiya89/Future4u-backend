@@ -38,6 +38,7 @@ from .models import (
     UserSubscription,
 )
 
+
 class SubscriptionViewSet(BaseModelViewSet):
     queryset = Subscription.objects.all()
     serializer_class = SubscriptionAPISerializer
@@ -47,7 +48,7 @@ class SubscriptionViewSet(BaseModelViewSet):
     create_message = "Subscription Created Successfully"
     update_message = "Subscription Updated Successfully"
 
-    searching_fields = BaseModelViewSet.searching_fields+[
+    searching_fields = BaseModelViewSet.searching_fields + [
         "package_name",
         "description",
     ]
@@ -80,8 +81,8 @@ class SubscriptionViewSet(BaseModelViewSet):
         if not subscription:
             return Response(
                 {
-                    "success" : False,
-                    "message" : "Subscription not found.",
+                    "success": False,
+                    "message": "Subscription not found.",
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
@@ -97,9 +98,9 @@ class SubscriptionViewSet(BaseModelViewSet):
         response_serializer = self.get_response_serializer(subscription)
         return Response(
             {
-                "success" : True,
-                "message" : "Subscription restored successfully",
-                "data" : response_serializer.data,
+                "success": True,
+                "message": "Subscription restored successfully",
+                "data": response_serializer.data,
             },
             status=status.HTTP_200_OK,
         )

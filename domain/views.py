@@ -164,7 +164,10 @@ class DomainViewSet(SuccessEnvelopeMixin, ModelViewSet):
             user=request.user,
             entity_type="domain",
             entity_id=instance.id,
-            metadata={"domain_name": instance.domain_name, "is_active": ser.validated_data["is_active"]},
+            metadata={
+                "domain_name": instance.domain_name,
+                "is_active": ser.validated_data["is_active"],
+            },
             request=request,
         )
         return Response(

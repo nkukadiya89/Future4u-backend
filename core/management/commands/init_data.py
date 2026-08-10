@@ -40,7 +40,9 @@ class Command(BaseCommand):
     help = "Load country data into country database"
 
     def add_arguments(self, parser) -> None:
-        parser.add_argument("--country", action="store_true", help="Country data to be uploaded")
+        parser.add_argument(
+            "--country", action="store_true", help="Country data to be uploaded"
+        )
         parser.add_argument(
             "--zone_name", action="store_true", help="ZoneName data to be uploaded"
         )
@@ -847,7 +849,6 @@ class Command(BaseCommand):
             serializer_class=EducationLevelSerializer,
             importer=education_level_service.bulk_import_levels,
         )
-
 
     def load_streams(self):
         self.stdout.write("Loading Streams...")

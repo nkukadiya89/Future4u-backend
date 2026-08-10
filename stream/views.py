@@ -162,7 +162,10 @@ class StreamViewSet(SuccessEnvelopeMixin, ModelViewSet):
             user=request.user,
             entity_type="stream",
             entity_id=instance.id,
-            metadata={"stream_name": instance.stream_name, "is_active": ser.validated_data["is_active"]},
+            metadata={
+                "stream_name": instance.stream_name,
+                "is_active": ser.validated_data["is_active"],
+            },
             request=request,
         )
         return Response(

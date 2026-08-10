@@ -10,6 +10,7 @@ from country.models import Country
 from state.models import State
 from education_level.models import EducationLevel
 
+
 class Courses(BaseModule):
 
     COURSE_TYPE_CHOICES = (
@@ -99,7 +100,13 @@ class CourseInquiry(BaseModule):
         blank=True,
         related_name="course_inquiries",
     )
-    career_suggestion = models.ForeignKey(CareerSuggestion, on_delete=models.SET_NULL, null=True, blank=True, related_name="course_inquiries")
+    career_suggestion = models.ForeignKey(
+        CareerSuggestion,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="course_inquiries",
+    )
     name = models.CharField(max_length=200, null=True, blank=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
@@ -118,8 +125,11 @@ class CourseInquiry(BaseModule):
     def __str__(self):
         return f"{self.course.name} - {self.email}"
 
+
 class CourseInquiryNote(BaseModule):
-    inquiry = models.ForeignKey(CourseInquiry, on_delete=models.CASCADE, related_name="notes")
+    inquiry = models.ForeignKey(
+        CourseInquiry, on_delete=models.CASCADE, related_name="notes"
+    )
     note = models.TextField()
 
     class Meta:

@@ -78,12 +78,16 @@ def build_prompt(system_text: str, user_prompt_template: str) -> ChatPromptTempl
         roadmap_max_words=ROADMAP_MAX_WORDS,
         output_shape=OUTPUT_SHAPE,
     )
-    system_message = _escape_langchain_template(system_text).replace(
-        "__MODE_INSTRUCTIONS__",
-        "{mode_instructions}",
-    ).replace(
-        "__VALIDATION_FEEDBACK__",
-        "{validation_feedback}",
+    system_message = (
+        _escape_langchain_template(system_text)
+        .replace(
+            "__MODE_INSTRUCTIONS__",
+            "{mode_instructions}",
+        )
+        .replace(
+            "__VALIDATION_FEEDBACK__",
+            "{validation_feedback}",
+        )
     )
     return ChatPromptTemplate.from_messages(
         [

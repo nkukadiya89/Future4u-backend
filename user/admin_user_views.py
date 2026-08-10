@@ -489,8 +489,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
         log_event(
             event="user.tokens_updated",
             description=(
-                f"Added {extra} extra tokens "
-                f"to {self.role_name} {user.email}"
+                f"Added {extra} extra tokens " f"to {self.role_name} {user.email}"
             ),
             user=request.user,
             entity_type="user",
@@ -606,6 +605,7 @@ class AdminWorkingProfessionalViewSet(BaseAdminProfileViewSet):
     profile_model = ProfessionalProfile
     serializer_class = AdminWorkingProfessionalSerializer
     detail_serializer_class = AdminWorkingProfessionalSortSerializer
+
 
 class AdminUserArchiveViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser]

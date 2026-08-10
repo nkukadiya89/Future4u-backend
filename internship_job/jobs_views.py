@@ -99,11 +99,14 @@ class JobViewSet(BaseModelViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             save_kwargs = {
-                'created_by': request.user,
-                'created_at': timezone.now(),
+                "created_by": request.user,
+                "created_at": timezone.now(),
             }
-            if request.user.user_type in ['corporate'] and 'job_provider' not in serializer.validated_data:
-                save_kwargs['job_provider'] = request.user
+            if (
+                request.user.user_type in ["corporate"]
+                and "job_provider" not in serializer.validated_data
+            ):
+                save_kwargs["job_provider"] = request.user
             serializer.save(**save_kwargs)
             log_event(
                 event="job.created",
@@ -174,10 +177,7 @@ class JobViewSet(BaseModelViewSet):
             )
             log_event(
                 event="job.bulk_status_changed",
-                description=(
-                    f"Changed {len(updated_ids)} job(s) "
-                    f"to {new_status}"
-                ),
+                description=(f"Changed {len(updated_ids)} job(s) " f"to {new_status}"),
                 user=request.user,
                 entity_type="job",
                 entity_id=None,
@@ -470,7 +470,9 @@ class JobApplicationViewSet(BaseModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        base = JobApplication.objects.select_related("applicant", "job").prefetch_related(
+        base = JobApplication.objects.select_related(
+            "applicant", "job"
+        ).prefetch_related(
             "applicant__student_profile",
             "applicant__parent_profile",
             "applicant__professional_profile",
@@ -655,7 +657,7 @@ class JobApplicationViewSet(BaseModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
-    
+
     @action(detail=False, methods=["get"], url_path="my-applications")
     def my_applications(self, request):
         applications = JobApplication.objects.filter(

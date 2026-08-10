@@ -19,8 +19,6 @@ class EducationLevelAdminForm(forms.ModelForm):
         fields = "__all__"
 
 
-
-
 @admin.register(EducationLevel)
 class EducationLevelAdmin(
     AuditSaveModelMixin, MasterImportAdminURLMixin, admin.ModelAdmin

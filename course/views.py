@@ -16,7 +16,12 @@ from course.services import match_courses
 from user.permissions import IsAdminOrProvider, is_admin_user
 
 from .models import CourseInquiry, CourseInquiryNote, Courses
-from .serializers import CourseInquiryNoteSerializer, CourseInquirySerializer, CoursesSerializer, CourseInquirySortSerializer
+from .serializers import (
+    CourseInquiryNoteSerializer,
+    CourseInquirySerializer,
+    CoursesSerializer,
+    CourseInquirySortSerializer,
+)
 
 
 class CoursesViewSet(BaseModelViewSet):
@@ -24,7 +29,7 @@ class CoursesViewSet(BaseModelViewSet):
         queryset = Courses.objects.select_related(
             "country", "state", "city", "created_by"
         ).prefetch_related("education_tags")
-        
+
         user = self.request.user
         if user.is_superuser:
             base = queryset
@@ -90,12 +95,15 @@ class CoursesViewSet(BaseModelViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             save_kwargs = {
-                'created_by': request.user,
-                'created_at': timezone.now(),
+                "created_by": request.user,
+                "created_at": timezone.now(),
             }
             # Auto-set course_provider when school/institute creates their own course
-            if request.user.user_type in ['school_college', 'institute'] and 'course_provider' not in serializer.validated_data:
-                save_kwargs['course_provider'] = request.user
+            if (
+                request.user.user_type in ["school_college", "institute"]
+                and "course_provider" not in serializer.validated_data
+            ):
+                save_kwargs["course_provider"] = request.user
             serializer.save(**save_kwargs)
             log_event(
                 event="course.created",
@@ -169,8 +177,7 @@ class CoursesViewSet(BaseModelViewSet):
             log_event(
                 event="course.bulk_status_changed",
                 description=(
-                    f"Changed {len(updated_ids)} course(s) "
-                    f"to {new_status}"
+                    f"Changed {len(updated_ids)} course(s) " f"to {new_status}"
                 ),
                 user=request.user,
                 entity_type="course",
@@ -325,9 +332,12 @@ class CoursesViewSet(BaseModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="archive-list")
     def archive_list(self, request):
-        queryset = Courses.objects.select_related(
-            "country", "state", "city", "created_by"
-        ).prefetch_related("education_tags").filter(deleted=True).order_by("-deleted_at")
+        queryset = (
+            Courses.objects.select_related("country", "state", "city", "created_by")
+            .prefetch_related("education_tags")
+            .filter(deleted=True)
+            .order_by("-deleted_at")
+        )
 
         user = request.user
         if not user.is_superuser:
@@ -500,7 +510,9 @@ class CourseInquiryViewSet(BaseModelViewSet):
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            if CourseInquiry.objects.filter(user=request.user, course=course, career_suggestion=career_suggestion).exists():
+            if CourseInquiry.objects.filter(
+                user=request.user, course=course, career_suggestion=career_suggestion
+            ).exists():
                 return Response(
                     {
                         "success": False,
@@ -560,7 +572,7 @@ class CourseInquiryViewSet(BaseModelViewSet):
 
         page = self.paginate_queryset(inquiries)
         if page is not None:
-            serializer =CourseInquirySortSerializer(page, many=True)
+            serializer = CourseInquirySortSerializer(page, many=True)
             return self.get_paginated_response(
                 {"success": True, "data": serializer.data}
             )
@@ -614,6 +626,7 @@ class CourseInquiryViewSet(BaseModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
 
 class CourseInquiryNoteViewSet(BaseLeadNoteViewSet):
     queryset = CourseInquiryNote.objects.all()

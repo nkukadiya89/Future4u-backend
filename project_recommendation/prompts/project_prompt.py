@@ -33,10 +33,12 @@ USER_PROMPT = (
 
 
 def build_project_prompt() -> ChatPromptTemplate:
-    return ChatPromptTemplate.from_messages([
-        ("system", SYSTEM_PROMPT),
-        ("human", USER_PROMPT),
-    ])
+    return ChatPromptTemplate.from_messages(
+        [
+            ("system", SYSTEM_PROMPT),
+            ("human", USER_PROMPT),
+        ]
+    )
 
 
 def format_prompt_inputs(
