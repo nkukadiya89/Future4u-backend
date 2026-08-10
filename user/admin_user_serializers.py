@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from django.utils import timezone
 
 from django.db import transaction
 from rest_framework import serializers
@@ -12,8 +12,18 @@ from language_master.models import Language
 from state.models import State
 from stream.models import Stream
 from user.models import User
+from user.serializers import UserQuickSerializer
 from user.services.registration_service import setup_web_user_password
+from utils.datetime_formatter import format_datetime
 from user_profile.models import StudentProfile
+from user_profile.serializers import (
+    CorporateProfileSerializer,
+    InstituteProfileSerializer,
+    ParentProfileSerializer,
+    ProfessionalProfileSerializer,
+    SchoolCollegeProfileSerializer,
+    StudentProfileSerializer,
+)
 
 
 class AdminStudentSerializer(serializers.ModelSerializer):
@@ -255,7 +265,7 @@ class AdminStudentSerializer(serializers.ModelSerializer):
             profile.referred_by = referred_by
 
         profile.updated_by = request.user
-        profile.updated_at = datetime.now()
+        profile.updated_at = timezone.now()
         profile.save()
 
         if languages is not None:
@@ -341,3 +351,38 @@ class BulkUserUploadSerializer(serializers.Serializer):
             )
 
         return value
+
+
+class UserArchiveSerializer(serializers.Serializer):
+    PROFILE_RELATIONS = {
+        User.Role.STUDENT: ("student_profile", StudentProfileSerializer),
+        User.Role.PARENT: ("parent_profile", ParentProfileSerializer),
+        User.Role.PROFESSIONAL: ("professional_profile", ProfessionalProfileSerializer),
+        User.Role.SCHOOL_COLLEGE: (
+            "school_college_profile",
+            SchoolCollegeProfileSerializer,
+        ),
+        User.Role.INSTITUTE: ("institute_profile", InstituteProfileSerializer),
+        User.Role.CORPORATE: ("corporate_profile", CorporateProfileSerializer),
+    }
+
+    def to_representation(self, obj):
+        entry = self.PROFILE_RELATIONS.get(obj.user_type)
+        if not entry:
+            data = {}
+        else:
+            relation_name, serializer_class = entry
+            profile = getattr(obj, relation_name, None)
+            data = (
+                serializer_class(profile, context=self.context).data
+                if profile is not None
+                else {}
+            )
+        # Archive metadata (owned by the User model, the archive lifecycle).
+        # deleted_by already contains the full user details (UserQuickSerializer),
+        # so no separate deleted_by_name field is emitted.
+        data["deleted_at"] = format_datetime(obj.deleted_at)
+        data["deleted_by"] = (
+            UserQuickSerializer(obj.deleted_by).data if obj.deleted_by_id else None
+        )
+        return data

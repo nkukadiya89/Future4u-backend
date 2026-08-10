@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager, Group
 from django.core.files.storage import default_storage
 from django.db import models
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 
@@ -202,6 +203,26 @@ class User(AbstractUser):
     @property
     def full_name_property(self):
         return f"{self.first_name} {self.last_name}".strip()
+
+    @cached_property
+    def company(self):
+        """Company this user belongs to.
+
+        ``user.company`` was a direct FK before the model refactor removed it.
+        This restores the attribute using the surviving relationships:
+        first via the user's company-scoped groups (``CustomGroup.company``),
+        falling back to the company the user created.
+        """
+        group = (
+            self.groups.filter(customgroup__company__isnull=False)
+            .select_related("customgroup__company")
+            .first()
+        )
+        if group:
+            company = group.customgroup.company
+            if company:
+                return company
+        return Company.objects.filter(created_by=self).first()
 
     @property
     def subscription_info(self):

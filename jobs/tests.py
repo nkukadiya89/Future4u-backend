@@ -34,9 +34,6 @@ from jobs.services import MAX_RETRIES, LinkedInJobService
 from jobs.views import JobSearchAPIView, RecommendedJobsAPIView
 from user.models import User
 
-# ── Fixture helpers ─────────────────────────────────────────────────────────
-
-
 def _make_user(**kwargs) -> User:
     defaults = {
         "email": "test@example.com",
@@ -132,10 +129,6 @@ def _mock_response(status_code=200, json_data=None):
 
     return mock_resp
 
-
-# ─── Serializer tests (no database needed) ────────────────────────────────────
-
-
 class JobSearchQuerySerializerTest(SimpleTestCase):
     def test_valid_minimal(self):
         serializer = JobSearchQuerySerializer(data={"title": "Python"})
@@ -216,7 +209,6 @@ class JobNormalizedSerializerTest(SimpleTestCase):
         data = {"id": "2", "title": "Dev", "skills": None}
         serializer = JobNormalizedSerializer(data=data)
         self.assertTrue(serializer.is_valid(), msg=serializer.errors)
-        # serializer.data goes through to_representation which converts None→[]
         output = serializer.data
         self.assertEqual(output["skills"], [])
 
@@ -235,10 +227,6 @@ class JobNormalizedSerializerTest(SimpleTestCase):
         validated = serializer.validated_data
         self.assertEqual(validated["id"], "")
         self.assertEqual(validated["source"], "linkedin")
-
-
-# ─── Service tests (no database needed) ───────────────────────────────────────
-
 
 class LinkedInJobServiceTest(SimpleTestCase):
     def setUp(self):
@@ -394,9 +382,11 @@ class LinkedInJobServiceTest(SimpleTestCase):
         self.assertEqual(key1, key2)
 
 
-# ─── View tests (need database for users/models) ────────────────────────────
 
-
+@override_settings(
+    RAPIDAPI_KEY="test-key-123",
+    RAPIDAPI_HOST="test-host.p.rapidapi.com",
+)
 class JobSearchAPIViewTest(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -451,6 +441,10 @@ class JobSearchAPIViewTest(TestCase):
         self.assertFalse(response.data["success"])
 
 
+@override_settings(
+    RAPIDAPI_KEY="test-key-123",
+    RAPIDAPI_HOST="test-host.p.rapidapi.com",
+)
 class RecommendedJobsAPIViewTest(TestCase):
     @classmethod
     def setUpClass(cls):

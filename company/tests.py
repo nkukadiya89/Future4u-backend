@@ -224,8 +224,12 @@ class CompanyCustomActionsTests(BaseAPITest):
     def test_change_company_password_validations_and_success(self):
         c = self.create_company()
         u = get_user_model().objects.create_user(email="admin@acme.com", password="old")
-        u.company = c
-        u.role = 1
+        group = CustomGroup.objects.create(
+            name=f"Company Admin {c.id}",
+            group_name=f"Company Admin {c.id}",
+            company=c,
+        )
+        u.groups.add(group)
         u.save()
         url = reverse("company-change-company-password", args=[c.id])
         r1 = self.client.patch(

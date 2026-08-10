@@ -96,9 +96,10 @@ class CreateCompanySerializer(serializers.ModelSerializer):
         user = User.objects.create(**user_data)
         user.set_password(password)
         company_instance = Company.objects.create(**validated_data)
-        company_instance.created_by = None
+        # Owner link: company is associated with its admin user (this flow is
+        # the public self-registration, so request.user is anonymous).
+        company_instance.created_by = user
         company_instance.save()
-        user.company_id = company_instance.id
         company_id = company_instance.id
         result = create_company_role_family(req, company_id)
         if result["success"]:
@@ -112,7 +113,6 @@ class CreateCompanySerializer(serializers.ModelSerializer):
         try:
             company_admin_group = CustomGroup.objects.get(name="Company Admin")
             company_admin_group.user_set.add(user)
-            user.role = company_admin_group.id
             user.designation = (
                 company_admin_group.group_name
                 if company_admin_group.group_name
@@ -379,21 +379,18 @@ class CompanySerializer(
         if self.instance and self.instance.name == name:
             return data
         if Company.objects.filter(name=name).exists():
-            # raise ValidationError(f"Company with this Name {name} already exists.")
             errors["name"] = f"Company with this Name {name} already exists."
 
         email = data.get("email")
         if self.instance and self.instance.email == email:
             return data
         if Company.objects.filter(email=email).exists():
-            # raise ValidationError(f"Company with this Email {email} already exists.")
             errors["email"] = f"Company with this Email {email} already exists."
 
         phone = data.get("phone")
         if self.instance and self.instance.phone == phone:
             return data
         if Company.objects.filter(phone=phone).exists():
-            # raise ValidationError(f"Company with this Phone {phone} already exists.")
             errors["phone"] = f"Company with this Phone {phone} already exists."
 
         email = data.get("email", None)
@@ -433,7 +430,6 @@ class CompanySerializer(
         if not password:
             password = generate_random_password(self)
 
-        # Extract nested services
         services_data = validated_data.pop("services", [])
 
         phone = str(validated_data.get("phone", "")).strip()
@@ -452,7 +448,6 @@ class CompanySerializer(
             "status": "pending",
         }
 
-        # Check if user with this email already exists
         try:
             user = User.objects.get(email=user_data["email"])
             raise serializers.ValidationError(
@@ -468,7 +463,6 @@ class CompanySerializer(
         company_instance = Company.objects.create(**validated_data)
         company_instance.created_by = req.user
         company_instance.save()
-        user.company_id = company_instance.id
         company_id = company_instance.id
         result = create_company_role_family(req, company_id)
         if result["success"]:
@@ -482,7 +476,6 @@ class CompanySerializer(
         try:
             company_admin_group = CustomGroup.objects.get(name="Company Admin")
             company_admin_group.user_set.add(user)
-            user.role = company_admin_group.id
             user.designation = (
                 company_admin_group.group_name
                 if company_admin_group.group_name
@@ -493,10 +486,8 @@ class CompanySerializer(
                 {"success": False, "message": "Company Admin group not found"}
             )
 
-        # Create services
         for service_data in services_data:
             service_name = service_data["name"]
-            # Try to find existing service by name, if not found create new one
             service = CompanyService.objects.filter(name=service_name).first()
             if not service:
                 service = CompanyService.objects.create(name=service_name)
@@ -533,7 +524,6 @@ class CompanySerializer(
                 )
 
             if service_id:
-                # Update existing service
                 try:
                     service = CompanyService.objects.get(id=service_id)
                     incoming_service_ids.add(service_id)
@@ -609,7 +599,6 @@ class CompanySerializer(
             "communication_address_pincode", instance.communication_address_pincode
         )
 
-        # Social & Other Info
         instance.secondary_email = validated_data.get(
             "secondary_email", instance.secondary_email
         )
@@ -646,13 +635,12 @@ class CompanySerializer(
             "sunday_hours", instance.sunday_hours
         )
 
-        # Audit fields
         instance.updated_by = request.user
         instance.updated_at = now()
 
         instance.save()
 
-        users = User.objects.filter(company_id=instance.id)
+        users = User.objects.filter(groups__customgroup__company=instance)
         for user in users:
             if "person_name" in validated_data:
                 user.first_name = validated_data["person_name"]
@@ -663,7 +651,6 @@ class CompanySerializer(
 
             user.save()
 
-        # Log activity
         ActivityLog.log.company_update(instance, ip_address, request.user)
 
         return instance
@@ -686,7 +673,6 @@ class CompanyInfoSerializer(
     services = CompanyServiceSerializer(many=True, read_only=True)
     company_photos = serializers.SerializerMethodField()
 
-    # Read-only fields for names
     gst_address_country_name = serializers.CharField(
         source="gst_address_country.name", read_only=True
     )
@@ -826,7 +812,6 @@ class CompanyArchiveListSerializer(
         ]
 
 
-# Company Multiple Deleted
 class CompanyArchiveSerializer(serializers.ModelSerializer):
     deleted = serializers.ListField(write_only=True)
 
@@ -843,7 +828,7 @@ class CompanyArchiveSerializer(serializers.ModelSerializer):
 
         for deleted_id in deleted_ids:
             try:
-                users = User.objects.filter(company_id=deleted_id)
+                users = User.objects.filter(groups__customgroup__company_id=deleted_id)
 
                 company = Company.objects.get(id=deleted_id)
 
@@ -886,7 +871,6 @@ class CompanyArchiveSerializer(serializers.ModelSerializer):
         return companies[-1] if companies else None
 
 
-# Company Multiple Restore
 class CompanyRestoreSerializer(serializers.ModelSerializer):
     deleted = serializers.ListField(write_only=True)
 
@@ -903,7 +887,7 @@ class CompanyRestoreSerializer(serializers.ModelSerializer):
         for deleted_id in deleted_ids:
             try:
                 company = Company.objects.get(id=deleted_id)
-                users = User.objects.filter(company=company)
+                users = User.objects.filter(groups__customgroup__company=company)
 
                 if company.status == "pending":
                     company.status = "pending"
@@ -922,7 +906,6 @@ class CompanyRestoreSerializer(serializers.ModelSerializer):
                     company.updated_at = now()
                     company.save()
 
-                # Update all associated users' status and is_active
                 if users.exists():
                     for user_instance in users:
                         if user_instance.status == "pending":

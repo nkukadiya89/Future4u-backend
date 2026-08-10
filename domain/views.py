@@ -63,6 +63,10 @@ class DomainViewSet(SuccessEnvelopeMixin, ModelViewSet):
                 queryset = queryset.filter(is_active=False)
         pid = req.get("parent_id")
         if pid:
+            try:
+                UUID(str(pid))
+            except (ValueError, TypeError):
+                return queryset.none()
             queryset = queryset.filter(parent_id=pid)
         if str(req.get("root_only", "")).lower() in ("1", "true", "yes"):
             queryset = queryset.filter(parent__isnull=True)
@@ -180,13 +184,17 @@ class DomainViewSet(SuccessEnvelopeMixin, ModelViewSet):
     @action(detail=False, methods=["get"], url_path="dropdown")
     def dropdown(self, request, *args, **kwargs):
         parent_id = request.query_params.get("parent_id") or None
+        if parent_id:
+            try:
+                UUID(str(parent_id))
+            except (ValueError, TypeError):
+                return Response({"success": True, "data": []})
         root_only = str(request.query_params.get("root_only", "")).lower() in (
             "1",
             "true",
             "yes",
         )
 
-        # Only cache the unfiltered full list
         if not parent_id and not root_only:
             key = dropdown_key("domains")
             try:
@@ -234,7 +242,10 @@ class DomainViewSet(SuccessEnvelopeMixin, ModelViewSet):
             user=request.user,
             entity_type="domain",
             entity_id=None,
-            metadata={"domain_ids": list(ser.validated_data["ids"]), "count": n},
+            metadata={
+                "domain_ids": [str(i) for i in ser.validated_data["ids"]],
+                "count": n,
+            },
             request=request,
         )
         return Response(
@@ -258,7 +269,10 @@ class DomainViewSet(SuccessEnvelopeMixin, ModelViewSet):
             user=request.user,
             entity_type="domain",
             entity_id=None,
-            metadata={"domain_ids": list(ser.validated_data["ids"]), "count": n},
+            metadata={
+                "domain_ids": [str(i) for i in ser.validated_data["ids"]],
+                "count": n,
+            },
             request=request,
         )
         return Response(
