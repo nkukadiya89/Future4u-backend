@@ -52,7 +52,8 @@ class StaffUsageGroupSerializer(serializers.Serializer):
 
 class OrganizationTokenUsageRowSerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    user = serializers.IntegerField()
+    organization = serializers.IntegerField(source="organization_id")
+    user = serializers.IntegerField(source="user_id")
     feature_code = serializers.CharField()
     tokens_used = serializers.IntegerField()
     balance_after = serializers.IntegerField()

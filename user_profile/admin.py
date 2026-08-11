@@ -2,8 +2,6 @@ from django import forms
 from django.contrib import admin
 from django.db import transaction
 
-from activity_log.services import log_event
-
 from common.mixins.admin_mixins import ProfileReadonlyFieldsAdminMixin
 from domain.models import Domain
 from user_profile.models import (
@@ -18,7 +16,7 @@ from user_profile.models import (
     StudentProfile,
     UserProfile,
 )
-from utils.token_check import _check_org_monthly_reset
+from utils.token_check import adjust_extra_tokens
 
 admin.site.register(BusinessSetting)
 
@@ -468,33 +466,15 @@ class SchoolCollegeProfileAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if change and "extra_token_limit" in form.changed_data:
             with transaction.atomic():
-                locked = self.model.objects.select_for_update().get(id=obj.id)
-                _check_org_monthly_reset(locked, locked.user.user_type)
-                old = locked.extra_token_limit or 0
-                before_token = locked.token_limit or 0
-                increase = (obj.extra_token_limit or 0) - old
-                if increase > 0:
-                    obj.token_limit = before_token + increase
-                obj.last_token_reset_at = locked.last_token_reset_at
-                log_event(
-                    event="user.tokens_updated",
-                    description=(
-                        f"Set extra tokens to {obj.extra_token_limit} for "
-                        f"{obj.user.email}"
-                    ),
-                    user=request.user,
-                    entity_type="user",
-                    entity_id=obj.user_id,
-                    metadata={
-                        "previous_extra": old,
-                        "new_extra": obj.extra_token_limit,
-                        "token_increase": increase,
-                        "token_limit_before": before_token,
-                        "token_limit_after": obj.token_limit,
-                    },
+                adjust_extra_tokens(
+                    obj,
+                    obj.extra_token_limit,
+                    request.user,
                     request=request,
                 )
-        super().save_model(request, obj, form, change)
+                super().save_model(request, obj, form, change)
+        else:
+            super().save_model(request, obj, form, change)
 
 
 @admin.register(InstituteProfile)
@@ -551,33 +531,15 @@ class InstituteProfileAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if change and "extra_token_limit" in form.changed_data:
             with transaction.atomic():
-                locked = self.model.objects.select_for_update().get(id=obj.id)
-                _check_org_monthly_reset(locked, locked.user.user_type)
-                old = locked.extra_token_limit or 0
-                before_token = locked.token_limit or 0
-                increase = (obj.extra_token_limit or 0) - old
-                if increase > 0:
-                    obj.token_limit = before_token + increase
-                obj.last_token_reset_at = locked.last_token_reset_at
-                log_event(
-                    event="user.tokens_updated",
-                    description=(
-                        f"Set extra tokens to {obj.extra_token_limit} for "
-                        f"{obj.user.email}"
-                    ),
-                    user=request.user,
-                    entity_type="user",
-                    entity_id=obj.user_id,
-                    metadata={
-                        "previous_extra": old,
-                        "new_extra": obj.extra_token_limit,
-                        "token_increase": increase,
-                        "token_limit_before": before_token,
-                        "token_limit_after": obj.token_limit,
-                    },
+                adjust_extra_tokens(
+                    obj,
+                    obj.extra_token_limit,
+                    request.user,
                     request=request,
                 )
-        super().save_model(request, obj, form, change)
+                super().save_model(request, obj, form, change)
+        else:
+            super().save_model(request, obj, form, change)
 
 
 @admin.register(CorporateProfile)
@@ -634,30 +596,12 @@ class CorporateProfileAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if change and "extra_token_limit" in form.changed_data:
             with transaction.atomic():
-                locked = self.model.objects.select_for_update().get(id=obj.id)
-                _check_org_monthly_reset(locked, locked.user.user_type)
-                old = locked.extra_token_limit or 0
-                before_token = locked.token_limit or 0
-                increase = (obj.extra_token_limit or 0) - old
-                if increase > 0:
-                    obj.token_limit = before_token + increase
-                obj.last_token_reset_at = locked.last_token_reset_at
-                log_event(
-                    event="user.tokens_updated",
-                    description=(
-                        f"Set extra tokens to {obj.extra_token_limit} for "
-                        f"{obj.user.email}"
-                    ),
-                    user=request.user,
-                    entity_type="user",
-                    entity_id=obj.user_id,
-                    metadata={
-                        "previous_extra": old,
-                        "new_extra": obj.extra_token_limit,
-                        "token_increase": increase,
-                        "token_limit_before": before_token,
-                        "token_limit_after": obj.token_limit,
-                    },
+                adjust_extra_tokens(
+                    obj,
+                    obj.extra_token_limit,
+                    request.user,
                     request=request,
                 )
-        super().save_model(request, obj, form, change)
+                super().save_model(request, obj, form, change)
+        else:
+            super().save_model(request, obj, form, change)

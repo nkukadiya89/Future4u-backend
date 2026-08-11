@@ -10,6 +10,7 @@ from company.models import Company
 from country.models import Country
 from education_level.models import EducationLevel
 from state.models import State
+from user.models import User
 from utils.aws_file_upload import delete_uploaded_file, upload_file_to_bucket
 
 
@@ -593,6 +594,13 @@ class ChildProfile(models.Model):
         ]
 
 
+DEFAULT_ORG_TOKEN_LIMITS = {
+    User.Role.INSTITUTE: 20000,
+    User.Role.CORPORATE: 20000,
+    User.Role.SCHOOL_COLLEGE: 15000,
+}
+
+
 class InstituteProfile(BaseModule):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -610,7 +618,9 @@ class InstituteProfile(BaseModule):
     website = models.CharField(max_length=250, null=True, blank=True)
     institute_name = models.CharField(max_length=200, null=True, blank=True)
     extra_token_limit = models.IntegerField(default=0)
-    token_limit = models.IntegerField(default=20000)
+    token_limit = models.IntegerField(
+        default=DEFAULT_ORG_TOKEN_LIMITS[User.Role.INSTITUTE]
+    )
     last_token_reset_at = models.DateField(null=True, blank=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
@@ -708,7 +718,9 @@ class SchoolCollegeProfile(BaseModule):
     )
     website = models.CharField(max_length=250, null=True, blank=True)
     extra_token_limit = models.IntegerField(default=0)
-    token_limit = models.IntegerField(default=15000)
+    token_limit = models.IntegerField(
+        default=DEFAULT_ORG_TOKEN_LIMITS[User.Role.SCHOOL_COLLEGE]
+    )
     last_token_reset_at = models.DateField(null=True, blank=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
@@ -751,7 +763,9 @@ class CorporateProfile(BaseModule):
     about_us = models.TextField(null=True, blank=True)
     perks_benefits = models.JSONField(default=list, blank=True)
     extra_token_limit = models.IntegerField(default=0)
-    token_limit = models.IntegerField(default=20000)
+    token_limit = models.IntegerField(
+        default=DEFAULT_ORG_TOKEN_LIMITS[User.Role.CORPORATE]
+    )
     last_token_reset_at = models.DateField(null=True, blank=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True

@@ -6,7 +6,7 @@ from activity_log.services import log_event
 from subscription.constants import FEATURE_FIELD_MAP
 from subscription.models import FeatureUsage, SubscriptionFeature, UserSubscription
 from user.models import User
-from user_profile.models import OrganizationTokenUsage
+from user_profile.models import DEFAULT_ORG_TOKEN_LIMITS, OrganizationTokenUsage
 
 FEATURE_NAMES = {
     "ai_chat": "AI Chat",
@@ -38,13 +38,6 @@ ORGANIZATION_TYPES = (
     User.Role.INSTITUTE,
     User.Role.CORPORATE,
 )
-
-# Default monthly allowance per org type; per-user overrides use extra_token_limit.
-DEFAULT_ORG_TOKEN_LIMITS = {
-    User.Role.INSTITUTE: 20000,
-    User.Role.CORPORATE: 20000,
-    User.Role.SCHOOL_COLLEGE: 15000,
-}
 
 
 def _get_org_profile(user):
@@ -83,7 +76,9 @@ def _org_base_token_limit(profile, user_type):
     Staff always get 0 — they never auto-receive the org default."""
     if _is_org_staff_profile(profile):
         return 0
-    return DEFAULT_ORG_TOKEN_LIMITS.get(user_type, 20000)
+    return DEFAULT_ORG_TOKEN_LIMITS.get(
+        user_type, DEFAULT_ORG_TOKEN_LIMITS[User.Role.INSTITUTE]
+    )
 
 
 def _check_org_monthly_reset(profile, user_type):
@@ -125,6 +120,45 @@ def _check_org_monthly_reset(profile, user_type):
                 "extra_token_after": 0,
             },
         )
+
+
+def adjust_extra_tokens(profile, new_extra_tokens, actor, *, request=None):
+    with transaction.atomic():
+        locked = type(profile).objects.select_for_update().get(id=profile.id)
+        _check_org_monthly_reset(locked, locked.user.user_type)
+
+        old = locked.extra_token_limit or 0
+        before_token = locked.token_limit or 0
+        increase = new_extra_tokens - old
+
+        locked.extra_token_limit = new_extra_tokens
+        if increase > 0:
+            locked.token_limit = (locked.token_limit or 0) + increase
+        locked.save(update_fields=["extra_token_limit", "token_limit"])
+
+        profile.extra_token_limit = locked.extra_token_limit
+        profile.token_limit = locked.token_limit
+        profile.last_token_reset_at = locked.last_token_reset_at
+
+        log_event(
+            event="user.tokens_updated",
+            description=(
+                f"Set extra tokens to {new_extra_tokens} for "
+                f"{locked.user.email}"
+            ),
+            user=actor,
+            entity_type="user",
+            entity_id=locked.user_id,
+            metadata={
+                "previous_extra": old,
+                "new_extra": new_extra_tokens,
+                "token_increase": increase,
+                "token_limit_before": before_token,
+                "token_limit_after": locked.token_limit,
+            },
+            request=request,
+        )
+    return locked
 
 
 def _reset_subscription_monthly_tokens(user, user_sub):

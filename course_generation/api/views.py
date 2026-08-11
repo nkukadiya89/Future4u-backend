@@ -36,7 +36,9 @@ class CourseGenerationAPIView(APIView):
     throttle_classes = [CourseGenerationRateThrottle]
 
     def post(self, request, *args, **kwargs):
-        serializer = CourseGenerationInputSerializer(data=request.data)
+        serializer = CourseGenerationInputSerializer(
+            data=request.data, context={"request": request}
+        )
         if not serializer.is_valid():
             return Response(
                 {"success": False, "message": serializer.errors},

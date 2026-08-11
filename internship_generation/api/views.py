@@ -38,7 +38,9 @@ class InternshipGenerationAPIView(APIView):
     throttle_classes = [InternshipGenerationRateThrottle]
 
     def post(self, request, *args, **kwargs):
-        serializer = InternshipGenerationInputSerializer(data=request.data)
+        serializer = InternshipGenerationInputSerializer(
+            data=request.data, context={"request": request}
+        )
         if not serializer.is_valid():
             return Response(
                 {"success": False, "message": serializer.errors},

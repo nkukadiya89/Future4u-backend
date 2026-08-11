@@ -97,6 +97,19 @@ class CoursesViewSet(BaseModelViewSet):
                 "created_by": request.user,
                 "created_at": timezone.now(),
             }
+            course_provider = serializer.validated_data.get("course_provider")
+            if (
+                course_provider
+                and not is_admin_user(request.user)
+                and course_provider != request.user.get_owner_user()
+            ):
+                return Response(
+                    {
+                        "success": False,
+                        "message": "You can only create courses for your own organization.",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
             # Auto-set course_provider when school/institute creates their own course
             if (
                 request.user.user_type in ["school_college", "institute"]

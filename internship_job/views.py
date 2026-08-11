@@ -99,6 +99,21 @@ class InternshipViewSet(BaseModelViewSet):
                 "created_by": request.user,
                 "created_at": timezone.now(),
             }
+            internship_provider = serializer.validated_data.get(
+                "internship_provider"
+            )
+            if (
+                internship_provider
+                and not is_admin_user(request.user)
+                and internship_provider != request.user.get_owner_user()
+            ):
+                return Response(
+                    {
+                        "success": False,
+                        "message": "You can only create internships for your own organization.",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
             # Auto-set internship_provider when institute/corporate creates their own internship
             if (
                 request.user.user_type in ["institute", "corporate"]
