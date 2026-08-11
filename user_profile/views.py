@@ -733,7 +733,9 @@ class StudentProfileViewSet(ModelViewSet):
         )
         if user.user_type in org_roles:
             return qs.filter(Q(user__created_by=user) | Q(referred_by=user))
-        return qs
+        if user.is_superuser or user.user_type == User.Role.SUPER_ADMIN:
+            return qs
+        return qs.filter(user=user)
 
     def get_profile_object(self, request):
         queryset = self.get_queryset()

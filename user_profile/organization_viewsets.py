@@ -159,7 +159,7 @@ class OrganizationProfileViewSet(BaseModelViewSet):
 
     @transaction.atomic()
     def partial_update(self, request, *args, **kwargs):
-        profile = self.get_profile_object().first()
+        profile = self.get_profile_object(request)
         if not profile:
             return Response(
                 {"success": False, "message": "Profile not found"},
