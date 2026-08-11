@@ -21,7 +21,7 @@ from job_generation.serializers.job_generation_input import JobGenerationInputSe
 from job_generation.services.job_generation_service import JobGenerationService
 from user.permissions import HasPerm
 from utils.throttles import JobGenerationRateThrottle
-from utils.token_check import check_token_available, deduct_monthly_tokens
+from utils.token_check import OrganizationTokenChargeError, check_token_available
 
 logger = logging.getLogger(__name__)
 
@@ -54,28 +54,24 @@ class JobGenerationAPIView(APIView):
                 status=status.HTTP_402_PAYMENT_REQUIRED,
             )
 
-        token_usage = 0
         try:
-            data, token_usage = JobGenerationService().generate(
+            data, _ = JobGenerationService().generate(
                 user=request.user,
                 validated_input=serializer.validated_data,
+                feature_code="job_gen",
             )
-            try:
-                deduct_monthly_tokens(
-                    request.user,
-                    token_usage,
-                    feature_code="job_gen",
-                    request=request,
-                )
-            except Exception as exc:
-                logger.error(
-                    "TOKEN_RECONCILE user=%s feature=job_gen cost=%s err=%s",
-                    request.user.id,
-                    token_usage,
-                    exc,
-                )
             return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
 
+        except OrganizationTokenChargeError as exc:
+            logger.error(
+                "Organization token charge failed user=%s feature=job_gen err=%s",
+                request.user.id,
+                exc,
+            )
+            return Response(
+                {"success": False, "message": "Unable to process token accounting"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
         except JobGenerationAccessDeniedError:
             return Response(
                 {
@@ -132,7 +128,6 @@ class JobGenerationSaveView(APIView):
     ]
     throttle_classes = [JobGenerationRateThrottle]
 
-    @transaction.atomic
     def post(self, request, *args, **kwargs):
         serializer = JobGenerationInputSerializer(data=request.data)
         if not serializer.is_valid():
@@ -149,11 +144,64 @@ class JobGenerationSaveView(APIView):
                 status=status.HTTP_402_PAYMENT_REQUIRED,
             )
 
-        token_usage = 0
         try:
-            generated_data, token_usage = JobGenerationService().generate(
-                user=request.user,
-                validated_input=serializer.validated_data,
+            with transaction.atomic():
+                generated_data, _ = JobGenerationService().generate(
+                    user=request.user,
+                    validated_input=serializer.validated_data,
+                    feature_code="job_gen_save",
+                )
+
+                # Extract M2M education_tags PKs before creating the Job
+                education_tags_pks = generated_data.pop("education_tags", [])
+
+                # Remove non-DB fields (display-only or not a Job model field)
+                generated_data.pop("education_tags_meta", None)
+                generated_data.pop("corporate_name", None)
+                generated_data.pop("country_name", None)
+                generated_data.pop("state_name", None)
+                generated_data.pop("city_name", None)
+                generated_data.pop("application_deadline", None)
+
+                # If choice fields are empty strings, pop them so model defaults apply
+                for field in ("job_type", "experience_level", "mode"):
+                    if generated_data.get(field) in (None, ""):
+                        generated_data.pop(field, None)
+
+                # Convert FK PK values to *_id format for Django ORM create()
+                fk_aliases = {
+                    "country": "country_id",
+                    "state": "state_id",
+                    "city": "city_id",
+                }
+                for field, alias in fk_aliases.items():
+                    fk_value = generated_data.pop(field, None)
+                    if fk_value is not None:
+                        generated_data[alias] = fk_value
+
+                save_mode = request.data.get("save_mode", "draft")
+                if save_mode not in ("draft", "publish"):
+                    save_mode = "draft"
+
+                job = Job.objects.create(
+                    **generated_data,
+                    job_provider=request.user.get_owner_user(),
+                    created_by=request.user,
+                    created_at=timezone.now(),
+                    status="active" if save_mode == "publish" else "draft",
+                )
+
+                if education_tags_pks:
+                    job.education_tags.set(education_tags_pks)
+        except OrganizationTokenChargeError as exc:
+            logger.error(
+                "Organization token charge failed user=%s feature=job_gen_save err=%s",
+                request.user.id,
+                exc,
+            )
+            return Response(
+                {"success": False, "message": "Unable to process token accounting"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         except JobGenerationAccessDeniedError:
             return Response(
@@ -194,63 +242,6 @@ class JobGenerationSaveView(APIView):
                 {"success": False, "message": "Unable to generate job details"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-        # Extract M2M education_tags PKs before creating the Job
-        education_tags_pks = generated_data.pop("education_tags", [])
-
-        # Remove non-DB fields (display-only or not a Job model field)
-        generated_data.pop("education_tags_meta", None)
-        generated_data.pop("corporate_name", None)
-        generated_data.pop("country_name", None)
-        generated_data.pop("state_name", None)
-        generated_data.pop("city_name", None)
-        generated_data.pop("application_deadline", None)
-
-        # If choice fields are empty strings, pop them so model defaults apply
-        for field in ("job_type", "experience_level", "mode"):
-            if generated_data.get(field) in (None, ""):
-                generated_data.pop(field, None)
-
-        # Convert FK PK values to *_id format for Django ORM create()
-        fk_aliases = {
-            "country": "country_id",
-            "state": "state_id",
-            "city": "city_id",
-        }
-        for field, alias in fk_aliases.items():
-            fk_value = generated_data.pop(field, None)
-            if fk_value is not None:
-                generated_data[alias] = fk_value
-
-        save_mode = request.data.get("save_mode", "draft")
-        if save_mode not in ("draft", "publish"):
-            save_mode = "draft"
-
-        try:
-            deduct_monthly_tokens(
-                request.user,
-                token_usage,
-                feature_code="job_gen_save",
-                request=request,
-            )
-        except Exception as exc:
-            logger.error(
-                "TOKEN_RECONCILE user=%s feature=job_gen_save cost=%s err=%s",
-                request.user.id,
-                token_usage,
-                exc,
-            )
-
-        job = Job.objects.create(
-            **generated_data,
-            job_provider=request.user.get_owner_user(),
-            created_by=request.user,
-            created_at=timezone.now(),
-            status="active" if save_mode == "publish" else "draft",
-        )
-
-        if education_tags_pks:
-            job.education_tags.set(education_tags_pks)
 
         job_serializer = JobSerializer(job, context={"request": request})
 

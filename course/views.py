@@ -97,6 +97,19 @@ class CoursesViewSet(BaseModelViewSet):
                 "created_by": request.user,
                 "created_at": timezone.now(),
             }
+            course_provider = serializer.validated_data.get("course_provider")
+            if (
+                course_provider
+                and not is_admin_user(request.user)
+                and course_provider != request.user.get_owner_user()
+            ):
+                return Response(
+                    {
+                        "success": False,
+                        "message": "You can only create courses for your own organization.",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
             # Auto-set course_provider when school/institute creates their own course
             if (
                 request.user.user_type in ["school_college", "institute"]
@@ -124,6 +137,40 @@ class CoursesViewSet(BaseModelViewSet):
         return Response(
             {"success": False, "message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        course_provider = serializer.validated_data.get("course_provider")
+        if (
+            course_provider
+            and not is_admin_user(request.user)
+            and course_provider != request.user.get_owner_user()
+        ):
+            return Response(
+                {
+                    "success": False,
+                    "message": "You can only update courses for your own organization.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        instance = serializer.save(
+            updated_by=request.user,
+            updated_at=timezone.now(),
+        )
+        response_serializer = self.get_response_serializer(instance)
+        self.log_action(request, instance, "UPDATE")
+        return Response(
+            {
+                "success": True,
+                "message": self.update_message,
+                "data": response_serializer.data,
+            },
+            status=status.HTTP_200_OK,
         )
 
     @action(

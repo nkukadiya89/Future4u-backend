@@ -13,6 +13,7 @@ from course_generation.constants.course_generation_constants import (
 )
 from state.models import State
 from user.models import User
+from user.permissions import is_admin_user
 
 
 class CourseGenerationInputSerializer(serializers.Serializer):
@@ -105,6 +106,16 @@ class CourseGenerationInputSerializer(serializers.Serializer):
                     {
                         "course_provider": (
                             f"Selected user does not belong to the '{provider_type}' type."
+                        )
+                    }
+                )
+        request = self.context.get("request")
+        if course_provider and request and not is_admin_user(request.user):
+            if course_provider != request.user.get_owner_user():
+                raise serializers.ValidationError(
+                    {
+                        "course_provider": (
+                            "You can only generate for your own organization."
                         )
                     }
                 )

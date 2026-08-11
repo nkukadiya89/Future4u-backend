@@ -14,7 +14,7 @@ class CourseGenerationService:
     """Orchestrates AI course detail generation for institute users."""
 
     def generate(
-        self, *, user, validated_input: dict[str, Any]
+        self, *, user, validated_input: dict[str, Any], feature_code=None
     ) -> tuple[dict[str, Any], int]:
         if not can_user_generate_courses(user):
             raise CourseGenerationAccessDeniedError(
@@ -22,7 +22,9 @@ class CourseGenerationService:
             )
 
         payload, token_usage = CourseGenerator.generate(
-            generation_input=validated_input
+            generation_input=validated_input,
+            user=user,
+            feature_code=feature_code,
         )
         return _build_response(payload, validated_input), token_usage
 

@@ -21,7 +21,7 @@ from internship_generation.services.internship_generation_service import (
 )
 from user.permissions import HasPerm
 from utils.throttles import InternshipGenerationRateThrottle
-from utils.token_check import check_token_available, deduct_monthly_tokens
+from utils.token_check import OrganizationTokenChargeError, check_token_available
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,9 @@ class InternshipGenerationAPIView(APIView):
     throttle_classes = [InternshipGenerationRateThrottle]
 
     def post(self, request, *args, **kwargs):
-        serializer = InternshipGenerationInputSerializer(data=request.data)
+        serializer = InternshipGenerationInputSerializer(
+            data=request.data, context={"request": request}
+        )
         if not serializer.is_valid():
             return Response(
                 {"success": False, "message": serializer.errors},
@@ -54,25 +56,22 @@ class InternshipGenerationAPIView(APIView):
             )
 
         try:
-            data, token_usage = InternshipGenerationService().generate(
+            data, _ = InternshipGenerationService().generate(
                 user=request.user,
                 validated_input=serializer.validated_data,
+                feature_code="internship_gen",
             )
-            try:
-                deduct_monthly_tokens(
-                    request.user,
-                    token_usage,
-                    feature_code="internship_gen",
-                    request=request,
-                )
-            except Exception as exc:
-                logger.error(
-                    "TOKEN_RECONCILE user=%s feature=internship_gen cost=%s err=%s",
-                    request.user.id,
-                    token_usage,
-                    exc,
-                )
             return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
+        except OrganizationTokenChargeError as exc:
+            logger.error(
+                "Organization token charge failed user=%s feature=internship_gen err=%s",
+                request.user.id,
+                exc,
+            )
+            return Response(
+                {"success": False, "message": "Unable to process token accounting"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
         except InternshipGenerationAccessDeniedError:
             return Response(
                 {

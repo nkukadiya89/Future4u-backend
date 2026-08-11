@@ -3,24 +3,18 @@ from __future__ import annotations
 from typing import Any
 
 from django.db import transaction
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from utils.pagination import Pagination
+
 from .models import News
 from .permissions import IsAdminUser, IsAuthorOrAdmin
 from .serializers import NewsDetailSerializer, NewsListSerializer, NewsSerializer
 from .services import NewsService
-
-
-class StandardResultsSetPagination:
-    # Lightweight custom pagination placeholder; projects may replace with global pagination classes
-    from rest_framework.pagination import PageNumberPagination
-
-    class P(PageNumberPagination):
-        page_size = 10
-        page_size_query_param = "page_size"
 
 
 class NewsViewSet(viewsets.ModelViewSet):
@@ -35,11 +29,19 @@ class NewsViewSet(viewsets.ModelViewSet):
 
     queryset = News.objects.select_related("created_by").all()
     serializer_class = NewsSerializer
-    pagination_class = StandardResultsSetPagination.P
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    pagination_class = Pagination
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
     search_fields = ["title", "content"]
     ordering_fields = ["published_at", "created_at"]
     ordering = ["-published_at"]
+    filterset_fields = {
+        "is_published": ["exact"],
+        "category": ["exact"],
+    }
 
     def get_serializer_class(self) -> Any:
         if self.action == "list":
