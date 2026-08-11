@@ -18,6 +18,7 @@ from course_generation.prompts.course_generation_prompt import (
 )
 from course_generation.schemas.course_output import CourseGenerationPayload
 from course_generation.services.payload_parser import parse_ai_payload
+from utils.token_check import OrganizationTokenChargeError, charge_ai_usage
 from utils.token_usage import extract_token_usage
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,11 @@ class CourseGenerator:
 
     @classmethod
     def generate(
-        cls, *, generation_input: dict[str, Any]
+        cls,
+        *,
+        generation_input: dict[str, Any],
+        user=None,
+        feature_code=None,
     ) -> tuple[CourseGenerationPayload, int]:
         if not is_configured():
             raise CourseGenerationConfigurationError(
@@ -55,6 +60,8 @@ class CourseGenerator:
                     prompt=prompt,
                     inputs=inputs,
                     llm=llm,
+                    user=user,
+                    feature_code=feature_code,
                 )
             except CourseGenerationValidationError as exc:
                 last_error = exc
@@ -84,11 +91,19 @@ class CourseGenerator:
         prompt,
         inputs: dict[str, str],
         llm,
+        user=None,
+        feature_code=None,
     ) -> tuple[CourseGenerationPayload, int]:
         try:
             chain = prompt | llm
             result = chain.invoke(inputs)
             token_usage = extract_token_usage(result)
+            if user is not None and feature_code is not None and token_usage:
+                charge_ai_usage(
+                    user=user,
+                    feature_code=feature_code,
+                    actual_tokens=token_usage,
+                )
             raw_text = _extract_text_content(result)
             if not raw_text or not raw_text.strip():
                 raise CourseGenerationValidationError(
@@ -121,6 +136,8 @@ class CourseGenerator:
                 error="Validation failed",
                 details=str(exc),
             ) from exc
+        except OrganizationTokenChargeError:
+            raise
         except CourseGenerationValidationError:
             raise
         except Exception as exc:

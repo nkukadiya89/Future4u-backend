@@ -6,6 +6,7 @@ from activity_log.services import log_event
 from subscription.constants import FEATURE_FIELD_MAP
 from subscription.models import FeatureUsage, SubscriptionFeature, UserSubscription
 from user.models import User
+from user_profile.models import OrganizationTokenUsage
 
 FEATURE_NAMES = {
     "ai_chat": "AI Chat",
@@ -16,6 +17,7 @@ FEATURE_NAMES = {
     "course_gen": "Course Generation",
     "internship_gen": "Internship Generation",
     "job_gen": "Job Generation",
+    "job_gen_save": "Job Generation Save",
     "resume_enhance": "Resume Builder",
     "project_gen": "Project Recommendations",
     "monthly_tokens": "Monthly Token Allowance",
@@ -65,6 +67,10 @@ def _resolve_token_owner(user):
             "Organization tokens unavailable. Contact your administrator."
         )
     return owner
+
+
+class OrganizationTokenChargeError(Exception):
+    pass
 
 
 def _is_org_staff_profile(profile):
@@ -155,10 +161,15 @@ def check_token_available(user, feature_code, quantity=1):
         if not profile:
             raise Exception("Profile not found")
 
-        _check_org_monthly_reset(profile, owner.user_type)
+        with transaction.atomic():
+            locked_profile = (
+                type(profile).objects.select_for_update().get(id=profile.id)
+            )
+            _check_org_monthly_reset(locked_profile, owner.user_type)
+            token_limit = locked_profile.token_limit
 
         min_required = MIN_TOKENS_REQUIRED.get(feature_code)
-        if min_required is not None and profile.token_limit < min_required:
+        if min_required is not None and token_limit < min_required:
             raise Exception(
                 f"Insufficient tokens. Need at least {min_required} tokens "
                 f"for {name}. Contact your super admin."
@@ -261,6 +272,45 @@ def get_org_token_usage(profile, user_type):
         "remaining_tokens": remaining_tokens,
         "usage_percentage": usage_percentage,
     }
+
+
+def charge_ai_usage(user, feature_code, actual_tokens):
+    if user.is_superuser or actual_tokens <= 0:
+        return 0
+    if user.user_type not in ORGANIZATION_TYPES:
+        return 0
+
+    try:
+        owner = _resolve_token_owner(user)
+        profile = _get_org_profile(owner)
+        if not profile:
+            return 0
+
+        with transaction.atomic():
+            locked_profile = (
+                type(profile).objects.select_for_update().get(id=profile.id)
+            )
+            _check_org_monthly_reset(locked_profile, owner.user_type)
+
+            before = locked_profile.token_limit or 0
+            deduction = min(actual_tokens, before)
+            balance_after = before - deduction
+
+            type(profile).objects.filter(id=locked_profile.id).update(
+                token_limit=F("token_limit") - deduction
+            )
+            OrganizationTokenUsage.objects.create(
+                organization_id=owner.id,
+                user=user,
+                feature_code=feature_code,
+                tokens_used=deduction,
+                balance_after=balance_after,
+            )
+            return deduction
+    except Exception as exc:
+        raise OrganizationTokenChargeError(
+            f"Failed to charge organization token pool for {feature_code}"
+        ) from exc
 
 
 def deduct_monthly_tokens(user, actual_tokens, feature_code=None, request=None):

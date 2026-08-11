@@ -21,7 +21,7 @@ from job_generation.serializers.job_generation_input import JobGenerationInputSe
 from job_generation.services.job_generation_service import JobGenerationService
 from user.permissions import HasPerm
 from utils.throttles import JobGenerationRateThrottle
-from utils.token_check import check_token_available, deduct_monthly_tokens
+from utils.token_check import OrganizationTokenChargeError, check_token_available
 
 logger = logging.getLogger(__name__)
 
@@ -54,28 +54,24 @@ class JobGenerationAPIView(APIView):
                 status=status.HTTP_402_PAYMENT_REQUIRED,
             )
 
-        token_usage = 0
         try:
-            data, token_usage = JobGenerationService().generate(
+            data, _ = JobGenerationService().generate(
                 user=request.user,
                 validated_input=serializer.validated_data,
+                feature_code="job_gen",
             )
-            try:
-                deduct_monthly_tokens(
-                    request.user,
-                    token_usage,
-                    feature_code="job_gen",
-                    request=request,
-                )
-            except Exception as exc:
-                logger.error(
-                    "TOKEN_RECONCILE user=%s feature=job_gen cost=%s err=%s",
-                    request.user.id,
-                    token_usage,
-                    exc,
-                )
             return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
 
+        except OrganizationTokenChargeError as exc:
+            logger.error(
+                "Organization token charge failed user=%s feature=job_gen err=%s",
+                request.user.id,
+                exc,
+            )
+            return Response(
+                {"success": False, "message": "Unable to process token accounting"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
         except JobGenerationAccessDeniedError:
             return Response(
                 {
@@ -149,11 +145,21 @@ class JobGenerationSaveView(APIView):
                 status=status.HTTP_402_PAYMENT_REQUIRED,
             )
 
-        token_usage = 0
         try:
-            generated_data, token_usage = JobGenerationService().generate(
+            generated_data, _ = JobGenerationService().generate(
                 user=request.user,
                 validated_input=serializer.validated_data,
+                feature_code="job_gen_save",
+            )
+        except OrganizationTokenChargeError as exc:
+            logger.error(
+                "Organization token charge failed user=%s feature=job_gen_save err=%s",
+                request.user.id,
+                exc,
+            )
+            return Response(
+                {"success": False, "message": "Unable to process token accounting"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         except JobGenerationAccessDeniedError:
             return Response(
@@ -225,21 +231,6 @@ class JobGenerationSaveView(APIView):
         save_mode = request.data.get("save_mode", "draft")
         if save_mode not in ("draft", "publish"):
             save_mode = "draft"
-
-        try:
-            deduct_monthly_tokens(
-                request.user,
-                token_usage,
-                feature_code="job_gen_save",
-                request=request,
-            )
-        except Exception as exc:
-            logger.error(
-                "TOKEN_RECONCILE user=%s feature=job_gen_save cost=%s err=%s",
-                request.user.id,
-                token_usage,
-                exc,
-            )
 
         job = Job.objects.create(
             **generated_data,

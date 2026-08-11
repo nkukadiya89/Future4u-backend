@@ -778,3 +778,36 @@ class CorporateGallery(BaseModule):
 
     def upload_gallery_image(self, image):
         _upload_organization_gallery_image(self, image, "CorporateGallery/")
+
+
+class OrganizationTokenUsage(models.Model):
+    organization = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="organization_token_usage_org",
+        help_text="Organization owner whose token pool was charged.",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="organization_token_usage_user",
+        help_text="User whose generation consumed the quota (owner or staff).",
+    )
+    feature_code = models.CharField(max_length=50)
+    tokens_used = models.IntegerField(default=0)
+    balance_after = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return (
+            f"OrganizationTokenUsage<{self.id} org={self.organization_id} "
+            f"feature={self.feature_code} tokens={self.tokens_used}>"
+        )
+
+    class Meta:
+        db_table = "organization_token_usage"
+        ordering = ["-created_at", "-id"]
+        indexes = [
+            models.Index(fields=["organization", "created_at"]),
+            models.Index(fields=["user", "created_at"]),
+        ]

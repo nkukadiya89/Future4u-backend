@@ -11,6 +11,7 @@ from user_profile.models import (
     ChildProfile,
     CorporateProfile,
     InstituteProfile,
+    OrganizationTokenUsage,
     ParentProfile,
     ProfessionalProfile,
     SchoolCollegeProfile,
@@ -20,6 +21,40 @@ from user_profile.models import (
 from utils.token_check import _check_org_monthly_reset
 
 admin.site.register(BusinessSetting)
+
+
+@admin.register(OrganizationTokenUsage)
+class OrganizationTokenUsageAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "organization",
+        "user",
+        "feature_code",
+        "tokens_used",
+        "balance_after",
+        "created_at",
+    )
+    list_filter = ("feature_code",)
+    search_fields = ("organization__email", "user__email", "feature_code")
+    readonly_fields = (
+        "organization",
+        "user",
+        "feature_code",
+        "tokens_used",
+        "balance_after",
+        "created_at",
+    )
+    raw_id_fields = ("organization", "user")
+    date_hierarchy = "created_at"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class MultiSelectWidget(forms.CheckboxSelectMultiple):

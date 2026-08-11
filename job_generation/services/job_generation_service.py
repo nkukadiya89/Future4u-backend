@@ -15,7 +15,7 @@ class JobGenerationService:
     """Orchestrates AI job posting generation for institute and corporate users."""
 
     def generate(
-        self, *, user, validated_input: dict[str, Any]
+        self, *, user, validated_input: dict[str, Any], feature_code=None
     ) -> tuple[dict[str, Any], int]:
         if not can_user_generate_jobs(user):
             raise JobGenerationAccessDeniedError(
@@ -24,7 +24,7 @@ class JobGenerationService:
 
         owner = user.get_owner_user()
         company = getattr(owner, "corporate_profile", None) if owner else None
-        if not company or company.deleted:
+        if (not company or company.deleted) and not user.is_superuser:
             from job_generation.exceptions import JobGenerationValidationError
 
             raise JobGenerationValidationError(
@@ -38,12 +38,16 @@ class JobGenerationService:
 
         generation_input = {
             **validated_input,
-            "company_name": company.company_name or "",
-            "company_website": company.website or "",
-            "company_about_us": company.about_us or "",
+            "company_name": company.company_name if company else "",
+            "company_website": company.website if company else "",
+            "company_about_us": company.about_us if company else "",
         }
 
-        payload, token_usage = JobGenerator.generate(generation_input=generation_input)
+        payload, token_usage = JobGenerator.generate(
+            generation_input=generation_input,
+            user=user,
+            feature_code=feature_code,
+        )
         return _build_response(payload, validated_input, company), token_usage
 
 
