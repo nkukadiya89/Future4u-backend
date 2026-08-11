@@ -32,8 +32,11 @@ class BulkUserUploadService:
     ]
 
     @classmethod
-    def get_required_columns(cls, user_type):
+    def get_required_columns(cls, user_type, skip_referral=False):
         required_columns = cls.REQUIRED_COLUMNS.copy()
+
+        if skip_referral and "Referral Code" in required_columns:
+            required_columns.remove("Referral Code")
 
         if user_type == User.Role.STUDENT:
             required_columns += StudentBulkUpload.REQUIRED_COLUMNS
@@ -54,7 +57,13 @@ class BulkUserUploadService:
 
     @classmethod
     def process(
-        cls, file, request_user, user_type, forced_referred_by=None, skip_profile_fields=False
+        cls,
+        file,
+        request_user,
+        user_type,
+        forced_referred_by=None,
+        skip_profile_fields=False,
+        skip_referral=False,
     ):
         df = cls._read_file(file)
 
@@ -63,7 +72,9 @@ class BulkUserUploadService:
             raise ValidationError(
                 f"Invalid user_type. Allowed: {', '.join(valid_roles)}"
             )
-        required_columns = cls.get_required_columns(user_type)
+        required_columns = cls.get_required_columns(
+            user_type, skip_referral=skip_referral
+        )
 
         profile_service = None
         profile_masters = {}
@@ -292,7 +303,9 @@ class BulkUserUploadService:
                     "" if pd.isna(referral_value) else str(referral_value).strip()
                 )
                 referred_by = None
-                if forced_referred_by:
+                if skip_referral:
+                    referred_by = None
+                elif forced_referred_by:
                     referred_by = forced_referred_by
                 elif (
                     user_type in [User.Role.STUDENT, User.Role.PROFESSIONAL]

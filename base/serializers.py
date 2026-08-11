@@ -1,5 +1,6 @@
-from django.utils import timezone as dj_tz
 from rest_framework import serializers
+
+from utils.datetime_formatter import format_datetime
 
 
 class AuditFieldsMixin(serializers.Serializer):
@@ -11,7 +12,7 @@ class AuditFieldsMixin(serializers.Serializer):
 
     @staticmethod
     def format_audit_datetime(value):
-        return dj_tz.localtime(value).strftime("%Y-%m-%d %H:%M:%S") if value else None
+        return format_datetime(value)
 
 
 class SoftDeleteMixin:

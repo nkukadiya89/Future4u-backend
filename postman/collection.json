@@ -8524,7 +8524,7 @@
                 }
               ]
             },
-            "description": "School/College/Institute: bulk create student users.\n\nPOST /organization-students/bulk-upload/\n\nMultipart form-data: `file` (CSV, XLS, or XLSX).\n\nRequired CSV columns: First Name, Last Name, Email, Phone, Referral Code, Country, State, City\nOptional: Address, Medium, Education Level, Stream, Language\n\nAll students are auto-linked to the uploading School/College user (created_by + referred_by).\nPassword setup link emailed per user. Uploader receives summary email when processing completes.\n\n200 response: success, message (processing started)\n400 response: success, message (validation error)"
+            "description": "School/College/Institute: bulk create student users.\n\nPOST /organization-students/bulk-upload/\n\nMultipart form-data: `file` (CSV, XLS, or XLSX).\n\nRequired CSV columns: First Name, Last Name, Email, Phone, Country, State, City (Referral Code NOT required in this flow)\nOptional: Address, Medium, Education Level, Stream, Language\n\nAll students are auto-linked to the uploading School/College user via created_by only (referred_by is not set - no referral relationship in this flow).\nPassword setup link emailed per user. Uploader receives summary email when processing completes.\n\n200 response: success, message (processing started)\n400 response: success, message (validation error)"
           },
           "response": [],
           "event": [
@@ -8548,7 +8548,7 @@
     },
     {
       "name": "Organization Professionals",
-      "description": "Corporate-managed working professionals.\n\nAll endpoints require a corporate Bearer token.\n\nSingle create (POST) and bulk upload (POST /bulk-upload/) do NOT accept professional profile fields (years_of_experience, employment_type) - the professional completes their own profile after onboarding. Bulk upload forces referred_by to the uploading corporate.",
+      "description": "Corporate-managed working professionals.\n\nAll endpoints require a corporate Bearer token.\n\nSingle create (POST) and bulk upload (POST /bulk-upload/) do NOT accept professional profile fields (years_of_experience, employment_type) - the professional completes their own profile after onboarding. Neither flow sets referred_by - professionals are linked to the corporate via created_by only (no referral relationship).",
       "item": [
         {
           "name": "list organization professionals (GET)",
@@ -8680,7 +8680,7 @@
                 ""
               ]
             },
-            "description": "Bulk upload working professionals from a CSV/XLS/XLSX file.\n\nPOST /organization-professionals/bulk-upload/\n\nMultipart form-data: `file` (required).\n\nRequired columns: First Name, Last Name, Email, Phone, Referral Code, Country, State, City\nOptional columns: Address, About Me\n\nThe Years of Experience / Employment Type columns are ignored - the corporate flow skips professional profile fields. referred_by is forced to the authenticated corporate.\n\nProcessing is async (Celery). The response returns immediately:\n200 response: success, message ('Bulk Upload Started...')\n\nA summary email is sent to the corporate with inserted/failed/skipped counts and per-row errors.",
+            "description": "Bulk upload working professionals from a CSV/XLS/XLSX file.\n\nPOST /organization-professionals/bulk-upload/\n\nMultipart form-data: `file` (required).\n\nRequired columns: First Name, Last Name, Email, Phone, Country, State, City (Referral Code NOT required in this flow)\nOptional columns: Address, About Me\n\nThe Years of Experience / Employment Type columns are ignored - the corporate flow skips professional profile fields. referred_by is not set (no referral relationship) - professionals are linked to the corporate via created_by only.\n\nProcessing is async (Celery). The response returns immediately:\n200 response: success, message ('Bulk Upload Started...')\n\nA summary email is sent to the corporate with inserted/failed/skipped counts and per-row errors.",
             "body": {
               "mode": "formdata",
               "formdata": [
