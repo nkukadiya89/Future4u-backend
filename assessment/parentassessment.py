@@ -16,6 +16,7 @@ from assessment.serializers import (
 from subscription.services.usage import consume_feature
 from user.permissions import IsIndividualUser
 from user_profile.models import ChildProfile
+from utils.datetime_formatter import format_datetime
 from utils.pagination import Pagination
 from utils.token_check import check_token_available
 
@@ -329,7 +330,7 @@ class ParentAssessmentViewSet(viewsets.ModelViewSet):
                         "current_screen": assessment.current_screen,
                         "progress_percentage": progress,
                         "is_completed": assessment.is_completed,
-                        "created_at": assessment.created_at,
+                        "created_at": format_datetime(assessment.created_at),
                     }
                 )
 

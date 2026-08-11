@@ -16,6 +16,7 @@ from user.admin_user_serializers import BulkUserUploadSerializer
 from user.models import User
 from user.services.bulk_user_upload import BulkUserUploadService
 from user.tasks import bulk_upload_user_task
+from utils.datetime_formatter import format_datetime
 from utils.pagination import Pagination
 from .organization_professional_serializers import (
     OrganizationProfessionalCreateSerializer,
@@ -67,13 +68,16 @@ class OrganizationProfessionalViewSet(BaseModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        queryset = User.objects.filter(
+            Q(created_by=user) | Q(professional_profile__referred_by=user),
+            user_type=User.Role.PROFESSIONAL,
+            deleted=False,
+        )
+        status_filter = self.request.query_params.get("status")
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
         return (
-            User.objects.filter(
-                Q(created_by=user) | Q(professional_profile__referred_by=user),
-                user_type=User.Role.PROFESSIONAL,
-                deleted=False,
-            )
-            .select_related(
+            queryset.select_related(
                 "country",
                 "states",
                 "city",
@@ -118,7 +122,7 @@ class OrganizationProfessionalViewSet(BaseModelViewSet):
                     "professional_id": professional.id,
                     "must_change_password": True,
                     "created_by": professional.created_by_id,
-                    "created_at": professional.created_at,
+                    "created_at": format_datetime(professional.created_at),
                 },
                 status=status.HTTP_201_CREATED,
             )
@@ -144,7 +148,7 @@ class OrganizationProfessionalViewSet(BaseModelViewSet):
 
             df = BulkUserUploadService._read_file(uploaded_file)
             required_columns = BulkUserUploadService.get_required_columns(
-                User.Role.PROFESSIONAL
+                User.Role.PROFESSIONAL, skip_referral=True
             )
             BulkUserUploadService._validate_headers(df, required_columns)
 
@@ -160,7 +164,7 @@ class OrganizationProfessionalViewSet(BaseModelViewSet):
                 tmp.name,
                 request.user.id,
                 User.Role.PROFESSIONAL,
-                forced_referred_by=request.user.id,
+                skip_referral=True,
                 skip_profile_fields=True,
             )
 

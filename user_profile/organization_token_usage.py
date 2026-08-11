@@ -8,8 +8,13 @@ from rest_framework.response import Response
 
 from user.models import User
 from user.permissions import IsAdminOrProvider, is_admin_user
+from utils.datetime_formatter import format_datetime
+from utils.token_check import (
+    _check_org_monthly_reset,
+    _get_org_profile,
+    get_org_token_usage,
+)
 from user_profile.models import OrganizationTokenUsage
-from utils.token_check import _get_org_profile, get_org_token_usage
 
 
 class OrganizationTokenUsageSerializer(serializers.Serializer):
@@ -129,7 +134,7 @@ def _get_staff_usage(owner, from_date=None, to_date=None):
                 "tokens_used": total["tokens_used"] or 0,
                 "requests": total["requests"],
                 "last_activity_at": (
-                    last_activity.isoformat() if last_activity else None
+                    format_datetime(last_activity) if last_activity else None
                 ),
                 "features": features,
             }

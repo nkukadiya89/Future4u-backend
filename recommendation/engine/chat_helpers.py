@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from utils.datetime_formatter import format_datetime
+
 # Shared constants used by profile-specific chat services.
 MAX_QUESTION_LENGTH = 500
 CHAT_MAX_TOKENS = 450
@@ -65,7 +67,7 @@ def serialize_messages(session) -> list[dict[str, Any]]:
         {
             "role": message.role,
             "content": message.content,
-            "created_at": message.created_at,
+            "created_at": format_datetime(message.created_at),
         }
         for message in reversed(list(messages))
     ]
