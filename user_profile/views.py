@@ -1004,6 +1004,30 @@ class ProfessionalProfileViewSet(ModelViewSet):
 
             if country_id:
                 queryset = queryset.filter(user__country_id=country_id)
+            corporate_id = request.query_params.get("corporate")
+            if corporate_id:
+                try:
+                    corporate_id = int(corporate_id)
+                except (TypeError, ValueError):
+                    return Response(
+                        {
+                            "success": False,
+                            "message": "corporate must be a valid integer.",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                corporate_user_id = (
+                    CorporateProfile.objects.filter(id=corporate_id, deleted=False)
+                    .values_list("user_id", flat=True)
+                    .first()
+                )
+                if corporate_user_id:
+                    queryset = queryset.filter(
+                        Q(user__created_by_id=corporate_user_id)
+                        | Q(referred_by_id=corporate_user_id)
+                    )
+                else:
+                    queryset = queryset.none()
 
             queryset = self.filter_queryset(queryset)
 

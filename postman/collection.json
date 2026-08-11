@@ -9099,6 +9099,54 @@
             },
             "description": "Per-staff AI token consumption, grouped by organization owner.\n\nAuthentication determines the dataset (same as /api/org-token-usage/):\n- Super admin: all organizations by default; optional ?user_type / ?search narrow it.\n- Org owner: always their own organization only.\n- Org staff / students / parents / professionals: forbidden (403).\n\nOptional query params:\n- ?user_type=school_college|institute|corporate (super admin)\n- ?from_date=YYYY-MM-DD / ?to_date=YYYY-MM-DD (consumption window)\n- ?search=name (organization / owner)\n- ?page=1\n\nResponse: list of groups: { owner: {id, organization, user_type}, staff: [ {user, user_name, user_email, tokens_used, requests, last_activity_at, features[]} ] }.\nFeatures: feature_code, tokens, requests. Groups sorted by total tokens used, descending."
           }
+        },
+        {
+          "name": "Usage Rows (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/org-token-usage/usage-rows/?from_date=2026-08-01&to_date=2026-08-06&page=1&pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "org-token-usage",
+                "usage-rows"
+              ],
+              "query": [
+                {
+                  "key": "from_date",
+                  "value": "2026-08-01",
+                  "description": "Optional. Only rows on or after this date (YYYY-MM-DD)."
+                },
+                {
+                  "key": "to_date",
+                  "value": "2026-08-06",
+                  "description": "Optional. Only rows on or before this date (YYYY-MM-DD)."
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Raw OrganizationTokenUsage ledger rows (newest first, paginated).\n\nAuthentication determines the dataset (same as /api/org-token-usage/):\n- Super admin: all organizations' rows; each row carries organization + user ids.\n- Org owner: own organization's rows only.\n- Org staff / students / parents / professionals: forbidden (403).\n\nOptional query params:\n- ?from_date=YYYY-MM-DD / ?to_date=YYYY-MM-DD (row window)\n- ?page=1 / ?pagesize=10\n\nResponse: { count, data: [ { id, organization, user, feature_code, tokens_used, balance_after, created_at } ] }."
+          }
         }
       ]
     },
@@ -9251,7 +9299,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/professional-profile/",
+              "raw": "{{base_url}}/api/professional-profile/?page=1&pagesize=10&corporate=169",
               "host": [
                 "{{base_url}}"
               ],
@@ -9259,8 +9307,24 @@
                 "api",
                 "professional-profile",
                 ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "corporate",
+                  "value": "169",
+                  "description": "Optional. CorporateProfile id. Super admin only: resolves to the corporate user and returns professionals linked via created_by OR referred_by. Unknown id -> empty list; non-integer -> 400."
+                }
               ]
-            }
+            },
+            "description": "List working professional profiles.\n\nAuthentication determines the dataset (super-admin branch):\n- Super admin: all professionals by default; ?corporate=<CorporateProfile id> narrows to that corporate's professionals (created_by OR referred_by).\n- Corporate role: always their own professionals only (corporate param is ignored).\n- Other roles: own profile only.\n\nOptional query params:\n- ?corporate=<CorporateProfile id> (super admin)\n- ?status / ?city / ?state / ?country (existing manual filters)\n- ?page=1 / ?pagesize=10\n\nResponse: { count, next, previous, results: { success, data: [...] } }."
           },
           "response": []
         },
@@ -21649,6 +21713,59 @@
             },
             "description": "Generates 3 AI-powered portfolio project ideas using assessment_id. Resolves domain and domain_category from the assessment."
           }
+        }
+      ]
+    },
+    {
+      "name": "news",
+      "item": [
+        {
+          "name": "list (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/news/?page=1&pagesize=10&is_published=false",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "news",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                },
+                {
+                  "key": "is_published",
+                  "value": "false",
+                  "description": "Optional. Filter by publication status: true | false. Omit to return all."
+                },
+                {
+                  "key": "category",
+                  "value": "",
+                  "description": "Optional. Exact match on news category."
+                }
+              ]
+            },
+            "description": "List news articles (authenticated).\n\nQuery params:\n- ?is_published=true|false — filter by publication status\n- ?category=<category> — exact category filter\n- ?page=1 / ?pagesize=10 — pagination (pagesize honored)\n\nResponse: { count, next, previous, results: [ { id, title, short_description, content, category, image, is_published, published_at, highlights } ] }."
+          },
+          "response": []
         }
       ]
     }
