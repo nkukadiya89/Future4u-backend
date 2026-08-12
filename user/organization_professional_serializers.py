@@ -120,9 +120,6 @@ class OrganizationProfessionalCreateSerializer(BaseModelSerializer):
 
         professional.created_by = creator
         professional.save(update_fields=["created_by"])
-
-        # Profile row is created without experience/employment fields; the
-        # professional fills in their own profile details after onboarding.
         
         ProfessionalProfile.objects.create(user=professional)
         if profile_image_file:

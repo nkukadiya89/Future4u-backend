@@ -13,6 +13,7 @@ from activity_log.services import log_event
 from common.master_view import BaseModelViewSet
 from email_utils.send_email import send_activation_password_setup_email
 from user.models import User
+from utils.datetime_formatter import format_datetime
 from utils.pagination import Pagination
 
 from .organization_staff_serializers import (
@@ -110,7 +111,7 @@ class OrganizationStaffViewSet(BaseModelViewSet):
                     "is_org_staff": True,
                     "must_change_password": True,
                     "created_by": staff.created_by_id,
-                    "created_at": staff.created_at,
+                    "created_at": format_datetime(staff.created_at),
                     "profile_image": staff.profile_image,
                 },
                 status=status.HTTP_201_CREATED,

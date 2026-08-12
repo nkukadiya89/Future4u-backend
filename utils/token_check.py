@@ -6,6 +6,7 @@ from activity_log.services import log_event
 from subscription.constants import FEATURE_FIELD_MAP
 from subscription.models import FeatureUsage, SubscriptionFeature, UserSubscription
 from user.models import User
+from user_profile.models import DEFAULT_ORG_TOKEN_LIMITS, OrganizationTokenUsage
 
 FEATURE_NAMES = {
     "ai_chat": "AI Chat",
@@ -16,6 +17,7 @@ FEATURE_NAMES = {
     "course_gen": "Course Generation",
     "internship_gen": "Internship Generation",
     "job_gen": "Job Generation",
+    "job_gen_save": "Job Generation Save",
     "resume_enhance": "Resume Builder",
     "project_gen": "Project Recommendations",
     "monthly_tokens": "Monthly Token Allowance",
@@ -36,13 +38,6 @@ ORGANIZATION_TYPES = (
     User.Role.INSTITUTE,
     User.Role.CORPORATE,
 )
-
-# Default monthly allowance per org type; per-user overrides use extra_token_limit.
-DEFAULT_ORG_TOKEN_LIMITS = {
-    User.Role.INSTITUTE: 20000,
-    User.Role.CORPORATE: 20000,
-    User.Role.SCHOOL_COLLEGE: 15000,
-}
 
 
 def _get_org_profile(user):
@@ -67,6 +62,10 @@ def _resolve_token_owner(user):
     return owner
 
 
+class OrganizationTokenChargeError(Exception):
+    pass
+
+
 def _is_org_staff_profile(profile):
     """Return True when the profile belongs to an organization staff user."""
     return bool(getattr(getattr(profile, "user", None), "is_org_staff", False))
@@ -77,7 +76,9 @@ def _org_base_token_limit(profile, user_type):
     Staff always get 0 — they never auto-receive the org default."""
     if _is_org_staff_profile(profile):
         return 0
-    return DEFAULT_ORG_TOKEN_LIMITS.get(user_type, 20000)
+    return DEFAULT_ORG_TOKEN_LIMITS.get(
+        user_type, DEFAULT_ORG_TOKEN_LIMITS[User.Role.INSTITUTE]
+    )
 
 
 def _check_org_monthly_reset(profile, user_type):
@@ -121,6 +122,45 @@ def _check_org_monthly_reset(profile, user_type):
         )
 
 
+def adjust_extra_tokens(profile, new_extra_tokens, actor, *, request=None):
+    with transaction.atomic():
+        locked = type(profile).objects.select_for_update().get(id=profile.id)
+        _check_org_monthly_reset(locked, locked.user.user_type)
+
+        old = locked.extra_token_limit or 0
+        before_token = locked.token_limit or 0
+        increase = new_extra_tokens - old
+
+        locked.extra_token_limit = new_extra_tokens
+        if increase > 0:
+            locked.token_limit = (locked.token_limit or 0) + increase
+        locked.save(update_fields=["extra_token_limit", "token_limit"])
+
+        profile.extra_token_limit = locked.extra_token_limit
+        profile.token_limit = locked.token_limit
+        profile.last_token_reset_at = locked.last_token_reset_at
+
+        log_event(
+            event="user.tokens_updated",
+            description=(
+                f"Set extra tokens to {new_extra_tokens} for "
+                f"{locked.user.email}"
+            ),
+            user=actor,
+            entity_type="user",
+            entity_id=locked.user_id,
+            metadata={
+                "previous_extra": old,
+                "new_extra": new_extra_tokens,
+                "token_increase": increase,
+                "token_limit_before": before_token,
+                "token_limit_after": locked.token_limit,
+            },
+            request=request,
+        )
+    return locked
+
+
 def _reset_subscription_monthly_tokens(user, user_sub):
     """Reset monthly token usage for subscription users if 30+ days have passed.
     Uses last_reset_at on UserSubscription. Also resets all feature-specific usage
@@ -155,10 +195,15 @@ def check_token_available(user, feature_code, quantity=1):
         if not profile:
             raise Exception("Profile not found")
 
-        _check_org_monthly_reset(profile, owner.user_type)
+        with transaction.atomic():
+            locked_profile = (
+                type(profile).objects.select_for_update().get(id=profile.id)
+            )
+            _check_org_monthly_reset(locked_profile, owner.user_type)
+            token_limit = locked_profile.token_limit
 
         min_required = MIN_TOKENS_REQUIRED.get(feature_code)
-        if min_required is not None and profile.token_limit < min_required:
+        if min_required is not None and token_limit < min_required:
             raise Exception(
                 f"Insufficient tokens. Need at least {min_required} tokens "
                 f"for {name}. Contact your super admin."
@@ -261,6 +306,45 @@ def get_org_token_usage(profile, user_type):
         "remaining_tokens": remaining_tokens,
         "usage_percentage": usage_percentage,
     }
+
+
+def charge_ai_usage(user, feature_code, actual_tokens):
+    if user.is_superuser or actual_tokens <= 0:
+        return 0
+    if user.user_type not in ORGANIZATION_TYPES:
+        return 0
+
+    try:
+        owner = _resolve_token_owner(user)
+        profile = _get_org_profile(owner)
+        if not profile:
+            return 0
+
+        with transaction.atomic():
+            locked_profile = (
+                type(profile).objects.select_for_update().get(id=profile.id)
+            )
+            _check_org_monthly_reset(locked_profile, owner.user_type)
+
+            before = locked_profile.token_limit or 0
+            deduction = min(actual_tokens, before)
+            balance_after = before - deduction
+
+            type(profile).objects.filter(id=locked_profile.id).update(
+                token_limit=F("token_limit") - deduction
+            )
+            OrganizationTokenUsage.objects.create(
+                organization_id=owner.id,
+                user=user,
+                feature_code=feature_code,
+                tokens_used=deduction,
+                balance_after=balance_after,
+            )
+            return deduction
+    except Exception as exc:
+        raise OrganizationTokenChargeError(
+            f"Failed to charge organization token pool for {feature_code}"
+        ) from exc
 
 
 def deduct_monthly_tokens(user, actual_tokens, feature_code=None, request=None):

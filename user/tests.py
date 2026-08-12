@@ -537,7 +537,9 @@ class OrganizationProfessionalAPITests(TestCase):
         self.assertEqual(args[0].split(".")[-1], "csv")
         self.assertEqual(args[1], self.corporate.id)
         self.assertEqual(args[2], User.Role.PROFESSIONAL)
-        self.assertEqual(kwargs["forced_referred_by"], self.corporate.id)
+        self.assertTrue(kwargs["skip_referral"])
+        self.assertTrue(kwargs["skip_profile_fields"])
+        self.assertNotIn("forced_referred_by", kwargs)
 
     def test_bulk_upload_missing_columns_rejected(self):
         self._auth(self.corporate)

@@ -12,6 +12,7 @@ from internship_generation.constants.internship_generation_constants import (
 from internship_job.models import Internship
 from state.models import State
 from user.models import User
+from user.permissions import is_admin_user
 
 
 class InternshipGenerationInputSerializer(serializers.Serializer):
@@ -119,6 +120,16 @@ class InternshipGenerationInputSerializer(serializers.Serializer):
                     {
                         "internship_provider": (
                             f"Selected user does not belong to the '{provider_type}' type."
+                        )
+                    }
+                )
+        request = self.context.get("request")
+        if internship_provider and request and not is_admin_user(request.user):
+            if internship_provider != request.user.get_owner_user():
+                raise serializers.ValidationError(
+                    {
+                        "internship_provider": (
+                            "You can only generate for your own organization."
                         )
                     }
                 )

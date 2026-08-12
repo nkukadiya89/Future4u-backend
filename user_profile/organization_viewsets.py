@@ -10,10 +10,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from activity_log.services import log_event
 from common.master_view import BaseModelViewSet
 from utils.aws_file_upload import delete_uploaded_file
-from utils.token_check import _check_org_monthly_reset
+from utils.token_check import adjust_extra_tokens
 
 
 class OrganizationProfileViewSet(BaseModelViewSet):
@@ -239,55 +238,23 @@ class OrganizationProfileViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        with transaction.atomic():
-            profile = (
-                self.profile_model.objects.select_for_update().get(id=profile.id)
-            )
-            _check_org_monthly_reset(profile, profile.user.user_type)
+        locked = adjust_extra_tokens(
+            profile,
+            extra_token_limit,
+            request.user,
+            request=request,
+        )
+        locked.updated_by = request.user
+        locked.updated_at = now()
+        locked.save(update_fields=["updated_by", "updated_at"])
 
-            old_extra = profile.extra_token_limit or 0
-            before_token = profile.token_limit or 0
-            increase = extra_token_limit - old_extra
-
-            profile.extra_token_limit = extra_token_limit
-            if increase > 0:
-                profile.token_limit = (profile.token_limit or 0) + increase
-            profile.updated_by = request.user
-            profile.updated_at = now()
-            profile.save(
-                update_fields=[
-                    "extra_token_limit",
-                    "token_limit",
-                    "updated_by",
-                    "updated_at",
-                ]
-            )
-            log_event(
-                event="user.tokens_updated",
-                description=(
-                    f"Set extra tokens to {extra_token_limit} for "
-                    f"{profile.user.email}"
-                ),
-                user=request.user,
-                entity_type="user",
-                entity_id=profile.user_id,
-                metadata={
-                    "previous_extra": old_extra,
-                    "new_extra": extra_token_limit,
-                    "token_increase": increase,
-                    "token_limit_before": before_token,
-                    "token_limit_after": profile.token_limit,
-                },
-                request=request,
-            )
-
-        serializer = self.read_serializer_class(profile)
+        serializer = self.read_serializer_class(locked)
         data = serializer.data
         data.update(
             {
-                "extra_token_limit": profile.extra_token_limit,
-                "token_limit": profile.token_limit,
-                "last_token_reset_at": profile.last_token_reset_at,
+                "extra_token_limit": locked.extra_token_limit,
+                "token_limit": locked.token_limit,
+                "last_token_reset_at": locked.last_token_reset_at,
             }
         )
         return Response(

@@ -14,7 +14,7 @@ class InternshipGenerationService:
     """Orchestrates AI internship detail generation for institute and corporate users."""
 
     def generate(
-        self, *, user, validated_input: dict[str, Any]
+        self, *, user, validated_input: dict[str, Any], feature_code=None
     ) -> tuple[dict[str, Any], int]:
         if not can_user_generate_internships(user):
             raise InternshipGenerationAccessDeniedError(
@@ -22,7 +22,9 @@ class InternshipGenerationService:
             )
 
         payload, token_usage = InternshipGenerator.generate(
-            generation_input=validated_input
+            generation_input=validated_input,
+            user=user,
+            feature_code=feature_code,
         )
         return _build_response(payload, validated_input), token_usage
 

@@ -40,6 +40,7 @@ from user.models import User
 from user.permissions import IsAdminUser
 from user.services.bulk_user_upload import BulkUserUploadService
 from user.tasks import bulk_upload_user_task
+from utils.datetime_formatter import format_datetime
 from user_profile.models import (
     CorporateProfile,
     InstituteProfile,
@@ -124,7 +125,7 @@ class BaseAdminProfileViewSet(ModelViewSet):
                     "user_type": user.user_type,
                     "must_change_password": True,
                     "created_by": user.created_by_id,
-                    "created_at": user.created_at,
+                    "created_at": format_datetime(user.created_at),
                 },
                 status=status.HTTP_201_CREATED,
             )

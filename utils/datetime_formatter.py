@@ -12,7 +12,6 @@ def format_datetime(value):
             value = timezone.localtime(value)
 
     if isinstance(value, datetime):
-        # return value.strftime("%d-%m-%Y %I:%M %p")
-        return value.strftime("%d-%m-%Y %H:%M")
+        return value.strftime("%Y-%m-%d %H:%M:%S")
 
     return value

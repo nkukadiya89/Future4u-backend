@@ -19,7 +19,7 @@ from course_generation.serializers.course_generation_input import (
 from course_generation.services.course_generation_service import CourseGenerationService
 from user.permissions import HasPerm
 from utils.throttles import CourseGenerationRateThrottle
-from utils.token_check import check_token_available, deduct_monthly_tokens
+from utils.token_check import OrganizationTokenChargeError, check_token_available
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,9 @@ class CourseGenerationAPIView(APIView):
     throttle_classes = [CourseGenerationRateThrottle]
 
     def post(self, request, *args, **kwargs):
-        serializer = CourseGenerationInputSerializer(data=request.data)
+        serializer = CourseGenerationInputSerializer(
+            data=request.data, context={"request": request}
+        )
         if not serializer.is_valid():
             return Response(
                 {"success": False, "message": serializer.errors},
@@ -52,25 +54,22 @@ class CourseGenerationAPIView(APIView):
             )
 
         try:
-            data, token_usage = CourseGenerationService().generate(
+            data, _ = CourseGenerationService().generate(
                 user=request.user,
                 validated_input=serializer.validated_data,
+                feature_code="course_gen",
             )
-            try:
-                deduct_monthly_tokens(
-                    request.user,
-                    token_usage,
-                    feature_code="course_gen",
-                    request=request,
-                )
-            except Exception as exc:
-                logger.error(
-                    "TOKEN_RECONCILE user=%s feature=course_gen cost=%s err=%s",
-                    request.user.id,
-                    token_usage,
-                    exc,
-                )
             return Response({"success": True, "data": data}, status=status.HTTP_200_OK)
+        except OrganizationTokenChargeError as exc:
+            logger.error(
+                "Organization token charge failed user=%s feature=course_gen err=%s",
+                request.user.id,
+                exc,
+            )
+            return Response(
+                {"success": False, "message": "Unable to process token accounting"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
         except CourseGenerationAccessDeniedError:
             return Response(
                 {

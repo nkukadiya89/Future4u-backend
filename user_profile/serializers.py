@@ -140,8 +140,8 @@ class StudentProfileSerializer(
     referred_by = UserQuickSerializer(read_only=True)
     created_by = UserQuickSerializer(source="user.created_by", read_only=True)
     updated_by = UserQuickSerializer(read_only=True)
-    created_at = serializers.CharField(source="user.created_at", read_only=True)
-    deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
+    created_at = serializers.DateTimeField(source="user.created_at", read_only=True)
+    deleted_at = serializers.DateTimeField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
     subscription = serializers.JSONField(
         source="user.subscription_info", read_only=True
@@ -352,8 +352,8 @@ class ProfessionalProfileSerializer(
     referred_by = UserQuickSerializer(read_only=True)
     created_by = UserQuickSerializer(source="user.created_by", read_only=True)
     updated_by = UserQuickSerializer(read_only=True)
-    created_at = serializers.CharField(source="user.created_at", read_only=True)
-    deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
+    created_at = serializers.DateTimeField(source="user.created_at", read_only=True)
+    deleted_at = serializers.DateTimeField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
     subscription = serializers.JSONField(
         source="user.subscription_info", read_only=True
@@ -591,9 +591,9 @@ class ParentProfileSerializer(
     )
     referred_by = UserQuickSerializer(read_only=True)
     created_by = UserQuickSerializer(source="user.created_by", read_only=True)
-    created_at = serializers.CharField(source="user.created_at", read_only=True)
+    created_at = serializers.DateTimeField(source="user.created_at", read_only=True)
     updated_by = UserQuickSerializer(read_only=True)
-    deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
+    deleted_at = serializers.DateTimeField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
     subscription = serializers.JSONField(
         source="user.subscription_info", read_only=True
@@ -892,8 +892,8 @@ class InstituteProfileSerializer(BaseModelSerializer):
     gallery_images = InstituteGallerySerializer(many=True, read_only=True)
     referral_code = serializers.CharField(source="user.referral_code", read_only=True)
     created_by = UserQuickSerializer(source="user.created_by", read_only=True)
-    created_at = serializers.CharField(source="user.created_at", read_only=True)
-    deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
+    created_at = serializers.DateTimeField(source="user.created_at", read_only=True)
+    deleted_at = serializers.DateTimeField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
     class Meta:
         model = InstituteProfile
@@ -985,8 +985,8 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
     address = serializers.CharField(source="user.address", read_only=True)
     referral_code = serializers.CharField(source="user.referral_code", read_only=True)
     created_by = UserQuickSerializer(source="user.created_by", read_only=True)
-    created_at = serializers.CharField(source="user.created_at", read_only=True)
-    deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
+    created_at = serializers.DateTimeField(source="user.created_at", read_only=True)
+    deleted_at = serializers.DateTimeField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
     class Meta:
         model = SchoolCollegeProfile
@@ -1084,8 +1084,8 @@ class CorporateProfileSerializer(BaseModelSerializer):
     gallery_images = CorporateGallerySerializer(many=True, read_only=True)
     referral_code = serializers.CharField(source="user.referral_code", read_only=True)
     created_by = UserQuickSerializer(source="user.created_by", read_only=True)
-    created_at = serializers.CharField(source="user.created_at", read_only=True)
-    deleted_at = serializers.CharField(source="user.deleted_at", read_only=True)
+    created_at = serializers.DateTimeField(source="user.created_at", read_only=True)
+    deleted_at = serializers.DateTimeField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
     class Meta:
         model = CorporateProfile

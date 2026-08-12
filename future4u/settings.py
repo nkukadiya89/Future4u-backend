@@ -224,6 +224,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "utils.pagination.Pagination",
     "PAGE_SIZE": 10,
+    "DATETIME_FORMAT": "%Y-%m-%d %H:%M:%S",
     "DEFAULT_THROTTLE_CLASSES": [],
     "DEFAULT_THROTTLE_RATES": {
         "user_burst": "30/min",

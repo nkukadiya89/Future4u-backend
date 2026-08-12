@@ -7,6 +7,7 @@ from typing import Any
 
 from django.db import transaction
 from django.utils import timezone
+from utils.datetime_formatter import format_datetime
 
 from recommendation.config import (
     STUDY_ABROAD_EXAM_CHECKS,
@@ -310,9 +311,5 @@ def serialize_recommendation(recommendation):
         "ai_disclaimer": AI_RECOMMENDATION_DISCLAIMER,
         "top_suggestions": suggestions,
         "easy_decision_making": recommendation.easy_decision_making,
-        "last_recommended_at": (
-            recommendation.last_recommended_at.isoformat()
-            if recommendation.last_recommended_at
-            else None
-        ),
+        "last_recommended_at": format_datetime(recommendation.last_recommended_at),
     }
