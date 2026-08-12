@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
+from urllib.parse import unquote
 
 from rest_framework import serializers
 
@@ -36,6 +37,8 @@ class BaseNewsSerializer(serializers.ModelSerializer):
     def get_image(self, obj: News) -> Optional[str]:
         if obj.image:
             image_path = getattr(obj.image, "name", None)
+            if image_path:
+                image_path = unquote(image_path)
             if image_path and image_path.startswith("http"):
                 return image_path
             request = self.context.get("request")
@@ -60,6 +63,15 @@ class BaseNewsSerializer(serializers.ModelSerializer):
         consistent across list/detail endpoints.
         """
         data = super().to_representation(instance)
+
+        image_path = getattr(instance, "image", None)
+        if image_path:
+            image_name = getattr(image_path, "name", None)
+            if image_name:
+                decoded_image_name = unquote(image_name)
+                if decoded_image_name.startswith("http"):
+                    data["image"] = decoded_image_name
+
         return {k: v for k, v in data.items() if v is not None or k == "image"}
 
 
