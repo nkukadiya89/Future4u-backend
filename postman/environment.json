@@ -78,6 +78,11 @@
       "enabled": true
     },
     {
+      "key": "resume_id",
+      "value": "",
+      "enabled": true
+    },
+    {
       "key": "reset_token",
       "value": "",
       "enabled": true

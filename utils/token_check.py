@@ -29,7 +29,7 @@ MIN_TOKENS_REQUIRED = {
     "course_gen": 2000,
     "internship_gen": 2000,
     "job_gen": 2000,
-    "resume_enhance": 500,
+    "resume_enhance": 2000,
     "project_gen": 2000,
 }
 

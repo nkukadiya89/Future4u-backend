@@ -14,6 +14,50 @@ from django.shortcuts import render
 from django.urls import path, reverse
 
 from common.mixins.admin_mixins import ReadOnlyAdminMixin
+from resume_builder.models import GeneratedResume, ResumeTemplate
+
+
+# ── Real Path B models ───────────────────────────────────────────────────────
+
+
+@admin.register(GeneratedResume)
+class GeneratedResumeAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "template",
+        "resume_type",
+        "tokens_used",
+        "created_at",
+    )
+    list_filter = ("template", "resume_type", "created_at")
+    search_fields = ("user__email", "user__full_name")
+    ordering = ("-created_at",)
+    readonly_fields = [
+        "id",
+        "user",
+        "template",
+        "resume_json",
+        "tokens_used",
+        "resume_type",
+        "created_at",
+        "created_by",
+        "updated_at",
+        "updated_by",
+        "deleted",
+        "deleted_at",
+        "deleted_by",
+    ]
+
+
+@admin.register(ResumeTemplate)
+class ResumeTemplateAdmin(admin.ModelAdmin):
+    list_display = ("code", "name", "category", "is_active", "sort_order")
+    list_editable = ("is_active", "sort_order")
+    list_filter = ("is_active", "category")
+    search_fields = ("code", "name", "description")
+    ordering = ("sort_order", "code")
+
 
 # ── Unmanaged proxy model (no DB table needed) ───────────────────────────────
 

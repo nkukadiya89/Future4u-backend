@@ -268,6 +268,23 @@ body { font-family: Helvetica, Arial, sans-serif; font-size: 10px; color: #9099a
     {% endfor %}
     {% endif %}
 
+    <!-- Projects (professional — professional projects surface from the
+         canonical JSON Resume top-level section) -->
+    {% if resume_type == 'professional' and projects %}
+    <div class="rsec rsec-mt">Projects</div>
+    {% for proj in projects %}
+    <div class="ptitle">{{ proj.title }}</div>
+    <ul class="elist">
+      {% if proj.problem_statement %}<li>{{ proj.problem_statement }}</li>{% endif %}
+      {% if proj.your_role and proj.impact %}<li>{{ proj.your_role }} — {{ proj.impact }}</li>
+      {% elif proj.your_role %}<li>{{ proj.your_role }}</li>
+      {% elif proj.impact %}<li>{{ proj.impact }}</li>{% endif %}
+      {% if proj.technologies %}<li>Stack: {{ proj.technologies | join(", ") }}</li>{% endif %}
+    </ul>
+    <div class="pgap"></div>
+    {% endfor %}
+    {% endif %}
+
     <!-- Technical Skills -->
     {% if skills is defined and skills.technical %}
     <div class="rsec rsec-mt">Skills</div>
@@ -296,7 +313,7 @@ body { font-family: Helvetica, Arial, sans-serif; font-size: 10px; color: #9099a
     <div class="rsec rsec-mt">Education</div>
     {% for edu in education %}
     <div class="einst">{{ edu.institution }}</div>
-    <div class="edeg">{{ edu.degree }}{% if edu.field %} of {{ edu.field }}{% endif %}</div>
+    <div class="edeg">{{ edu.degree }}{% if edu.degree and edu.field and edu.field|lower not in edu.degree|lower %} in {{ edu.field }}{% endif %}</div>
     <div class="eyr">{{ edu.year }}{% if edu.cgpa %} — CGPA: {{ edu.cgpa }}{% endif %}</div>
     {% endfor %}
     {% endif %}

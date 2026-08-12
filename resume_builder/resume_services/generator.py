@@ -6,6 +6,7 @@ Flow: resume data → Jinja2 HTML template → xhtml2pdf → PDF bytes
 
 from __future__ import annotations
 
+import logging
 import os
 from io import BytesIO
 from pathlib import Path
@@ -68,6 +69,31 @@ def _html_to_pdf(html: str) -> bytes:
     return buf.getvalue()
 
 
+logger = logging.getLogger(__name__)
+
+# Jinja themes that have a physical template file. The template registry may
+# contain many more JSON Resume themes (modern, minimal, academic, elegant,
+# compact, stackoverflow, ...) that are rendered by the frontend; for those the
+# optional PDF endpoint falls back to the professional layout instead of 500.
+_PDF_TEMPLATE_FALLBACK = "professional"
+
+
+def _available_template_name(template_name: str) -> str:
+    """Return the Jinja template file to render, falling back safely.
+
+    Theme codes that only exist in the registry / frontend (no .html file in
+    TEMPLATES_DIR) are rendered with the default PDF layout.
+    """
+    if (TEMPLATES_DIR / f"{template_name}.html").is_file():
+        return template_name
+    logger.info(
+        "Resume PDF fallback: theme '%s' has no Jinja template, using '%s'",
+        template_name,
+        _PDF_TEMPLATE_FALLBACK,
+    )
+    return _PDF_TEMPLATE_FALLBACK
+
+
 def build_resume(data: dict, summary: str) -> bytes:
     """
     Build a PDF resume from structured data and an AI-enhanced summary.
@@ -79,7 +105,8 @@ def build_resume(data: dict, summary: str) -> bytes:
     Returns:
         PDF file as bytes
     """
-    template_name = data.get("template", "professional")
-    context = _prepare_context({**data, "summary": summary})
+    requested = data.get("template", "professional")
+    template_name = _available_template_name(requested)
+    context = _prepare_context({**data, "template": template_name, "summary": summary})
     html = _render_html(template_name, context)
     return _html_to_pdf(html)

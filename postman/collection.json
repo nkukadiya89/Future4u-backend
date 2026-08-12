@@ -5680,49 +5680,202 @@
         }
       ]
     },
-    {
+        {
       "name": "resume_builder",
       "item": [
         {
-          "name": "generate_resume (POST)",
+          "name": "templates (GET)",
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
               {
                 "key": "Authorization",
                 "value": "Bearer {{access_token}}"
               }
             ],
             "url": {
-              "raw": "{{base_url}}/resume/generate/?template=professional",
+              "raw": "{{base_url}}/api/resume/templates/",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
+                "resume",
+                "templates"
+              ]
+            }
+          },
+          "response": [],
+          "description": "List active resume templates (registry metadata). No AI call, no tokens."
+        },
+        {
+          "name": "generate_resume (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/resume/generate/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
                 "resume",
                 "generate"
-              ],
-              "query": [
-                {
-                  "key": "template",
-                  "value": "professional",
-                  "description": "'professional' (default) or 'standard'"
-                }
               ]
             },
             "body": {
-              "mode": "formdata",
-              "formdata": [
+              "mode": "raw",
+              "raw": "{\n  \"template\": \"professional\",\n  \"child_id\": null\n}"
+            }
+          },
+          "response": [],
+          "description": "Run the AI pipeline (Groq) and store a GeneratedResume. Returns the canonical JSON Resume (no PDF). template is presentation metadata only - it never changes AI content or token cost. For parent accounts pass child_id of the child."
+        },
+        {
+          "name": "history (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/resume/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "resume"
+              ],
+              "query": [
                 {
-                  "key": "photo",
-                  "type": "file",
-                  "src": "",
-                  "description": "Optional profile photo (jpg/png)"
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10",
+                  "description": "Items per page"
                 }
               ]
             }
           },
-          "response": []
+          "response": [],
+          "description": "List the authenticated user's generated resumes, newest first (paginated). Returns id, template, resume_type, tokens_used, created_at (no full resume JSON)."
+        },
+        {
+          "name": "detail (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/resume/{{resume_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "resume",
+                "{{resume_id}}"
+              ]
+            }
+          },
+          "response": [],
+          "description": "Fetch one stored canonical JSON Resume. Ownership enforced - another user's resume returns 404. Set resume_id from the generate response or history."
+        },
+    {
+      "name": "edit_resume (PATCH)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/resume/{{resume_id}}/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "resume",
+            "{{resume_id}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"resume\": {\n    \"basics\": {\n      \"summary\": \"Edited career summary written by the user...\"\n    },\n    \"work\": [\n      {\n        \"company\": \"TechNova Solutions\",\n        \"position\": \"Intern\",\n        \"highlights\": [\n          \"Edited bullet one.\",\n          \"Edited bullet two.\"\n        ]\n      }\n    ]\n  }\n}"
+        },
+        "description": "Edit the generated resume in place. Only sections present in the body change: list sections (work, education, projects, ...) are replaced wholesale; basics is merged per key (sending only basics.summary keeps name/email/phone intact). No AI call, no token deduction - a pure database update.",
+        "response": []
+      }
+    },
+    {
+      "name": "pdf (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/resume/{{resume_id}}/pdf/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "resume",
+                "{{resume_id}}",
+                "pdf"
+              ]
+            }
+          },
+          "response": [],
+          "description": "Render a stored resume to a downloadable PDF from the existing Jinja templates. No Groq call, no token deduction."
         },
         {
           "name": "preview_resume (GET)",
@@ -5739,11 +5892,12 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/resume/preview/?template=professional",
+              "raw": "{{base_url}}/api/resume/preview/?template=professional",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
+                "api",
                 "resume",
                 "preview"
               ],
@@ -5756,7 +5910,8 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "description": "Raw resume source data as JSON (no AI, no tokens)."
         }
       ]
     },
@@ -21933,7 +22088,6 @@
         }
       ]
     }
-
   ],
   "variable": [
     {
