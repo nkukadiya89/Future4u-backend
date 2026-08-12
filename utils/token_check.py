@@ -17,7 +17,6 @@ FEATURE_NAMES = {
     "course_gen": "Course Generation",
     "internship_gen": "Internship Generation",
     "job_gen": "Job Generation",
-    "job_gen_save": "Job Generation Save",
     "resume_enhance": "Resume Builder",
     "project_gen": "Project Recommendations",
     "monthly_tokens": "Monthly Token Allowance",

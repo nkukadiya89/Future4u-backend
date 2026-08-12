@@ -8913,7 +8913,7 @@
               "formdata": [
                 {
                   "key": "data",
-                  "value": "{\"email\":\"{{user_email}}\",\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"country\":\"{{country_id}}\",\"state\":\"{{state_id}}\",\"city\":\"{{city_id}}\",\"address\":\"{{address}}\"}",
+                  "value": "{\"email\":\"{{user_email}}\",\"first_name\":\"{{first_name}}\",\"last_name\":\"{{last_name}}\",\"phone\":\"{{phone}}\",\"country\":\"{{country_id}}\",\"state\":\"{{state_id}}\",\"city\":\"{{city_id}}\",\"address\":\"{{address}}\",\"role_id\":\"{{role_id}}\"}",
                   "type": "text"
                 },
                 {
@@ -8981,7 +8981,7 @@
               "formdata": [
                 {
                   "key": "data",
-                  "value": "{\"first_name\":\"Updated\",\"phone\":\"9876543211\"}",
+                  "value": "{\"first_name\":\"Updated\",\"phone\":\"9876543211\",\"role_id\":\"{{role_id}}\"}",
                   "type": "text"
                 },
                 {
@@ -9151,7 +9151,7 @@
           "response": []
         }
       ],
-      "description": "Organization admin staff management. Requires Bearer {{access_token}} and an org user_type (school_college / institute / corporate). Base path: /organization-staff/\n\nOwnership is enforced via created_by + user_type: a staff member is created with user_type = creator's user_type, created_by = creator, is_org_staff = true, status pending, unusable password and a password setup link. Staff never auto-receive monthly AI tokens (their token pool starts at 0); super admin can grant via the existing update-tokens endpoint. Roles are assigned through the existing /assign-role/ endpoint — no role_id during creation.\n\nEndpoints: create, list, retrieve, update (PATCH), update-status, bulk-archive, archive-list, bulk-restore, destroy."
+      "description": "Organization admin staff management. Requires Bearer {{access_token}} and an org user_type (school_college / institute / corporate). Base path: /organization-staff/\n\nOwnership is enforced via created_by + user_type: a staff member is created with user_type = creator's user_type, created_by = creator, is_org_staff = true, status pending, unusable password and a password setup link. Staff never auto-receive monthly AI tokens (their token pool starts at 0); super admin can grant via the existing update-tokens endpoint.\n\nRoles: role_id is REQUIRED on create and OPTIONAL on update. The role must exist, must not be soft-deleted, and (for non-admin org owners) must have been created by the caller - same scoping as GET /roles/. On create the staff is added to that role group immediately; on update, sending role_id replaces the staff's role. Create/update responses include a roles dropdown array ([{role_id, role_name}], ownership-scoped, one query) so the admin can assign the role directly from the form. The legacy /assign-role/ endpoint still works for existing group-less staff.\n\nEndpoints: create, list, retrieve, update (PATCH), update-status, bulk-archive, archive-list, bulk-restore, destroy."
     },
     {
       "name": "Organization Token Usage",
@@ -9171,7 +9171,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/org-token-usage/?user_type=institute&search=School",
+              "raw": "{{base_url}}/api/org-token-usage/?user_type=institute&search=School&usage=26-50",
               "host": [
                 "{{base_url}}"
               ],
@@ -9189,12 +9189,17 @@
                   "value": "School"
                 },
                 {
+                  "key": "usage",
+                  "value": "26-50",
+                  "description": "Optional. Filter by usage-percentage range. Allowed values: 0-25, 26-50, 51-75, 76-100. Invalid value returns 400."
+                },
+                {
                   "key": "page",
                   "value": "1"
                 }
               ]
             },
-            "description": "List organization users with token usage stats.\n\nAuthentication determines the dataset (same as staff-usage):\n- Super admin: all organizations; optional ?user_type narrows.\n- Org owner: own organization only.\n\nOptional query params:\n- ?user_type=school_college|institute|corporate (super admin)\n- ?search=name\n- ?page=1\n\nResponse item fields: id, user, organization, login_type, monthly_limit, used_tokens, remaining_tokens, usage_percentage."
+            "description": "List organization users with token usage stats.\n\nAuthentication determines the dataset (same as staff-usage):\n- Super admin: all organizations; optional ?user_type narrows.\n- Org owner: own organization only.\n\nOptional query params:\n- ?user_type=school_college|institute|corporate (super admin)\n- ?search=name\n- ?usage=0-25|26-50|51-75|76-100 (filter by usage-percentage range; invalid value returns 400)\n- ?page=1\n\nResponse item fields: id, user, organization, login_type, monthly_limit, used_tokens, remaining_tokens, usage_percentage."
           }
         },
         {
@@ -21489,37 +21494,6 @@
               "path": [
                 "api",
                 "ai-job-generation"
-              ]
-            }
-          }
-        },
-        {
-          "name": "generate-and-save (POST)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"job_title\": \"Junior Data Analyst\",\n    \"job_overview\": \"Looking for a fresher data analyst to work on data visualization and reporting\",\n    \"country\": 1,\n    \"state\": 1,\n    \"city\": 4,\n    \"salary_min\": \"300000\",\n    \"salary_max\": \"500000\",\n    \"job_type\": \"full_time\",\n    \"experience_level\": \"fresher\",\n    \"mode\": \"onsite\",\n    \"save_mode\": \"publish\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/ai-job-generation/save/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "ai-job-generation",
-                "save"
               ]
             }
           }

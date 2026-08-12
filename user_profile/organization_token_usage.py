@@ -17,6 +17,25 @@ from utils.token_check import (
 from user_profile.models import OrganizationTokenUsage
 
 
+# Usage-percentage range buckets used by the ?usage= filter.
+# Boundaries are lower-exclusive except the first bucket, so a value
+# like 25.1% falls into 26-50, 50.1% into 51-75, etc. (no gaps/overlaps).
+USAGE_RANGES = {
+    "0-25": (None, 25),
+    "26-50": (25, 50),
+    "51-75": (50, 75),
+    "76-100": (75, 100),
+}
+
+
+def _matches_usage_range(percentage, usage_key):
+    """Return True if usage_percentage falls inside the given range key."""
+    low, high = USAGE_RANGES[usage_key]
+    if low is None:
+        return percentage <= high
+    return low < percentage <= high
+
+
 class OrganizationTokenUsageSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     user = serializers.IntegerField()
@@ -194,6 +213,19 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
+        usage_range = request.query_params.get("usage")
+        if usage_range is not None and usage_range not in USAGE_RANGES:
+            return Response(
+                {
+                    "success": False,
+                    "message": (
+                        "Invalid usage filter. Allowed values: "
+                        + ", ".join(USAGE_RANGES.keys())
+                    ),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         rows = []
         for user in queryset:
             profile = _get_org_profile(user)
@@ -208,6 +240,11 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
                 if monthly_limit > 0
                 else 0
             )
+
+            if usage_range is not None and not _matches_usage_range(
+                usage_percentage, usage_range
+            ):
+                continue
 
             org_name = (
                 getattr(profile, "institute_name", None)
