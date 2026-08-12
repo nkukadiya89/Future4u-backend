@@ -11,6 +11,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from activity_log.services import log_event
+from assessment.models import ProfessionalAssessment
+from assessment.serializers import ProfessionalAssessmentSerializer
+from assessment_career.models import CareerRecommendation, CareerSuggestion
+from assessment_career.serializers import (
+    CareerRecommendationSerializer,
+    CareerSuggestionSerializer,
+)
 from common.master_view import BaseModelViewSet
 from user.admin_user_serializers import BulkUserUploadSerializer
 from user.models import User
@@ -23,6 +30,8 @@ from .organization_professional_serializers import (
     OrganizationProfessionalListSerializer,
 )
 from .permissions import IsCorporate
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 
 class OrganizationProfessionalViewSet(BaseModelViewSet):
@@ -30,7 +39,7 @@ class OrganizationProfessionalViewSet(BaseModelViewSet):
     permission_classes = [IsAuthenticated, IsCorporate]
     pagination_class = Pagination
     parser_classes = [MultiPartParser, FormParser]
-    filter_backends = [SearchFilter, OrderingFilter]
+    filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
 
     search_fields = BaseModelViewSet.searching_fields + [
         "first_name",
@@ -65,6 +74,17 @@ class OrganizationProfessionalViewSet(BaseModelViewSet):
         "is_active",
         "status",
     ]
+
+    filterset_fields = [
+        "country",
+        "states",
+        "city",
+        "status",
+        "email_verified",
+        "must_change_password",
+        "is_active",
+    ]
+
     http_method_names = ["get", "post", "head", "options"]
 
     def get_queryset(self):
@@ -74,20 +94,29 @@ class OrganizationProfessionalViewSet(BaseModelViewSet):
             user_type=User.Role.PROFESSIONAL,
             deleted=False,
         )
-        status_filter = self.request.query_params.get("status")
-        if status_filter:
-            queryset = queryset.filter(status=status_filter)
-        return queryset.select_related(
-            "country",
-            "states",
-            "city",
-            "professional_profile",
-            "professional_profile__education_level",
-        ).order_by("-id")
+        return (
+            queryset.select_related(
+                "country",
+                "states",
+                "city",
+                "professional_profile",
+                "professional_profile__education_level",
+            )
+            .prefetch_related(
+                "professional_assessments",
+                "career_recommendations",
+                "career_recommendations__suggestions",
+            )
+            .order_by("-id")
+        )
 
     def get_serializer_class(self):
         if self.action == "create":
             return OrganizationProfessionalCreateSerializer
+        if self.action == "professional_assessment":
+            return ProfessionalAssessmentSerializer
+        if self.action == "professional_suggestion":
+            return CareerSuggestionSerializer
         return OrganizationProfessionalListSerializer
 
     @transaction.atomic
@@ -195,3 +224,140 @@ class OrganizationProfessionalViewSet(BaseModelViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+    @action(detail=True, methods=["get"], url_path="assessments")
+    def professional_assessment(self, request, pk=None):
+        professional = self.get_object()
+        log_event(
+            event="professional.assessment_viewed",
+            description=f"Viewed {professional.email}'s assessments",
+            user=request.user,
+            entity_type="user",
+            entity_id=professional.id,
+            request=request,
+        )
+        queryset = ProfessionalAssessment.objects.filter(
+            user=professional, deleted=False
+        ).order_by("-created_at")
+        no_pagination = request.query_params.get("no_pagination")
+        if no_pagination:
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(
+                {
+                    "success": True,
+                    "data": serializer.data,
+                },
+                status=status.HTTP_200_OK,
+            )
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                {
+                    "success": True,
+                    "data": serializer.data,
+                },
+            )
+
+        serializer = self.get_serializer(queryset, many=True)
+        return self.get_paginated_response(
+            {
+                "success": True,
+                "data": serializer.data,
+            },
+        )
+
+    @action(detail=True, methods=["get"], url_path="recommendation")
+    def professional_recommendation(self, request, pk=None):
+        assessment_id = request.query_params.get("assessment_id")
+        if not assessment_id:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Assessment id is required",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        professional = self.get_object()
+        log_event(
+            event="professional.recommendation_viewed",
+            description=f"Viewed {professional.email}'s recommendation",
+            user=request.user,
+            entity_type="user",
+            entity_id=professional.id,
+            request=request,
+        )
+        assessment = ProfessionalAssessment.objects.filter(
+            id=assessment_id, user=professional, deleted=False
+        ).first()
+        if not assessment:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Assessment not found",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        recommendation = (
+            CareerRecommendation.objects.filter(
+                professional_assessment=assessment, deleted=False
+            )
+            .prefetch_related("suggestions")
+            .first()
+        )
+        if not recommendation:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Recommendation not found",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = CareerRecommendationSerializer(recommendation)
+        return Response(
+            {
+                "success": True,
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["get"], url_path="suggestion")
+    def professional_suggestion(self, request, pk=None):
+        suggestion_id = request.query_params.get("suggestion_id")
+        if not suggestion_id:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Suggestion id is required",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        professional = self.get_object()
+        suggestion = (
+            CareerSuggestion.objects.filter(
+                id=suggestion_id,
+                deleted=False,
+                recommendation__user=professional,
+                recommendation__profile_type="working_professional",
+            )
+            .select_related("recommendation")
+            .first()
+        )
+        if not suggestion:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Suggestion not found",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = self.get_serializer(suggestion)
+        return Response(
+            {
+                "success": True,
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
