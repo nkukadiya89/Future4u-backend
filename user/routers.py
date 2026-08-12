@@ -64,17 +64,13 @@ user_router.register(
 )
 user_router.register("role-family", RoleFamilyViewSet, basename="role_family")
 user_router.register("verified-otp", VerifiedOTPViewSet, basename="verified-otp")
-user_router.register(
-    "roles", CreateGroupWithPermissionsViewSet, basename="roles"
-)
+user_router.register("roles", CreateGroupWithPermissionsViewSet, basename="roles")
 user_router.register(
     "role-archive",
     DeleteGroupWithPermissionsViewSet,
     basename="role_archive",
 )
-user_router.register(
-    "assign-role", AssignUserGroupViewSet, basename="assign_role"
-)
+user_router.register("assign-role", AssignUserGroupViewSet, basename="assign_role")
 user_router.register(
     "assign-role-permission",
     AssignPermissionGroupViewSet,

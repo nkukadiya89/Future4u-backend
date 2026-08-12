@@ -584,7 +584,9 @@ class CourseInquiryViewSet(BaseModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="received-inquiries")
     def received_inquiries(self, request):
-        inquiries = CourseInquiry.objects.filter(course__course_provider=request.user.get_owner_user())
+        inquiries = CourseInquiry.objects.filter(
+            course__course_provider=request.user.get_owner_user()
+        )
 
         course_id = request.query_params.get("course_id")
         if not course_id:

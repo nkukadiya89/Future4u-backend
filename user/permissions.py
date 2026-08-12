@@ -1,6 +1,7 @@
 from rest_framework.permissions import BasePermission
 from user.models import User
 
+
 class IsAdminUser(BasePermission):
     message = "Admin access required"
 
@@ -14,8 +15,10 @@ class IsAdminUser(BasePermission):
             or user.user_type == User.Role.SUPER_ADMIN
         )
 
+
 def is_admin_user(user):
     return user.is_superuser or user.is_staff or user.user_type == User.Role.SUPER_ADMIN
+
 
 class IsAdminOrProvider(BasePermission):
     message = "Provider or admin access required"
@@ -39,6 +42,7 @@ class IsAdminOrProvider(BasePermission):
             and not user.deleted
         )
 
+
 class IsSchoolCollegeOrInstitute(BasePermission):
     message = "This feature is available for School/College or Institute users only."
 
@@ -59,6 +63,7 @@ class IsSchoolCollegeOrInstitute(BasePermission):
             and not user.deleted
         )
 
+
 class IsCorporate(BasePermission):
     message = "This feature is available for Corporate users only."
 
@@ -73,6 +78,7 @@ class IsCorporate(BasePermission):
             and user.status == "active"
             and not user.deleted
         )
+
 
 class IsIndividualUser(BasePermission):
     message = (
@@ -97,6 +103,7 @@ class IsIndividualUser(BasePermission):
             and user.status == "active"
             and not user.deleted
         )
+
 
 class HasPerm(BasePermission):
     def has_permission(self, request, view):

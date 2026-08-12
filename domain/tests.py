@@ -215,9 +215,15 @@ class DomainAPITests(TestCase):
 
     def test_list_filtered_by_parent_id(self):
         url = reverse("domain-list")
-        root = self.client.post(url, self._payload(code="cat_root"), format="json").data["data"]["id"]
-        other = self.client.post(url, self._payload(code="cat_other"), format="json").data["data"]["id"]
-        child = self.client.post(url, self._payload(code="cat_child", parent_id=root), format="json").data["data"]["id"]
+        root = self.client.post(
+            url, self._payload(code="cat_root"), format="json"
+        ).data["data"]["id"]
+        other = self.client.post(
+            url, self._payload(code="cat_other"), format="json"
+        ).data["data"]["id"]
+        child = self.client.post(
+            url, self._payload(code="cat_child", parent_id=root), format="json"
+        ).data["data"]["id"]
 
         r = self.client.get(url, {"parent_id": root})
         self.assertEqual(r.status_code, status.HTTP_200_OK)
@@ -241,7 +247,9 @@ class DomainAPITests(TestCase):
 
     def test_list_root_only(self):
         url = reverse("domain-list")
-        root = self.client.post(url, self._payload(code="ro_r"), format="json").data["data"]["id"]
+        root = self.client.post(url, self._payload(code="ro_r"), format="json").data[
+            "data"
+        ]["id"]
         self.client.post(url, self._payload(code="ro_c", parent_id=root), format="json")
         r = self.client.get(url, {"root_only": "1"})
         self.assertEqual(r.status_code, status.HTTP_200_OK)

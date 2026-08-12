@@ -39,4 +39,5 @@ class ActivityLog(models.Model):
     def __str__(self):
         return f"{self.event} - {self.created_at}"
 
+
 ActivityLog.log = _NoOpLogger()

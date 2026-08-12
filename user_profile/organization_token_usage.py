@@ -215,21 +215,25 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
                 or ""
             )
 
-            rows.append({
-                "id": profile.id,
-                "user": user.id,
-                "organization": org_name,
-                "login_type": user.user_type,
-                "monthly_limit": usage["monthly_limit"],
-                "used_tokens": used_tokens,
-                "remaining_tokens": usage["remaining_tokens"],
-                "usage_percentage": usage_percentage,
-            })
+            rows.append(
+                {
+                    "id": profile.id,
+                    "user": user.id,
+                    "organization": org_name,
+                    "login_type": user.user_type,
+                    "monthly_limit": usage["monthly_limit"],
+                    "used_tokens": used_tokens,
+                    "remaining_tokens": usage["remaining_tokens"],
+                    "usage_percentage": usage_percentage,
+                }
+            )
 
         page = self.paginate_queryset(rows)
         serializer = self.get_serializer(page or rows, many=True)
         if page is not None:
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         return Response({"success": True, "data": serializer.data})
 
     @action(detail=False, methods=["get"], url_path="staff-usage")
@@ -264,14 +268,16 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
                 or getattr(profile, "company_name", None)
                 or ""
             )
-            groups.append({
-                "owner": {
-                    "id": owner.id,
-                    "organization": org_name,
-                    "user_type": owner.user_type,
-                },
-                "staff": staff_rows,
-            })
+            groups.append(
+                {
+                    "owner": {
+                        "id": owner.id,
+                        "organization": org_name,
+                        "user_type": owner.user_type,
+                    },
+                    "staff": staff_rows,
+                }
+            )
 
         groups.sort(
             key=lambda g: sum(s["tokens_used"] for s in g["staff"]), reverse=True
@@ -280,7 +286,9 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
         page = self.paginate_queryset(groups)
         serializer = StaffUsageGroupSerializer(page or groups, many=True)
         if page is not None:
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         return Response({"success": True, "data": serializer.data})
 
     @action(detail=False, methods=["get"], url_path="usage-rows")
@@ -301,9 +309,7 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
         if is_admin_user(request.user):
             qs = OrganizationTokenUsage.objects.all()
         else:
-            qs = OrganizationTokenUsage.objects.filter(
-                organization_id=request.user.id
-            )
+            qs = OrganizationTokenUsage.objects.filter(organization_id=request.user.id)
 
         if from_date:
             qs = qs.filter(created_at__date__gte=parse_date(from_date))
@@ -317,5 +323,7 @@ class OrganizationTokenUsageViewSet(viewsets.ReadOnlyModelViewSet):
             page if page is not None else qs, many=True
         )
         if page is not None:
-            return self.get_paginated_response({"success": True, "data": serializer.data})
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
         return Response({"success": True, "data": serializer.data})

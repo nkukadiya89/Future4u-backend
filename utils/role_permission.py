@@ -6,7 +6,7 @@ from user.serializers import PermissionSerializers
 
 
 def parse_ids(value):
-    
+
     if value is None:
         return []
     if isinstance(value, bool):

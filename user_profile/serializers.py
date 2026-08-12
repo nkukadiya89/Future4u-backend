@@ -895,6 +895,7 @@ class InstituteProfileSerializer(BaseModelSerializer):
     created_at = serializers.DateTimeField(source="user.created_at", read_only=True)
     deleted_at = serializers.DateTimeField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
+
     class Meta:
         model = InstituteProfile
         fields = BaseModelSerializer.Meta.fields + [
@@ -988,6 +989,7 @@ class SchoolCollegeProfileSerializer(BaseModelSerializer):
     created_at = serializers.DateTimeField(source="user.created_at", read_only=True)
     deleted_at = serializers.DateTimeField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
+
     class Meta:
         model = SchoolCollegeProfile
         fields = BaseModelSerializer.Meta.fields + [
@@ -1087,6 +1089,7 @@ class CorporateProfileSerializer(BaseModelSerializer):
     created_at = serializers.DateTimeField(source="user.created_at", read_only=True)
     deleted_at = serializers.DateTimeField(source="user.deleted_at", read_only=True)
     deleted_by = UserQuickSerializer(source="user.deleted_by", read_only=True)
+
     class Meta:
         model = CorporateProfile
         fields = BaseModelSerializer.Meta.fields + [

@@ -10,8 +10,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from activity_log.services import log_event
-from user.models import (AuthGroupPermissionsModel, CustomGroup, RoleFamily,
-                         User)
+from user.models import AuthGroupPermissionsModel, CustomGroup, RoleFamily, User
 from user.permissions import IsAdminOrProvider, is_admin_user
 from user.user_auth import PROJECT_APP_LABELS, get_user_permissions
 from utils.pagination import Pagination
@@ -58,9 +57,7 @@ def _can_assign_permissions(user, permissions):
     if is_admin_user(user):
         return True
     owned = set(get_user_permissions(user))
-    return all(
-        f"{p.content_type.app_label}|{p.codename}" in owned for p in permissions
-    )
+    return all(f"{p.content_type.app_label}|{p.codename}" in owned for p in permissions)
 
 
 def _get_owned_role_queryset(user, deleted=False):
@@ -119,9 +116,7 @@ class AssignUserGroupViewSet(ModelViewSet):
                 )
 
             # Archived roles must be restored before assignment.
-            if not _get_owned_role_queryset(request.user).filter(
-                id=role_id
-            ).exists():
+            if not _get_owned_role_queryset(request.user).filter(id=role_id).exists():
                 return Response(
                     {
                         "success": False,
@@ -258,9 +253,7 @@ class PermissionViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        owned_roles = _get_owned_role_queryset(request.user).filter(
-            pk__in=role_id_list
-        )
+        owned_roles = _get_owned_role_queryset(request.user).filter(pk__in=role_id_list)
         if is_admin_user(request.user):
             if not owned_roles.exists():
                 return Response(
@@ -401,9 +394,7 @@ class AssignPermissionGroupViewSet(ModelViewSet):
 
         # Admins can assign to any role; owners only to roles they created.
         if not is_admin_user(request.user):
-            if not _get_owned_role_queryset(request.user).filter(
-                id=role_id
-            ).exists():
+            if not _get_owned_role_queryset(request.user).filter(id=role_id).exists():
                 return Response(
                     {
                         "success": False,
@@ -454,8 +445,7 @@ class AssignPermissionGroupViewSet(ModelViewSet):
         log_event(
             event="role.permission_added",
             description=(
-                f"Added {len(permissions_to_add)} permission(s) "
-                f"to role {role.name}"
+                f"Added {len(permissions_to_add)} permission(s) " f"to role {role.name}"
             ),
             user=request.user,
             entity_type="role",
@@ -468,9 +458,7 @@ class AssignPermissionGroupViewSet(ModelViewSet):
             request=request,
         )
 
-        permissions_data = PermissionSerializers(
-            role.permissions.all(), many=True
-        ).data
+        permissions_data = PermissionSerializers(role.permissions.all(), many=True).data
         return Response(
             {
                 "success": True,
@@ -506,9 +494,7 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
 
         response = get_group_permission_by_user(user_custom_roles)
 
-        return Response(
-            {"success": True, "data": response}, status=status.HTTP_200_OK
-        )
+        return Response({"success": True, "data": response}, status=status.HTTP_200_OK)
 
     def get_queryset(self):
         # Archived roles are hidden from read paths (deleted=False convention).
@@ -570,18 +556,18 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                 }
             )
 
-        return Response(
-            {"success": True, "data": role_list}, status=status.HTTP_200_OK
-        )
+        return Response({"success": True, "data": role_list}, status=status.HTTP_200_OK)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
 
         # Same ownership rule as update()/destroy().
         if not is_admin_user(request.user):
-            if not _get_owned_role_queryset(request.user).filter(
-                pk=instance.pk
-            ).exists():
+            if (
+                not _get_owned_role_queryset(request.user)
+                .filter(pk=instance.pk)
+                .exists()
+            ):
                 return Response(
                     {
                         "success": False,
@@ -595,9 +581,7 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
 
         role_data = {
             "role_id": instance.id,
-            "role_name": (
-                custom_group.group_name if custom_group else instance.name
-            ),
+            "role_name": (custom_group.group_name if custom_group else instance.name),
             "sequence": custom_group.sequence if custom_group else None,
             "role_family": (
                 {
@@ -612,9 +596,7 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
             ).data,
         }
 
-        return Response(
-            {"success": True, "data": role_data}, status=status.HTTP_200_OK
-        )
+        return Response({"success": True, "data": role_data}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["GET"], url_path="get-role-permissions")
     def get_role_permissions(self, request, *args, **kwargs):
@@ -637,9 +619,7 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        custom_roles = _get_owned_role_queryset(request.user).filter(
-            pk__in=role_ids
-        )
+        custom_roles = _get_owned_role_queryset(request.user).filter(pk__in=role_ids)
         if is_admin_user(request.user):
             if not custom_roles.exists():
                 return Response(
@@ -659,9 +639,7 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
 
         response = get_group_permission_by_user(custom_roles)
 
-        return Response(
-            {"success": True, "data": response}, status=status.HTTP_200_OK
-        )
+        return Response({"success": True, "data": response}, status=status.HTTP_200_OK)
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -780,9 +758,7 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
         role_id = kwargs.get("pk")
 
         if not is_admin_user(request.user):
-            if not _get_owned_role_queryset(request.user).filter(
-                id=role_id
-            ).exists():
+            if not _get_owned_role_queryset(request.user).filter(id=role_id).exists():
                 return Response(
                     {
                         "success": False,
@@ -837,9 +813,7 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
         # Permissions only change when the key is present; diff computed only then.
         permission_diff = {"added_permissions": [], "removed_permissions": []}
         if "permissions" in request.data and permissions_input is not None:
-            before_codenames = set(
-                role.permissions.values_list("codename", flat=True)
-            )
+            before_codenames = set(role.permissions.values_list("codename", flat=True))
             permissions = _resolve_permission_objects(permissions_input)
             if permissions is None:
                 return Response(
@@ -858,9 +832,7 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
                     status=status.HTTP_403_FORBIDDEN,
                 )
             role.permissions.set(permissions)
-            after_codenames = set(
-                role.permissions.values_list("codename", flat=True)
-            )
+            after_codenames = set(role.permissions.values_list("codename", flat=True))
             permission_diff = {
                 "added_permissions": sorted(after_codenames - before_codenames),
                 "removed_permissions": sorted(before_codenames - after_codenames),
@@ -913,9 +885,11 @@ class CreateGroupWithPermissionsViewSet(ModelViewSet):
         instance = self.get_object()
 
         if not is_admin_user(request.user):
-            if not _get_owned_role_queryset(request.user).filter(
-                id=instance.pk
-            ).exists():
+            if (
+                not _get_owned_role_queryset(request.user)
+                .filter(id=instance.pk)
+                .exists()
+            ):
                 return Response(
                     {
                         "success": False,
@@ -981,12 +955,9 @@ class DeleteGroupWithPermissionsViewSet(ModelViewSet):
             )
 
         if not is_admin_user(request.user):
-            if (
-                _get_owned_role_queryset(request.user)
-                .filter(id__in=role_ids)
-                .count()
-                != len(set(role_ids))
-            ):
+            if _get_owned_role_queryset(request.user).filter(
+                id__in=role_ids
+            ).count() != len(set(role_ids)):
                 return Response(
                     {
                         "success": False,
@@ -1037,12 +1008,9 @@ class DeleteGroupWithPermissionsViewSet(ModelViewSet):
             )
 
         if not is_admin_user(request.user):
-            if (
-                _get_owned_role_queryset(request.user, deleted=True)
-                .filter(id__in=role_ids)
-                .count()
-                != len(set(role_ids))
-            ):
+            if _get_owned_role_queryset(request.user, deleted=True).filter(
+                id__in=role_ids
+            ).count() != len(set(role_ids)):
                 return Response(
                     {
                         "success": False,
@@ -1114,10 +1082,6 @@ class DeleteGroupWithPermissionsViewSet(ModelViewSet):
         if no_pagination:
             return Response({"success": True, "data": role_list})
         if page is not None:
-            return self.get_paginated_response(
-                {"success": True, "data": role_list}
-            )
+            return self.get_paginated_response({"success": True, "data": role_list})
 
-        return Response(
-            {"success": True, "data": role_list}, status=status.HTTP_200_OK
-        )
+        return Response({"success": True, "data": role_list}, status=status.HTTP_200_OK)

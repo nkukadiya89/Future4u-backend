@@ -958,10 +958,7 @@ class ProfessionalProfileViewSet(ModelViewSet):
         qs = ProfessionalProfile.objects.select_related(
             "user__country", "user__states", "user__city", "education_level", "stream"
         ).prefetch_related("language")
-        if (
-            user.is_superuser
-            or user.user_type == user.Role.SUPER_ADMIN
-        ):
+        if user.is_superuser or user.user_type == user.Role.SUPER_ADMIN:
             return qs.filter(user__deleted=False)
         if user.user_type == user.Role.CORPORATE:
             return qs.filter(user__deleted=False).filter(

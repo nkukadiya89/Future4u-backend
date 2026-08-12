@@ -223,9 +223,7 @@ class OrganizationStaffViewSet(BaseModelViewSet):
             user.updated_by = request.user
             user.updated_at = timezone.now()
 
-            user.save(
-                update_fields=["status", "is_active", "updated_at", "updated_by"]
-            )
+            user.save(update_fields=["status", "is_active", "updated_at", "updated_by"])
 
             updated_ids.append(user.id)
             if old_status in ["pending", "inactive"] and new_status == "active":
@@ -325,13 +323,11 @@ class OrganizationStaffViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        users = (
-            User.objects.filter(
-                id__in=ids,
-                created_by=request.user,
-                user_type=request.user.user_type,
-            ).exclude(id=request.user.id)
-        )
+        users = User.objects.filter(
+            id__in=ids,
+            created_by=request.user,
+            user_type=request.user.user_type,
+        ).exclude(id=request.user.id)
 
         if not users.exists():
             return Response(
@@ -426,13 +422,11 @@ class OrganizationStaffViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        users = (
-            User.objects.filter(
-                id__in=ids,
-                created_by=request.user,
-                user_type=request.user.user_type,
-            ).exclude(id=request.user.id)
-        )
+        users = User.objects.filter(
+            id__in=ids,
+            created_by=request.user,
+            user_type=request.user.user_type,
+        ).exclude(id=request.user.id)
 
         if not users.exists():
             return Response(

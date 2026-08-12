@@ -120,7 +120,7 @@ class OrganizationProfessionalCreateSerializer(BaseModelSerializer):
 
         professional.created_by = creator
         professional.save(update_fields=["created_by"])
-        
+
         ProfessionalProfile.objects.create(user=professional)
         if profile_image_file:
             professional.upload_profile_image(profile_image_file)
