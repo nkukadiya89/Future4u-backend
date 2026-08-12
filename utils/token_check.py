@@ -56,9 +56,7 @@ def _resolve_token_owner(user):
     created them; all other users charge their own pool."""
     owner = user.get_owner_user()
     if owner is None or owner.deleted or not owner.is_active:
-        raise Exception(
-            "Organization tokens unavailable. Contact your administrator."
-        )
+        raise Exception("Organization tokens unavailable. Contact your administrator.")
     return owner
 
 
@@ -143,8 +141,7 @@ def adjust_extra_tokens(profile, new_extra_tokens, actor, *, request=None):
         log_event(
             event="user.tokens_updated",
             description=(
-                f"Set extra tokens to {new_extra_tokens} for "
-                f"{locked.user.email}"
+                f"Set extra tokens to {new_extra_tokens} for " f"{locked.user.email}"
             ),
             user=actor,
             entity_type="user",

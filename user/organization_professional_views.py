@@ -24,6 +24,7 @@ from .organization_professional_serializers import (
 )
 from .permissions import IsCorporate
 
+
 class OrganizationProfessionalViewSet(BaseModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated, IsCorporate]
@@ -76,16 +77,13 @@ class OrganizationProfessionalViewSet(BaseModelViewSet):
         status_filter = self.request.query_params.get("status")
         if status_filter:
             queryset = queryset.filter(status=status_filter)
-        return (
-            queryset.select_related(
-                "country",
-                "states",
-                "city",
-                "professional_profile",
-                "professional_profile__education_level",
-            )
-            .order_by("-id")
-        )
+        return queryset.select_related(
+            "country",
+            "states",
+            "city",
+            "professional_profile",
+            "professional_profile__education_level",
+        ).order_by("-id")
 
     def get_serializer_class(self):
         if self.action == "create":

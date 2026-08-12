@@ -99,9 +99,7 @@ class InternshipViewSet(BaseModelViewSet):
                 "created_by": request.user,
                 "created_at": timezone.now(),
             }
-            internship_provider = serializer.validated_data.get(
-                "internship_provider"
-            )
+            internship_provider = serializer.validated_data.get("internship_provider")
             if (
                 internship_provider
                 and not is_admin_user(request.user)
@@ -208,7 +206,9 @@ class InternshipViewSet(BaseModelViewSet):
             deleted=False,
         )
         if not is_admin:
-            internships = internships.filter(internship_provider=request.user.get_owner_user())
+            internships = internships.filter(
+                internship_provider=request.user.get_owner_user()
+            )
 
         found_ids = set(internships.values_list("id", flat=True))
         not_found_ids = list(set(ids) - found_ids)

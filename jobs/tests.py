@@ -34,6 +34,7 @@ from jobs.services import MAX_RETRIES, LinkedInJobService
 from jobs.views import JobSearchAPIView, RecommendedJobsAPIView
 from user.models import User
 
+
 def _make_user(**kwargs) -> User:
     defaults = {
         "email": "test@example.com",
@@ -128,6 +129,7 @@ def _mock_response(status_code=200, json_data=None):
         mock_resp.raise_for_status.return_value = None
 
     return mock_resp
+
 
 class JobSearchQuerySerializerTest(SimpleTestCase):
     def test_valid_minimal(self):
@@ -227,6 +229,7 @@ class JobNormalizedSerializerTest(SimpleTestCase):
         validated = serializer.validated_data
         self.assertEqual(validated["id"], "")
         self.assertEqual(validated["source"], "linkedin")
+
 
 class LinkedInJobServiceTest(SimpleTestCase):
     def setUp(self):
@@ -380,7 +383,6 @@ class LinkedInJobServiceTest(SimpleTestCase):
         key1 = LinkedInJobService._build_cache_key("Python Developer", "Mumbai", 1)
         key2 = LinkedInJobService._build_cache_key("python developer", "mumbai", 1)
         self.assertEqual(key1, key2)
-
 
 
 @override_settings(

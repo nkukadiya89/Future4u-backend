@@ -437,6 +437,7 @@ class SchoolCollegeProfileAdmin(admin.ModelAdmin):
         if obj is not None and getattr(obj.user, "is_org_staff", False):
             readonly.append("extra_token_limit")
         return tuple(readonly)
+
     raw_id_fields = ("user",)
 
     fieldsets = (
@@ -505,6 +506,7 @@ class InstituteProfileAdmin(admin.ModelAdmin):
         if obj is not None and getattr(obj.user, "is_org_staff", False):
             readonly.append("extra_token_limit")
         return tuple(readonly)
+
     raw_id_fields = ("user",)
 
     fieldsets = (
@@ -570,6 +572,7 @@ class CorporateProfileAdmin(admin.ModelAdmin):
         if obj is not None and getattr(obj.user, "is_org_staff", False):
             readonly.append("extra_token_limit")
         return tuple(readonly)
+
     raw_id_fields = ("user",)
 
     fieldsets = (

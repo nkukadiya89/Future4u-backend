@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internship_job', '0027_internshipapplicationnote_jobapplicationnote'),
-        ('internship_job', '0027_recreate_job_application_table'),
+        ("internship_job", "0027_internshipapplicationnote_jobapplicationnote"),
+        ("internship_job", "0027_recreate_job_application_table"),
     ]
 
-    operations = [
-    ]
+    operations = []

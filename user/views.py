@@ -584,9 +584,7 @@ class RoleFamilyViewSet(RetrieveSuccessEnvelopeMixin, ModelViewSet):
             )
 
         serializer = self.serializer_class(queryset, many=True)
-        return self.get_paginated_response(
-            {"success": True, "data": serializer.data}
-        )
+        return self.get_paginated_response({"success": True, "data": serializer.data})
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -597,9 +595,7 @@ class RoleFamilyViewSet(RetrieveSuccessEnvelopeMixin, ModelViewSet):
             serializer.save()
             log_event(
                 event="role_family.created",
-                description=(
-                    f"Created role family {serializer.instance.family_name}"
-                ),
+                description=(f"Created role family {serializer.instance.family_name}"),
                 user=request.user,
                 entity_type="role_family",
                 entity_id=serializer.instance.id,

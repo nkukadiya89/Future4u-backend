@@ -36,10 +36,7 @@ def _build_permission_lookup(apps):
         content_type__app_label__in={pair[0] for pair in all_pairs},
         codename__in={pair[1] for pair in all_pairs},
     )
-    return {
-        (p.content_type.app_label, p.codename): p
-        for p in permissions
-    }
+    return {(p.content_type.app_label, p.codename): p for p in permissions}
 
 
 def remove_stale_permissions(apps, schema_editor):

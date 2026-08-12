@@ -185,9 +185,7 @@ class User(AbstractUser):
 
         group_name = role_group_mapping.get(self.user_type)
         if group_name:
-            group = CustomGroup.objects.filter(
-                name=group_name, deleted=False
-            ).first()
+            group = CustomGroup.objects.filter(name=group_name, deleted=False).first()
             if group and not self.groups.exists():
                 self.groups.add(group)
 

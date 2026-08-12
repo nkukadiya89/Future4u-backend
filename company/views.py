@@ -313,15 +313,11 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
                 ).first()
                 if admin_group:
                     user = (
-                        User.objects.filter(groups=admin_group)
-                        .order_by("id")
-                        .first()
+                        User.objects.filter(groups=admin_group).order_by("id").first()
                     )
                 else:
                     user = (
-                        User.objects.filter(
-                            groups__customgroup__company=instance
-                        )
+                        User.objects.filter(groups__customgroup__company=instance)
                         .order_by("id")
                         .first()
                     )
@@ -642,16 +638,10 @@ class CompanyViewSet(CreatePasswordEmailMixin, SearchOrderingFilter, ModelViewSe
                 name="Company Admin", company=company
             ).first()
             if admin_group:
-                user = (
-                    User.objects.filter(groups=admin_group)
-                    .order_by("id")
-                    .first()
-                )
+                user = User.objects.filter(groups=admin_group).order_by("id").first()
             else:
                 user = (
-                    User.objects.filter(
-                        groups__customgroup__company=company
-                    )
+                    User.objects.filter(groups__customgroup__company=company)
                     .order_by("id")
                     .first()
                 )

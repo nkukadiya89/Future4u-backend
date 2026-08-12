@@ -177,9 +177,7 @@ class EmployeeSerializerTest(TestCase):
         }
         with patch("employee.serializers.get_client_ip") as mock_get_ip, patch(
             "employee.serializers.ActivityLog"
-        ) as mock_activity_log, patch(
-            "django.contrib.auth.models.Group"
-        ) as mock_group:
+        ) as mock_activity_log, patch("django.contrib.auth.models.Group") as mock_group:
             mock_get_ip.return_value = "127.0.0.1"
             mock_activity_log.log.employee_create = MagicMock()
             mock_group.objects.get.return_value = MagicMock()

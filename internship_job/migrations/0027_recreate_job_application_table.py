@@ -2,8 +2,10 @@ from django.db import migrations
 
 
 def recreate_job_application_table(apps, schema_editor):
-    
-    table_names = {name.lower() for name in schema_editor.connection.introspection.table_names()}
+
+    table_names = {
+        name.lower() for name in schema_editor.connection.introspection.table_names()
+    }
     if "job_application" in table_names:
         return
 
@@ -19,7 +21,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(
-            recreate_job_application_table, migrations.RunPython.noop
-        ),
+        migrations.RunPython(recreate_job_application_table, migrations.RunPython.noop),
     ]

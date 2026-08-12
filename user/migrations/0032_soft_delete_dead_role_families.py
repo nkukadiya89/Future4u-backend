@@ -9,9 +9,9 @@ DEAD_FAMILY_NAMES = (
 
 def soft_delete_dead_role_families(apps, schema_editor):
     RoleFamily = apps.get_model("user", "RoleFamily")
-    RoleFamily.objects.filter(
-        family_name__in=DEAD_FAMILY_NAMES, deleted=False
-    ).update(deleted=True)
+    RoleFamily.objects.filter(family_name__in=DEAD_FAMILY_NAMES, deleted=False).update(
+        deleted=True
+    )
 
 
 def restore_dead_role_families(apps, schema_editor):
@@ -19,9 +19,9 @@ def restore_dead_role_families(apps, schema_editor):
     # Only restore families this migration soft-deleted (symmetric with the
     # forward op) so a rollback cannot un-delete a family that was already
     # soft-deleted for an unrelated reason.
-    RoleFamily.objects.filter(
-        family_name__in=DEAD_FAMILY_NAMES, deleted=True
-    ).update(deleted=False)
+    RoleFamily.objects.filter(family_name__in=DEAD_FAMILY_NAMES, deleted=True).update(
+        deleted=False
+    )
 
 
 class Migration(migrations.Migration):

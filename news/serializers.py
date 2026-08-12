@@ -15,7 +15,7 @@ class BaseNewsSerializer(serializers.ModelSerializer):
     consistent across list/detail/create/update views.
     """
 
-    image = serializers.SerializerMethodField()
+    image = serializers.ImageField(required=False, allow_null=True)
     highlights = serializers.SerializerMethodField()
 
     class Meta:

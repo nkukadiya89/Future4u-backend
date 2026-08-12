@@ -181,9 +181,7 @@ class AdminUserArchiveAPITests(TestCase):
         self.assertNotIn("is_staff", row)
 
     def test_archive_list_returns_school_college_profile_data(self):
-        user = self._archive_user(
-            "arch_school@example.com", User.Role.SCHOOL_COLLEGE
-        )
+        user = self._archive_user("arch_school@example.com", User.Role.SCHOOL_COLLEGE)
         SchoolCollegeProfile.objects.create(
             user=user,
             institute_name="Green Valley School",
@@ -420,9 +418,7 @@ class OrganizationProfessionalAPITests(TestCase):
         self.assertEqual(professional.status, "pending")
         self.assertFalse(professional.is_active)
         self.assertTrue(professional.must_change_password)
-        self.assertTrue(
-            ProfessionalProfile.objects.filter(user=professional).exists()
-        )
+        self.assertTrue(ProfessionalProfile.objects.filter(user=professional).exists())
         mock_task.delay.assert_called_once()
 
     @patch("user.tasks.send_password_setup_link_task")
@@ -486,9 +482,7 @@ class OrganizationProfessionalAPITests(TestCase):
         url = reverse("organization_professionals-detail", args=[professional_id])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            resp.data["data"]["email"], "professional_one@example.com"
-        )
+        self.assertEqual(resp.data["data"]["email"], "professional_one@example.com")
 
     @patch("user.tasks.send_password_setup_link_task")
     def test_cannot_retrieve_other_corporate_professional(self, mock_task):
@@ -543,10 +537,7 @@ class OrganizationProfessionalAPITests(TestCase):
 
     def test_bulk_upload_missing_columns_rejected(self):
         self._auth(self.corporate)
-        csv_body = (
-            "First Name,Email\n"
-            "Bulk,bulk_bad@example.com\n"
-        )
+        csv_body = "First Name,Email\n" "Bulk,bulk_bad@example.com\n"
         f = SimpleUploadedFile(
             "bad.csv", csv_body.encode("utf-8"), content_type="text/csv"
         )
