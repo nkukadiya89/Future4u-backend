@@ -32,6 +32,7 @@ from .student_organization_serializers import (
     OrganizationStudentCreateSerializer,
     OrganizationStudentListSerializer,
 )
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class OrganizationStudentViewSet(BaseModelViewSet):
@@ -39,7 +40,7 @@ class OrganizationStudentViewSet(BaseModelViewSet):
     permission_classes = [IsAuthenticated, IsSchoolCollegeOrInstitute]
     pagination_class = Pagination
     parser_classes = [MultiPartParser, FormParser]
-    filter_backends = [SearchFilter, OrderingFilter]
+    filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
 
     search_fields = BaseModelViewSet.searching_fields + [
         "first_name",
@@ -74,6 +75,15 @@ class OrganizationStudentViewSet(BaseModelViewSet):
         "is_active",
         "status",
     ]
+
+    filterset_fields = [
+        "country",
+        "states",
+        "city",
+        "is_active",
+        "status",
+    ]
+    
     http_method_names = ["get", "post", "head", "options"]
 
     def get_queryset(self):
@@ -83,9 +93,6 @@ class OrganizationStudentViewSet(BaseModelViewSet):
             user_type=User.Role.STUDENT,
             deleted=False,
         )
-        status_filter = self.request.query_params.get("status")
-        if status_filter:
-            queryset = queryset.filter(status=status_filter)
         return (
             queryset.select_related(
                 "country",

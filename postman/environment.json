@@ -158,6 +158,21 @@
       "enabled": true
     },
     {
+      "key": "professional_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "organization_professional_assessment_id",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "organization_professional_suggestion_id",
+      "value": "",
+      "enabled": true
+    },
+    {
       "key": "role_id",
       "value": "1",
       "type": "default",

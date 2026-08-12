@@ -8815,6 +8815,160 @@
           "response": []
         },
         {
+          "name": "professional assessments (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-professionals/{{professional_id}}/assessments/?pagesize=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-professionals",
+                "{{professional_id}}",
+                "assessments",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "no_pagination",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "pagesize",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "List all assessments for a working professional created by the authenticated corporate user.\n\nGET /organization-professionals/{professional_id}/assessments/\n\nSet {{professional_id}} from list or create response.\n\nReturns paginated list of ProfessionalAssessment objects."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const data = json.data && Array.isArray(json.data) ? json.data : (json.data && json.data.results ? json.data.results : []);",
+                  "    if (data.length > 0 && data[0].id != null) {",
+                  "      pm.collectionVariables.set('organization_professional_assessment_id', String(data[0].id));",
+                  "      pm.environment.set('organization_professional_assessment_id', String(data[0].id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "professional recommendation (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-professionals/{{professional_id}}/recommendation/?assessment_id={{organization_professional_assessment_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-professionals",
+                "{{professional_id}}",
+                "recommendation",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "assessment_id",
+                  "value": "{{organization_professional_assessment_id}}"
+                }
+              ]
+            },
+            "description": "Get the career recommendation for a specific assessment of a working professional.\n\nGET /organization-professionals/{professional_id}/recommendation/?assessment_id={assessment_id}\n\nSet {{professional_id}} and {{organization_professional_assessment_id}}. Run the `professional assessments (GET)` request first to auto-set the assessment id.\n\n404 if recommendation not generated yet."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    const rec = json.data || {};",
+                  "    const suggestions = rec.suggestions || [];",
+                  "    if (suggestions.length > 0 && suggestions[0].id != null) {",
+                  "      pm.collectionVariables.set('organization_professional_suggestion_id', String(suggestions[0].id));",
+                  "      pm.environment.set('organization_professional_suggestion_id', String(suggestions[0].id));",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "professional suggestion (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/organization-professionals/{{professional_id}}/suggestion/?suggestion_id={{organization_professional_suggestion_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organization-professionals",
+                "{{professional_id}}",
+                "suggestion",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "suggestion_id",
+                  "value": "{{organization_professional_suggestion_id}}"
+                }
+              ]
+            },
+            "description": "Get full details of a particular career suggestion for a working professional.\n\nGET /organization-professionals/{professional_id}/suggestion/?suggestion_id={suggestion_id}\n\nSet {{professional_id}} and {{organization_professional_suggestion_id}}. Run the `professional recommendation (GET)` request first to auto-set the suggestion id.\n\nReturns career_name, match_percentage, ai_insight, why_this_career, required_skills, required_education, career_factors, career_roadmap."
+          },
+          "response": []
+        },
+        {
           "name": "bulk upload organization professionals (POST)",
           "request": {
             "method": "POST",

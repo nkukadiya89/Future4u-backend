@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from common.master_view import BaseModelViewSet
+from user_profile.filters import apply_user_location_filters
 from utils.aws_file_upload import delete_uploaded_file
 from utils.token_check import adjust_extra_tokens
 
@@ -84,22 +85,7 @@ class OrganizationProfileViewSet(BaseModelViewSet):
             queryset = self.get_queryset()
             no_pagination = request.query_params.get("no_pagination")
 
-            status_filter = request.query_params.get("status")
-            city_id = request.query_params.get("city")
-            state_id = request.query_params.get("state")
-            country_id = request.query_params.get("country")
-
-            if status_filter:
-                queryset = queryset.filter(user__status=status_filter)
-
-            if city_id:
-                queryset = queryset.filter(user__city_id=city_id)
-
-            if state_id:
-                queryset = queryset.filter(user__states_id=state_id)
-
-            if country_id:
-                queryset = queryset.filter(user__country_id=country_id)
+            queryset = apply_user_location_filters(queryset, request.query_params)
 
             queryset = self.filter_queryset(queryset)
 

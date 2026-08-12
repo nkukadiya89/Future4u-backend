@@ -16,8 +16,6 @@ from employee.models import Employee
 from user.models import User
 
 
-# Exclude Django's own framework apps from permission claims; app-label
-# filtering is stable across databases (content-type ids differ on fresh installs).
 PROJECT_APP_LABELS = sorted(
     app_config.label
     for app_config in django_apps.get_app_configs()
