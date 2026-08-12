@@ -8,7 +8,8 @@ from common.serializers import BaseModelSerializer
 from country.models import Country
 from email_utils.send_email import send_email_change_notification
 from state.models import State
-from user.models import User
+from user.models import CustomGroup, User
+from user.permissions import is_admin_user
 from user.services.registration_service import setup_web_user_password
 
 
@@ -80,6 +81,23 @@ class OrganizationStaffSerializer(BaseModelSerializer):
             if not city:
                 errors["city"] = "Invalid city id"
 
+        role_id = json_data.get("role_id")
+        role = None
+        if role_id not in (None, ""):
+            try:
+                role_id = int(role_id)
+            except (TypeError, ValueError):
+                errors["role_id"] = "Invalid role id."
+            else:
+                role_qs = CustomGroup.objects.filter(id=role_id, deleted=False)
+                if not is_admin_user(self.context["request"].user):
+                    role_qs = role_qs.filter(created_by=self.context["request"].user)
+                role = role_qs.first()
+                if role is None:
+                    errors["role_id"] = "Role not found or not available to you."
+        elif not is_update:
+            errors["role_id"] = "This field is required."
+
         if errors:
             raise serializers.ValidationError(errors)
 
@@ -101,6 +119,8 @@ class OrganizationStaffSerializer(BaseModelSerializer):
             validated["states"] = state
         if "city" in json_data:
             validated["city"] = city
+        if not is_update or role_id not in (None, ""):
+            validated["role"] = role
 
         data["validated_data"] = validated
         data["profile_image_file"] = self.context["request"].FILES.get("profile_image")
@@ -114,6 +134,8 @@ class OrganizationStaffSerializer(BaseModelSerializer):
         data = validated_data.get("validated_data", {})
         profile_image_file = validated_data.get("profile_image_file")
 
+        role = data.pop("role", None)
+
         staff = User(
             **data,
             user_type=creator.user_type,
@@ -125,8 +147,10 @@ class OrganizationStaffSerializer(BaseModelSerializer):
             email_verified=False,
             must_change_password=True,
         )
-        # Staff are created group-less; roles are assigned later via /assign-role/.
         staff.save(skip_group_assignment=True)
+
+        if role:
+            staff.groups.add(role)
 
         setup_web_user_password(staff)
 
@@ -143,10 +167,16 @@ class OrganizationStaffSerializer(BaseModelSerializer):
 
         old_email = instance.email
 
+        role = data.pop("role", None)
+
         for attr, value in data.items():
             setattr(instance, attr, value)
 
         instance.save(user=request.user)
+
+        if role:
+            # Staff hold exactly one role group; replace wholesale on role change.
+            instance.groups.set([role])
 
         if profile_image_file:
             instance.upload_profile_image(profile_image_file)
@@ -168,6 +198,7 @@ class OrganizationStaffListSerializer(BaseModelSerializer):
     states_name = serializers.CharField(source="states.name", read_only=True)
     city_name = serializers.CharField(source="city.name", read_only=True)
     groups = serializers.SerializerMethodField()
+    role_id = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -178,6 +209,7 @@ class OrganizationStaffListSerializer(BaseModelSerializer):
             "user_type",
             "is_org_staff",
             "groups",
+            "role_id",
             "email",
             "email_verified",
             "must_change_password",
@@ -196,4 +228,14 @@ class OrganizationStaffListSerializer(BaseModelSerializer):
         read_only_fields = fields
 
     def get_groups(self, obj):
-        return list(obj.groups.values_list("name", flat=True))
+        return [g.name for g in self._staff_groups(obj)]
+
+    def get_role_id(self, obj):
+        groups = self._staff_groups(obj)
+        return groups[0].id if groups else None
+
+    @staticmethod
+    def _staff_groups(obj):
+        # Staff hold exactly one role group; use the prefetched cache when
+        # available so neither accessor issues a per-row query.
+        return list(obj.groups.all())

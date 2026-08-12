@@ -12,7 +12,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from activity_log.services import log_event
 from common.master_view import BaseModelViewSet
 from email_utils.send_email import send_activation_password_setup_email
-from user.models import User
+from user.models import CustomGroup, User
 from utils.datetime_formatter import format_datetime
 from utils.pagination import Pagination
 
@@ -20,16 +20,22 @@ from .organization_staff_serializers import (
     OrganizationStaffListSerializer,
     OrganizationStaffSerializer,
 )
-from .permissions import IsAdminOrProvider
+from .permissions import IsAdminOrProvider, is_admin_user
+
+
+def _available_roles(user):
+    qs = CustomGroup.objects.filter(deleted=False).order_by(
+        "sequence", "group_name"
+    )
+    if not is_admin_user(user):
+        qs = qs.filter(created_by=user)
+    return [
+        {"role_id": r["id"], "role_name": r["group_name"]}
+        for r in qs.values("id", "group_name")
+    ]
 
 
 class OrganizationStaffViewSet(BaseModelViewSet):
-    """Organization-admin managed staff users.
-
-    Ownership is enforced entirely through get_queryset(): a user only ever
-    sees staff they created, of their own user_type, never themselves.
-    """
-
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated, IsAdminOrProvider]
     pagination_class = Pagination
@@ -75,6 +81,7 @@ class OrganizationStaffViewSet(BaseModelViewSet):
             )
             .exclude(id=user.id)
             .select_related("country", "states", "city")
+            .prefetch_related("groups")
             .order_by("-id")
         )
 
@@ -113,6 +120,7 @@ class OrganizationStaffViewSet(BaseModelViewSet):
                     "created_by": staff.created_by_id,
                     "created_at": format_datetime(staff.created_at),
                     "profile_image": staff.profile_image,
+                    "roles": _available_roles(request.user),
                 },
                 status=status.HTTP_201_CREATED,
             )
@@ -175,6 +183,7 @@ class OrganizationStaffViewSet(BaseModelViewSet):
                     "user_id": staff.id,
                     "user_type": staff.user_type,
                     "profile_image": staff.profile_image,
+                    "roles": _available_roles(request.user),
                 },
                 status=status.HTTP_200_OK,
             )
@@ -385,6 +394,7 @@ class OrganizationStaffViewSet(BaseModelViewSet):
             )
             .exclude(id=user.id)
             .select_related("country", "states", "city")
+            .prefetch_related("groups")
             .order_by("-deleted_at")
         )
 
