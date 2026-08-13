@@ -3,7 +3,7 @@ import logging
 
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import F, Q
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import action
@@ -32,6 +32,10 @@ from user_profile.models import (
     SchoolCollegeProfile,
     StudentProfile,
     UserProfile,
+)
+from user_profile.filters import (
+    PROFILE_USER_ANNOTATIONS,
+    apply_user_location_filters,
 )
 from user_profile.organization_viewsets import (
     OrganizationGalleryViewSet,
@@ -572,13 +576,6 @@ class BusinessSettingViewSet(ListEnvelopeMixin, ModelViewSet):
 
 
 class UserProfileViewSet(ModelViewSet):
-    """
-    Base profile endpoint ONLY for Super Admin
-    Endpoints:
-    - GET   /api/profile/
-    - PATCH /api/profile/
-    """
-
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     http_method_names = ["get", "patch", "head", "options"]
@@ -711,6 +708,16 @@ class StudentProfileViewSet(ModelViewSet):
         "linkedin_url",
         "github_url",
         "portfolio",
+        "country",
+        "state",
+        "city",
+        "address",
+        "first_name",
+        "last_name",
+        "phone",
+        "email",
+        "status",
+        "user_type",
         "user__created_by",
         "user__created_at",
         "updated_by",
@@ -730,6 +737,7 @@ class StudentProfileViewSet(ModelViewSet):
                 "stream",
             )
             .prefetch_related("language")
+            .annotate(**PROFILE_USER_ANNOTATIONS)
         )
         if user.user_type in org_roles:
             return qs.filter(Q(user__created_by=user) | Q(referred_by=user))
@@ -755,19 +763,7 @@ class StudentProfileViewSet(ModelViewSet):
             queryset = self.get_queryset()
             no_pagination = request.query_params.get("no_pagination")
 
-            status_filter = request.query_params.get("status")
-            city_id = request.query_params.get("city")
-            state_id = request.query_params.get("state")
-            country_id = request.query_params.get("country")
-
-            if status_filter:
-                queryset = queryset.filter(user__status=status_filter)
-            if city_id:
-                queryset = queryset.filter(user__city_id=city_id)
-            if state_id:
-                queryset = queryset.filter(user__states_id=state_id)
-            if country_id:
-                queryset = queryset.filter(user__country_id=country_id)
+            queryset = apply_user_location_filters(queryset, request.query_params)
 
             queryset = self.filter_queryset(queryset)
 
@@ -949,6 +945,16 @@ class ProfessionalProfileViewSet(ModelViewSet):
         "linkedin_url",
         "github_url",
         "portfolio",
+        "country",
+        "state",
+        "city",
+        "address",
+        "first_name",
+        "last_name",
+        "phone",
+        "email",
+        "status",
+        "user_type",
         "user__created_by",
         "user__created_at",
         "updated_by",
@@ -957,10 +963,21 @@ class ProfessionalProfileViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        qs = ProfessionalProfile.objects.select_related(
-            "user__country", "user__states", "user__city", "education_level", "stream"
-        ).prefetch_related("language")
-        if user.is_superuser or user.user_type == user.Role.SUPER_ADMIN:
+        qs = (
+            ProfessionalProfile.objects.select_related(
+                "user__country",
+                "user__states",
+                "user__city",
+                "education_level",
+                "stream",
+            )
+            .prefetch_related("language")
+            .annotate(**PROFILE_USER_ANNOTATIONS)
+        )
+        if (
+            user.is_superuser
+            or user.user_type == user.Role.SUPER_ADMIN
+        ):
             return qs.filter(user__deleted=False)
         if user.user_type == user.Role.CORPORATE:
             return qs.filter(user__deleted=False).filter(
@@ -987,22 +1004,7 @@ class ProfessionalProfileViewSet(ModelViewSet):
             queryset = self.get_queryset()
             no_pagination = request.query_params.get("no_pagination")
 
-            status_filter = request.query_params.get("status")
-            city_id = request.query_params.get("city")
-            state_id = request.query_params.get("state")
-            country_id = request.query_params.get("country")
-
-            if status_filter:
-                queryset = queryset.filter(user__status=status_filter)
-
-            if city_id:
-                queryset = queryset.filter(user__city_id=city_id)
-
-            if state_id:
-                queryset = queryset.filter(user__states_id=state_id)
-
-            if country_id:
-                queryset = queryset.filter(user__country_id=country_id)
+            queryset = apply_user_location_filters(queryset, request.query_params)
             corporate_id = request.query_params.get("corporate")
             if corporate_id:
                 try:
@@ -1198,16 +1200,48 @@ class ParentProfileViewSet(ModelViewSet):
         "id",
         "user",
         "relationship",
+        "other_relationship_text",
+        "country",
+        "state",
+        "city",
+        "address",
+        "first_name",
+        "last_name",
+        "phone",
+        "email",
+        "status",
+        "user_type",
+        "user__user_type",
+        "user__status",
+        "user__country",
+        "user__country__name",
+        "user__states",
+        "user__states__name",
+        "user__city",
+        "user__city__name",
+        "user__first_name",
+        "user__last_name",
+        "user__phone",
+        "user__email",
+        "user__profile_image",
+        "referred_by",
+        "referred_by__referral_code",
         "user__created_by",
         "user__created_at",
+        "user__deleted_at",
+        "user__deleted_by",
         "updated_by",
         "updated_at",
     ]
 
     def get_queryset(self):
-        qs = ParentProfile.objects.select_related(
-            "user__country", "user__states", "user__city"
-        ).prefetch_related("language")
+        qs = (
+            ParentProfile.objects.select_related(
+                "user__country", "user__states", "user__city"
+            )
+            .prefetch_related("language")
+            .annotate(**PROFILE_USER_ANNOTATIONS)
+        )
         if (
             self.request.user.is_superuser
             or self.request.user.user_type == self.request.user.Role.SUPER_ADMIN
@@ -1229,22 +1263,7 @@ class ParentProfileViewSet(ModelViewSet):
             queryset = self.get_queryset()
             no_pagination = request.query_params.get("no_pagination")
 
-            status_filter = request.query_params.get("status")
-            city_id = request.query_params.get("city")
-            state_id = request.query_params.get("state")
-            country_id = request.query_params.get("country")
-
-            if status_filter:
-                queryset = queryset.filter(user__status=status_filter)
-
-            if city_id:
-                queryset = queryset.filter(user__city_id=city_id)
-
-            if state_id:
-                queryset = queryset.filter(user__states_id=state_id)
-
-            if country_id:
-                queryset = queryset.filter(user__country_id=country_id)
+            queryset = apply_user_location_filters(queryset, request.query_params)
 
             queryset = self.filter_queryset(queryset)
 
