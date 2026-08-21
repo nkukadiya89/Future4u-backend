@@ -39,6 +39,51 @@ from .models import (
 )
 
 
+def _complete_payment(payment, razorpay_payment_id, payment_method=None, amount=None):
+    """Mark a verified payment paid and provision its subscription once."""
+    with transaction.atomic():
+        payment = PaymentSubscription.objects.select_for_update().select_related(
+            "plan_price"
+        ).get(pk=payment.pk)
+
+        if payment.status == "paid":
+            return payment, False
+
+        if not payment.plan_price:
+            raise ValueError("No plan price associated with payment")
+
+        payment.status = "paid"
+        payment.payment_date = now()
+        payment.razorpay_payment_id = razorpay_payment_id
+        if payment_method:
+            payment.payment_method = payment_method
+        if amount is not None:
+            payment.amount = amount
+        payment.save()
+
+        current_date = now().date()
+        duration = payment.plan_price.duration_days
+        user_sub, created = UserSubscription.objects.get_or_create(
+            user=payment.user,
+            plan_price=payment.plan_price,
+            defaults={
+                "start_date": current_date,
+                "end_date": current_date + timedelta(days=duration),
+                "is_active": True,
+            },
+        )
+
+        if not created:
+            user_sub.end_date = max(user_sub.end_date, current_date) + timedelta(
+                days=duration
+            )
+            user_sub.is_active = True
+            user_sub.save(update_fields=["end_date", "is_active", "updated_at"])
+
+        FeatureUsage.objects.filter(user=payment.user).update(used=0)
+        return payment, True
+
+
 class SubscriptionViewSet(BaseModelViewSet):
     queryset = Subscription.objects.all()
     serializer_class = SubscriptionAPISerializer
@@ -212,55 +257,58 @@ class PaymentSubscriptionViewSet(ModelViewSet):
         auth=(config("RAZORPAY_KEY_ID"), config("RAZORPAY_SECRET"))
     )
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.user.is_staff:
+            return queryset
+        return queryset.filter(user=self.request.user)
+
     def perform_create(self, serializer):
         # create pending payment (acts like cart)
-        serializer.save(status="pending")
+        serializer.save(user=self.request.user, status="pending")
 
     @action(detail=True, methods=["post"])
     def mark_paid(self, request, pk=None):
-        """
-        This simulates webhook success (in real case use Razorpay webhook)
-        """
         payment = self.get_object()
 
-        if payment.status == "paid":
-            return Response({"detail": "Already paid"}, status=400)
-
-        payment.status = "paid"
-        payment.payment_date = now()
-        payment.razorpay_payment_id = request.data.get("payment_id")
-        payment.save()
-
-        plan_price = payment.plan_price
-        if not plan_price:
+        razorpay_payment_id = request.data.get("razorpay_payment_id")
+        razorpay_order_id = request.data.get("razorpay_order_id")
+        razorpay_signature = request.data.get("razorpay_signature")
+        if not all((razorpay_payment_id, razorpay_order_id, razorpay_signature)):
             return Response(
-                {"detail": "No plan price associated with payment"}, status=400
+                {"detail": "razorpay_payment_id, razorpay_order_id and razorpay_signature are required"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        duration = plan_price.duration_days
+        if payment.user_id != request.user.id:
+            return Response({"detail": "Payment does not belong to this user"}, status=403)
+        if payment.razorpay_order_id != razorpay_order_id:
+            return Response({"detail": "Order does not match payment"}, status=400)
 
-        user_sub, created = UserSubscription.objects.get_or_create(
-            user=payment.user,
-            plan_price=plan_price,
-            defaults={
-                "start_date": now().date(),
-                "end_date": now().date() + timedelta(days=duration),
-                "is_active": True,
-            },
+        try:
+            self.client.utility.verify_payment_signature(
+                {
+                    "razorpay_order_id": razorpay_order_id,
+                    "razorpay_payment_id": razorpay_payment_id,
+                    "razorpay_signature": razorpay_signature,
+                }
+            )
+        except Exception:
+            return Response({"detail": "Invalid Razorpay payment signature"}, status=400)
+
+        try:
+            payment, completed = _complete_payment(
+                payment,
+                razorpay_payment_id,
+                request.data.get("payment_method"),
+            )
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=400)
+
+        return Response(
+            {"detail": "Payment successful", "already_completed": not completed},
+            status=status.HTTP_200_OK,
         )
-
-        if not created:
-            # renewal logic
-            user_sub.end_date = max(user_sub.end_date, now().date()) + timedelta(
-                days=duration
-            )
-            user_sub.is_active = True
-            user_sub.save()
-
-        # Reset feature usage so user gets fresh tokens for new billing period
-        FeatureUsage.objects.filter(user=payment.user).update(used=0)
-
-        return Response({"detail": "Payment successful"})
 
     @action(detail=False, methods=["post"], url_path="create-order")
     def create_order(self, request):
@@ -279,7 +327,7 @@ class PaymentSubscriptionViewSet(ModelViewSet):
         plan_price = None
         if plan_price_id:
             plan_price = PlanPrice.objects.filter(
-                id=plan_price_id, deleted=False
+                id=plan_price_id, is_active=True, deleted=False, plan__deleted=False
             ).first()
             if not plan_price:
                 return Response(
@@ -416,6 +464,8 @@ def razorpay_webhook(request):
 
     body = request.body
     received_signature = request.headers.get("X-Razorpay-Signature")
+    if not webhook_secret or not received_signature:
+        return HttpResponse(status=400)
 
     # Verify signature
     expected_signature = hmac.new(
@@ -425,7 +475,10 @@ def razorpay_webhook(request):
     if not hmac.compare_digest(expected_signature, received_signature):
         return HttpResponse(status=400)
 
-    payload = json.loads(body)
+    try:
+        payload = json.loads(body)
+    except (TypeError, ValueError):
+        return HttpResponse(status=400)
 
     event = payload.get("event")
 
@@ -445,42 +498,14 @@ def razorpay_webhook(request):
         except PaymentSubscription.DoesNotExist:
             return HttpResponse(status=404)
 
-        # Idempotency check (VERY IMPORTANT)
-        if payment.status == "paid":
-            return HttpResponse(status=200)
-
-        # Update payment
-        payment.status = "paid"
-        payment.razorpay_payment_id = razorpay_payment_id
-        payment.payment_date = now()
-        payment.payment_method = method
-        payment.amount = amount
-        payment.save()
-
-        plan_price = payment.plan_price
-        if not plan_price:
-            return HttpResponse(status=400)
-
-        duration = plan_price.duration_days
-
-        user_sub, created = UserSubscription.objects.get_or_create(
-            user=payment.user,
-            plan_price=plan_price,
-            defaults={
-                "start_date": now().date(),
-                "end_date": now().date() + timedelta(days=duration),
-                "is_active": True,
-            },
-        )
-
-        if not created:
-            user_sub.end_date = max(user_sub.end_date, now().date()) + timedelta(
-                days=duration
+        try:
+            _complete_payment(
+                payment,
+                razorpay_payment_id,
+                payment_method=method,
+                amount=amount,
             )
-            user_sub.is_active = True
-            user_sub.save()
-
-        # Reset feature usage so user gets fresh tokens for new billing period
-        FeatureUsage.objects.filter(user=payment.user).update(used=0)
+        except ValueError:
+            return HttpResponse(status=400)
 
     return HttpResponse(status=200)

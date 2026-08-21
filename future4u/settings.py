@@ -28,6 +28,8 @@ SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 
+RAZORPAY_WEBHOOK_SECRET = config("RAZORPAY_WEBHOOK_SECRET", default="")
+
 ALLOWED_HOSTS = [
     h.strip() for h in config("ALLOWED_HOSTS", default="localhost,127.0.0.1").split(",")
 ]
